@@ -24,9 +24,9 @@ public interface PublishProcessService {
      * @param processId  流程定义id
      * @param bussnissKey  业务主键，用于关联业务数据
      * @param map   键：userid，值：用户唯一标识
-     * @return   返回业务主键表示成功
+     * @return  true:成功;false:失败
      */
-    String startProcess(String publishUserID,String processId,String bussnissKey, Map<String, Object> map) throws WorkFlowException;
+    boolean startProcess(String publishUserID,String processId,String bussnissKey, Map<String, Object> map) throws WorkFlowException;
 
     /**
      * 查询流程定义列表
