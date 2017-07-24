@@ -19,6 +19,6 @@
 <dubbo:service interface="com.activiti.service.UserRoleService" ref="uerRoleServiceImpl" version="1.0.0" timeout="20000"></dubbo:service>
 <bean id="workTaskServiceImpl" class="com.activiti.service.impl.WorkTaskServiceImpl"></bean>
 <dubbo:service interface="com.activiti.service.WorkTaskService" ref="workTaskServiceImpl" version="1.0.0" timeout="20000"></dubbo:service>
-
+	<bean id="processCoreService" class="com.activiti.service.impl.ProcessCoreServiceImpl"></bean>
 
 </beans>

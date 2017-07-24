@@ -1,10 +1,12 @@
 package com.activiti.service;
 
+import com.activiti.expection.WorkFlowException;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -37,7 +39,7 @@ public interface WorkTaskService {
      * @param note 审批意见
      * @param authName 审批人姓名
      */
-     void  completeTask(String taskId,String nextUserId ,String note, String authName);
+     void  completeTask(String taskId,String nextUserId ,String note, String authName) throws WorkFlowException;
 
     /**
      * 回退到上一节点
@@ -45,6 +47,7 @@ public interface WorkTaskService {
      * @param note    审批意见
      * @return
      */
+    @Deprecated
     boolean rollBack(String taskId,String note);
 
     /**
@@ -73,5 +76,11 @@ public interface WorkTaskService {
      * @return
      */
     List<HistoricProcessInstance> getInvolvedUserTasks(String userid,int startCloum,int pageSzie,    int status);
+    /**
+     *查询任务当所在节点
+     * @param taskid  任务id
+     * @return  返回图片流
+     */
+    public InputStream generateImage(String taskid);
 
 }

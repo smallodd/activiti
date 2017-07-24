@@ -1,5 +1,6 @@
 package com.activiti.service;
 
+import com.activiti.expection.WorkFlowException;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public interface ProcessCoreService {
      * @throws Exception
      */
     void passProcess(String taskId, Map<String, Object> variables)
-            throws Exception;
+            throws WorkFlowException;
     /**
      * 根据当前任务ID，查询可以驳回的任务节点
      *

@@ -8,6 +8,9 @@
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="databaseSchemaUpdate" value="true" />
 		<property name="jobExecutorActivate" value="false" />
+		<property name="activityFontName" value="宋体"/>
+
+		<property name="labelFontName" value="宋体"/>
 	</bean>
 	<bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
 		<property name="processEngineConfiguration" ref="processEngineConfiguration" />

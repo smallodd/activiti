@@ -1,11 +1,11 @@
 package com.activiti.service.impl;
 
+import com.activiti.common.CodeConts;
+import com.activiti.expection.WorkFlowException;
 import com.activiti.service.ProcessCoreService;
 import com.activiti.service.WorkTaskService;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -19,10 +19,15 @@ import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.activiti.image.ProcessDiagramGenerator;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +49,9 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     @Autowired
     ProcessCoreService processCoreService;
+
+    @Autowired
+    ProcessEngineConfiguration processEngineConfiguration;
     @Override
     public List<Task> queryByAssign(String userId,int startPage,int pageSize) {
         return taskService.createTaskQuery().taskAssignee(userId).listPage(startPage,pageSize);
@@ -58,28 +66,28 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
-    public void completeTask(String taskId,String nextUserId, String note,String authName) {
+    public void completeTask(String taskId,String nextUserId, String note,String authName) throws WorkFlowException{
         Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
         Authentication.setAuthenticatedUserId(authName);
         taskService.addComment(taskId,task.getProcessInstanceId(),note);
 
         try {
-        if(StringUtils.isNotBlank(nextUserId)) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("userid",nextUserId);
+            if(StringUtils.isNotBlank(nextUserId)) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("userid",nextUserId);
 
-            processCoreService.passProcess(taskId,map);
+                processCoreService.passProcess(taskId,map);
 
 
-        }else {
-           processCoreService.passProcess(taskId,null);
-        }
+            }else {
+               processCoreService.passProcess(taskId,null);
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法");
         }
 
     }
-
+    @Deprecated
     public boolean rollBack(String taskId,String note){
 
         try {
@@ -206,5 +214,38 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return  query.involvedUser(userid).listPage(startCloum,pageSzie);
     }
 
+    /**
+     *查询任务所属节点
+     * @param taskid  任务id
+     * @return  返回图片流
+     */
+    public InputStream generateImage(String taskid){
+        //1.创建核心引擎流程对象processEngine
+
+        Task task = taskService.createTaskQuery().taskId(taskid).singleResult();
+        //流程定义
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
+
+        //正在活动节点
+        List<String> activeActivityIds = runtimeService.getActiveActivityIds(task.getExecutionId());
+
+        ProcessDiagramGenerator pdg = processEngineConfiguration.getProcessDiagramGenerator();
+        //生成流图片
+        InputStream inputStream = pdg.generateDiagram(bpmnModel, "PNG", activeActivityIds, activeActivityIds,
+                processEngineConfiguration.getLabelFontName(),
+                processEngineConfiguration.getActivityFontName(),
+                processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
+        try {
+
+            //生成本地图片
+            File file = new File("e:/test.png");
+            FileUtils.copyInputStreamToFile(inputStream, file);
+            return inputStream;
+        } catch (Exception e) {
+            throw new RuntimeException("生成流程图异常！", e);
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+        }
+    }
 
 }

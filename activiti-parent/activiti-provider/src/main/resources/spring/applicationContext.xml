@@ -45,17 +45,7 @@
 	<!-- 导入配置文件 -->
 
 	<!-- 配置多数据源映射关系 -->
-	<bean id="dataSource" class="com.activiti.dateSource.DynamicDataSource">
-		<property name="targetDataSources">
-			<map key-type="java.lang.String">
-				<entry key="dataSourceDJ" value-ref="dataSourceDJ"></entry>
-				<!--<entry key="dataSourceDJ1" value-ref="dataSourceDJ1"></entry>
-				<entry key="dataSourceCF" value-ref="dataSourceCF"></entry>-->
-			</map>
-		</property>
-		<!-- 默认目标数据源为你主库数据源 -->
-		<property name="defaultTargetDataSource" ref="dataSourceDJ" />
-	</bean>
+
 
 	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
 		init-method="init" destroy-method="close">

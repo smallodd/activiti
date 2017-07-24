@@ -1,5 +1,6 @@
 package com.activiti.service.impl;
 
+import com.activiti.expection.WorkFlowException;
 import com.activiti.service.ProcessCoreService;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
@@ -46,7 +47,7 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      * @throws Exception
      */
     public void passProcess(String taskId, Map<String, Object> variables)
-            throws Exception {
+            throws WorkFlowException {
 
         commitProcess(taskId, variables, null);
     }
@@ -173,7 +174,7 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      * @throws Exception
      */
     private void commitProcess(String taskId, Map<String, Object> variables,
-                               String activityId) throws Exception {
+                               String activityId) throws WorkFlowException {
         if (variables == null) {
             variables = new HashMap<String, Object>();
         }
@@ -238,7 +239,7 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      * @throws Exception
      */
     private void turnTransition(String taskId, String activityId,
-                                Map<String, Object> variables) throws Exception {
+                                Map<String, Object> variables) throws WorkFlowException {
         // 当前节点
         ActivityImpl currActivity = findActivitiImpl(taskId, null);
         // 清空当前流向
@@ -471,11 +472,11 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      * @return
      * @throws Exception
      */
-    private TaskEntity findTaskById(String taskId) throws Exception {
+    private TaskEntity findTaskById(String taskId) throws WorkFlowException {
         TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(
                 taskId).singleResult();
         if (task == null) {
-            throw new Exception("任务实例未找到!");
+            throw new WorkFlowException("任务实例未找到!");
         }
         return task;
     }
@@ -523,14 +524,14 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      * @throws Exception
      */
     private ProcessDefinitionEntity findProcessDefinitionEntityByTaskId(
-            String taskId) throws Exception {
+            String taskId) throws WorkFlowException {
         // 取得流程定义
         ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repositoryService)
                 .getDeployedProcessDefinition(findTaskById(taskId)
                         .getProcessDefinitionId());
 
         if (processDefinition == null) {
-            throw new Exception("流程定义未找到!");
+            throw new WorkFlowException("流程定义未找到!");
         }
 
         return processDefinition;
@@ -550,7 +551,7 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      * @throws Exception
      */
     private ActivityImpl findActivitiImpl(String taskId, String activityId)
-            throws Exception {
+            throws WorkFlowException {
         // 取得流程定义
         ProcessDefinitionEntity processDefinition = findProcessDefinitionEntityByTaskId(taskId);
 

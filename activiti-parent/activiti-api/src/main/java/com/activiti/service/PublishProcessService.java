@@ -1,5 +1,6 @@
 package com.activiti.service;
 
+import com.activiti.expection.WorkFlowException;
 import org.activiti.engine.repository.ProcessDefinition;
 
 import java.util.List;
@@ -13,9 +14,9 @@ public interface PublishProcessService {
     /**
      * 发布流程定义
      * @param zipInputStream
-     * @return  返回流程定义id
+     * @return  返回部署id
      */
-    String publish(ZipInputStream zipInputStream);
+    String publish(ZipInputStream zipInputStream) throws WorkFlowException;
 
     /**
      * 开启流程任务
@@ -25,7 +26,7 @@ public interface PublishProcessService {
      * @param map   键：userid，值：用户唯一标识
      * @return   返回业务主键表示成功
      */
-    String startProcess(String publishUserID,String processId,String bussnissKey, Map<String, Object> map);
+    String startProcess(String publishUserID,String processId,String bussnissKey, Map<String, Object> map) throws WorkFlowException;
 
     /**
      * 查询流程定义列表
