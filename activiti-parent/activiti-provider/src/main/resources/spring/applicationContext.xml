@@ -57,7 +57,7 @@
 		<property name="defaultTargetDataSource" ref="dataSourceDJ" />
 	</bean>
 
-	<bean id="dataSourceDJ" class="com.alibaba.druid.pool.DruidDataSource"
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
 		init-method="init" destroy-method="close">
 		<property name="url" value="${db.dj.url}" />
 		<property name="username" value="${db.dj.user}" />
@@ -131,157 +131,11 @@
 		<property name="logAbandoned" value="${logAbandoned}"></property>
 	</bean>
 
-	<bean id="dataSourceDJ1" class="com.alibaba.druid.pool.DruidDataSource"
-		init-method="init" destroy-method="close">
-		<property name="url" value="${db.dj1.url}" />
-		<property name="username" value="${db.dj1.user}" />
-		<property name="password" value="${db.dj1.pwd}" />
 
-		<!-- 监控数据库 -->
-		<property name="filters">
-			<value>stat</value>
-		</property>
-
-		<!-- 获取连接最大等待时间 -->
-		<property name="maxWait">
-			<value>${maxWait}</value>
-		</property>
-		<!--maxActive: 最大连接数量 -->
-		<property name="maxActive">
-			<value>${maxActive}</value>
-		</property>
-		<!--initialSize: 初始化连接 -->
-		<property name="initialSize">
-			<value>${initialSize}</value>
-		</property>
-		<!--maxIdle: 最大空闲连接 -->
-		<!-- <property name="maxIdle" value="${maxIdle}" /> -->
-		<!--minIdle: 最小空闲连接 -->
-		<property name="minIdle">
-			<value>${minIdle}</value>
-		</property>
-
-		<!-- 在进行borrowObject进行处理时，对拿到的connection进行validateObject校验 -->
-		<property name="testOnBorrow">
-			<value>false</value>
-		</property>
-		<!-- 在进行returnObject对返回的connection进行validateObject校验 -->
-		<property name="testOnReturn">
-			<value>false</value>
-		</property>
-		<!--是否要进行检测连接有效 -->
-		<property name="testWhileIdle">
-			<value>true</value>
-		</property>
-		<!--进行检测使用的有效的SQL语句 -->
-<!-- 		<property name="validationQuery">
-			<value>SELECT 1</value>
-		</property> -->
-
-		<!--每隔多少时间检测一次(默认毫秒)，根据mysql：wait_timeout值来设定 -->
-		<property name="timeBetweenEvictionRunsMillis">
-			<value>${timeBetweenEvictionRunsMillis}</value>
-		</property>
-		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
-		<property name="minEvictableIdleTimeMillis">
-			<value>${minEvictableIdleTimeMillis}</value>
-		</property>
-
-		<!-- 开启池的prepared statement 池功能 -->
-		<property name="poolPreparedStatements">
-			<value>true</value>
-		</property>
-		<!-- 不限制 statement池能够同时分配的打开的statements的最大数量, 如果设置为0表示不限制 -->
-		<!-- <property name="maxOpenPreparedStatements" value="${maxOpenPreparedStatements}"></property> -->
-
-
-		<!-- 超过removeAbandonedTimeout时间后，是否进行没用连接（废弃）的回收（默认为false) -->
-		<property name="removeAbandoned" value="${removeAbandoned}" />
-		<!-- 超过时间限制，回收没有用(废弃)的连接（单位秒，默认为 300秒，5分钟） -->
-		<property name="removeAbandonedTimeout" value="${removeAbandonedTimeout}" />
-		<!--每次检查链接的数量，建议设置和maxActive一样大，这样每次可以有效检查所有的链接.(默认为3个) -->
-		<property name="numTestsPerEvictionRun" value="${numTestsPerEvictionRun}" />
-		<!-- 关闭abanded连接时输出错误日志 -->
-		<property name="logAbandoned" value="${logAbandoned}"></property>
-	</bean>
-
-	<bean id="dataSourceCF" class="com.alibaba.druid.pool.DruidDataSource"
-		init-method="init" destroy-method="close">
-		<property name="url" value="${db.middle.url}" />
-		<property name="username" value="${db.middle.user}" />
-		<property name="password" value="${db.middle.pwd}" />
-
-		<!-- 监控数据库 -->
-		<property name="filters">
-			<value>stat</value>
-		</property>
-
-		<!-- 获取连接最大等待时间 -->
-		<property name="maxWait">
-			<value>${maxWait}</value>
-		</property>
-		<!--maxActive: 最大连接数量 -->
-		<property name="maxActive">
-			<value>${maxActive}</value>
-		</property>
-		<!--initialSize: 初始化连接 -->
-		<property name="initialSize">
-			<value>${initialSize}</value>
-		</property>
-		<!--maxIdle: 最大空闲连接 -->
-		<!-- <property name="maxIdle" value="${maxIdle}" /> -->
-		<!--minIdle: 最小空闲连接 -->
-		<property name="minIdle">
-			<value>${minIdle}</value>
-		</property>
-
-		<!-- 在进行borrowObject进行处理时，对拿到的connection进行validateObject校验 -->
-		<property name="testOnBorrow">
-			<value>false</value>
-		</property>
-		<!-- 在进行returnObject对返回的connection进行validateObject校验 -->
-		<property name="testOnReturn">
-			<value>false</value>
-		</property>
-		<!--是否要进行检测连接有效 -->
-		<property name="testWhileIdle">
-			<value>true</value>
-		</property>
-		<!--进行检测使用的有效的SQL语句 -->
-<!-- 		<property name="validationQuery">
-			<value>SELECT 1</value>
-		</property> -->
-
-		<!--每隔多少时间检测一次(默认毫秒)，根据mysql：wait_timeout值来设定 -->
-		<property name="timeBetweenEvictionRunsMillis">
-			<value>${timeBetweenEvictionRunsMillis}</value>
-		</property>
-		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
-		<property name="minEvictableIdleTimeMillis">
-			<value>${minEvictableIdleTimeMillis}</value>
-		</property>
-
-		<!-- 开启池的prepared statement 池功能 -->
-		<property name="poolPreparedStatements">
-			<value>true</value>
-		</property>
-		<!-- 不限制 statement池能够同时分配的打开的statements的最大数量, 如果设置为0表示不限制 -->
-		<!-- <property name="maxOpenPreparedStatements" value="${maxOpenPreparedStatements}"></property> -->
-
-
-		<!-- 超过removeAbandonedTimeout时间后，是否进行没用连接（废弃）的回收（默认为false) -->
-		<property name="removeAbandoned" value="${removeAbandoned}" />
-		<!-- 超过时间限制，回收没有用(废弃)的连接（单位秒，默认为 300秒，5分钟） -->
-		<property name="removeAbandonedTimeout" value="${removeAbandonedTimeout}" />
-		<!--每次检查链接的数量，建议设置和maxActive一样大，这样每次可以有效检查所有的链接.(默认为3个) -->
-		<property name="numTestsPerEvictionRun" value="${numTestsPerEvictionRun}" />
-		<!-- 关闭abanded连接时输出错误日志 -->
-		<property name="logAbandoned" value="${logAbandoned}"></property>
-	</bean>
 
 	<!-- mybatis-spring整合 -->
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="dataSource" ref="dataSourceDJ" />
+		<property name="dataSource" ref="dataSource" />
 		<property name="configLocation" value="classpath:mybatis-config.xml" />
 		<!-- 自动扫描entity目录, 省掉mybatis-config.xml里的手工配置 -->
 		<property name="mapperLocations">
@@ -300,7 +154,7 @@
 	<!-- 事务 -->
 	<bean name="transactionManager"
 		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="dataSourceDJ" />
+		<property name="dataSource" ref="dataSource" />
 	</bean>
 
 	<bean id="dataSourceExchange" class="com.activiti.dateSource.DataSourceExchange" />

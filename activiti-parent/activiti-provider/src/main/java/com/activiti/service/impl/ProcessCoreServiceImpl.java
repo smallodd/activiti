@@ -58,6 +58,7 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      * @param taskId
      *            当前任务ID
      */
+    @Deprecated
     public List<ActivityImpl> findBackAvtivity(String taskId) throws Exception {
         List<ActivityImpl> rtnList = null;
 
@@ -73,6 +74,7 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      * @param taskId
      * @param varoables
      */
+    @Deprecated
     public void backCurrentProcess(String taskId,Map<String,Object> varoables){
         Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
         if(task!=null){
