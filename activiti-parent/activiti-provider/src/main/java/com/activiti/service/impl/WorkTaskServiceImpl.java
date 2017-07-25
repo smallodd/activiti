@@ -4,12 +4,12 @@ import com.activiti.common.CodeConts;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.service.ProcessCoreService;
 import com.activiti.service.WorkTaskService;
+import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.ReturnPageInfo;
 import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.MessageFlow;
 import org.activiti.engine.*;
-import org.activiti.engine.history.HistoricActivityInstance;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
-import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.history.*;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -19,6 +19,7 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.apache.commons.io.FileUtils;
@@ -54,8 +55,13 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     @Autowired
     ProcessEngineConfiguration processEngineConfiguration;
     @Override
-    public List<Task> queryByAssign(String userId,int startPage,int pageSize) {
-        return taskService.createTaskQuery().taskAssignee(userId).listPage(startPage,pageSize);
+    public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize) {
+       long count= taskService.createTaskQuery().taskAssignee(userId).count();
+        PageInfo<Task> pageInfo=new PageInfo<>();
+        List<Task> list=taskService.createTaskQuery().taskAssignee(userId).listPage(startPage,pageSize);
+        pageInfo.setList(list);
+        pageInfo.setTotal(count);
+        return pageInfo;
     }
 
 
@@ -67,21 +73,21 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
-    public void completeTask(String taskId,String nextUserId, String note,String authName) throws WorkFlowException{
-        Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
+    public void completeTask(String processInstanceId,String nextUserId, String note,String authName) throws WorkFlowException{
+        Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         Authentication.setAuthenticatedUserId(authName);
-        taskService.addComment(taskId,task.getProcessInstanceId(),note);
+        taskService.addComment(task.getId(),task.getProcessInstanceId(),note);
 
         try {
             if(StringUtils.isNotBlank(nextUserId)) {
                 Map<String, Object> map = new HashMap<>();
                 map.put("userid",nextUserId);
 
-                processCoreService.passProcess(taskId,map);
+              taskService.complete(task.getId(),map);
 
 
             }else {
-               processCoreService.passProcess(taskId,null);
+                taskService.complete(task.getId());
             }
         } catch (Exception e) {
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法");
@@ -208,7 +214,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      *
      * @return
      */
-    public List<HistoricProcessInstance> getInvolvedUserTasks(String userid,int startCloum,int pageSzie,int status){
+    public List<HistoricProcessInstance> getInvolvedUserTasks(String userid,int startCloum,int pageSzie){
         HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery();
 
         query.orderByProcessInstanceStartTime().desc();
@@ -217,7 +223,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     /**
      *查询任务所属节点
-     * @param task  任务id
+     * @param taskid  任务id
      * @return  返回图片流
      */
     public InputStream generateImage(String  taskid){
@@ -265,6 +271,15 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
     }
 
+    @Override
+    public boolean checekBunessKeyIsInFlow(String bussinessKey) {
+        Task task=taskService.createTaskQuery().processInstanceBusinessKey(bussinessKey).singleResult();
+        if(task!=null){
+            return  true;
+        }
+        return false;
+    }
+
     private  List<String> getHighLightedFlows( ProcessDefinitionEntity processDefinitionEntity,
                                                List<HistoricActivityInstance> historicActivityInstances){
         List<String> highFlows = new ArrayList<String>();// 用以保存高亮的线flowId
@@ -309,5 +324,25 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return highFlows;
 
     }
+    @Override
+    public Comment selectComment(String processInstanceId){
+        HistoricActivityInstance activityInstance=historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().desc().singleResult();
+        Comment comment=taskService.getComment(activityInstance.getTaskId());
+        return comment;
+    }
+    @Override
+    public  List<Comment> selectListComment(String processInstanceId){
+        return taskService.getProcessInstanceComments(processInstanceId);
 
+    }
+
+    @Override
+    public Map<String, Object> getVariables(String processId) {
+        List<HistoricVariableInstance> list=historyService.createHistoricVariableInstanceQuery().processInstanceId(processId).list();
+        Map<String,Object> map=new HashMap<>();
+        for(HistoricVariableInstance historicVariableInstance:list){
+            map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
+        }
+        return map;
+    }
 }

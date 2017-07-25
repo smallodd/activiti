@@ -21,12 +21,12 @@ public interface PublishProcessService {
     /**
      * 开启流程任务
      * @param publishUserID 发起人唯一标识
-     * @param processId  流程定义id
+     * @param processKey  流程定义时xml中的id
      * @param bussnissKey  业务主键，用于关联业务数据
      * @param map   键：userid，值：用户唯一标识
      * @return  true:成功;false:失败
      */
-    boolean startProcess(String publishUserID,String processId,String bussnissKey, Map<String, Object> map) throws WorkFlowException;
+    boolean startProcess(String publishUserID,String processKey,String bussnissKey, Map<String, Object> map) throws WorkFlowException;
 
     /**
      * 查询流程定义列表
