@@ -108,9 +108,9 @@ public interface WorkTaskService {
     List<Comment> selectListComment(String processInstanceId);
 
     /**
-     * 通过任务id获取
-     * @param taskId
+     * 通过流程定义id获取定义变量
+     * @param processId  流程定义id
      * @return
      */
-    Map<String, Object> getVariables(String taskId);
+    Map<String, Object> getVariables(String processId);
 }

@@ -173,8 +173,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
-    public Boolean refuseTask(String taskId, String reason) {
-        Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
+    public Boolean refuseTask(String processId, String reason) {
+        Task task=taskService.createTaskQuery().processInstanceId(processId).singleResult();
 
         runtimeService.deleteProcessInstance(task.getProcessInstanceId(),reason);
         return true;
