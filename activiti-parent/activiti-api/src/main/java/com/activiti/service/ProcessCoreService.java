@@ -61,4 +61,11 @@ public interface ProcessCoreService {
      */
     @Deprecated
     void transferAssignee(String taskId, String userid);
+
+    /**
+     * 加入会签
+     * @param taskId
+     * @param userCodes
+     */
+    void jointProcess(String taskId, List<String> userCodes) throws WorkFlowException;
 }

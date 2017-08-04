@@ -17,6 +17,7 @@ import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,6 +162,30 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      */
     public void transferAssignee(String taskId, String userid) {
         taskService.setAssignee(taskId, userid);
+    }
+    /**
+     * 会签操作
+     *
+     * @param taskId
+     *            当前任务ID
+     * @param userCodes
+     *            会签人账号集合
+     * @throws Exception
+     */
+    public void jointProcess(String taskId, List<String> userCodes)
+            throws WorkFlowException {
+        for (String userCode : userCodes) {
+            TaskEntity task = (TaskEntity) taskService.newTask(UUID.randomUUID().toString());
+            task.setAssignee(userCode);
+            task.setName(findTaskById(taskId).getName() + "-会签");
+            task.setProcessDefinitionId(findProcessDefinitionEntityByTaskId(
+                    taskId).getId());
+            task.setProcessInstanceId(findProcessInstanceByTaskId(taskId)
+                    .getId());
+            task.setParentTaskId(taskId);
+            task.setDescription("jointProcess");
+            taskService.saveTask(task);
+        }
     }
 
     /**
@@ -502,14 +527,14 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      * @throws Exception
      */
     private ProcessInstance findProcessInstanceByTaskId(String taskId)
-            throws Exception {
+            throws WorkFlowException {
         // 找到流程实例
         ProcessInstance processInstance = runtimeService
                 .createProcessInstanceQuery().processInstanceId(
                         findTaskById(taskId).getProcessInstanceId())
                 .singleResult();
         if (processInstance == null) {
-            throw new Exception("流程实例未找到!");
+            throw new WorkFlowException("流程实例未找到!");
         }
 
         return processInstance;

@@ -36,7 +36,7 @@ public class PublishProcessServiceImp implements PublishProcessService {
 @Override
     public String publish(String name){
 
-    return   repositoryService.createDeployment().addClasspathResource("test.bpmn").deploy().getId();
+    return   repositoryService.createDeployment().addClasspathResource(name).deploy().getId();
     }
     /**
      * 上传部署流程
@@ -56,7 +56,7 @@ public class PublishProcessServiceImp implements PublishProcessService {
     }
 
     @Override
-    public boolean startProcess(String publishUserID,String processId,String bussnissKey,Map<String,Object> map) throws WorkFlowException {
+    public String startProcess(String publishUserID,String processId,String bussnissKey,Map<String,Object> map) throws WorkFlowException {
         if(StringUtils.isBlank(publishUserID)){
            throw new WorkFlowException(CodeConts.WORK_FLOW_APPLY_USER,"申请人id不能为空");
         }
@@ -70,7 +70,7 @@ public class PublishProcessServiceImp implements PublishProcessService {
 
         ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(processId,bussnissKey,map);
         runtimeService.setVariablesLocal(processInstance.getId(),map);
-        return true;
+        return processInstance.getId();
     }
 
     @Override

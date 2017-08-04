@@ -42,7 +42,7 @@ public interface WorkTaskService {
      * @param note 审批意见
      * @param authName 审批人姓名
      */
-     void  completeTask(String processInstanceId,String nextUserId ,String note, String authName) throws WorkFlowException;
+    Boolean  completeTask(String processInstanceId,String nextUserId ,String note, String authName) throws WorkFlowException;
 
     /**
      * 回退到上一节点
@@ -78,13 +78,31 @@ public interface WorkTaskService {
      *
      * @return
      */
-    List<HistoricProcessInstance> getInvolvedUserTasks(String userid,int startCloum,int pageSzie);
+    List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startCloum,int pageSzie);
+
+    /**
+     * 通过用户主键查询历史审批通过的任务
+     * @param userId
+     * @param startCloum
+     * @param pagegSize
+     * @return
+     */
+    PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startCloum,int pagegSize);
+
+    /**
+     * 通过用户主键查询审批拒绝的信息
+     * @param userId
+     * @param startCloum
+     * @param pageSize
+     * @return
+     */
+    PageInfo<HistoricTaskInstance> selectMyRefuse(String userId,int startCloum,int pageSize);
     /**
      *查询任务当所在节点
-     * @param taskid  任务id
+     * @param processId  流程定义id
      * @return  返回图片流
      */
-    InputStream generateImage(String taskid);
+    InputStream generateImage(String processId);
 
     /**
      * 查询业务主键是否再流程钟
@@ -94,12 +112,18 @@ public interface WorkTaskService {
     boolean checekBunessKeyIsInFlow(String bussinessKey);
 
     /**
-     * 获取上一次审批意见信息
-     * @param processInstanceId
+     * 获取当前历史任务的审批意见
+     * @param taskId
      * @return
      */
-    Comment selectComment(String processInstanceId);
+    Comment selectComment(String taskId);
 
+    /**
+     * 通过流程实例id查询任务审批历史信息
+     * @param processId
+     * @return
+     */
+    List<HistoricTaskInstance> selectTaskHistory(String processId);
     /**
      * 获取任务审批意见列表
      * @param processInstanceId
@@ -108,9 +132,26 @@ public interface WorkTaskService {
     List<Comment> selectListComment(String processInstanceId);
 
     /**
+     * 通过历史任务id查询历史任务
+     * @param taskHistoryId
+     * @return
+     */
+    HistoricTaskInstance selectHistoryTask(String taskHistoryId);
+
+    /**
      * 通过流程定义id获取定义变量
      * @param processId  流程定义id
      * @return
      */
     Map<String, Object> getVariables(String processId);
+
+    /**
+     * 通过流程定义id查询下一流程
+     * @param procInstanceId
+     * @return
+     */
+    String getNextNode(String procInstanceId);
+
+
+    void jointProcess(String taskId,List<String> list);
 }

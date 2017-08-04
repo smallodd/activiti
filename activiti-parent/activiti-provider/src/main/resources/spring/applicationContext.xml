@@ -131,7 +131,7 @@
 		<property name="mapperLocations">
 			<list>
 				<!-- mapper接口对应的xml路径 如果mapper接口的保内有和接口名一致的xml 则不用配置这个 -->
-				<value>classpath:com/activiti/mapper/*Mapper.xml</value>
+		<!--		<value>classpath:com/activiti/mapper/*Mapper.xml</value>-->
 			</list>
 		</property>
 	</bean>

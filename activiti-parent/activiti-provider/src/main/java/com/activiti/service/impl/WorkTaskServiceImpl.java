@@ -5,13 +5,12 @@ import com.activiti.expection.WorkFlowException;
 import com.activiti.service.ProcessCoreService;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
-import com.github.pagehelper.ReturnPageInfo;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.MessageFlow;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.identity.Authentication;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
@@ -25,6 +24,7 @@ import org.activiti.image.ProcessDiagramGenerator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
@@ -39,7 +39,7 @@ import java.util.Map;
  * Created by ma on 2017/7/18.
  */
 public class WorkTaskServiceImpl implements WorkTaskService {
-
+    private Logger logger=Logger.getLogger(WorkTaskServiceImpl.class);
     @Resource
     TaskService taskService;
     @Resource
@@ -56,7 +56,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     ProcessEngineConfiguration processEngineConfiguration;
     @Override
     public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize) {
-       long count= taskService.createTaskQuery().taskAssignee(userId).count();
+        long count= taskService.createTaskQuery().taskAssignee(userId).count();
         PageInfo<Task> pageInfo=new PageInfo<>();
         List<Task> list=taskService.createTaskQuery().taskAssignee(userId).listPage(startPage,pageSize);
         pageInfo.setList(list);
@@ -73,25 +73,27 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
-    public void completeTask(String processInstanceId,String nextUserId, String note,String authName) throws WorkFlowException{
+    public Boolean completeTask(String processInstanceId,String nextUserId, String note,String authName) throws WorkFlowException{
         Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         Authentication.setAuthenticatedUserId(authName);
         taskService.addComment(task.getId(),task.getProcessInstanceId(),note);
 
-        try {
-            if(StringUtils.isNotBlank(nextUserId)) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("userid",nextUserId);
 
-              taskService.complete(task.getId(),map);
+        if(StringUtils.isNotBlank(nextUserId)) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("userCode",nextUserId);
+
+            taskService.complete(task.getId(),map);
 
 
-            }else {
-                taskService.complete(task.getId());
+        }else {
+            if(StringUtils.isNotBlank(this.getNextNode(processInstanceId))){
+                throw new WorkFlowException("此流程还有节点，请传下一审批人");
             }
-        } catch (Exception e) {
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法");
+            taskService.complete(task.getId());
         }
+        return true;
+
 
     }
     @Deprecated
@@ -175,8 +177,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     @Override
     public Boolean refuseTask(String processId, String reason) {
         Task task=taskService.createTaskQuery().processInstanceId(processId).singleResult();
-
-        runtimeService.deleteProcessInstance(task.getProcessInstanceId(),reason);
+        taskService.addComment(task.getId(),processId,reason);
+        runtimeService.deleteProcessInstance(task.getProcessInstanceId(),"refuse");
         return true;
     }
 
@@ -198,10 +200,10 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             query.finished();
         }
         query.orderByProcessInstanceStartTime().desc();
-    List<HistoricProcessInstance> list= query.startedBy(userid).listPage(startCloum,pageSzie);
+        List<HistoricProcessInstance> list= query.startedBy(userid).listPage(startCloum,pageSzie);
 
 
-      return list;
+        return list;
     }
 
     /**
@@ -214,32 +216,51 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      *
      * @return
      */
-    public List<HistoricProcessInstance> getInvolvedUserTasks(String userid,int startCloum,int pageSzie){
+    public List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startCloum,int pageSzie){
         HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery();
 
         query.orderByProcessInstanceStartTime().desc();
         return  query.involvedUser(userid).listPage(startCloum,pageSzie);
     }
 
+    public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startCloum,int pageSize){
+        PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
+        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("completed").listPage(startCloum,pageSize);
+        long count=historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("completed").count();
+        pageInfo.setList(list);
+        pageInfo.setTotal(count);
+        return pageInfo;
+    }
+
+    @Override
+    public PageInfo<HistoricTaskInstance> selectMyRefuse(String userId, int startCloum, int pageSize) {
+        PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
+        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").listPage(startCloum,pageSize);
+        long count=historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").count();
+        pageInfo.setList(list);
+        pageInfo.setTotal(count);
+        return pageInfo;
+    }
+
     /**
      *查询任务所属节点
-     * @param taskid  任务id
+     * @param processId  任务id
      * @return  返回图片流
      */
-    public InputStream generateImage(String  taskid){
+    public InputStream generateImage(String  processId){
 
 
-        HistoricTaskInstance task=historyService.createHistoricTaskInstanceQuery().taskId(taskid).singleResult();
+        //获取历史流程实例
+        HistoricProcessInstance processInstance =  historyService.createHistoricProcessInstanceQuery().processInstanceId(processId).singleResult();
         //流程定义
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
 
 
         ProcessDiagramGenerator pdg = processEngineConfiguration.getProcessDiagramGenerator();
 
-        List<HistoricActivityInstance> highLightedActivitList =  historyService.createHistoricActivityInstanceQuery().processInstanceId(task.getProcessInstanceId()).list();
+        List<HistoricActivityInstance> highLightedActivitList =  historyService.createHistoricActivityInstanceQuery().processInstanceId(processId).list();
 
-        //获取历史流程实例
-        HistoricProcessInstance processInstance =  historyService.createHistoricProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+
 
         ProcessDefinitionEntity definitionEntity = (ProcessDefinitionEntity)repositoryService.getProcessDefinition(processInstance.getProcessDefinitionId());
 
@@ -325,17 +346,25 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     }
     @Override
-    public Comment selectComment(String processInstanceId){
-        HistoricActivityInstance activityInstance=historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().desc().singleResult();
-        Comment comment=taskService.getComment(activityInstance.getTaskId());
+    public Comment selectComment(String taskid){
+
+        Comment comment=taskService.getComment(taskid);
         return comment;
     }
+
+    @Override
+    public List<HistoricTaskInstance> selectTaskHistory(String processId) {
+        return historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().list();
+    }
+
     @Override
     public  List<Comment> selectListComment(String processInstanceId){
         return taskService.getProcessInstanceComments(processInstanceId);
 
     }
-
+    public HistoricTaskInstance selectHistoryTask(String taskHistoryId){
+        return historyService.createHistoricTaskInstanceQuery().taskId(taskHistoryId).singleResult();
+    }
     @Override
     public Map<String, Object> getVariables(String processId) {
         List<HistoricVariableInstance> list=historyService.createHistoricVariableInstanceQuery().processInstanceId(processId).list();
@@ -344,5 +373,49 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
         }
         return map;
+    }
+    /**
+     * 获取当前流程的下一个节点
+     * @param procInstanceId
+     * @return
+     */
+    public String getNextNode(String procInstanceId){
+        // 1、首先是根据流程ID获取当前任务：
+        List<Task> tasks = taskService.createTaskQuery().processInstanceId(procInstanceId).list();
+        String nextId = "";
+        for (Task task : tasks) {
+
+            // 2、然后根据当前任务获取当前流程的流程定义，然后根据流程定义获得所有的节点：
+            ProcessDefinitionEntity def = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repositoryService)
+                    .getDeployedProcessDefinition(task.getProcessDefinitionId());
+            List<ActivityImpl> activitiList = def.getActivities(); // rs是指RepositoryService的实例
+            // 3、根据任务获取当前流程执行ID，执行实例以及当前流程节点的ID：
+            String excId = task.getExecutionId();
+
+            ExecutionEntity execution = (ExecutionEntity) runtimeService.createExecutionQuery().executionId(excId)
+                    .singleResult();
+            String activitiId = execution.getActivityId();
+            // 4、然后循环activitiList
+            // 并判断出当前流程所处节点，然后得到当前节点实例，根据节点实例获取所有从当前节点出发的路径，然后根据路径获得下一个节点实例：
+            for (ActivityImpl activityImpl : activitiList) {
+                String id = activityImpl.getId();
+                if (activitiId.equals(id)) {
+                    logger.debug("当前任务：" + activityImpl.getProperty("name")); // 输出某个节点的某种属性
+                    List<PvmTransition> outTransitions = activityImpl.getOutgoingTransitions();// 获取从某个节点出来的所有线路
+                    for (PvmTransition tr : outTransitions) {
+                        PvmActivity ac = tr.getDestination(); // 获取线路的终点节点
+                        logger.debug("下一步任务任务：" + ac.getProperty("name"));
+                        nextId = ac.getId();
+                    }
+                    break;
+                }
+            }
+        }
+        return nextId;
+    }
+
+    @Override
+    public void jointProcess(String taskId, List<String> list) {
+        processCoreService.jointProcess(taskId,list);
     }
 }
