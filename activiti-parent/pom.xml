@@ -8,7 +8,7 @@
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<name>activiti-parent</name>
-	<url>ttp://172.16.163.52:8081/nexus</url>
+	<url>http://172.16.163.52:8081/nexus</url>
 
 	<modules>
 		<module>activiti-api</module>
