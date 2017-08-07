@@ -19,7 +19,7 @@ import java.util.Map;
 //指定测试用例的运行器 这里是指定了Junit4
 @RunWith(SpringJUnit4ClassRunner.class)
 //指定Spring的配置文件 路径相对classpath而言
-@ContextConfiguration({"classpath:/spring/applicationContext.xml"})
+@ContextConfiguration({"classpath:/springtest/applicationContext.xml"})
 public class TestClass {
     @Resource
     PublishProcessService publishProcessService;
@@ -42,6 +42,7 @@ public class TestClass {
 @Test
     public void selectList(){
        PageInfo<HistoricProcessInstance> pageInfo= workTaskService.selectAllPassApprove(1,10);
+       System.out.print(pageInfo.getTotal());
        System.out.print(JSONArray.fromObject(pageInfo.getList().toArray()).toString());
     }
 }

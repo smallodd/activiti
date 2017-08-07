@@ -28,8 +28,8 @@
 		  class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<value>classpath:config.properties</value>
-				<value>classpath:dubbo.properties</value>
+				<value>classpath:springtest/config.properties</value>
+				<value>classpath:springtest/dubbo.properties</value>
 			</list>
 		</property>
 	</bean>
