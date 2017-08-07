@@ -91,6 +91,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 throw new WorkFlowException("此流程还有节点，请传下一审批人");
             }
             taskService.complete(task.getId());
+
         }
         return true;
 
@@ -412,6 +413,39 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             }
         }
         return nextId;
+    }
+
+    @Override
+    public PageInfo<Task> selectAllWaitApprove(int startPage, int pageSize) {
+        PageInfo<Task> pageInfo=new PageInfo<>();
+
+        List<Task> list= taskService.createTaskQuery().listPage((startPage-1)*pageSize,pageSize);
+        long count =taskService.createTaskQuery().count();
+        pageInfo.setTotal(count);
+        pageInfo.setList(list);
+        return  pageInfo;
+    }
+
+    @Override
+    public PageInfo<HistoricProcessInstance> selectAllPassApprove(int startPage, int pageSize) {
+        int startColum=(startPage-1)*pageSize;
+        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().finished().notDeleted().listPage(startColum,pageSize);
+        long count=historyService.createHistoricProcessInstanceQuery().finished().notDeleted().count();
+        PageInfo pageInfo=new PageInfo();
+        pageInfo.setList(list);
+        pageInfo.setTotal(count);
+        return pageInfo;
+    }
+
+    @Override
+    public PageInfo<HistoricProcessInstance> selectAllRefuseApprove(int startPage, int pageSize) {
+        int startColum=(startPage-1)*pageSize;
+        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().finished().deleted().listPage(startColum,pageSize);
+        long count=historyService.createHistoricProcessInstanceQuery().finished().deleted().count();
+        PageInfo pageInfo=new PageInfo();
+        pageInfo.setList(list);
+        pageInfo.setTotal(count);
+        return pageInfo;
     }
 
     @Override

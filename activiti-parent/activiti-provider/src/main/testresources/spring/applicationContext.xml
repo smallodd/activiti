@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/aop 
+						http://www.springframework.org/schema/aop/spring-aop.xsd
+						http://www.springframework.org/schema/context 
+						http://www.springframework.org/schema/context/spring-context.xsd
+						http://www.springframework.org/schema/tx 
+						http://www.springframework.org/schema/tx/spring-tx.xsd
+						http://www.springframework.org/schema/jee 
+						http://www.springframework.org/schema/jee/spring-jee.xsd
+						http://www.springframework.org/schema/task 
+						http://www.springframework.org/schema/task/spring-task.xsd
+						 http://code.alibabatech.com/schema/dubbo  
+						  http://code.alibabatech.com/schema/dubbo/dubbo.xsd  ">
+
+	<!-- 定时器开关 -->
+	 <task:annotation-driven />
+
+
+	<!-- 引入config.properties文件 -->
+	<bean id="placeholderConfig"
+		  class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:config.properties</value>
+				<value>classpath:dubbo.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!--注解控测器：自动扫描(自动注入) -->
+	<context:component-scan base-package="com.maket">
+		<!-- 排除Controller,spring-mvc.xml中扫描，如果不排除会影响事务管理 -->
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<!-- config.properties这个bean之后加载 -->
+	<!-- 导入配置文件 -->
+
+
+
+
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="url" value="${db.middle.url}" />
+		<property name="username" value="${db.middle.user}" />
+		<property name="password" value="${db.middle.pwd}" />
+
+		<!-- 监控数据库 -->
+		<property name="filters">
+			<value>stat</value>
+		</property>
+
+		<!-- 获取连接最大等待时间 -->
+		<property name="maxWait">
+			<value>${maxWait}</value>
+		</property>
+		<!--maxActive: 最大连接数量 -->
+		<property name="maxActive">
+			<value>${maxActive}</value>
+		</property>
+		<!--initialSize: 初始化连接 -->
+		<property name="initialSize">
+			<value>${initialSize}</value>
+		</property>
+		<!--maxIdle: 最大空闲连接 -->
+		<!-- <property name="maxIdle" value="${maxIdle}" /> -->
+		<!--minIdle: 最小空闲连接 -->
+		<property name="minIdle">
+			<value>${minIdle}</value>
+		</property>
+
+		<!-- 在进行borrowObject进行处理时，对拿到的connection进行validateObject校验 -->
+		<property name="testOnBorrow">
+			<value>false</value>
+		</property>
+		<!-- 在进行returnObject对返回的connection进行validateObject校验 -->
+		<property name="testOnReturn">
+			<value>false</value>
+		</property>
+		<!--是否要进行检测连接有效 -->
+		<property name="testWhileIdle">
+			<value>true</value>
+		</property>
+		<!--进行检测使用的有效的SQL语句 -->
+<!-- 		<property name="validationQuery">
+			<value>SELECT 1</value>
+		</property> -->
+
+		<!--每隔多少时间检测一次(默认毫秒)，根据mysql：wait_timeout值来设定 -->
+		<property name="timeBetweenEvictionRunsMillis">
+			<value>${timeBetweenEvictionRunsMillis}</value>
+		</property>
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis">
+			<value>${minEvictableIdleTimeMillis}</value>
+		</property>
+
+		<!-- 开启池的prepared statement 池功能 -->
+		<property name="poolPreparedStatements">
+			<value>true</value>
+		</property>
+		<!-- 不限制 statement池能够同时分配的打开的statements的最大数量, 如果设置为0表示不限制 -->
+		<!-- <property name="maxOpenPreparedStatements" value="${maxOpenPreparedStatements}"></property> -->
+
+
+		<!-- 超过removeAbandonedTimeout时间后，是否进行没用连接（废弃）的回收（默认为false) -->
+		<property name="removeAbandoned" value="${removeAbandoned}" />
+		<!-- 超过时间限制，回收没有用(废弃)的连接（单位秒，默认为 300秒，5分钟） -->
+		<property name="removeAbandonedTimeout" value="${removeAbandonedTimeout}" />
+		<!--每次检查链接的数量，建议设置和maxActive一样大，这样每次可以有效检查所有的链接.(默认为3个) -->
+		<property name="numTestsPerEvictionRun" value="${numTestsPerEvictionRun}" />
+		<!-- 关闭abanded连接时输出错误日志 -->
+		<property name="logAbandoned" value="${logAbandoned}"></property>
+	</bean>
+
+	<!-- mybatis-spring整合 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<!-- 自动扫描entity目录, 省掉mybatis-config.xml里的手工配置 -->
+		<property name="mapperLocations">
+			<list>
+				<!-- mapper接口对应的xml路径 如果mapper接口的保内有和接口名一致的xml 则不用配置这个 -->
+				<value>classpath:com/maket/mapper/*Mapper.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 自动扫描mybatis映射 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.maket.mapper" />
+	</bean>
+
+	<!-- 事务 -->
+	<bean name="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+
+	<!-- 可通过注解控制事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<!-- 事务通知 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<!-- REQUIRED：指定当前方法必需在事务环境中运行，如果当前有事务环境就加入当前正在执行的事务环境， 如果当前没有事务，就新建一个事务。这是默认值。 
+				SUPPORTS：指定当前方法加入当前事务环境，如果当前没有事务，就以非事务方式执行。 -->
+			<tx:method name="insert*" propagation="REQUIRED"
+				rollback-for="java.lang.Exception" />
+			<tx:method name="update*" propagation="REQUIRED"
+				rollback-for="java.lang.Exception" />
+			<tx:method name="delete*" propagation="REQUIRED"
+				rollback-for="java.lang.Exception" />
+			<tx:method name="*" propagation="SUPPORTS" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- Spring AOP config (* com.maket.service.*.*(..))中几个通配符的含义： 第一个 * :通配
+		任意返回值类型 第二个 * :通配 包com.maket.service下的任意class 第三个 * :通配 包com.maket.service下的任意class的任意方法
+		第四个 .. :通配 方法可以有0个或多个参数 -->
+	<aop:config proxy-target-class="true">
+		<aop:pointcut id="serviceMethods"
+			expression="execution(* com.maket.service..*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethods"
+			order="2" />
+
+	</aop:config>
+
+
+	<import resource="dubbo-activiti-consumer.xml"/>
+</beans>

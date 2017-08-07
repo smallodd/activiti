@@ -2,6 +2,7 @@ package com.activiti.service;
 
 import com.activiti.expection.WorkFlowException;
 import com.github.pagehelper.PageInfo;
+import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -152,6 +153,28 @@ public interface WorkTaskService {
      */
     String getNextNode(String procInstanceId);
 
+    /**
+     * 查询所有待审批的任务
+     * @param startPage
+     * @param pageSize
+     * @return
+     */
+    PageInfo<Task> selectAllWaitApprove(int startPage,int pageSize);
 
+    /**
+     * 查询所有通过的任务
+     * @param startPage
+     * @param pageSize
+     * @return
+     */
+    PageInfo<HistoricProcessInstance> selectAllPassApprove(int startPage, int pageSize);
+
+    /**
+     * 查询所有拒绝的任务
+     * @param startPage
+     * @param pageSize
+     * @return
+     */
+    PageInfo<HistoricProcessInstance> selectAllRefuseApprove(int startPage,int pageSize);
     void jointProcess(String taskId,List<String> list);
 }
