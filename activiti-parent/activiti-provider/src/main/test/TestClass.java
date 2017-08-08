@@ -45,4 +45,10 @@ public class TestClass {
        System.out.print(pageInfo.getTotal());
        System.out.print(JSONArray.fromObject(pageInfo.getList().toArray()).toString());
     }
+    //
+@Test
+    public void generate(){
+        workTaskService.generateImage("5");
+
+    }
 }

@@ -5,6 +5,7 @@ import com.activiti.expection.WorkFlowException;
 import com.activiti.service.ProcessCoreService;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
+import com.richgo.file.springmvc.FastDFSUtil;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
@@ -248,7 +249,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @param processId  任务id
      * @return  返回图片流
      */
-    public InputStream generateImage(String  processId){
+    public byte[] generateImage(String  processId){
 
 
         //获取历史流程实例
@@ -283,9 +284,9 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         try {
 
             //生成本地图片
-            File file = new File("e:/test.png");
-            FileUtils.copyInputStreamToFile(inputStream, file);
-            return inputStream;
+          /*  File file = new File("e:/test.png");
+            FileUtils.copyInputStreamToFile(inputStream, file);*/
+            return IOUtils.toByteArray(inputStream);
         } catch (Exception e) {
             throw new RuntimeException("生成流程图异常！", e);
         } finally {

@@ -103,7 +103,7 @@ public interface WorkTaskService {
      * @param processId  流程定义id
      * @return  返回图片流
      */
-    InputStream generateImage(String processId);
+    byte[] generateImage(String processId);
 
     /**
      * 查询业务主键是否再流程钟
