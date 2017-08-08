@@ -1,11 +1,9 @@
 package com.activiti.service.impl;
 
-import com.activiti.common.CodeConts;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.service.ProcessCoreService;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
-import com.richgo.file.springmvc.FastDFSUtil;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
@@ -22,14 +20,12 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
