@@ -446,6 +446,15 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
+    public boolean checkIsPass(String processId) {
+        HistoricProcessInstance processInstance=historyService.createHistoricProcessInstanceQuery().notDeleted().processInstanceId(processId).finished().singleResult();
+        if(processInstance!=null){
+            return  true;
+        }
+        return false;
+    }
+
+    @Override
     public void jointProcess(String taskId, List<String> list) {
         processCoreService.jointProcess(taskId,list);
     }

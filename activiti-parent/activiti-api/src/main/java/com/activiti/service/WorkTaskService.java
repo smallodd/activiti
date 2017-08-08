@@ -176,5 +176,12 @@ public interface WorkTaskService {
      * @return
      */
     PageInfo<HistoricProcessInstance> selectAllRefuseApprove(int startPage,int pageSize);
+
+    /**
+     * 通过流程定义id判断活动是否通过
+     * @param processId   流程定义id
+     * @return   true:通过；false:拒绝
+     */
+    boolean checkIsPass(String processId);
     void jointProcess(String taskId,List<String> list);
 }
