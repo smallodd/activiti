@@ -30,6 +30,22 @@
 		<activiti>5.18.0</activiti>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>com.common</groupId>
+			<artifactId>common-util</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.activiti</groupId>
+			<artifactId>activiti-engine</artifactId>
+			<version>${activiti}</version>
+		</dependency>
+		<!-- activiti 与 Spring 集成 -->
+		<dependency>
+			<groupId>org.activiti</groupId>
+			<artifactId>activiti-spring</artifactId>
+			<version>${activiti}</version>
+		</dependency>
 		<!-- spring ����� start -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -463,22 +479,6 @@
 			<version>0.8.2.2</version>
 		</dependency>
 		<!-- kafka ����jar�� end -->
-		<dependency>
-			<groupId>com.richgo</groupId>
-			<artifactId>richgo-util</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.activiti</groupId>
-			<artifactId>activiti-engine</artifactId>
-			<version>${activiti}</version>
-		</dependency>
-		<!-- activiti 与 Spring 集成 -->
-		<dependency>
-			<groupId>org.activiti</groupId>
-			<artifactId>activiti-spring</artifactId>
-			<version>${activiti}</version>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
