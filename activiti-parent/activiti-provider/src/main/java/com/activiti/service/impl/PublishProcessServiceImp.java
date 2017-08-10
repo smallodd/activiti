@@ -4,9 +4,11 @@ import com.activiti.common.CodeConts;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.service.PublishProcessService;
 import org.activiti.engine.*;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,5 +85,14 @@ public class PublishProcessServiceImp implements PublishProcessService {
         repositoryService.deleteDeployment(processId);
     }
 
+    /**
+     * 通过流程之间查询流程定义key
+     * @param processId
+     * @return
+     */
+    public String selectProcessKey(String processId){
+       ProcessInstance processInstance= runtimeService.createProcessInstanceQuery().processInstanceId(processId).singleResult();
+       return processInstance.getProcessDefinitionKey();
+    }
 
 }

@@ -43,6 +43,11 @@ public interface PublishProcessService {
      */
     void deleteById(String processId);
 
-
+    /**
+     * 通过流程主键查询流程定义key
+     * @param processId
+     * @return
+     */
+    public String selectProcessKey(String processId);
     String publish(String name);
 }
