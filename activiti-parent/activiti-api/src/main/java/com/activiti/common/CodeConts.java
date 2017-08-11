@@ -59,14 +59,14 @@ public class CodeConts {
 	/**
 	 * 审批流错误代码
 	 */
-	/*部署失败报的错误*/
+	/**部署失败报的错误*/
 	public final  static String WORK_FLOW_PUBLISH_ERROR="W1001";
-	/*申请人为空*/
+	/**申请人为空*/
 	public final static String WORK_FLOW_APPLY_USER="W1002";
-	/*流程定义id不能为空*/
+	/**流程定义id不能为空*/
 	public final static String WORK_FLOW_DEFINED_ERROR="W1003";
-	/*业务id不能为空*/
+	/**业务id不能为空*/
 	public final static String WORK_FLOW_BUSSINESS_KEY_ERROR="W1004";
-	/*参数不合法*/
+	/**参数不合法*/
 	public final static String WORK_FLOW_PARAM_ERROR="W1005";
 }

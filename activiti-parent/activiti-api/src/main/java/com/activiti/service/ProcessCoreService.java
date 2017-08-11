@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 此接口不对外暴露 内部接口
  * Created by ma on 2017/7/20.
  */
 public interface ProcessCoreService {
@@ -26,9 +27,15 @@ public interface ProcessCoreService {
      *
      * @param taskId
      *            当前任务ID
+     *  @return   返回所有可驳回的任务节点
      */
     @Deprecated
      List<ActivityImpl> findBackAvtivity(String taskId) throws Exception;
+    /**
+     * 驳回当前流程
+     * @param taskId  流程任务id
+     * @param varoables   自定义的键值
+     */
     @Deprecated
      void backCurrentProcess(String taskId,Map<String,Object> varoables);
     /**
@@ -38,7 +45,7 @@ public interface ProcessCoreService {
      *            当前任务ID
      * @param activityId
      *            取回节点ID
-     * @throws Exception
+     * @throws Exception   取回异常
      */
     @Deprecated
     void callBackProcess(String taskId, String activityId)
@@ -46,7 +53,7 @@ public interface ProcessCoreService {
     /**
      * 中止流程(特权人直接审批通过等)
      *
-     * @param taskId
+     * @param taskId   任务id
      */
     @Deprecated
      void endProcess(String taskId) throws Exception;
@@ -64,8 +71,9 @@ public interface ProcessCoreService {
 
     /**
      * 加入会签
-     * @param taskId
-     * @param userCodes
+     * @param taskId  任务id
+     * @param userCodes   用户code列表
      */
+    @Deprecated
     void jointProcess(String taskId, List<String> userCodes) throws WorkFlowException;
 }

@@ -63,7 +63,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize) {
         long count= taskService.createTaskQuery().taskAssignee(userId).count();
         PageInfo<Task> pageInfo=new PageInfo<>();
-        List<Task> list=taskService.createTaskQuery().taskAssignee(userId).listPage(startPage,pageSize);
+        List<Task> list=taskService.createTaskQuery().taskAssignee(userId).listPage((startPage-1)*pageSize,pageSize);
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         return pageInfo;
@@ -74,7 +74,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     @Override
     public List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize) {
 
-        return historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).listPage(startPage,pageSize);
+        return historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).listPage((startPage-1)*pageSize,pageSize);
     }
 
     @Override
@@ -191,14 +191,14 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     /**
      * 获取申请人提交的任务
      * @param userid  申请人信息
-     * @param startCloum  数据库起始行数
-     * @param pageSzie    查询多少条数
+     * @param startPage  起始页数
+     * @param pageSzie    每页显示数
      * @param status      0 :审批中的任务
      *                    1 ：审批完成的任务
      *
      * @return
      */
-    public List<HistoricProcessInstance> getApplyTasks(String userid,int startCloum,int pageSzie,int status){
+    public List<HistoricProcessInstance> getApplyTasks(String userid,int startPage,int pageSzie,int status){
         HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery();
         if(status==0){
             query.unfinished();
@@ -206,7 +206,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             query.finished();
         }
         query.orderByProcessInstanceStartTime().desc();
-        List<HistoricProcessInstance> list= query.startedBy(userid).listPage(startCloum,pageSzie);
+        List<HistoricProcessInstance> list= query.startedBy(userid).listPage((startPage-1)*pageSzie,pageSzie);
 
 
         return list;
@@ -215,23 +215,23 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     /**
      * 获取参与审批用户的审批历史信息
      * @param userid   审批人用户唯一标识
-     * @param startCloum   数据库开始行数
-     * @param pageSzie     查询多少条数
+     * @param startPage    起始页数
+     * @param pageSzie     每页显示数
 
      *
      *
      * @return
      */
-    public List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startCloum,int pageSzie){
+    public List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie){
         HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery();
 
         query.orderByProcessInstanceStartTime().desc();
-        return  query.involvedUser(userid).listPage(startCloum,pageSzie);
+        return  query.involvedUser(userid).listPage((startPage-1)*pageSzie,pageSzie);
     }
 
-    public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startCloum,int pageSize){
+    public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pageSize){
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
-        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("completed").listPage(startCloum,pageSize);
+        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("completed").listPage((startPage-1)*pageSize,pageSize);
         long count=historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("completed").count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
@@ -239,9 +239,9 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
-    public PageInfo<HistoricTaskInstance> selectMyRefuse(String userId, int startCloum, int pageSize) {
+    public PageInfo<HistoricTaskInstance> selectMyRefuse(String userId, int startPage, int pageSize) {
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
-        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").listPage(startCloum,pageSize);
+        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,pageSize);
         long count=historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
@@ -460,6 +460,16 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             return  true;
         }
         return false;
+    }
+
+    @Override
+    public String getLastApprover(String processId) {
+        HistoricProcessInstance processInstance=historyService.createHistoricProcessInstanceQuery().processInstanceId(processId).finished().singleResult();
+        if(processInstance==null){
+            return null;
+        }
+       HistoricTaskInstance taskInstance= historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().list().get(0);
+        return taskInstance.getAssignee();
     }
 
     @Override

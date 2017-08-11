@@ -77,7 +77,7 @@ public class PublishProcessServiceImp implements PublishProcessService {
 
     @Override
     public List<ProcessDefinition> queryList(int startPage,int pageSize) {
-        List<ProcessDefinition> list=repositoryService.createProcessDefinitionQuery().listPage(startPage,pageSize);
+        List<ProcessDefinition> list=repositoryService.createProcessDefinitionQuery().listPage((startPage-1)*pageSize,pageSize);
         return list;
     }
     @Override

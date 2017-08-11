@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.zip.ZipInputStream;
 
 /**
+ * 此类只用于处理流程定义
  * Created by ma on 2017/7/18.
  */
 public interface PublishProcessService {
@@ -31,9 +32,9 @@ public interface PublishProcessService {
 
     /**
      * 查询流程定义列表
-     * @param startPage
-     * @param pageSize
-     * @return
+     * @param startPage  开始页
+     * @param pageSize  每页显示数
+     * @return  返回流程定义列表
      */
     List<ProcessDefinition> queryList(int startPage, int pageSize);
 
@@ -45,9 +46,15 @@ public interface PublishProcessService {
 
     /**
      * 通过流程主键查询流程定义key
-     * @param processId
-     * @return
+     * @param processId  流程中的流程id
+     * @return  返回流程定义中xml中的key
      */
-    public String selectProcessKey(String processId);
+     String selectProcessKey(String processId);
+
+    /**
+     * 通过名字发布流程定义
+     * @param name   流程定义名字，包含后缀名
+     * @return   返回发布后的id
+     */
     String publish(String name);
 }

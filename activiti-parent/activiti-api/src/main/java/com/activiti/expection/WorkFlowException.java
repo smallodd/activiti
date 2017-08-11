@@ -1,6 +1,7 @@
 package com.activiti.expection;
 
 /**
+ * 工作流异常类
  * Created by ma on 2017/7/24.
  */
 public class WorkFlowException extends RuntimeException{

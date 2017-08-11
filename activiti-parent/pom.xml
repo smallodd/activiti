@@ -396,8 +396,8 @@
 		<!-- �ļ����� -->
 
 		<!-- json start -->
-		<!--<dependency> <groupId>net.sf.json-lib</groupId> <artifactId>json-lib</artifactId> 
-			<version>${json.version}</version> <classifier>jdk15</classifier> </dependency> -->
+		<dependency> <groupId>net.sf.json-lib</groupId> <artifactId>json-lib</artifactId>
+			<version>${json.version}</version> <classifier>jdk15</classifier> </dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
