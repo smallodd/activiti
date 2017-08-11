@@ -14,19 +14,18 @@ public interface ProcessCoreService {
     /**
      * 审批通过(驳回直接跳回功能需后续扩展)
      *
-     * @param taskId
-     *            当前任务ID
-     * @param variables
-     *            流程存储参数
+     * @param taskId    当前任务ID
+     * @param variables 流程存储参数
      * @throws Exception
      */
     void passProcess(String taskId, Map<String, Object> variables)
             throws WorkFlowException;
+
     /**
      * 根据当前任务ID，查询可以驳回的任务节点
      *
-     * @param taskId
-     *            当前任务ID
+     * @param taskId 当前任务ID
+
      *  @return   返回所有可驳回的任务节点
      */
     @Deprecated
@@ -41,30 +40,27 @@ public interface ProcessCoreService {
     /**
      * 取回流程
      *
-     * @param taskId
-     *            当前任务ID
-     * @param activityId
-     *            取回节点ID
-     * @throws Exception   取回异常
+     * @param taskId     当前任务ID
+     * @param activityId 取回节点ID
+     * @throws Exception
      */
     @Deprecated
     void callBackProcess(String taskId, String activityId)
             throws Exception;
+
     /**
      * 中止流程(特权人直接审批通过等)
      *
      * @param taskId   任务id
      */
     @Deprecated
-     void endProcess(String taskId) throws Exception;
+    void endProcess(String taskId) throws Exception;
 
     /**
      * 转办流程
      *
-     * @param taskId
-     *            当前任务节点ID
-     * @param userid
-     *            被转办人的用户唯一标识
+     * @param taskId 当前任务节点ID
+     * @param userid 被转办人的用户唯一标识
      */
     @Deprecated
     void transferAssignee(String taskId, String userid);
