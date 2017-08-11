@@ -14,23 +14,26 @@ import java.util.zip.ZipInputStream;
 public interface PublishProcessService {
     /**
      * 发布流程定义
+     *
      * @param zipInputStream
-     * @return  返回部署id
+     * @return 返回部署id
      */
     String publish(ZipInputStream zipInputStream) throws WorkFlowException;
 
     /**
      * 开启流程任务
+     *
      * @param publishUserID 发起人唯一标识
-     * @param processKey  流程定义时xml中的id
-     * @param bussnissKey  业务主键，用于关联业务数据
-     * @param map   键：userid，值：用户唯一标识
-     * @return  返回流程实例ID
+     * @param processKey    流程定义时xml中的id
+     * @param bussnissKey   业务主键，用于关联业务数据
+     * @param map           键：userid，值：用户唯一标识
+     * @return 返回流程实例ID
      */
     String startProcess(String publishUserID, String processKey, String bussnissKey, Map<String, Object> map) throws WorkFlowException;
 
     /**
      * 查询流程定义列表
+     *
      * @param startPage
      * @param pageSize
      * @return
@@ -39,15 +42,18 @@ public interface PublishProcessService {
 
     /**
      * 删除流程定义
-     * @param processId  流程定义id
+     *
+     * @param processId 流程定义id
      */
     void deleteById(String processId);
 
     /**
      * 通过流程主键查询流程定义key
+     *
      * @param processId
      * @return
      */
     public String selectProcessKey(String processId);
+
     String publish(String name);
 }
