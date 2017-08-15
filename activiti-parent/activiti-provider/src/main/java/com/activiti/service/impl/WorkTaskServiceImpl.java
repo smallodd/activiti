@@ -27,6 +27,7 @@ import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,9 +62,16 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     ProcessEngineConfiguration processEngineConfiguration;
     @Override
     public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize) {
-        long count= taskService.createTaskQuery().taskAssignee(userId).count();
+        TaskQuery  query= taskService.createTaskQuery();
+        long count=0;
+        if(StringUtils.isNotBlank(userId)){
+            query=query.taskAssignee(userId);
+            count=query.count();
+        }else{
+            count=query.count();
+        }
         PageInfo<Task> pageInfo=new PageInfo<>();
-        List<Task> list=taskService.createTaskQuery().taskAssignee(userId).listPage((startPage-1)*pageSize,pageSize);
+        List<Task> list=query.listPage((startPage-1)*pageSize,pageSize);
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         return pageInfo;
