@@ -484,4 +484,11 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     public void jointProcess(String taskId, List<String> list) {
         processCoreService.jointProcess(taskId,list);
     }
+
+    @Override
+    public Task queryTaskByProcessId(String processId) {
+        return taskService.createTaskQuery().processInstanceId(processId).singleResult();
+    }
+
+
 }

@@ -204,4 +204,11 @@ public interface WorkTaskService {
      * @param list   人员userCode列表
      */
     void jointProcess(String taskId,List<String> list);
+
+    /**
+     * 通过流程定义id查询任务
+     * @param processId   流程定义id
+     * @return
+     */
+    Task queryTaskByProcessId(String processId);
 }
