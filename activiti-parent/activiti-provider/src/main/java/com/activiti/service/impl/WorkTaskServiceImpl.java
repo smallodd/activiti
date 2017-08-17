@@ -239,8 +239,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pageSize){
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
-        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("completed").listPage((startPage-1)*pageSize,pageSize);
-        long count=historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("completed").count();
+        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).finished().listPage((startPage-1)*pageSize,pageSize);
+        long count=historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).finished().count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         return pageInfo;
@@ -362,7 +362,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     @Override
     public Comment selectComment(String taskid){
 
-        Comment comment=taskService.getComment(taskid);
+        Comment comment=taskService.getTaskComments(taskid).get(0);
         return comment;
     }
 

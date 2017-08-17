@@ -89,7 +89,7 @@ public interface WorkTaskService {
     List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie);
 
     /**
-     * 通过用户主键查询历史审批通过的任务
+     * 通过用户主键查询历史审批过的任务
      * @param userId   用户主键
      * @param startPage   开始页数
      * @param pagegSize   每页显示数
