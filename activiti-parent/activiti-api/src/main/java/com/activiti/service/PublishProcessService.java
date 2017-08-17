@@ -16,7 +16,7 @@ public interface PublishProcessService {
     /**
      * 发布流程定义
      *
-     * @param zipInputStream
+     * @param zipInputStream  bpmn文件和图片的压缩文件
      * @return 返回部署id
      */
     String publish(ZipInputStream zipInputStream) throws WorkFlowException;

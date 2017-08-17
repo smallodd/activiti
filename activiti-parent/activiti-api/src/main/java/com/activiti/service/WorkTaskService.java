@@ -44,6 +44,7 @@ public interface WorkTaskService {
      * @param nextUserId  下一个审批人的用户唯一标识 一般是编码或主键
      * @param note      审批意见
      * @param authName 审批人姓名
+     * @return   返回 true  or false
      * @exception  WorkFlowException 返回审批异常
      */
     Boolean  completeTask(String processInstanceId,String nextUserId ,String note, String authName) throws WorkFlowException;
@@ -73,7 +74,9 @@ public interface WorkTaskService {
      * @param userid  申请人信息
      * @param startPage  起始页数
      * @param pageSzie    查询多少条数
-
+     * @param status      0 :审批中的任务
+     *                    1 ：审批完成的任务
+     *
      * @return    返回申请人提交的任务
      */
     List<HistoricProcessInstance> getApplyTasks(String userid, int startPage, int pageSzie, int status);
@@ -129,34 +132,34 @@ public interface WorkTaskService {
     /**
      * 通过流程实例id查询任务审批历史信息
      * @param processId   流程任务中processId
-     * @return
+     * @return  返回历史审批信息列表
      */
     List<HistoricTaskInstance> selectTaskHistory(String processId);
     /**
      * 获取任务审批意见列表
      * @param processInstanceId   流程任务中的processId
-     * @return
+     * @return   返回审批意见列表
      */
     List<Comment> selectListComment(String processInstanceId);
 
     /**
      * 通过历史任务id查询历史任务
      * @param taskHistoryId 任务历史id
-     * @return
+     * @return   返回历史任务信息
      */
     HistoricTaskInstance selectHistoryTask(String taskHistoryId);
 
     /**
      * 通过流程定义id获取定义变量
      * @param processId  流程定义id
-     * @return
+     * @return  返回自定义变量map
      */
     Map<String, Object> getVariables(String processId);
 
     /**
      * 通过流程定义id查询下一流程
      * @param procInstanceId 流程任务中的processId
-     * @return
+     * @return  返回下一节点名称
      */
     String getNextNode(String procInstanceId);
 
@@ -164,7 +167,7 @@ public interface WorkTaskService {
      * 查询所有待审批的任务
      * @param startPage  开始页
      * @param pageSize    每页显示数
-     * @return
+     * @return   分页显示审批任务列表
      */
     PageInfo<Task> selectAllWaitApprove(int startPage,int pageSize);
 
@@ -172,7 +175,7 @@ public interface WorkTaskService {
      * 查询所有通过的任务
      * @param startPage  开始页
      * @param pageSize   每页显示数
-     * @return
+     * @return  分页显示审批通过任务列表
      */
     PageInfo<HistoricProcessInstance> selectAllPassApprove(int startPage, int pageSize);
 
@@ -180,7 +183,7 @@ public interface WorkTaskService {
      * 查询所有拒绝的任务
      * @param startPage  开始页
      * @param pageSize   每页显示数
-     * @return
+     * @return  分页显示所有拒绝的任务列表
      */
     PageInfo<HistoricProcessInstance> selectAllRefuseApprove(int startPage,int pageSize);
 
@@ -208,7 +211,7 @@ public interface WorkTaskService {
     /**
      * 通过流程定义id查询任务
      * @param processId   流程定义id
-     * @return
+     * @return  返回任务
      */
     Task queryTaskByProcessId(String processId);
 }
