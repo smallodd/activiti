@@ -51,9 +51,6 @@ public interface PublishProcessService {
      * 通过流程主键查询流程定义key
      * @param processId  流程中的流程id
      * @return  返回流程定义中xml中的key
-     *
-     * @param processId
-     * @return
      */
      String selectProcessKey(String processId);
 
