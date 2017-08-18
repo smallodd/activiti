@@ -144,7 +144,7 @@ public class ProcessCoreServiceImpl implements ProcessCoreService {
      *
      * @param taskId
      */
-    public void endProcess(String taskId) throws Exception {
+    public void endProcess(String taskId) throws WorkFlowException {
         ActivityImpl endActivity = findActivitiImpl(taskId, "end");
 
         commitProcess(taskId, null, endActivity.getId());

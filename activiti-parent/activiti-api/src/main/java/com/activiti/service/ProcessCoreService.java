@@ -54,7 +54,7 @@ public interface ProcessCoreService {
      * @param taskId   任务id
      */
     @Deprecated
-    void endProcess(String taskId) throws Exception;
+    void endProcess(String taskId) throws WorkFlowException;
 
     /**
      * 转办流程
