@@ -394,7 +394,11 @@
 		</dependency>
 		<!-- ftp�ϴ��� end -->
 		<!-- �ļ����� -->
-
+		<dependency>
+			<groupId>net.coobird</groupId>
+			<artifactId>thumbnailator</artifactId>
+			<version>0.4.8</version>
+		</dependency>
 		<!-- json start -->
 		<dependency> <groupId>net.sf.json-lib</groupId> <artifactId>json-lib</artifactId>
 			<version>${json.version}</version> <classifier>jdk15</classifier> </dependency>

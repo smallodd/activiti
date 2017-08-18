@@ -62,18 +62,20 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     ProcessEngineConfiguration processEngineConfiguration;
     @Override
     public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize) {
+        logger.info("------------------------通过用户相关信息查询待审批任务开始------------------------");
         TaskQuery  query= taskService.createTaskQuery();
         long count=0;
         if(StringUtils.isNotBlank(userId)){
-            query=query.taskAssignee(userId);
+            query=query.taskAssigneeLike("%"+userId);
             count=query.count();
         }else{
             count=query.count();
         }
         PageInfo<Task> pageInfo=new PageInfo<>();
-        List<Task> list=query.listPage((startPage-1)*pageSize,pageSize);
+        List<Task> list=query.listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
         pageInfo.setList(list);
         pageInfo.setTotal(count);
+        logger.info("------------------------通过用户相关信息查询待审批任务结束------------------------");
         return pageInfo;
     }
 
@@ -82,13 +84,16 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     @Override
     public List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize) {
 
-        return historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).listPage((startPage-1)*pageSize,pageSize);
+        return historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
     }
 
     @Override
     public Boolean completeTask(String processInstanceId,String nextUserId, String note,String authName) throws WorkFlowException{
+        logger.info("--------------------审批任务开始-----------------------");
         Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+        //添加审批人
         Authentication.setAuthenticatedUserId(authName);
+        //添加审批意见
         taskService.addComment(task.getId(),task.getProcessInstanceId(),note);
 
 
@@ -106,6 +111,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             taskService.complete(task.getId());
 
         }
+        logger.info("--------------------审批任务结束-----------------------");
         return true;
 
 
@@ -190,9 +196,11 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     @Override
     public Boolean refuseTask(String processId, String reason) {
+        logger.info("---------------------------拒绝任务开始---------------------------");
         Task task=taskService.createTaskQuery().processInstanceId(processId).singleResult();
         taskService.addComment(task.getId(),processId,reason);
         runtimeService.deleteProcessInstance(task.getProcessInstanceId(),"refuse");
+        logger.info("---------------------------拒绝任务结束---------------------------");
         return true;
     }
 
@@ -207,6 +215,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @return
      */
     public List<HistoricProcessInstance> getApplyTasks(String userid,int startPage,int pageSzie,int status){
+        logger.info("--------------------获取申请人提交的任务开始----------------");
         HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery();
         if(status==0){
             query.unfinished();
@@ -215,7 +224,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         query.orderByProcessInstanceStartTime().desc();
         List<HistoricProcessInstance> list= query.startedBy(userid).listPage((startPage-1)*pageSzie,pageSzie);
-
+        logger.info("--------------------获取申请人提交的任务结束----------------");
 
         return list;
     }
@@ -231,28 +240,34 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @return
      */
     public List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie){
+        logger.info("---------------------获取参与审批用户的审批历史信息开始--------------");
         HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery();
 
         query.orderByProcessInstanceStartTime().desc();
+        logger.info("---------------------获取参与审批用户的审批历史信息结束--------------");
         return  query.involvedUser(userid).listPage((startPage-1)*pageSzie,pageSzie);
     }
 
     public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pageSize){
+        logger.info("-----------------------查询用户历史审批过的任务开始----------------");
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).finished().listPage((startPage-1)*pageSize,pageSize);
-        long count=historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).finished().count();
+        long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId).finished().count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
+        logger.info("-----------------------查询用户历史审批过的任务结束----------------");
         return pageInfo;
     }
 
     @Override
     public PageInfo<HistoricTaskInstance> selectMyRefuse(String userId, int startPage, int pageSize) {
+        logger.info("----------------------查询用户审批拒绝的信息列表开始----------------");
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
-        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,pageSize);
-        long count=historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").count();
+        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+        long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId).taskDeleteReason("refused").count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
+        logger.info("----------------------查询用户审批拒绝的信息列表结束----------------");
         return pageInfo;
     }
 
@@ -263,7 +278,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      */
     public byte[] generateImage(String  processId){
 
-
+        logger.info("-------------------------查询任务所属节点开始-------------------");
         //获取历史流程实例
         HistoricProcessInstance processInstance =  historyService.createHistoricProcessInstanceQuery().processInstanceId(processId).singleResult();
         //流程定义
@@ -294,7 +309,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 processEngineConfiguration.getActivityFontName(),
                 processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
         try {
-
+            logger.info("-------------------------查询任务所属节点结束-------------------");
             //生成本地图片
           /*  File file = new File("e:/test.png");
             FileUtils.copyInputStreamToFile(inputStream, file);*/
@@ -430,30 +445,34 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     @Override
     public PageInfo<Task> selectAllWaitApprove(int startPage, int pageSize) {
+        logger.info("-------------查询所有待审批的任务开始--------------");
         PageInfo<Task> pageInfo=new PageInfo<>();
 
-        List<Task> list= taskService.createTaskQuery().listPage((startPage-1)*pageSize,pageSize);
+        List<Task> list= taskService.createTaskQuery().listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
         long count =taskService.createTaskQuery().count();
         pageInfo.setTotal(count);
         pageInfo.setList(list);
+        logger.info("-------------查询所有待审批的任务结束--------------");
         return  pageInfo;
     }
 
     @Override
     public PageInfo<HistoricProcessInstance> selectAllPassApprove(int startPage, int pageSize) {
+        logger.info("-------------查询所有通过的任务开始--------------");
         int startColum=(startPage-1)*pageSize;
-        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().finished().notDeleted().listPage(startColum,pageSize);
+        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().finished().notDeleted().listPage(startColum,startColum+pageSize);
         long count=historyService.createHistoricProcessInstanceQuery().finished().notDeleted().count();
         PageInfo pageInfo=new PageInfo();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
+        logger.info("-------------查询所有通过的任务结束--------------");
         return pageInfo;
     }
 
     @Override
     public PageInfo<HistoricProcessInstance> selectAllRefuseApprove(int startPage, int pageSize) {
         int startColum=(startPage-1)*pageSize;
-        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().finished().deleted().listPage(startColum,pageSize);
+        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().finished().deleted().listPage(startColum,startColum+pageSize);
         long count=historyService.createHistoricProcessInstanceQuery().finished().deleted().count();
         PageInfo pageInfo=new PageInfo();
         pageInfo.setList(list);
