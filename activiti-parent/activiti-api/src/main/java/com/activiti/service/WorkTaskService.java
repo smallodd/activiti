@@ -68,7 +68,7 @@ public interface WorkTaskService {
      *                      true:成功
      *                      false:失败
      */
-    Boolean refuseTask(String processId,String reason);
+    Boolean refuseTask(String processId,String reason) throws WorkFlowException;
     /**
      * 获取申请人提交的任务
      * @param userid  申请人信息

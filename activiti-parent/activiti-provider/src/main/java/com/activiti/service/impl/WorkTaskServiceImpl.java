@@ -195,7 +195,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
-    public Boolean refuseTask(String processId, String reason) {
+    public Boolean refuseTask(String processId, String reason) throws WorkFlowException{
         logger.info("---------------------------拒绝任务开始---------------------------");
         Task task=taskService.createTaskQuery().processInstanceId(processId).singleResult();
         taskService.addComment(task.getId(),processId,reason);

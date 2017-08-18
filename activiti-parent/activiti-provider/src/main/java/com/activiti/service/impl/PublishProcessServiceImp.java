@@ -92,6 +92,9 @@ public class PublishProcessServiceImp implements PublishProcessService {
      */
     public String selectProcessKey(String processId){
        ProcessInstance processInstance= runtimeService.createProcessInstanceQuery().processInstanceId(processId).singleResult();
+       if(processInstance==null){
+           return null;
+       }
        return processInstance.getProcessDefinitionKey();
     }
 
