@@ -13,7 +13,7 @@ public class ActivityMain {
 				 "classpath:spring/applicationContext.xml");
 
 	        context.start();
-		System.out.print("-------------老带新活动dubbo服务启动成功---------------");
+		System.out.print("-------------工作流dubbo服务启动成功---------------");
 	        synchronized (ActivityMain.class) {
 	            while (true) {
 	                try {
