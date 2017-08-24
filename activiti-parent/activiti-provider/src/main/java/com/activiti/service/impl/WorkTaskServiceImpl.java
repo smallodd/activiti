@@ -376,9 +376,11 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
     @Override
     public Comment selectComment(String taskid){
-
-        Comment comment=taskService.getTaskComments(taskid).get(0);
-        return comment;
+      List<Comment> list= taskService.getTaskComments(taskid);
+       if(list==null||list.size()==0){
+           return null;
+       }
+        return list.get(0);
     }
 
     @Override
