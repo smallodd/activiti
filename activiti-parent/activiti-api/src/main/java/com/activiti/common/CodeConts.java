@@ -132,4 +132,8 @@ public class CodeConts {
      * 参数不合法
      */
     public final static String WORK_FLOW_PARAM_ERROR = "W1005";
+    /**
+     * 此流程还有节点，请传下一审批人
+     */
+    public final static String WORK_FLOW_IS_NOT_FINISH="W1006";
 }

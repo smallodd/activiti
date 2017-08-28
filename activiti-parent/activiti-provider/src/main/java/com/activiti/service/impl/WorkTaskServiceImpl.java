@@ -41,6 +41,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.activiti.common.CodeConts.WORK_FLOW_IS_NOT_FINISH;
+
 /**
  * Created by ma on 2017/7/18.
  */
@@ -106,7 +108,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
         }else {
             if(StringUtils.isNotBlank(this.getNextNode(processInstanceId))){
-                throw new WorkFlowException("此流程还有节点，请传下一审批人");
+                throw new WorkFlowException(WORK_FLOW_IS_NOT_FINISH,"此流程还有节点，请传下一审批人");
             }
             taskService.complete(task.getId());
 
