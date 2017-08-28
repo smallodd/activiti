@@ -74,7 +74,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             count=query.count();
         }
         PageInfo<Task> pageInfo=new PageInfo<>();
-        List<Task> list=query.listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+        List<Task> list=query.orderByTaskCreateTime().desc().listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         logger.info("------------------------通过用户相关信息查询待审批任务结束------------------------");
