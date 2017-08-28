@@ -57,13 +57,6 @@
 				<includes>
 					<include>applicationContext.xml</include>
 					<include>activiti.cfg.xml</include>
-				</includes>
-			</resource>
-			<resource>
-				<targetPath>${project.build.directory}/classes/META-INF/spring</targetPath>
-				<directory>src/main/resources/spring</directory>
-				<filtering>true</filtering>
-				<includes>
 					<include>spring-activiti-provider.xml</include>
 				</includes>
 			</resource>
