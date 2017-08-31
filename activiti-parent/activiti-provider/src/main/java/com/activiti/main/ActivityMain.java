@@ -4,6 +4,7 @@ import com.activiti.service.PublishProcessService;
 import com.activiti.service.impl.PublishProcessServiceImp;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import sun.applet.Main;
 
 public class ActivityMain {
 	private static Logger logger=Logger.getLogger(ActivityMain.class);
@@ -15,18 +16,10 @@ public class ActivityMain {
 //		ApplicationContext ctx=new ClassPathXmlApplicationContext("applicationContext.xml");
 		 ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
 				 "classpath:spring/applicationContext.xml");
+		 logger.info("开始============================================");
 	        context.start();
 
- 	        PublishProcessService publishProcessService= (PublishProcessService) context.getBean("publishProcessServiceImp");
-		logger.info("启动北京大区审批流程开始");
-		publishProcessService.publish("beijingProcess.bpmn");
-		logger.info("北京大区审批流程启动结束");
-		logger.info("启动普通大区审批流程开始");
-		publishProcessService.publish("common.bpmn");
-		logger.info("普通大区审批流程启动结束");
-		logger.info("总部大区审批流程开始");
-		publishProcessService.publish("companyProcess.bpmn");
-		logger.info("总部大区审批流程启动结束");
+
 		System.out.print("-------------工作流dubbo服务启动成功---------------");
 	        synchronized (ActivityMain.class) {
 	            while (true) {

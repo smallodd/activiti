@@ -80,7 +80,7 @@
 					</descriptors>
 					<archive>
 						<manifest>
-							<mainClass>com.activiti.main.activitiMain</mainClass>
+							<mainClass>com.activiti.main.ActivityMain</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
