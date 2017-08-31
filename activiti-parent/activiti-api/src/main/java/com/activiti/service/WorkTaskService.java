@@ -214,4 +214,11 @@ public interface WorkTaskService {
      * @return  返回任务
      */
     Task queryTaskByProcessId(String processId);
+
+    /**
+     * 通过id查询历史任务实例
+     * @param processId  流程定义key
+     * @return  返回历史任务实例
+     */
+    HistoricProcessInstance  queryProcessInstance(String processId);
 }

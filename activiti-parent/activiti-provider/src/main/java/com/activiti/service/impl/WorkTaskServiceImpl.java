@@ -513,5 +513,11 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return taskService.createTaskQuery().processInstanceId(processId).singleResult();
     }
 
+    @Override
+    public HistoricProcessInstance queryProcessInstance(String processId) {
+
+        return historyService.createHistoricProcessInstanceQuery().processInstanceId(processId).singleResult();
+    }
+
 
 }
