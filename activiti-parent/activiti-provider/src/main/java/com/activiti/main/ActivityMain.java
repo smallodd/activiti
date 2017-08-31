@@ -17,7 +17,7 @@ public class ActivityMain {
 				 "classpath:spring/applicationContext.xml");
 	        context.start();
 
-	        PublishProcessService publishProcessService= (PublishProcessService) context.getBean("publishProcessServiceImp");
+ 	        PublishProcessService publishProcessService= (PublishProcessService) context.getBean("publishProcessServiceImp");
 		logger.info("启动北京大区审批流程开始");
 		publishProcessService.publish("beijingProcess.bpmn");
 		logger.info("北京大区审批流程启动结束");
