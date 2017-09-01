@@ -8,7 +8,7 @@
     <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="usertask3" name="总部助理总裁（夏海峰总）"/>
     <sequenceFlow id="flow3" sourceRef="usertask2" targetRef="usertask3"/>
     <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="usertask4" name="副总裁（陈洁总）"/>
-    <userTask activiti:exclusive="true" id="_2" name="总裁（周斌总）"/>
+    <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="_2" name="总裁（周斌总）"/>
     <sequenceFlow id="_3" sourceRef="usertask4" targetRef="_2"/>
     <exclusiveGateway gatewayDirection="Unspecified" id="exclusivegateway1" name="排他网关"/>
     <sequenceFlow id="flow5" sourceRef="usertask1" targetRef="exclusivegateway1"/>
