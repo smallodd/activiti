@@ -68,7 +68,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         TaskQuery  query= taskService.createTaskQuery();
         long count=0;
         if(StringUtils.isNotBlank(userId)){
-            query=query.taskAssigneeLike("%"+userId);
+            query=query.taskAssigneeLike("%"+userId+"%");
             count=query.count();
         }else{
             count=query.count();
@@ -254,7 +254,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         logger.info("-----------------------查询用户历史审批过的任务开始----------------");
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).finished().listPage((startPage-1)*pageSize,pageSize);
-        long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId).finished().count();
+        long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId+"%").finished().count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         logger.info("-----------------------查询用户历史审批过的任务结束----------------");
@@ -266,7 +266,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         logger.info("----------------------查询用户审批拒绝的信息列表开始----------------");
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
-        long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId).taskDeleteReason("refused").count();
+        long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId+"%").taskDeleteReason("refused").count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         logger.info("----------------------查询用户审批拒绝的信息列表结束----------------");
