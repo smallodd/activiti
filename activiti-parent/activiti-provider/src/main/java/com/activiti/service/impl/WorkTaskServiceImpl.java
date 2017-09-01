@@ -493,9 +493,14 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     @Override
     public String getLastApprover(String processId) {
-
-       HistoricTaskInstance taskInstance= historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().finished().list().get(0);
-        return taskInstance.getAssignee();
+        Task task = taskService.createTaskQuery().processInstanceId(processId).singleResult();
+        if (task == null){
+                HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().finished().list().get(0);
+            return taskInstance.getAssignee();
+         }else{
+            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().unfinished().list().get(0);
+            return taskInstance.getAssignee();
+        }
     }
 
     @Override
