@@ -99,7 +99,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         taskService.addComment(task.getId(),task.getProcessInstanceId(),note);
 
 
-        if(StringUtils.isNotBlank(nextUserId)) {
+        if(StringUtils.isNotBlank(nextUserId)&&StringUtils.isNotBlank(this.getNextNode(processInstanceId))) {
             Map<String, Object> map = new HashMap<>();
             map.put("userCode",nextUserId);
 
@@ -107,9 +107,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
 
         }else {
-            if(StringUtils.isNotBlank(this.getNextNode(processInstanceId))){
-                throw new WorkFlowException(WORK_FLOW_IS_NOT_FINISH,"此流程还有节点，请传下一审批人");
-            }
+
             taskService.complete(task.getId());
 
         }
