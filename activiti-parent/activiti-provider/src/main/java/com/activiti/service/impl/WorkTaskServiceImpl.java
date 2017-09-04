@@ -306,7 +306,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         //生成流图片
         InputStream inputStream = pdg.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
                 processEngineConfiguration.getLabelFontName(),
-                processEngineConfiguration.getActivityFontName(),processEngineConfiguration.getAnnotationFontName(),
+                processEngineConfiguration.getActivityFontName(),
                 processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
         try {
             logger.info("-------------------------查询任务所属节点结束-------------------");
