@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:tns="http://www.activiti.org/test" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" expressionLanguage="http://www.w3.org/1999/XPath" id="m1501140286565" name="" targetNamespace="http://www.activiti.org/test" typeLanguage="http://www.w3.org/2001/XMLSchema">
+  <process id="beijingProcess" isClosed="false" isExecutable="true" name="北京大区审批流程" processType="None">
+    <startEvent id="startevent1" name="开始"/>
+    <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="usertask1" name="区副总"/>
+    <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="usertask2" name="北京区总"/>
+    <sequenceFlow id="flow2" sourceRef="usertask1" targetRef="usertask2"/>
+    <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="usertask3" name="总部经理"/>
+    <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="usertask4" name="总部总监"/>
+    <sequenceFlow id="flow4" sourceRef="usertask3" targetRef="usertask4"/>
+    <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="usertask5" name="副总裁"/>
+    <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="usertask6" name="总裁"/>
+    <sequenceFlow id="flow6" sourceRef="usertask5" targetRef="usertask6"/>
+    <endEvent id="endevent1" name="结束"/>
+    <sequenceFlow id="flow7" sourceRef="usertask6" targetRef="endevent1"/>
+    <sequenceFlow id="flow8" name="预算小于等于5万元" sourceRef="exclusivegateway1" targetRef="endevent1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${budget<=50000.00}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow9" name="预算大于5万元小于等于10万元" sourceRef="exclusivegateway2" targetRef="endevent1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${budget<=100000.00}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask activiti:assignee="${userCode}" activiti:exclusive="true" id="_2" name="大区市场总经理"/>
+    <sequenceFlow id="_3" sourceRef="startevent1" targetRef="_2"/>
+    <sequenceFlow id="_4" sourceRef="_2" targetRef="usertask1"/>
+    <exclusiveGateway gatewayDirection="Unspecified" id="exclusivegateway1" name="排他网关"/>
+    <sequenceFlow id="flow10" sourceRef="exclusivegateway1" targetRef="usertask3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${budget>50000.00}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow11" sourceRef="usertask2" targetRef="exclusivegateway1"/>
+    <exclusiveGateway gatewayDirection="Unspecified" id="exclusivegateway2" name="排他网关"/>
+    <sequenceFlow id="flow12" sourceRef="usertask4" targetRef="exclusivegateway2"/>
+    <sequenceFlow id="flow13" sourceRef="exclusivegateway2" targetRef="usertask5">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${budget>100000.00}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram documentation="background=#3C3F41;count=2;horizontalcount=1;orientation=0;width=842.4;height=1195.2;imageableWidth=832.4;imageableHeight=1185.2;imageableX=5.0;imageableY=5.0" id="Diagram-_1" name="New Diagram">
+    <bpmndi:BPMNPlane bpmnElement="beijingProcess">
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="Shape-startevent1">
+        <omgdc:Bounds height="32.0" width="32.0" x="410.0" y="5.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.0" width="32.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask1" id="Shape-usertask1">
+        <omgdc:Bounds height="55.0" width="105.0" x="375.0" y="190.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="105.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask2" id="Shape-usertask2">
+        <omgdc:Bounds height="55.0" width="105.0" x="375.0" y="300.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="105.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask3" id="Shape-usertask3">
+        <omgdc:Bounds height="55.0" width="105.0" x="375.0" y="490.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="105.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask4" id="Shape-usertask4">
+        <omgdc:Bounds height="55.0" width="105.0" x="375.0" y="620.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="105.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask5" id="Shape-usertask5">
+        <omgdc:Bounds height="55.0" width="105.0" x="375.0" y="850.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="105.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask6" id="Shape-usertask6">
+        <omgdc:Bounds height="55.0" width="105.0" x="375.0" y="983.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="105.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="Shape-endevent1">
+        <omgdc:Bounds height="32.0" width="32.0" x="410.0" y="1100.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.0" width="32.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_2" id="Shape-_2">
+        <omgdc:Bounds height="65.0" width="105.0" x="375.0" y="70.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="65.0" width="105.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="Shape-exclusivegateway1" isMarkerVisible="false">
+        <omgdc:Bounds height="32.0" width="32.0" x="409.0" y="420.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.0" width="32.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="Shape-exclusivegateway2" isMarkerVisible="false">
+        <omgdc:Bounds height="32.0" width="32.0" x="407.0" y="740.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.0" width="32.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2" sourceElement="usertask1" targetElement="usertask2">
+        <omgdi:waypoint x="427.5" y="245.0"/>
+        <omgdi:waypoint x="427.5" y="300.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="-1.0" width="-1.0" x="-1.0" y="-1.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4" sourceElement="usertask3" targetElement="usertask4">
+        <omgdi:waypoint x="427.5" y="545.0"/>
+        <omgdi:waypoint x="427.5" y="620.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="-1.0" width="-1.0" x="-1.0" y="-1.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6" sourceElement="usertask5" targetElement="usertask6">
+        <omgdi:waypoint x="427.5" y="905.0"/>
+        <omgdi:waypoint x="427.5" y="983.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="-1.0" width="-1.0" x="-1.0" y="-1.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7" sourceElement="usertask6" targetElement="endevent1">
+        <omgdi:waypoint x="426.0" y="1038.0"/>
+        <omgdi:waypoint x="426.0" y="1100.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="-1.0" width="-1.0" x="-1.0" y="-1.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow8" id="BPMNEdge_flow8" sourceElement="exclusivegateway1" targetElement="endevent1">
+        <omgdi:waypoint x="413.0" y="440.0"/>
+        <omgdi:waypoint x="168.0" y="440.0"/>
+        <omgdi:waypoint x="168.0" y="1117.0"/>
+        <omgdi:waypoint x="410.0" y="1116.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="54.0" width="100.0" x="155.0" y="667.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9" sourceElement="exclusivegateway2" targetElement="endevent1">
+        <omgdi:waypoint x="436.0" y="759.0"/>
+        <omgdi:waypoint x="618.0" y="759.0"/>
+        <omgdi:waypoint x="618.0" y="1117.0"/>
+        <omgdi:waypoint x="442.0" y="1116.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="72.0" width="100.0" x="547.0" y="913.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow13" id="BPMNEdge_flow13" sourceElement="exclusivegateway2" targetElement="usertask5">
+        <omgdi:waypoint x="423.0" y="772.0"/>
+        <omgdi:waypoint x="423.0" y="850.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="4.0" width="0.0" x="0.0" y="12.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_3" id="BPMNEdge__3" sourceElement="startevent1" targetElement="_2">
+        <omgdi:waypoint x="426.0" y="37.0"/>
+        <omgdi:waypoint x="426.0" y="70.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="-1.0" width="-1.0" x="-1.0" y="-1.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_4" id="BPMNEdge__4" sourceElement="_2" targetElement="usertask1">
+        <omgdi:waypoint x="427.5" y="135.0"/>
+        <omgdi:waypoint x="427.5" y="190.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="-1.0" width="-1.0" x="-1.0" y="-1.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10" sourceElement="exclusivegateway1" targetElement="usertask3">
+        <omgdi:waypoint x="425.0" y="452.0"/>
+        <omgdi:waypoint x="425.0" y="490.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="-1.0" width="0.0" x="0.0" y="10.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow11" id="BPMNEdge_flow11" sourceElement="usertask2" targetElement="exclusivegateway1">
+        <omgdi:waypoint x="425.0" y="355.0"/>
+        <omgdi:waypoint x="425.0" y="420.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="-1.0" width="-1.0" x="-1.0" y="-1.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow12" id="BPMNEdge_flow12" sourceElement="usertask4" targetElement="exclusivegateway2">
+        <omgdi:waypoint x="423.0" y="675.0"/>
+        <omgdi:waypoint x="423.0" y="740.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="-1.0" width="-1.0" x="-1.0" y="-1.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

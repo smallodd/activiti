@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.activiti</groupId>
+	<artifactId>activiti-api</artifactId>
+	<version>1.0.0</version>
+	<name>activiti-api</name>
+	<url>http://172.16.163.52:8081/nexus</url>
+
+	<parent>
+		<groupId>com.activiti</groupId>
+		<artifactId>activiti-parent</artifactId>
+		<version>1.0.0</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+</project>

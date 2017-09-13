@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration >
+    <classPathEntry  location="C:\Users\zs\.m2\repository\oracle\ojdbc14\10.2.0.4\ojdbc14-10.2.0.4.jar"/>
+    <context id="context1" >
+        <commentGenerator>
+            <property name="suppressAllComments" value="true" />
+        </commentGenerator>
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://172.16.163.66:3306/activity" userId="sfuser" password="sfuser" />
+        <javaModelGenerator targetPackage="com.cfission.entity" targetProject="src/main/java" />
+        <sqlMapGenerator targetPackage="com.cfission.mapper" targetProject="src/main/java" />
+        <javaClientGenerator targetPackage="com.cfission.mapper" targetProject="src/main/java" type="XMLMAPPER" />
+
+
+        <table  tableName="tkhjfdrb"  domainObjectName="Tkhjfdrb"  enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false"
+                enableSelectByExample="false" selectByExampleQueryId="false" >
+        </table>
+        <table  tableName="tkhjfdrb_ls"  domainObjectName="TkhjfdrbLs"  enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false"
+                enableSelectByExample="false" selectByExampleQueryId="false" >
+        </table>
+
+    </context>
+</generatorConfiguration>
