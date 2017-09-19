@@ -56,8 +56,7 @@
 				<filtering>true</filtering>
 				<includes>
 					<include>applicationContext.xml</include>
-					<include>activiti.cfg.xml</include>
-					<include>spring-activiti-provider.xml</include>
+
 				</includes>
 			</resource>
 		</resources>
