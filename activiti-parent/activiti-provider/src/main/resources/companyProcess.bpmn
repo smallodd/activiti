@@ -22,7 +22,7 @@
     <sequenceFlow id="flow8" sourceRef="usertask3" targetRef="exclusivegateway2"></sequenceFlow>
     <endEvent id="endevent1" name="结束"></endEvent>
     <sequenceFlow id="flow9" sourceRef="_2" targetRef="endevent1"></sequenceFlow>
-    <sequenceFlow id="flow10" name="预算小于等于10万" sourceRef="exclusivegateway1" targetRef="endevent1">
+    <sequenceFlow id="flow10" name="预算小于等于5万" sourceRef="exclusivegateway1" targetRef="endevent1">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${budget<=50000.00}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="flow11" name="预算大于5万小于等于10万" sourceRef="exclusivegateway2" targetRef="endevent1">
@@ -103,7 +103,7 @@
         <omgdi:waypoint x="210.0" y="737.0"></omgdi:waypoint>
         <omgdi:waypoint x="446.0" y="737.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="48.0" width="100.0" x="0.0" y="0.0"></omgdc:Bounds>
+          <omgdc:Bounds height="48.0" width="100.0" x="221.0" y="360.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow11" id="BPMNEdge_flow11">
