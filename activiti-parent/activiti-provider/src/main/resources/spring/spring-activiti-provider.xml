@@ -14,11 +14,9 @@
 	<!-- 用dubbo协议在20880端口暴露服务 -->
 	<!--<dubbo:protocol name="${dubbo.protocol.name}" port="${dubbo.protocol.port}" />-->
 	<bean id="publishProcessServiceImp" class="com.activiti.service.impl.PublishProcessServiceImp"></bean>
-<dubbo:service interface="com.activiti.service.PublishProcessService" ref="publishProcessServiceImp" version="1.0.0" timeout="20000"></dubbo:service>
+<dubbo:service interface="com.activiti.service.PublishProcessService" ref="publishProcessServiceImp" version="1.2.0" timeout="20000"></dubbo:service>
 <bean id="uerRoleServiceImpl" class="com.activiti.service.impl.UserRoleServiceImpl"></bean>
-<dubbo:service interface="com.activiti.service.UserRoleService" ref="uerRoleServiceImpl" version="1.0.0" timeout="20000"></dubbo:service>
+<dubbo:service interface="com.activiti.service.UserRoleService" ref="uerRoleServiceImpl" version="1.2.0" timeout="20000"></dubbo:service>
 <bean id="workTaskServiceImpl" class="com.activiti.service.impl.WorkTaskServiceImpl"></bean>
-<dubbo:service interface="com.activiti.service.WorkTaskService" ref="workTaskServiceImpl" version="1.0.0" timeout="20000"></dubbo:service>
-	<bean id="processCoreService" class="com.activiti.service.impl.ProcessCoreServiceImpl"></bean>
 
 </beans>

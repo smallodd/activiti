@@ -1,7 +1,10 @@
 package com.activiti.main;
 
 import com.activiti.service.PublishProcessService;
+import com.activiti.service.WorkTaskService;
 import com.activiti.service.impl.PublishProcessServiceImp;
+import com.github.pagehelper.PageInfo;
+import org.activiti.engine.task.Task;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import sun.applet.Main;

@@ -24,7 +24,7 @@ public interface WorkTaskService {
      * @param  pageSize   每页显示数
      * @return  返回任务列表
      */
-    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize);
+    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize,String bussnessKey);
 
 
 
@@ -33,9 +33,13 @@ public interface WorkTaskService {
      * @param userId      用户主键
      * @param startPage  起始页数
      * @param pageSize  每页显示数
+     * @param  type      查询历史任务类型
+     *                   0：未完成的历史任务
+     *                   1：已完成的历史任务
+     *                   -1：全部历史任务
      * @return 历史审批任务信息列表
      */
-    List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize);
+    List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize,String bussnessKey,int type);
 
     /**
      * 审批接口
@@ -58,7 +62,7 @@ public interface WorkTaskService {
      *          false:失败
      */
     @Deprecated
-    boolean rollBack(String taskId,String note);
+/*    boolean rollBack(String taskId,String note);*/
 
     /**
      * 审批不通过
@@ -113,7 +117,7 @@ public interface WorkTaskService {
      * @param processId  流程定义id
      * @return  返回图片流 ，二进制
      */
-    byte[] generateImage(String processId);
+/*    byte[] generateImage(String processId);*/
 
     /**
      * 查询业务主键是否再流程钟
@@ -161,7 +165,7 @@ public interface WorkTaskService {
      * @param procInstanceId 流程任务中的processId
      * @return  返回下一节点名称
      */
-    String getNextNode(String procInstanceId);
+/*    String getNextNode(String procInstanceId);*/
 
     /**
      * 查询所有待审批的任务
@@ -194,19 +198,19 @@ public interface WorkTaskService {
      */
     boolean checkIsPass(String processId);
 
-    /**
+/*    *//**
      * 获取最后审批人
      * @param processId  流程中processId
      * @return  返回最后审批人userCode
-     */
+     *//*
     String getLastApprover(String processId);
 
-    /**
+    *//**
      * 加入会签
      * @param taskId  任务id
      * @param list   人员userCode列表
-     */
-    void jointProcess(String taskId,List<String> list);
+     *//*
+    void jointProcess(String taskId,List<String> list);*/
 
     /**
      * 通过流程定义id查询任务

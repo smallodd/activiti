@@ -1,29 +1,20 @@
 package com.activiti.service.impl;
 
 import com.activiti.expection.WorkFlowException;
-import com.activiti.service.ProcessCoreService;
+
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngineConfiguration;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.history.HistoricActivityInstance;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.history.HistoricVariableInstance;
+import org.activiti.engine.*;
+import org.activiti.engine.history.*;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.engine.impl.pvm.PvmActivity;
-import org.activiti.engine.impl.pvm.PvmTransition;
-import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
-import org.activiti.engine.impl.pvm.process.TransitionImpl;
+
+import org.activiti.engine.repository.Deployment;
+import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
@@ -56,19 +47,32 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     RepositoryService repositoryService;
     @Resource
     RuntimeService runtimeService;
+    @Resource
+    ManagementService managementService;
 
-    @Autowired
-    ProcessCoreService processCoreService;
 
     @Autowired
     ProcessEngineConfiguration processEngineConfiguration;
+
+    private List<String> getProcessKeys(String bussnessKey){
+        List<Model> models=repositoryService.createNativeModelQuery().sql("select ad.model_key 'key',ad.id from act_de_model ad where ad.id in(SELECT admr.model_id from act_de_model_relation admr LEFT JOIN act_de_model adm on  admr.parent_model_id= adm.id  where adm.model_key='"+bussnessKey+"')").list();
+        List<String> keys=new ArrayList<String>();
+        for(Model model:models){
+            keys.add(model.getKey());
+        }
+        return keys;
+    }
     @Override
-    public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize) {
+    public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize,String bussnessKey) {
         logger.info("------------------------通过用户相关信息查询待审批任务开始------------------------");
+
+        List<String> keys=getProcessKeys(bussnessKey);
+
         TaskQuery  query= taskService.createTaskQuery();
+        query.processDefinitionKeyIn(keys);
         long count=0;
         if(StringUtils.isNotBlank(userId)){
-            query=query.taskAssigneeLike("%"+userId+"%");
+            query=query.taskAssignee(userId);
             count=query.count();
         }else{
             count=query.count();
@@ -84,13 +88,19 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
 
     @Override
-    public List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize) {
-
-        return historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+    public List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize,String bussnessKey,int type) {
+        List<String> keys=getProcessKeys(bussnessKey);
+       HistoricTaskInstanceQuery query= historyService.createHistoricTaskInstanceQuery().processDefinitionKeyIn(keys);
+       if(type==1){
+           query.finished();
+       }else if(type==0){
+           query.unfinished();
+       }
+        return query.taskAssignee(userId).listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
     }
 
     @Override
-    public Boolean completeTask(String processInstanceId,String nextUserId, String note,String authName) throws WorkFlowException{
+    public Boolean completeTask(String processInstanceId,String currentUser, String note,String authName) throws WorkFlowException{
         logger.info("--------------------审批任务开始-----------------------");
         Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         //添加审批人
@@ -99,24 +109,15 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         taskService.addComment(task.getId(),task.getProcessInstanceId(),note);
 
 
-        if(StringUtils.isNotBlank(nextUserId)&&StringUtils.isNotBlank(this.getNextNode(processInstanceId))) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("userCode",nextUserId);
 
-            taskService.complete(task.getId(),map);
+        taskService.complete(task.getId());
 
-
-        }else {
-
-            taskService.complete(task.getId());
-
-        }
         logger.info("--------------------审批任务结束-----------------------");
         return true;
 
 
     }
-    @Deprecated
+  /*  @Deprecated
     public boolean rollBack(String taskId,String note){
 
         try {
@@ -193,7 +194,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
 
     }
-
+*/
     @Override
     public Boolean refuseTask(String processId, String reason) throws WorkFlowException{
         logger.info("---------------------------拒绝任务开始---------------------------");
@@ -271,11 +272,11 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return pageInfo;
     }
 
-    /**
+  /*  *//**
      *查询任务所属节点
-     * @param processId  任务id
+//     * @param processId  任务id
      * @return  返回图片流
-     */
+     *//*
     public byte[] generateImage(String  processId){
 
         logger.info("-------------------------查询任务所属节点开始-------------------");
@@ -311,8 +312,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         try {
             logger.info("-------------------------查询任务所属节点结束-------------------");
             //生成本地图片
-          /*  File file = new File("e:/test.png");
-            FileUtils.copyInputStreamToFile(inputStream, file);*/
+          *//*  File file = new File("e:/test.png");
+            FileUtils.copyInputStreamToFile(inputStream, file);*//*
             return IOUtils.toByteArray(inputStream);
         } catch (Exception e) {
             throw new RuntimeException("生成流程图异常！", e);
@@ -320,7 +321,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             IOUtils.closeQuietly(inputStream);
         }
     }
-
+*/
     @Override
     public boolean checekBunessKeyIsInFlow(String bussinessKey) {
         Task task=taskService.createTaskQuery().processInstanceBusinessKey(bussinessKey).singleResult();
@@ -330,7 +331,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return false;
     }
 
-    private  List<String> getHighLightedFlows( ProcessDefinitionEntity processDefinitionEntity,
+   /* private  List<String> getHighLightedFlows( ProcessDefinitionEntity processDefinitionEntity,
                                                List<HistoricActivityInstance> historicActivityInstances){
         List<String> highFlows = new ArrayList<String>();// 用以保存高亮的线flowId
         for (int i = 0; i < historicActivityInstances.size() - 1; i++) {// 对历史流程节点进行遍历
@@ -373,7 +374,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         return highFlows;
 
-    }
+    }*/
     @Override
     public Comment selectComment(String taskid){
       List<Comment> list= taskService.getTaskComments(taskid);
@@ -405,11 +406,14 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         return map;
     }
-    /**
+/*
+    */
+/**
      * 获取当前流程的下一个节点
-     * @param procInstanceId
+     * @param
      * @return
-     */
+     *//*
+
     public String getNextNode(String procInstanceId){
         // 1、首先是根据流程ID获取当前任务：
         List<Task> tasks = taskService.createTaskQuery().processInstanceId(procInstanceId).list();
@@ -444,6 +448,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         return nextId;
     }
+*/
 
     @Override
     public PageInfo<Task> selectAllWaitApprove(int startPage, int pageSize) {
@@ -491,7 +496,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return false;
     }
 
-    @Override
+ /*   @Override
     public String getLastApprover(String processId) {
         Task task = taskService.createTaskQuery().processInstanceId(processId).singleResult();
         if (task == null){
@@ -502,11 +507,11 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             return taskInstance.getAssignee();
         }
     }
-
-    @Override
+*/
+   /* @Override
     public void jointProcess(String taskId, List<String> list) {
         processCoreService.jointProcess(taskId,list);
-    }
+    }*/
 
     @Override
     public Task queryTaskByProcessId(String processId) {
