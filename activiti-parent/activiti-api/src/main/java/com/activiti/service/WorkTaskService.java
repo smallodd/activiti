@@ -45,13 +45,13 @@ public interface WorkTaskService {
      * 审批接口
      *         注：当下一个审批人的唯一标识为空或不传时，直接完成该任务
      * @param processInstanceId  流程定义id
-     * @param nextUserId  下一个审批人的用户唯一标识 一般是编码或主键
+     * @param currentUser  当前审批人信息
      * @param note      审批意见
      * @param authName 审批人姓名
      * @return   返回 true  or false
      * @exception  WorkFlowException 返回审批异常
      */
-    Boolean  completeTask(String processInstanceId,String nextUserId ,String note, String authName) throws WorkFlowException;
+    Boolean  completeTask(String processInstanceId,String currentUser ,String note, String authName) throws WorkFlowException;
 
     /**
      * 回退到上一节点

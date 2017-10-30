@@ -5,8 +5,12 @@ import com.activiti.expection.WorkFlowException;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
 import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.ExtensionElement;
+import org.activiti.bpmn.model.FlowElement;
+import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
+import org.activiti.engine.identity.User;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
@@ -20,12 +24,14 @@ import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.activiti.image.ProcessDiagramGenerator;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
+import javax.ws.rs.NotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,7 +55,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     RuntimeService runtimeService;
     @Resource
     ManagementService managementService;
-
+    @Resource
+    IdentityService identityService;
 
     @Autowired
     ProcessEngineConfiguration processEngineConfiguration;
@@ -107,9 +114,37 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         Authentication.setAuthenticatedUserId(authName);
         //添加审批意见
         taskService.addComment(task.getId(),task.getProcessInstanceId(),note);
+        User user=identityService.createUserQuery().userId(currentUser).singleResult();
+        if(user==null){
+            throw new NotFoundException("用户不存在: " + currentUser );
+        }
+        boolean canCompleteTask = false;
+        if(!currentUser.equals(task.getAssignee())){
 
-
-
+            if (task.getProcessInstanceId() != null) {
+                HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+                if (historicProcessInstance != null && StringUtils.isNotEmpty(historicProcessInstance.getStartUserId())) {
+                    String processInstanceStartUserId = historicProcessInstance.getStartUserId();
+                    if (String.valueOf(user.getId()).equals(processInstanceStartUserId)) {
+                        BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
+                        FlowElement flowElement = bpmnModel.getFlowElement(task.getTaskDefinitionKey());
+                        if (flowElement != null && flowElement instanceof UserTask) {
+                            UserTask userTask = (UserTask) flowElement;
+                            List<ExtensionElement> extensionElements = userTask.getExtensionElements().get("initiator-can-complete");
+                            if (CollectionUtils.isNotEmpty(extensionElements)) {
+                                String value = extensionElements.get(0).getElementText();
+                                if (StringUtils.isNotEmpty(value) && Boolean.valueOf(value)) {
+                                    canCompleteTask = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(!canCompleteTask){
+           throw new NotFoundException("该用户无法审批任务："+currentUser+",任务id:"+task.getId());
+        }
         taskService.complete(task.getId());
 
         logger.info("--------------------审批任务结束-----------------------");
