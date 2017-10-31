@@ -1,7 +1,6 @@
 package com.activiti.service.impl;
 
 import com.activiti.expection.WorkFlowException;
-
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
 import org.activiti.bpmn.model.BpmnModel;
@@ -12,33 +11,31 @@ import org.activiti.engine.*;
 import org.activiti.engine.history.*;
 import org.activiti.engine.identity.User;
 import org.activiti.engine.impl.RepositoryServiceImpl;
+import org.activiti.engine.impl.db.DbIdGenerator;
 import org.activiti.engine.impl.identity.Authentication;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-
-import org.activiti.engine.repository.Deployment;
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.activiti.engine.impl.pvm.PvmActivity;
+import org.activiti.engine.impl.pvm.PvmTransition;
+import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
+import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.repository.Model;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
-import org.activiti.image.ProcessDiagramGenerator;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import javax.ws.rs.NotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.activiti.common.CodeConts.WORK_FLOW_IS_NOT_FINISH;
 
 /**
  * Created by ma on 2017/7/18.
@@ -153,7 +150,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
 
     }
-  /*  @Deprecated
+    @Deprecated
     public boolean rollBack(String taskId,String note){
 
         try {
@@ -181,7 +178,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             // 取得上一步活动
             ActivityImpl currActivity = ((ProcessDefinitionImpl) definition)
                     .findActivity(currTask.getTaskDefinitionKey());
-
             //也就是节点间的连线
             List<PvmTransition> nextTransitionList = currActivity
                     .getIncomingTransitions();
@@ -196,7 +192,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 oriPvmTransitionList.add(pvmTransition);
             }
             pvmTransitionList.clear();
-
             // 建立新出口
             List<TransitionImpl> newTransitions = new ArrayList<TransitionImpl>();
             for (PvmTransition nextTransition : nextTransitionList) {
@@ -230,7 +225,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
 
     }
-*/
     @Override
     public Boolean refuseTask(String processId, String reason) throws WorkFlowException{
         logger.info("---------------------------拒绝任务开始---------------------------");
@@ -560,5 +554,86 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return historyService.createHistoricProcessInstanceQuery().processInstanceId(processId).singleResult();
     }
 
+    @Override
+    public void transferAssignee(String taskId, String userCode) {
+        taskService.setAssignee(taskId, userCode);
+    }
 
+    @Override
+    public void jointProcess(String taskId, List<String> userCodes)
+            throws Exception {
+        for (String userCode : userCodes) {
+            TaskEntity task = (TaskEntity) taskService.newTask(new DbIdGenerator()
+                    .getNextId());
+            task.setAssignee(userCode);
+            task.setName(findTaskById(taskId).getName() + "-会签");
+            task.setProcessDefinitionId(findProcessDefinitionEntityByTaskId(
+                    taskId).getId());
+            task.setProcessInstanceId(findProcessInstanceByTaskId(taskId)
+                    .getId());
+            task.setParentTaskId(taskId);
+            task.setDescription("jointProcess");
+            taskService.saveTask(task);
+        }
+    }
+
+    /**
+     * 根据任务ID获得任务实例
+     *
+     * @param taskId
+     *            任务ID
+     * @return
+     * @throws Exception
+     */
+    private TaskEntity findTaskById(String taskId) throws Exception {
+        TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(
+                taskId).singleResult();
+        if (task == null) {
+            throw new Exception("任务实例未找到!");
+        }
+        return task;
+    }
+
+    /**
+     * 根据任务ID获取流程定义
+     *
+     * @param taskId
+     *            任务ID
+     * @return
+     * @throws Exception
+     */
+    private ProcessDefinitionEntity findProcessDefinitionEntityByTaskId(
+            String taskId) throws Exception {
+        // 取得流程定义
+        ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repositoryService)
+                .getDeployedProcessDefinition(findTaskById(taskId)
+                        .getProcessDefinitionId());
+
+        if (processDefinition == null) {
+            throw new Exception("流程定义未找到!");
+        }
+
+        return processDefinition;
+    }
+
+    /**
+     * 根据任务ID获取对应的流程实例
+     *
+     * @param taskId
+     *            任务ID
+     * @return
+     * @throws Exception
+     */
+    private ProcessInstance findProcessInstanceByTaskId(String taskId)
+            throws Exception {
+        // 找到流程实例
+        ProcessInstance processInstance = runtimeService
+                .createProcessInstanceQuery().processInstanceId(
+                        findTaskById(taskId).getProcessInstanceId())
+                .singleResult();
+        if (processInstance == null) {
+            throw new Exception("流程实例未找到!");
+        }
+        return processInstance;
+    }
 }
