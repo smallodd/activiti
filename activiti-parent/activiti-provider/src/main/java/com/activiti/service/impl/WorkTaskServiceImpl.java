@@ -57,6 +57,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     ManagementService managementService;
     @Resource
     IdentityService identityService;
+    @Resource
 
     @Autowired
     ProcessEngineConfiguration processEngineConfiguration;

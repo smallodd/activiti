@@ -1,12 +1,15 @@
 package com.activiti.service.impl;
 
+import com.activiti.entity.UserVo;
 import com.activiti.service.UserRoleService;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.identity.Group;
 import org.activiti.engine.identity.User;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ma on 2017/7/19.
@@ -36,5 +39,28 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Override
     public void deleteUser(String id,String groupId) {
         identityService.deleteMembership(id,groupId);
+    }
+
+    @Override
+    public Map<String, String> addUser(List<UserVo> userVos) {
+        Map<String,String> map=new HashMap<>();
+        for(UserVo userVo:userVos) {
+            try {
+
+                User user = identityService.newUser(userVo.getId());
+                if(userVo.getPassword().length()!=32) {
+                    user.setPassword(identityService.encodePassword(userVo.getPassword()));
+                }else{
+                    user.setPassword(userVo.getPassword());
+                }
+                user.setEmail(user.getPassword());
+                user.setFirstName(user.getFirstName());
+                identityService.saveUser(user);
+            }catch (Exception e){
+                map.put(userVo.getId(),"数据同步失败");
+                continue;
+            }
+        }
+        return map;
     }
 }
