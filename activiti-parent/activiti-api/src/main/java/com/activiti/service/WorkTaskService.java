@@ -61,8 +61,7 @@ public interface WorkTaskService {
      *          true:成功
      *          false:失败
      */
-    @Deprecated
-    boolean rollBack(String taskId,String note);
+    //boolean rollBack(String taskId,String note);
 
     /**
      * 审批不通过
