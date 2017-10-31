@@ -62,7 +62,7 @@ public interface WorkTaskService {
      *          false:失败
      */
     @Deprecated
-/*    boolean rollBack(String taskId,String note);*/
+    boolean rollBack(String taskId,String note);
 
     /**
      * 审批不通过
@@ -225,4 +225,24 @@ public interface WorkTaskService {
      * @return  返回历史任务实例
      */
     HistoricProcessInstance  queryProcessInstance(String processId);
+
+    /**
+     * 转办流程
+     * @param taskId
+     *            当前任务节点ID
+     * @param userCode
+     *            被转办人Code
+     */
+    void transferAssignee(String taskId, String userCode);
+
+    /**
+     * 会签操作
+     *
+     * @param taskId
+     *            当前任务ID
+     * @param userCodes
+     *            会签人账号集合
+     * @throws Exception
+     */
+    void jointProcess(String taskId, List<String> userCodes) throws Exception;
 }
