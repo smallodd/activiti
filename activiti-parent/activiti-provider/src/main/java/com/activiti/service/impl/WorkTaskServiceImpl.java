@@ -1,6 +1,7 @@
 package com.activiti.service.impl;
 
 import com.activiti.expection.WorkFlowException;
+import com.activiti.main.ActivityMain;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
 import org.activiti.bpmn.model.BpmnModel;
@@ -11,15 +12,10 @@ import org.activiti.engine.*;
 import org.activiti.engine.history.*;
 import org.activiti.engine.identity.User;
 import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.engine.impl.db.DbIdGenerator;
 import org.activiti.engine.impl.identity.Authentication;
+import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
-import org.activiti.engine.impl.pvm.PvmActivity;
-import org.activiti.engine.impl.pvm.PvmTransition;
-import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
-import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
@@ -150,8 +146,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
 
     }
-    @Deprecated
-    public boolean rollBack(String taskId,String note){
+
+    /*public boolean rollBack(String taskId,String note){
 
         try {
             Map<String, Object> variables;
@@ -223,8 +219,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         } catch (Exception e) {
             return false;
         }
+    }*/
 
-    }
     @Override
     public Boolean refuseTask(String processId, String reason) throws WorkFlowException{
         logger.info("---------------------------拒绝任务开始---------------------------");
@@ -563,7 +559,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     public void jointProcess(String taskId, List<String> userCodes)
             throws Exception {
         for (String userCode : userCodes) {
-            TaskEntity task = (TaskEntity) taskService.newTask(new DbIdGenerator()
+            TaskEntity task = (TaskEntity) taskService.newTask(new StrongUuidGenerator()
                     .getNextId());
             task.setAssignee(userCode);
             task.setName(findTaskById(taskId).getName() + "-会签");
