@@ -21,4 +21,8 @@ public interface UserRoleService {
 
     Map<String,String> addUser(List<UserVo> userVos);
 
+    Boolean addUser(UserVo userVo);
+
+    void addGroup(Group group);
+
 }

@@ -116,7 +116,6 @@ public class SqlService {
 
             // 执行查询
             ResultSet rs = pstmt .executeQuery();
-
             List<Map<String, Object>> al = new ArrayList<Map<String, Object>>();
 
             // 获得结果集元数据（元数据就是描述数据的数据，比如把表的列类型列名等作为数据）
