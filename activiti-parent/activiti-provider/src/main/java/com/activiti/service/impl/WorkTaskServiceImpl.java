@@ -251,7 +251,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pageSize){
         logger.info("-----------------------查询用户历史审批过的任务开始----------------");
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
-        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).finished().orderByHistoricTaskInstanceEndTime().desc().listPage((startPage-1)*pageSize,pageSize);
+        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId+"%").finished().orderByHistoricTaskInstanceEndTime().desc().listPage((startPage-1)*pageSize,pageSize);
         long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId+"%").finished().count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
@@ -263,7 +263,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     public PageInfo<HistoricTaskInstance> selectMyRefuse(String userId, int startPage, int pageSize) {
         logger.info("----------------------查询用户审批拒绝的信息列表开始----------------");
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
-        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId+"%").taskDeleteReason("refused").listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
         long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId+"%").taskDeleteReason("refused").count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
