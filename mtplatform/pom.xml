@@ -462,6 +462,7 @@
                     <include>**/*.bpmn</include>
                     <include>**/*.png</include>
                     <include>**/*.vm</include>
+                    <include>**/*.json</include>
                 </includes>
                 <filtering>false</filtering>
             </resource>
