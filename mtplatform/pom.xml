@@ -12,6 +12,7 @@
 		<jdk.version>1.8</jdk.version>
         <junit.version>4.12</junit.version>
         <servlet.version>3.0.1</servlet.version>
+        <activiti.version>5.22.0</activiti.version>
 	</properties>
 	<dependencies>
 		<!-- test begin -->
@@ -144,22 +145,22 @@
         <dependency>
 			<groupId>org.activiti</groupId>
 			<artifactId>activiti-engine</artifactId>
-			<version>5.22.0</version>
+			<version>${activiti.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.activiti</groupId>
 			<artifactId>activiti-spring</artifactId>
-			<version>5.22.0</version>
+			<version>${activiti.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.activiti</groupId>
 			<artifactId>activiti-bpmn-converter</artifactId>
-			<version>5.22.0</version>
+			<version>${activiti.version}</version>
 		</dependency>
 		<dependency>
 		  	<groupId>org.activiti</groupId>
 		  	<artifactId>activiti-json-converter</artifactId>
-		  	<version>5.22.0</version>
+		  	<version>${activiti.version}</version>
 		</dependency>
 		<!-- spring文件上传 -->
 		<dependency>
