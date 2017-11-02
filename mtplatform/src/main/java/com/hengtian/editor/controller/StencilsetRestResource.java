@@ -1,4 +1,4 @@
-package com.rest.editor;
+package com.hengtian.editor.controller;
 
 import java.io.InputStream;
 import org.activiti.engine.ActivitiException;
@@ -15,7 +15,7 @@ public class StencilsetRestResource
   public String getStencilset()
   {
 	  System.out.println("StencilsetRestResource.getStencilset-----------");
-    InputStream stencilsetStream = getClass().getClassLoader().getResourceAsStream("stencilset.json");
+    InputStream stencilsetStream = getClass().getClassLoader().getResourceAsStream("/stencilset.json");
     try {
       return IOUtils.toString(stencilsetStream, "utf-8");
     } catch (Exception e) {

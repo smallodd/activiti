@@ -1,4 +1,4 @@
-package com.hello;
+package com.hengtian.editor.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Controller  
 @Scope("prototype")   
-@RequestMapping("/user")  
-public class Test  
+@RequestMapping("/editor")
+public class EditorResource
 {  
     @RequestMapping(value="/test",method=RequestMethod.GET)  
     public ModelAndView  goTest(String name,String password)  
