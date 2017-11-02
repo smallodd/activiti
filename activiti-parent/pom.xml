@@ -33,7 +33,7 @@
 		<commonsio.version>2.4</commonsio.version>
 		<json.version>2.4</json.version>
 		<slf4j.version>1.7.13</slf4j.version>
-		<activiti>6.0.0</activiti>
+		<activiti>5.18.0</activiti>
 	</properties>
 	<dependencies>
 		<dependency>
