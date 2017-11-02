@@ -34,6 +34,8 @@
                 /configuration/** = anon	<!--springfox-swagger-ui的静态文件  -->
                 /v2/api-docs = anon			<!--springfox-swagger-ui的静态文件  -->
                 /swagger-resources = anon	<!--springfox-swagger-ui的静态文件  -->
+                /editor-app = anon	        <!--springfox-swagger-ui的静态文件  -->
+                /diagram-viewer = anon	    <!--springfox-swagger-ui的静态文件  -->
                 /** = authc					<!--其余的全部需要认证  -->
             </value>
         </property>
