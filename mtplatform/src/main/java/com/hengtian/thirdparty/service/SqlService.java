@@ -1,6 +1,8 @@
-package com.activiti.dateSource;
+package com.hengtian.thirdparty.service;
 
-import com.common.util.ConfigUtil;
+
+import com.hengtian.common.utils.ConfigUtil;
+import org.springframework.stereotype.Service;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.Map;
 /**
  * Created by ma on 2017/10/31.
  */
+@Service
 public class SqlService {
 
     // 四大金刚

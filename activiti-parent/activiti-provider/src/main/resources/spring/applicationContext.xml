@@ -180,5 +180,5 @@
 	<bean class="com.activiti.listener.InstantiationTracingBeanPostProcessor"></bean>
 	<import resource="activiti.cfg.xml"></import>
 	<import resource="spring-activiti-provider.xml" />
-	<import resource="scheduler.xml"/>
+
 </beans>

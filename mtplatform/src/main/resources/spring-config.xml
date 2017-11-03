@@ -2,19 +2,30 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/aop
-       http://www.springframework.org/schema/aop/spring-aop.xsd"
+       http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd"
        default-autowire="byName">
+    <task:annotation-driven />
+    <bean id="sqlService" class="com.hengtian.thirdparty.service.SqlService"/>
+    <bean id="myTask" class="com.hengtian.thirdparty.Scheduler"></bean>
+
+    <task:scheduled-tasks>
+        <!-- 这里表示的是每隔五秒执行一次 -->
+        <task:scheduled ref="myTask" method="executeUser" cron="0 */3 * * * ?" />
+        <task:scheduled ref="myTask" method="executeDepartment" cron="0 */3 * * * ?"/>
+    </task:scheduled-tasks>
+
+    <!-- 自动扫描的包名 -->
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
-                <value>classpath:jdbc.properties</value>
+                <value>classpath:config.properties</value>
             </list>
         </property>
     </bean>

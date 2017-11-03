@@ -50,6 +50,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
 		this.insert(user);
 		
 		String userId = user.getId();
+		if(StringUtils.isBlank(userVo.getRoleIds())){
+			return;
+		}
 		String[] roleIds = userVo.getRoleIds().split(",");
 		
 		for(String roleId : roleIds){
@@ -81,7 +84,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
 				sysUserRoleDao.deleteById(userRole.getId());
 			}
 		}
-		
+		if(StringUtils.isBlank(userVo.getRoleIds())){
+			return;
+		}
 		String[] roleIds= userVo.getRoleIds().split(",");
 		for(String roleId : roleIds){
 			SysUserRole userRole = new SysUserRole();
