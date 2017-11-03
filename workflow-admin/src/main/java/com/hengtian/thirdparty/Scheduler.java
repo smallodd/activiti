@@ -61,11 +61,11 @@ public class Scheduler {
                     userVo.setUserName(name);
                     userVo.setDepartmentId(map.get("dept_code").toString());
                     EntityWrapper<SysRole> wrapper=new EntityWrapper<>();
-                    wrapper.where("role_code=006");
+                    wrapper.where("role_code='006'");
                     SysRole sysRole=roleService.selectOne(wrapper);
                     userVo.setRoleIds(sysRole.getId());
                     EntityWrapper<SysUser> userWrapper=new EntityWrapper<>();
-                    userWrapper.where("id="+code);
+                    userWrapper.where("id='"+code+"'");
                     SysUser sysUser=userService.selectOne(userWrapper);
                     if(sysUser!=null){
                         userService.updateByVo(userVo);
@@ -92,7 +92,7 @@ public class Scheduler {
             sysDepartment.setDepartmentName(name);
             sysDepartment.setDepartmentIcon("fi-folder");
             EntityWrapper<SysDepartment> entityWrapper=new EntityWrapper<>();
-            entityWrapper.where("id="+code);
+            entityWrapper.where("id='"+code+"'");
             SysDepartment sysDepartment1=sysDepartmentService.selectOne(entityWrapper);
             if(sysDepartment1==null) {
                 sysDepartmentService.insert(sysDepartment);

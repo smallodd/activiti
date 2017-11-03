@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.moutum</groupId>
-    <artifactId>mtplatform</artifactId>
+    <groupId>com.hengtian</groupId>
+    <artifactId>workflow-admin</artifactId>
     <packaging>war</packaging>
     <version>0.0.1-SNAPSHOT</version>
-    <name>mtplatform</name>
+    <name>workflow-admin</name>
     <url>http://172.16.163.52:8081/nexus</url>
 
     <properties>
@@ -449,7 +449,7 @@
     </repositories>
 
     <build>
-        <finalName>mtplatform</finalName>
+        <finalName>workflow-admin</finalName>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
