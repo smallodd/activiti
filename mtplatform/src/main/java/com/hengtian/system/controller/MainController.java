@@ -50,8 +50,8 @@ public class MainController extends BaseController {
 
     /**
      * POST 登录 shiro 写法
-     * @param username 用户名
-     * @param password 密码
+     * @param loginName 用户名
+     * @param loginPwd 密码
      * @return {Object}
      */
     @SysLog(value="用户登录")
@@ -65,7 +65,7 @@ public class MainController extends BaseController {
         	return renderError("密码不能为空");
         }
         Subject user = SecurityUtils.getSubject();
-        UsernamePasswordToken token = new UsernamePasswordToken(loginName, DigestUtils.md5Hex(loginPwd));
+        UsernamePasswordToken token = new UsernamePasswordToken(loginName, DigestUtils.md5Hex(loginPwd).toUpperCase());
         try {
             user.login(token);
             return renderSuccess();

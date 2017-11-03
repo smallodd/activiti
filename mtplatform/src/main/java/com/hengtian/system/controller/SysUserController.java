@@ -95,7 +95,7 @@ public class SysUserController extends BaseController{
         if (list != null && !list.isEmpty()) {
             return renderError("用户名已存在!");
         }
-        userVo.setLoginPwd(DigestUtils.md5Hex(userVo.getLoginPwd()));
+        userVo.setLoginPwd(DigestUtils.md5Hex(userVo.getLoginPwd().toUpperCase()));
         sysUserService.insertByVo(userVo);
         return renderSuccess("添加成功");
     }
@@ -133,7 +133,7 @@ public class SysUserController extends BaseController{
             return renderError("用户名已存在!");
         }
         if (StringUtils.isNotBlank(userVo.getLoginPwd())) {
-            userVo.setLoginPwd(DigestUtils.md5Hex(userVo.getLoginPwd()));
+            userVo.setLoginPwd(DigestUtils.md5Hex(userVo.getLoginPwd().toUpperCase()));
         }
         sysUserService.updateByVo(userVo);
         return renderSuccess("修改成功！");
@@ -158,10 +158,10 @@ public class SysUserController extends BaseController{
     @ResponseBody
     public Object editUserPwd(String oldPwd, String pwd) {
         SysUser user = sysUserService.selectById(getUserId());
-        if (!user.getLoginPwd().equals(DigestUtils.md5Hex(oldPwd))) {
+        if (!user.getLoginPwd().equals(DigestUtils.md5Hex(oldPwd).toUpperCase().toUpperCase())) {
             return renderError("旧密码不正确!");
         }
-        sysUserService.updatePwdByUserId(getUserId(), DigestUtils.md5Hex(pwd));
+        sysUserService.updatePwdByUserId(getUserId(), DigestUtils.md5Hex(pwd).toUpperCase());
         return renderSuccess("密码修改成功！");
     }
 
