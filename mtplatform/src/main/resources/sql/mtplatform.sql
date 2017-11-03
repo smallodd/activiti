@@ -2,7 +2,8 @@
 SQLyog Ultimate v11.25 (64 bit)
 MySQL - 5.7.18-log : Database - mtplatform
 *********************************************************************
-*/
+*/
+
 
 /*!40101 SET NAMES utf8 */;
 
@@ -140,7 +141,7 @@ CREATE TABLE `sys_user` (
 
 /*Data for the table `sys_user` */
 
-insert  into `sys_user`(`id`,`login_name`,`login_pwd`,`user_name`,`user_phone`,`user_email`,`user_type`,`user_sex`,`register_time`,`department_id`) values ('1','admin','202cb962ac59075b964b07152d234b70','管理员','123456','liujunyang@moutum.com','0','0','2014-02-19 01:00:00','1'),('474693d0b9a345feb6a07479019c9ff5','litao','202cb962ac59075b964b07152d234b70','李涛','434343123','litao@moutum.com','1','0','2017-08-16 19:53:21','1'),('6414f0ca9eaf4ba596736eb7db0ad157','shiluyao','202cb962ac59075b964b07152d234b70','史路遥','4343833434343','shiluyao@moutum.com','1','0','2017-08-16 19:45:05','9da171a27291411eaf1c16e2a09b9bd4'),('9baf237adfb6407ba529382fc8f7aa7b','wangzhao','202cb962ac59075b964b07152d234b70','王钊','1590000111123','wangzhao@moutum.com','1','0','2017-09-13 09:14:49','1'),('a29de2c7d5eb4f269c2fc14363810f9c','longxinxin','202cb962ac59075b964b07152d234b70','龙鑫鑫','3434355','longxinxin@moutum.com','1','1','2017-08-16 19:47:57','5b5493a951674e568a6c501525eb779a'),('c28fb2ff582d484ea77692279ae56fff','tongliang','202cb962ac59075b964b07152d234b70','同亮','43434335','tongliang@moutum.com','1','0','2017-08-16 19:43:25','1'),('cf42f07adc69455b94e82f8ce06de09e','test','202cb962ac59075b964b07152d234b70','测试员','123123','liujunyang@moutum.com','1','0','2017-08-13 14:05:04','a69ffd17a000465894b41530a3db149c'),('d7dadc0fd4fa40e9be886ca966522614','liujunyang','202cb962ac59075b964b07152d234b70','刘俊阳','43434365','liujunyang@moutum.com','1','0','2017-08-16 19:52:31','9da171a27291411eaf1c16e2a09b9bd4');
+insert  into `sys_user`(`id`,`login_name`,`login_pwd`,`user_name`,`user_phone`,`user_email`,`user_type`,`user_sex`,`register_time`,`department_id`) values ('1','admin','E10ADC3949BA59ABBE56E057F20F883E','管理员','123456','liujunyang@moutum.com','0','0','2014-02-19 01:00:00','1'),('474693d0b9a345feb6a07479019c9ff5','litao','E10ADC3949BA59ABBE56E057F20F883E','李涛','434343123','litao@moutum.com','1','0','2017-08-16 19:53:21','1'),('6414f0ca9eaf4ba596736eb7db0ad157','shiluyao','E10ADC3949BA59ABBE56E057F20F883E','史路遥','4343833434343','shiluyao@moutum.com','1','0','2017-08-16 19:45:05','9da171a27291411eaf1c16e2a09b9bd4'),('9baf237adfb6407ba529382fc8f7aa7b','wangzhao','E10ADC3949BA59ABBE56E057F20F883E','王钊','1590000111123','wangzhao@moutum.com','1','0','2017-09-13 09:14:49','1'),('a29de2c7d5eb4f269c2fc14363810f9c','longxinxin','E10ADC3949BA59ABBE56E057F20F883E','龙鑫鑫','3434355','longxinxin@moutum.com','1','1','2017-08-16 19:47:57','5b5493a951674e568a6c501525eb779a'),('c28fb2ff582d484ea77692279ae56fff','tongliang','E10ADC3949BA59ABBE56E057F20F883E','同亮','43434335','tongliang@moutum.com','1','0','2017-08-16 19:43:25','1'),('cf42f07adc69455b94e82f8ce06de09e','test','E10ADC3949BA59ABBE56E057F20F883E','测试员','123123','liujunyang@moutum.com','1','0','2017-08-13 14:05:04','a69ffd17a000465894b41530a3db149c'),('d7dadc0fd4fa40e9be886ca966522614','liujunyang','E10ADC3949BA59ABBE56E057F20F883E','刘俊阳','43434365','liujunyang@moutum.com','1','0','2017-08-16 19:52:31','9da171a27291411eaf1c16e2a09b9bd4');
 
 /*Table structure for table `sys_user_role` */
 
