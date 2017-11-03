@@ -1,6 +1,6 @@
 package com.activiti.service;
 
-import com.activiti.entity.UserVo;
+
 import org.activiti.engine.identity.Group;
 import org.activiti.engine.identity.User;
 
@@ -18,10 +18,6 @@ public interface UserRoleService {
     void insertMembership(User user, Group group);
 
     void deleteUser(String id, String groupId);
-
-    Map<String,String> addUser(List<UserVo> userVos);
-
-    Boolean addUser(UserVo userVo);
 
     void addGroup(Group group);
 
