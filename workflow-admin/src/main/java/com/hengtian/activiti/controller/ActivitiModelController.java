@@ -130,7 +130,7 @@ public class ActivitiModelController extends BaseController {
     /**
      * 根据模型部署流程
      */
-    @SysLog(value="激活流程")
+    @SysLog(value="根据模型部署流程")
     @ResponseBody
     @RequestMapping(value = "/deploy/{modelId}")
     public Object deploy(@PathVariable("modelId") String modelId) {
