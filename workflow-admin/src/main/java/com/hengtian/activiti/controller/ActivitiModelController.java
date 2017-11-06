@@ -6,13 +6,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hengtian.activiti.service.ActivitiModelService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
+import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.utils.StringUtils;
 import net.sf.json.JSONObject;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.apache.commons.io.IOUtils;
@@ -35,11 +38,18 @@ public class ActivitiModelController extends BaseController {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final String model_version = "1.0";
+
+    private final String default_model_name = "未命名模型";
+
     @Autowired
     private ActivitiModelService activitiModelService;
 
     @Autowired
     RepositoryService repositoryService;
+
+    @Autowired
+    StrongUuidGenerator uuidGenerator;
 
     /**
      * 流程模型管理页
@@ -80,9 +90,13 @@ public class ActivitiModelController extends BaseController {
     /**
      * 创建模型
      */
-    @RequestMapping("/create")
-    public void create(HttpServletRequest request, HttpServletResponse response) {
+    @SysLog(value="创建模型")
+    @PostMapping("/create")
+    @ResponseBody
+    public Object create(String name,String description,HttpServletRequest request, HttpServletResponse response) {
+        Result result = new Result();
         try {
+            name = StringUtils.isBlank(name)?default_model_name:name.trim();
             ObjectMapper objectMapper = new ObjectMapper();
             ObjectNode editorNode = objectMapper.createObjectNode();
             editorNode.put("id", "canvas");
@@ -93,21 +107,30 @@ public class ActivitiModelController extends BaseController {
             Model modelData = repositoryService.newModel();
 
             ObjectNode modelObjectNode = objectMapper.createObjectNode();
-            modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, "lutiannan");
-            modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, 1);
-            String description = "lutiannan---";
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, name);
+            modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, model_version);
             modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, description);
             modelData.setMetaInfo(modelObjectNode.toString());
-            modelData.setName("lutiannan");
-            modelData.setKey("12313123");
+            modelData.setName(name);
+            modelData.setKey(uuidGenerator.getNextId());
 
             //保存模型
             repositoryService.saveModel(modelData);
             repositoryService.addModelEditorSource(modelData.getId(), editorNode.toString().getBytes("utf-8"));
-            response.sendRedirect(request.getContextPath() + "/modeler.html?modelId=" + modelData.getId());
+            //response.sendRedirect(request.getContextPath() + "/modeler.html?modelId=" + modelData.getId());
+
+            logger.info("创建模型成功");
+            result.setObj(modelData.getId());
+            result.setSuccess(true);
+            result.setMsg("创建模型成功");
         } catch (Exception e) {
-            System.out.println("创建模型失败：");
+            String msg = "创建模型失败";
+            logger.error(msg,e);
+            result.setSuccess(false);
+            result.setMsg(msg);
         }
+
+        return result;
     }
 
     /**
