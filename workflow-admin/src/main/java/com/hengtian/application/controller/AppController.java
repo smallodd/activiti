@@ -101,6 +101,20 @@ public class AppController extends BaseController {
     @RequestMapping("/edit")
     @ResponseBody
     public Object edit(App app) {
+        if(StringUtils.isNotEmpty(app.getId())) {
+            if(StringUtils.isNotEmpty(app.getName())) {
+                EntityWrapper<App> wrapper =new EntityWrapper<App>();
+                wrapper.isNotNull("name");
+                App _app = appService.selectOne(wrapper);
+                if(_app != null && !_app.getId().equals(app.getId())){
+                    return renderError("名称重复！");
+                }
+            }else{
+                return renderError("名称为空！");
+            }
+        }else{
+            return renderError("ID为空！");
+        }
         ShiroUser shiroUser = getShiroUser();
         app.setUpdater(shiroUser.getId());
         app.setUpdateTime(new Date());
