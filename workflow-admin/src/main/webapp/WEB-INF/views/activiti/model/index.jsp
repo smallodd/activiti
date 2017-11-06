@@ -174,6 +174,8 @@ function processDeploy(id) {
                 if (result.success) {
                     parent.$.messager.alert('提示', result.msg, 'info');
                     processdefDataGrid.datagrid('reload');
+                } else {
+                    parent.$.messager.alert('错误', result.msg, 'error');
                 }
                 progressClose();
             }, 'JSON');
