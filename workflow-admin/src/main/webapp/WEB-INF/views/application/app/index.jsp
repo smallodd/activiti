@@ -12,7 +12,7 @@
         <table id="appListGrid"></table>
     </div>
 </div>
-<div id="appToolbar" style="display: none;">
+<div id="roleToolbar" style="display: none;">
     <shiro:hasPermission name="/app/add">
         <a onclick="addAppFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-plus icon-green'">添加</a>
     </shiro:hasPermission>
@@ -81,7 +81,7 @@
                 $('.app-easyui-linkbutton-edit').linkbutton({text:'编辑'});
                 $('.app-easyui-linkbutton-del').linkbutton({text:'删除'});
             },
-            toolbar : '#resourceToolbar'
+            toolbar : '#roleToolbar'
         });
     });
 
