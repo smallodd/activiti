@@ -71,7 +71,7 @@ public class TVacationController extends BaseController{
      */
     @GetMapping("/manager")
     public String manager() {
-        return "application/tVacation";
+        return "application/tVacation/tVacation";
     }
 
 
@@ -103,7 +103,7 @@ public class TVacationController extends BaseController{
      */
     @GetMapping("/addPage")
     public String addPage() {
-        return "application/tVacationAdd";
+        return "application/tVacation/tVacationAdd";
     }
 
     /**
@@ -148,7 +148,7 @@ public class TVacationController extends BaseController{
 			comments.add(vo);
 		}
 		model.addAttribute("comments", comments);
-        return "application/tVacationGetComments";
+        return "application/tVacation/tVacationGetComments";
     }
     
     /**
