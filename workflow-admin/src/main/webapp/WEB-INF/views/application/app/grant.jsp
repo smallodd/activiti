@@ -8,7 +8,7 @@
 </head>
 <body>
 <div id="roleGrantLayout" class="easyui-layout" data-options="fit:true,border:false">
-    <div data-options="region:'west'" title="系统资源" style="width: 300px; padding: 1px;">
+    <div data-options="region:'west'" title="流程模型" style="width: 300px; padding: 1px;">
         <div class="well well-small">
             <form id="modelGrantForm" method="post">
                 <input name="id" type="hidden"  value="${id}" readonly="readonly">
