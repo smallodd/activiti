@@ -16,6 +16,10 @@
                     <td><input name="name" type="text" class="easyui-textbox" style="width:240px;height:29px;" data-options="required:true"></td>
                 </tr>
                 <tr>
+                    <td>模型KEY</td>
+                    <td><input name="key" type="text" class="easyui-textbox" style="width:240px;height:29px;"></td>
+                </tr>
+                <tr>
                     <td>备注</td>
                     <td><textarea name="description" style="width:240px;height:100px;"></textarea></td>
                 </tr>

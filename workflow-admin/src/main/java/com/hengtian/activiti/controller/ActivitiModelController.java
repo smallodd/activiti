@@ -31,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.List;
 
 @Controller
 @RequestMapping("/activiti/model")
@@ -93,9 +94,22 @@ public class ActivitiModelController extends BaseController {
     @SysLog(value="创建模型")
     @PostMapping("/create")
     @ResponseBody
-    public Object create(String name,String description,HttpServletRequest request, HttpServletResponse response) {
+    public Object create(String name,String key,String description,HttpServletRequest request, HttpServletResponse response) {
         Result result = new Result();
         try {
+            if(StringUtils.isNotBlank(key)){
+                Model model = repositoryService.createModelQuery().modelKey(key).singleResult();
+                if(model != null){
+                    String msg = "创建模型时KEY重复";
+                    logger.info(msg);
+                    result.setSuccess(false);
+                    result.setMsg(msg);
+                    return result;
+                }
+            }else{
+                key = uuidGenerator.getNextId();
+            }
+
             name = StringUtils.isBlank(name)?default_model_name:name.trim();
             ObjectMapper objectMapper = new ObjectMapper();
             ObjectNode editorNode = objectMapper.createObjectNode();
@@ -112,7 +126,7 @@ public class ActivitiModelController extends BaseController {
             modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, description);
             modelData.setMetaInfo(modelObjectNode.toString());
             modelData.setName(name);
-            modelData.setKey(uuidGenerator.getNextId());
+            modelData.setKey(key);
 
             //保存模型
             repositoryService.saveModel(modelData);
