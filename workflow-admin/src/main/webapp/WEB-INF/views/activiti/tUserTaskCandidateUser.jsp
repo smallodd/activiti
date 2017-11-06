@@ -13,14 +13,7 @@
 		    fitColumns:true,singleSelect : false,
 		    columns : [[{width : '150',title : '所属部门',field : 'departmentName'},
             {width : '150', title : '姓名',field : 'userName'},
-            {width : '200',title : '角色',field : 'roleList',
-            formatter:function(value, row, index) {
-                    var roles = [];
-                    for(var i = 0; i< value.length; i++) {
-                        roles.push(value[i].roleName);  
-                    }
-                    return(roles.join('\n'));}
-             }]],url:'${ctx}/sysUser/dataGrid'"></table>
+            {width : '200',title : '工号',field : 'loginName'}]],url:'${ctx}/sysUser/selectDataGrid'"></table>
             
 </div>
 </body>

@@ -21,7 +21,7 @@ public interface ActivitiService {
 	 * 查询我的待办任务
 	 * @param pageInfo
 	 */
-	public void selectTaskDataGrid(PageInfo pageInfo);
+	public void selectTaskDataGrid(PageInfo pageInfo,boolean isAll);
 
 	/**
 	 * 签收任务

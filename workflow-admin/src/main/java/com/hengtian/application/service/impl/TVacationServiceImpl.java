@@ -38,8 +38,21 @@ public class TVacationServiceImpl extends ServiceImpl<TVacationDao, TVacation> i
     
 	@Override
 	public void startVacation(TVacation tVacation) {
+		CommonVo vo = new CommonVo();
+		vo.setBusinessType(ConstantUtils.VACATION);
+		vo.setBusinessKey(ConstantUtils.VACATION);
+		vo.setApplyUserId("H00000");
+		vo.setApplyUserName("牛逼的人");
+		vo.setApplyTitle("牛逼的人于 "+DateUtils.formatDateToString(tVacation.getApplyDate())+" 的请假申请，请假单号为:");
+		Map<String,Object> variables=new HashMap<String,Object>();
+		variables.put(ConstantUtils.MODEL_KEY, vo);
+		//设置流程变量请假天数
+		variables.put("days", tVacation.getWorkDays());
+		ProcessInstance processInstance= runtimeService.startProcessInstanceByKey("test","110120111",variables);
+		identityService.setAuthenticatedUserId(null);
+		return;
 		//请假单号字段赋值
-		EntityWrapper<TVacation> wrapper =new EntityWrapper<TVacation>();
+		/*EntityWrapper<TVacation> wrapper =new EntityWrapper<TVacation>();
         wrapper.isNotNull("vacation_code").orderBy("vacation_code", false);
         TVacation mvacation= this.selectList(wrapper).get(0);
         String vacationCode = AutoCreateCodeUtil.autoCreateSysCode(ConstantUtils.prefixCode.SN.getValue(),mvacation.getVacationCode());
@@ -63,13 +76,13 @@ public class TVacationServiceImpl extends ServiceImpl<TVacationDao, TVacation> i
     	Map<String,Object> variables=new HashMap<String,Object>();
 		variables.put(ConstantUtils.MODEL_KEY, vo);
 		//设置流程变量请假天数
-		variables.put("days", tVacation.getWorkDays());
+		variables.put("days", tVacation.getWorkDays());*/
 		//3.启动流程实例
-		ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(ConstantUtils.VACATION,tVacation.getId(),variables);
+	/*	ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(ConstantUtils.VACATION,tVacation.getId(),variables);
 		tVacation.setProcInstId(processInstance.getId());
 		tVacationDao.updateById(tVacation);
 		//启动完流程之后设置为null
-		identityService.setAuthenticatedUserId(null);
+		identityService.setAuthenticatedUserId(null);*/
 	}
 
 	@Override

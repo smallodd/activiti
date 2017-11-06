@@ -100,12 +100,17 @@ public class ActivitiServiceImpl implements ActivitiService{
 	}
 
 	@Override
-	public void selectTaskDataGrid(PageInfo pageInfo) {
+	public void selectTaskDataGrid(PageInfo pageInfo,boolean isAll) {
 		List<TaskVo> list = new ArrayList<TaskVo>();
 		//获取Shiro中的用户信息
     	ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
     	
-    	TaskQuery taskQuery= taskService.createTaskQuery().taskCandidateOrAssigned(shiroUser.getId());
+    	TaskQuery taskQuery;
+    	if(!isAll){
+			taskQuery=taskService.createTaskQuery().taskCandidateOrAssigned(shiroUser.getId());
+		}else{
+			taskQuery=taskService.createTaskQuery();
+		}
 		List<Task> taskList = taskQuery.orderByTaskCreateTime().desc()
 				.listPage(pageInfo.getFrom(), pageInfo.getSize());
 		

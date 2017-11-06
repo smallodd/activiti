@@ -44,7 +44,33 @@ public class SysUserController extends BaseController{
     public String manager() {
         return "system/user";
     }
+    /**
+     * 用户列表
+     * @param userVo
+     * @param page
+     * @param rows
+     * @param sort
+     * @param order
+     * @return
+     */
+    @SysLog(value="查询用户列表")
+    @PostMapping("/selectDataGrid")
+    @ResponseBody
+    public Object selectDataGrid(SysUserVo userVo, Integer page, Integer rows, String sort, String order) {
+        PageInfo pageInfo = new PageInfo(page, rows);
+        Map<String, Object> condition = new HashMap<String, Object>();
 
+        if (StringUtils.isNotBlank(userVo.getUserName())) {
+            condition.put("userName", "%"+userVo.getUserName()+"%");
+        }
+
+        if(StringUtils.isNotBlank(userVo.getDepartmentId())){
+            condition.put("departmentId", userVo.getDepartmentId());
+        }
+        pageInfo.setCondition(condition);
+        sysUserService.selectDataGridAlert(pageInfo);
+        return pageInfo;
+    }
     /**
      * 用户管理列表
      * @param userVo

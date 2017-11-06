@@ -140,7 +140,31 @@ public class ActivitiController extends BaseController{
     	activitiService.selectProcessDefinitionDataGrid(pageInfo);
         return pageInfo;
     }
-    
+	/**
+	 * 所有任务管理页
+	 * @return
+	 */
+	@GetMapping("/allTaskManager")
+	public String allTaskManager() {
+		return "activiti/allTask";
+	}
+	/**
+	 * 查询所有任务
+	 * @param taskVo
+	 * @param page
+	 * @param rows
+	 * @param sort
+	 * @param order
+	 * @return
+	 */
+	@SysLog(value="查询所有任务")
+	@PostMapping("/allTaskDataGrid")
+	@ResponseBody
+	public PageInfo alltaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
+		PageInfo pageInfo = new PageInfo(page, rows);
+		activitiService.selectTaskDataGrid(pageInfo,true);
+		return pageInfo;
+	}
     /**
      * 我的任务管理页
      * @return
@@ -164,7 +188,7 @@ public class ActivitiController extends BaseController{
     @ResponseBody
     public PageInfo taskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
     	PageInfo pageInfo = new PageInfo(page, rows);
-    	activitiService.selectTaskDataGrid(pageInfo);
+    	activitiService.selectTaskDataGrid(pageInfo,false);
         return pageInfo;
     }
     
