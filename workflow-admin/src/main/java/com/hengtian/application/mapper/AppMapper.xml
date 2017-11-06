@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hengtian.application.dao.AppDao">
+<resultMap id="appMap" type="com.hengtian.application.vo.AppVo">
+    <id column="id" property="id" jdbcType="VARCHAR"/>
+    <result column="name" property="name" jdbcType="VARCHAR"/>
+    <result column="key" property="key" jdbcType="VARCHAR"/>
+    <result column="creator" property="creator" jdbcType="VARCHAR"/>
+    <result column="updater" property="updater" jdbcType="VARCHAR"/>
+    <result column="description" property="description" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+</resultMap>
+
+<select id="selectAppList" resultMap="appMap">
+    SELECT
+    ta.id,ta.name,ta.key,ta.description,ta.create_time,ta.update_time,
+    cu.login_name AS creator,uu.login_name AS updater
+    FROM t_app ta
+    LEFT JOIN sys_user cu ON cu.id = ta.creator
+    LEFT JOIN sys_user uu ON uu.id = ta.updater
+</select>
+</mapper>
