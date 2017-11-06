@@ -27,6 +27,7 @@
             rownumbers : true,
             fitColumns : true,
             border : false,
+            singleSelect : true,
             frozenColumns : [ [ {
                 title : '应用ID',
                 field : 'id',
