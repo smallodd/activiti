@@ -17,7 +17,7 @@
                 </tr>
                 <tr>
                     <td>备注</td>
-                    <td><textarea name="description" style="width:240px;height:49px;"></textarea></td>
+                    <td><textarea name="description" style="width:240px;height:100px;"></textarea></td>
                 </tr>
             </table>
         </form>
