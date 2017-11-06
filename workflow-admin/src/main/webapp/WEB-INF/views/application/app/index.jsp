@@ -77,20 +77,20 @@
                         </shiro:hasPermission>
                         <shiro:hasPermission name="/app/delete">
                             str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                            str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-model-edit" data-options="plain:true,iconCls:\'fi-widget icon-blue\'" onclick="grantModelFun(\'{0}\');" >关联模型</a>', row.id);
-                        </shiro:hasPermission>
-                            <shiro:hasPermission name="/app/delete">
-                            str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                            str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-model-list" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-green\'" onclick="deleteAppFun(\'{0}\');" >查看模型</a>', row.id);
-                        </shiro:hasPermission>
+                            str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-model-edit" data-options="plain:true,iconCls:\'fi-widget icon-blue\'" onclick="grantModelFun(\'{0}\');" >模型管理</a>', row.id);
+                        //</shiro:hasPermission>
+                            //<shiro:hasPermission name="/app/delete">
+                            //str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                            //str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-model-list" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-green\'" onclick="deleteAppFun(\'{0}\');" >查看模型</a>', row.id);
+                        //</shiro:hasPermission>
                     return str;
                 }
             } ] ],
             onLoadSuccess:function(data){
                 $('.app-easyui-linkbutton-edit').linkbutton({text:'编辑'});
                 $('.app-easyui-linkbutton-del').linkbutton({text:'删除'});
-                $('.app-easyui-linkbutton-model-edit').linkbutton({text:'关联模型'});
-                $('.app-easyui-linkbutton-model-list').linkbutton({text:'查看模型'});
+                $('.app-easyui-linkbutton-model-edit').linkbutton({text:'模型管理'});
+                //$('.app-easyui-linkbutton-model-list').linkbutton({text:'查看模型'});
             },
             toolbar : '#roleToolbar'
         });
