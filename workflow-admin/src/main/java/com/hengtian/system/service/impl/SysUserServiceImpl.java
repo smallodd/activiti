@@ -122,5 +122,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
 			}
 		}
 	}
-	
+
+	@Override
+	public void selectDataGridAlert(PageInfo pageInfo) {
+		Page<SysUserVo> page = new Page<SysUserVo>(pageInfo.getNowpage(), pageInfo.getSize());
+		List<SysUserVo> list = sysUserDao.selectSysUserByPage(page, pageInfo.getCondition());
+		pageInfo.setRows(list);
+		pageInfo.setTotal(page.getTotal());
+	}
+
 }

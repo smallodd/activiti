@@ -55,5 +55,21 @@
             </if>
         </where>
     </select>
+    <select id="selectSysUserByPage" resultMap="userVoResultMap">
+        SELECT
+        u.*,
 
+        d.department_name
+        FROM sys_user u
+
+        LEFT JOIN sys_department d ON u.department_id = d.id
+        <where>
+            <if test=" departmentId != null ">
+                u.department_id = #{departmentId}
+            </if>
+            <if test=" userName != null ">
+                u.user_name like #{userName}
+            </if>
+        </where>
+    </select>
 </mapper>

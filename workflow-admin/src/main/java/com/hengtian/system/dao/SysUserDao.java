@@ -2,6 +2,8 @@ package com.hengtian.system.dao;
 
 import java.util.List;
 import java.util.Map;
+
+import com.baomidou.mybatisplus.plugins.Page;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.plugins.pagination.Pagination;
@@ -21,4 +23,5 @@ public interface SysUserDao extends BaseMapper<SysUser> {
 
     List<SysUserVo> selectSysUserVoPage(Pagination page, Map<String, Object> params);
 
+    List<SysUserVo> selectSysUserByPage(Page<SysUserVo> page, Map<String, Object> condition);
 }

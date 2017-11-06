@@ -28,5 +28,6 @@ public interface SysUserService extends IService<SysUser> {
     void selectDataGrid(PageInfo pageInfo);
 
     void deleteUserById(String id);
-	
+
+    void selectDataGridAlert(PageInfo pageInfo);
 }

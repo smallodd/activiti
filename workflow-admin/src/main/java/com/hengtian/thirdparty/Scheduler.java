@@ -53,7 +53,7 @@ public class Scheduler {
                     String password = (String) map.get("password");
                     String name = (String) map.get("name");
                     String email = (String) map.get("email");
-                    logger.info(code+"---"+password+"---"+name+"----"+email);
+
                     userVo.setUserEmail(email);
                     userVo.setId(code);
                     userVo.setLoginName(code);
@@ -68,9 +68,10 @@ public class Scheduler {
                     userWrapper.where("id='"+code+"'");
                     SysUser sysUser=userService.selectOne(userWrapper);
                     if(sysUser!=null){
+                        logger.info("更新"+code+"---"+password+"---"+name+"----"+email);
                         userService.updateByVo(userVo);
                     }else{
-
+                        logger.info("插入"+code+"---"+password+"---"+name+"----"+email);
                         userService.insertByVo(userVo);
                     }
                 }
