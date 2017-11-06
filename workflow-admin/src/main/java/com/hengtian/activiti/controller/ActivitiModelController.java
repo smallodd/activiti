@@ -149,7 +149,8 @@ public class ActivitiModelController extends BaseController {
             Deployment deployment = repositoryService.createDeployment()
                     .name(modelData.getName()).addString(processName, new String(bpmnBytes,"UTF-8"))
                     .deploy();
-
+            modelData.setDeploymentId(deployment.getId());
+            repositoryService.saveModel(modelData);
 	        /*Deployment deployment = repositoryService.createDeployment().name(modelData.getName())
 	                .addBpmnModel(modelData.getName(), bpmnModel).deploy();*/
 
