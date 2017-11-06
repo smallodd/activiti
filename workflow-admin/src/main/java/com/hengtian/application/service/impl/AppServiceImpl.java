@@ -3,7 +3,9 @@ package com.hengtian.application.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.hengtian.application.dao.AppDao;
+import com.hengtian.application.dao.AppModelDao;
 import com.hengtian.application.model.App;
+import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppService;
 import com.hengtian.application.vo.AppVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,8 @@ import java.util.List;
 public class AppServiceImpl extends ServiceImpl<AppDao, App> implements AppService {
 
     @Autowired private AppDao appDao;
+
+	@Autowired private AppModelDao appModelDao;
 
 	/**
 	 * 查询系统应用
@@ -39,5 +43,19 @@ public class AppServiceImpl extends ServiceImpl<AppDao, App> implements AppServi
 	@Override
 	public List<String> findModelKeyListByAppId(String id){
 		return appDao.findModelKeyListByAppId(id);
+	}
+
+	@Override
+	public void updateAppModel(String appKey, String modelKeys){
+		AppModel appModel = new AppModel();
+		appModel.setAppKey(appKey);
+		EntityWrapper<AppModel> wrapper = new EntityWrapper<AppModel>(appModel);
+		wrapper.isNotNull("app_key");
+		appModelDao.delete(wrapper);
+		String[] modelKeyArray = modelKeys.split(",");
+		for (String modelKey : modelKeyArray) {
+			appModel.setModelKey(modelKey);
+			appModelDao.insert(appModel);
+		}
 	}
 }

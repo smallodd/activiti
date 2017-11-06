@@ -64,9 +64,11 @@ public class AppController extends BaseController {
     @ResponseBody
     public Object add(App app) {
         if(StringUtils.isNotEmpty(app.getName())) {
-            EntityWrapper<App> wrapper =new EntityWrapper<App>();
+            App _app = new App();
+            _app.setName(app.getName());
+            EntityWrapper<App> wrapper =new EntityWrapper<App>(_app);
             wrapper.isNotNull("name");
-            App _app = appService.selectOne(wrapper);
+            _app = appService.selectOne(wrapper);
             if(_app != null){
                 return renderError("名称重复！");
             }
@@ -105,9 +107,11 @@ public class AppController extends BaseController {
     public Object edit(App app) {
         if(StringUtils.isNotEmpty(app.getId())) {
             if(StringUtils.isNotEmpty(app.getName())) {
-                EntityWrapper<App> wrapper =new EntityWrapper<App>();
+                App _app = new App();
+                _app.setName(app.getName());
+                EntityWrapper<App> wrapper =new EntityWrapper<App>(_app);
                 wrapper.isNotNull("name");
-                App _app = appService.selectOne(wrapper);
+                _app = appService.selectOne(wrapper);
                 if(_app != null && !_app.getId().equals(app.getId())){
                     return renderError("名称重复！");
                 }
@@ -159,5 +163,23 @@ public class AppController extends BaseController {
     public Object findModelKeyListByAppId(String id) {
         List<String> resources = appService.findModelKeyListByAppId(id);
         return renderSuccess(resources);
+    }
+
+    /**
+     * 授权
+     * @param id
+     * @param modelKeys
+     * @return
+     */
+    @SysLog(value="授权")
+    @RequestMapping("/grant")
+    @ResponseBody
+    public Object grant(String id, String modelKeys) {
+        App app = appService.selectById(id);
+        if(app == null){
+            return renderError("授权失败！");
+        }
+        appService.updateAppModel(app.getKey(), modelKeys);
+        return renderSuccess("授权成功！");
     }
 }

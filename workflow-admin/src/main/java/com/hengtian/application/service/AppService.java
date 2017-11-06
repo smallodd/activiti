@@ -22,4 +22,12 @@ public interface AppService extends IService<App> {
 	 * @return
 	 */
 	List<String> findModelKeyListByAppId(String id);
+
+	/**
+	 * 授权
+	 * @param id
+	 * @param modelKeys
+	 * @return
+	 */
+	void updateAppModel(String appKey, String modelKeys);
 }
