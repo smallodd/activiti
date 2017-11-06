@@ -13,6 +13,7 @@ import com.hengtian.system.model.SysResource;
 import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -78,5 +79,45 @@ public class AppController extends BaseController {
         app.setUpdater(shiroUser.getId());
         appService.insert(app);
         return renderSuccess("添加成功！");
+    }
+
+    /**
+     * 编辑应用页
+     * @return
+     */
+    @RequestMapping("/editPage")
+    public String editPage(Model model, String id) {
+        App app = appService.selectById(id);
+        model.addAttribute("app", app);
+        return "application/app/edit";
+    }
+
+    /**
+     * 编辑应用
+     * @param app
+     * @return
+     */
+    @SysLog(value="编辑应用")
+    @RequestMapping("/edit")
+    @ResponseBody
+    public Object edit(App app) {
+        ShiroUser shiroUser = getShiroUser();
+        app.setUpdater(shiroUser.getId());
+        app.setUpdateTime(new Date());
+        appService.updateById(app);
+        return renderSuccess("编辑成功！");
+    }
+
+    /**
+     * 删除应用
+     * @param id
+     * @return
+     */
+    @SysLog(value="删除应用")
+    @RequestMapping("/delete")
+    @ResponseBody
+    public Object delete(String id) {
+        appService.deleteById(id);
+        return renderSuccess("删除成功！");
     }
 }

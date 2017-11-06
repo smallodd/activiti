@@ -12,11 +12,10 @@
         <table id="appListGrid"></table>
     </div>
 </div>
-<div id="resourceToolbar" style="display: none;">
-    <shiro:hasPermission name="/sysResource/add">
-        <a onclick="addResourceFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-plus icon-green'">添加</a>
+<div id="appToolbar" style="display: none;">
+    <shiro:hasPermission name="/app/add">
+        <a onclick="addAppFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-plus icon-green'">添加</a>
     </shiro:hasPermission>
-    <a onclick="addAppFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-plus icon-green'">添加</a>
 </div>
 <script type="text/javascript">
     var appListGrid;
@@ -68,69 +67,69 @@
                 width : 130,
                 formatter : function(value, row, index) {
                     var str = '';
-                        <shiro:hasPermission name="/sysRsource/edit">
-                            str += $.formatString('<a href="javascript:void(0)" class="resource-easyui-linkbutton-edit" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="editResourceFun(\'{0}\');" >编辑</a>', row.id);
+                        <shiro:hasPermission name="/app/edit">
+                            str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-edit" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="editAppFun(\'{0}\');" >编辑</a>', row.id);
                         </shiro:hasPermission>
-                        <shiro:hasPermission name="/sysRsource/delete">
+                        <shiro:hasPermission name="/app/delete">
                             str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                            str += $.formatString('<a href="javascript:void(0)" class="resource-easyui-linkbutton-del" data-options="plain:true,iconCls:\'fi-x icon-red\'" onclick="deleteResourceFun(\'{0}\');" >删除</a>', row.id);
+                            str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-del" data-options="plain:true,iconCls:\'fi-x icon-red\'" onclick="deleteAppFun(\'{0}\');" >删除</a>', row.id);
                         </shiro:hasPermission>
                     return str;
                 }
             } ] ],
             onLoadSuccess:function(data){
-                $('.resource-easyui-linkbutton-edit').linkbutton({text:'编辑'});
-                $('.resource-easyui-linkbutton-del').linkbutton({text:'删除'});
+                $('.app-easyui-linkbutton-edit').linkbutton({text:'编辑'});
+                $('.app-easyui-linkbutton-del').linkbutton({text:'删除'});
             },
             toolbar : '#resourceToolbar'
         });
     });
 
-    function editResourceFun(id) {
-        if (id != undefined) {
-            resourceTreeGrid.treegrid('select', id);
+    function editAppFun(id) {
+        if (id == undefined) {
+            var rows = appListGrid.datagrid('getSelections');
+            id = rows[0].id;
+        } else {
+            appListGrid.datagrid('unselectAll').datagrid('uncheckAll');
         }
-        var node = resourceTreeGrid.treegrid('getSelected');
-        if (node) {
-            parent.$.modalDialog({
-                title : '编辑',
-                width : 500,
-                height : 350,
-                href : '${ctx}/sysResource/editPage?id=' + node.id,
-                buttons : [ {
-                    text : '确定',
-                    handler : function() {
-                        parent.$.modalDialog.openner_datagrid = resourceTreeGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
-                        var f = parent.$.modalDialog.handler.find('#resourceEditForm');
-                        f.submit();
-                    }
-                } ]
-            });
-        }
+        parent.$.modalDialog({
+            title : '编辑',
+            width : 500,
+            height : 350,
+            href : '${ctx}/app/editPage?id=' + id,
+            buttons : [ {
+                text : '确定',
+                handler : function() {
+                    parent.$.modalDialog.openner_datagrid = appListGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#appEditForm');
+                    f.submit();
+                }
+            } ]
+        });
     }
 
-    function deleteResourceFun(id) {
-        if (id != undefined) {
-            resourceTreeGrid.treegrid('select', id);
+    function deleteAppFun(id) {
+        if (id == undefined) {
+            var rows = appListGrid.datagrid('getSelections');
+            id = rows[0].id;
+        } else {
+            appListGrid.datagrid('unselectAll').datagrid('uncheckAll');
         }
-        var node = resourceTreeGrid.treegrid('getSelected');
-        if (node) {
-            parent.$.messager.confirm('询问', '您是否要删除当前资源？删除当前资源会连同子资源一起删除!', function(b) {
-                if (b) {
-                    progressLoad();
-                    $.post('${ctx}/sysResource/delete', {
-                        id : node.id
-                    }, function(result) {
-                        if (result.success) {
-                            parent.$.messager.alert('提示', result.msg, 'info');
-                            resourceTreeGrid.treegrid('reload');
-                            parent.layout_west_tree.tree('reload');
-                        }
-                        progressClose();
-                    }, 'JSON');
-                }
-            });
-        }
+        parent.$.messager.confirm('询问', '您是否要删除当前应用？', function(b) {
+            if (b) {
+                progressLoad();
+                $.post('${ctx}/app/delete', {
+                    id : id
+                }, function(result) {
+                    if (result.success) {
+                        parent.$.messager.alert('提示', result.msg, 'info');
+                        appListGrid.datagrid('reload');
+                        parent.layout_west_tree.tree('reload');
+                    }
+                    progressClose();
+                }, 'JSON');
+            }
+        });
     }
 
     function addAppFun() {
