@@ -14,11 +14,13 @@ import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
+import java.util.List;
 
 @Controller
 @RequestMapping("/app")
@@ -133,5 +135,29 @@ public class AppController extends BaseController {
     public Object delete(String id) {
         appService.deleteById(id);
         return renderSuccess("删除成功！");
+    }
+
+    /**
+     * 授权页面
+     * @param id
+     * @param model
+     * @return
+     */
+    @GetMapping("/grantPage")
+    public String grantPage(Model model, String id) {
+        model.addAttribute("id", id);
+        return "application/app/grant";
+    }
+
+    /**
+     * 授权页面页面根据应用查询模型
+     * @param id
+     * @return
+     */
+    @RequestMapping("/findModelKeyListByAppId")
+    @ResponseBody
+    public Object findModelKeyListByAppId(String id) {
+        List<String> resources = appService.findModelKeyListByAppId(id);
+        return renderSuccess(resources);
     }
 }

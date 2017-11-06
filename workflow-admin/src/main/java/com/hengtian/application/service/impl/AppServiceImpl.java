@@ -31,4 +31,13 @@ public class AppServiceImpl extends ServiceImpl<AppDao, App> implements AppServi
 
 		return appDao.selectAppList();
 	}
+
+	/**
+	 * 授权页面页面根据应用查询模型
+	 * @return
+	 */
+	@Override
+	public List<String> findModelKeyListByAppId(String id){
+		return appDao.findModelKeyListByAppId(id);
+	}
 }

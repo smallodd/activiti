@@ -16,4 +16,10 @@ public interface AppService extends IService<App> {
 	 * 查询系统应用
 	 */
 	List<AppVo> selectListGrid();
+
+	/**
+	 * 授权页面页面根据应用查询模型
+	 * @return
+	 */
+	List<String> findModelKeyListByAppId(String id);
 }

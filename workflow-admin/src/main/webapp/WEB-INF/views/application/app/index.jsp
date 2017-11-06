@@ -75,12 +75,22 @@
                             str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                             str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-del" data-options="plain:true,iconCls:\'fi-x icon-red\'" onclick="deleteAppFun(\'{0}\');" >删除</a>', row.id);
                         </shiro:hasPermission>
+                        <shiro:hasPermission name="/app/delete">
+                            str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                            str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-model-edit" data-options="plain:true,iconCls:\'fi-widget icon-blue\'" onclick="grantModelFun(\'{0}\');" >关联模型</a>', row.id);
+                        </shiro:hasPermission>
+                            <shiro:hasPermission name="/app/delete">
+                            str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                            str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-model-list" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-green\'" onclick="deleteAppFun(\'{0}\');" >查看模型</a>', row.id);
+                        </shiro:hasPermission>
                     return str;
                 }
             } ] ],
             onLoadSuccess:function(data){
                 $('.app-easyui-linkbutton-edit').linkbutton({text:'编辑'});
                 $('.app-easyui-linkbutton-del').linkbutton({text:'删除'});
+                $('.app-easyui-linkbutton-model-edit').linkbutton({text:'关联模型'});
+                $('.app-easyui-linkbutton-model-list').linkbutton({text:'查看模型'});
             },
             toolbar : '#roleToolbar'
         });
@@ -144,6 +154,30 @@
                 handler : function() {
                     parent.$.modalDialog.openner_datagrid = appListGrid;
                     var f = parent.$.modalDialog.handler.find('#appAddForm');
+                    f.submit();
+                }
+            } ]
+        });
+    }
+
+    function grantModelFun(id) {
+        if (id == undefined) {
+            var rows = appListGrid.datagrid('getSelections');
+            id = rows[0].id;
+        } else {
+            appListGrid.datagrid('unselectAll').datagrid('uncheckAll');
+        }
+
+        parent.$.modalDialog({
+            title : '授权',
+            width : 500,
+            height : 500,
+            href : '${ctx}/app/grantPage?id=' + id,
+            buttons : [ {
+                text : '确定',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = appListGrid;//因为添加成功之后，需要刷新这个dataGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#roleGrantForm');
                     f.submit();
                 }
             } ]

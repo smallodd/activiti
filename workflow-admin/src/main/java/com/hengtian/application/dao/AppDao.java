@@ -13,4 +13,6 @@ import java.util.List;
 public interface AppDao extends BaseMapper<App> {
 
     List<AppVo> selectAppList();
+
+    List<String> findModelKeyListByAppId(String id);
 }

@@ -269,7 +269,7 @@ public class ActivitiModelController extends BaseController {
         if(CollectionUtils.isNotEmpty(list)){
             for(Model model : list){
                 Tree tree = new Tree();
-                tree.setId(model.getId());
+                tree.setId(model.getKey());
                 tree.setPid("0");
                 tree.setText(model.getName());
                 tree.setIconCls("fi-folder");
