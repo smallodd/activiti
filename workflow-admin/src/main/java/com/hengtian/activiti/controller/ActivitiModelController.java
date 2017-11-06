@@ -195,7 +195,6 @@ public class ActivitiModelController extends BaseController {
             return renderSuccess("流程部署成功！");
         } catch (Exception e) {
             logger.error("部署失败",e);
-            e.printStackTrace();
             return renderError("流程部署失败！");
         }
     }
