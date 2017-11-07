@@ -266,6 +266,25 @@ CREATE TABLE `t_vacation` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='请假表';
 
+CREATE TABLE `t_app` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL COMMENT '应用名称',
+  `key` varchar(64) NOT NULL COMMENT '应用KEY',
+  `creator` varchar(64) NOT NULL COMMENT '应用创建者ID',
+  `updater` varchar(64) NOT NULL COMMENT '应用更新者ID',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '修改时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8
+
+CREATE TABLE `t_app_model` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `app_key` varchar(64) DEFAULT NULL COMMENT '关联t_app key',
+  `model_key` varchar(64) DEFAULT NULL COMMENT '关联act_re_model key_',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8
+
 /*Data for the table `t_vacation` */
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

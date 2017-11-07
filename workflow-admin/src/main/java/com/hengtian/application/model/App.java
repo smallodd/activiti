@@ -21,7 +21,7 @@ public class App implements Serializable {
     /**
      * 主键
      */
-    @TableId(value="id",type = IdType.UUID)
+    @TableId(value="id",type = IdType.AUTO)
     private String id;
     /**
      * 应用名称
