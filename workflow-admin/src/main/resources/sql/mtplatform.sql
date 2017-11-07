@@ -128,11 +128,16 @@ INSERT INTO `sys_resource` VALUES ('effb8eb1d75a46f1a31f1a435bf4577c', '/tVacati
 INSERT INTO `sys_resource` VALUES ('f4de27ddadf340539ced1f9c0c0e307b', '/tUserTask/configUser', '034', '设定人员', '1', '', 'ajax', '4c32091fad9548f6b737b574090c4c5d', '1', '2017-08-23 12:16:28');
 INSERT INTO `sys_resource` VALUES ('f84a8562694e4b8ebd67f5ec39f2e4b3', '/activiti/model/modelManager', 'NO201711030001', '模型管理', '0', 'fi-paint-bucket', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '0', '2017-11-03 17:42:16');
 INSERT INTO `sys_resource` VALUES ('fa5459a821b34a30b07a676faaa806ae', '/sysDepartment/add', '015', '添加', '1', '', 'ajax', '670bb8d8a8bf4e4f9046b8da2bc7d124', '1', '2017-08-12 13:55:46');
-INSERT INTO `sys_resource` values ('5015bf9b1a31430e85126e90d2e4ee5b', '/app/add','NO201711060002','添加','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','0','2017-11-06 15:41:29');
-INSERT INTO `sys_resource` values ('57eb059e400c4d55ad0e6a472ba2d79c', '/app/edit','NO201711060003','编辑','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','1','2017-11-06 15:42:39');
-INSERT INTO `sys_resource` values ('8bd73fb8c092459dbf9285b69799c9ef', '/app/manage','NO201711060001','应用管理','0','fi-social-windows',NULL,'1','5','2017-11-06 09:38:00');
-INSERT INTO `sys_resource` values ('ab854a1516204b6fa62102c1b94e6ebf', '/app/delete','NO201711060004','删除','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','2','2017-11-06 15:42:55');
-INSERT INTO `sys_resource` values ('fdf48b6775184da1999e49ceebfa7494', '/app/modelManage','NO201711070001','模型管理','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','4','2017-11-07 10:30:48');
+INSERT INTO `sys_resource` VALUES ('5015bf9b1a31430e85126e90d2e4ee5b', '/app/add','NO201711060002','添加','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','0','2017-11-06 15:41:29');
+INSERT INTO `sys_resource` VALUES ('57eb059e400c4d55ad0e6a472ba2d79c', '/app/edit','NO201711060003','编辑','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','1','2017-11-06 15:42:39');
+INSERT INTO `sys_resource` VALUES ('8bd73fb8c092459dbf9285b69799c9ef', '/app/manage','NO201711060001','应用管理','0','fi-social-windows',NULL,'1','5','2017-11-06 09:38:00');
+INSERT INTO `sys_resource` VALUES ('ab854a1516204b6fa62102c1b94e6ebf', '/app/delete','NO201711060004','删除','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','2','2017-11-06 15:42:55');
+INSERT INTO `sys_resource` VALUES ('fdf48b6775184da1999e49ceebfa7494', '/app/modelManage','NO201711070001','模型管理','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','4','2017-11-07 10:30:48');
+INSERT INTO `sys_resource` VALUES ('287c36805ee34a5e965919198c547509', '/activiti/model/create','NO201711070002','添加','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','0','2017-11-07 11:18:33');
+INSERT INTO `sys_resource` VALUES ('964535f00cc54421965a559a4b2691ca', '/activiti/model/deploy','NO201711070004','部署','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','2','2017-11-07 11:19:48');
+INSERT INTO `sys_resource` VALUES ('c4b8b3c724344c70b6f9ac263adcf766', '/activiti/model/detail','NO201711070005','详情','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','3','2017-11-07 11:20:12');
+INSERT INTO `sys_resource` VALUES ('85bbb83c680f4684b102c8db1127217c', '/activiti/model/edit','NO201711070003','编辑','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','1','2017-11-07 11:19:16');
+
 
 /*Table structure for table `sys_role` */
 
