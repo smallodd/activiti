@@ -29,6 +29,7 @@
             rownumbers : true,
             fitColumns : false,
             border : false,
+            autoRowHeight :false,
             columns : [ [ {
                 title : 'id',
                 field : 'id',
@@ -42,7 +43,7 @@
             },{
                 field : 'departmentName',
                 title : '部门名称',
-                width : 180
+                width : 280
             }, {
                 field : 'sequence',
                 title : '排序',
@@ -83,6 +84,7 @@
             onLoadSuccess:function(data){
                 $('.department-easyui-linkbutton-edit').linkbutton({text:'编辑'});
                 $('.department-easyui-linkbutton-del').linkbutton({text:'删除'});
+                $('#departmentTreeGrid').treegrid('collapseAll');
             },
             toolbar : '#orgToolbar'
         });
