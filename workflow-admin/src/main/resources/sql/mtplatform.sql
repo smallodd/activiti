@@ -86,7 +86,6 @@ CREATE TABLE `sys_resource` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='菜单表';
 
 /*Data for the table `sys_resource` */
-
 INSERT INTO `sys_resource` VALUES ('013ce0d0b44c4380b7ecd8af65756f71', '', '023', '申请管理', '0', 'fi-page-multiple', 'ajax', '', '3', '2017-08-18 16:16:55');
 INSERT INTO `sys_resource` VALUES ('1', '', '001', '系统管理', '0', 'fi-folder', 'ajax', '', '0', null);
 INSERT INTO `sys_resource` VALUES ('1bc000c4567c4ec6a9d304a0725d1cf6', '/sysDepartment/delete', '016', '删除', '1', '', 'ajax', '670bb8d8a8bf4e4f9046b8da2bc7d124', '2', '2017-08-12 17:25:18');
@@ -94,9 +93,10 @@ INSERT INTO `sys_resource` VALUES ('1be8588cf60a4c0a95211b5dbfab5bc7', '', '021'
 INSERT INTO `sys_resource` VALUES ('2', '/sysResource/manager', '002', '资源管理', '0', 'fi-database', 'ajax', '1', '1', null);
 INSERT INTO `sys_resource` VALUES ('202edbee609e48fc97069c5cb91d8b36', '/tVacation/getComments', '035', '查看审批进度', '1', '', 'ajax', 'effb8eb1d75a46f1a31f1a435bf4577c', '2', '2017-08-26 17:11:03');
 INSERT INTO `sys_resource` VALUES ('2275d7959c0b40d5897981f059c75200', '/sysUser/edit', '009', '编辑', '1', '', 'ajax', 'eeea90fb6bf346888592bd5ccbe5e475', '3', '2017-08-12 11:19:23');
+INSERT INTO `sys_resource` VALUES ('287c36805ee34a5e965919198c547509', '/activiti/model/create', 'NO201711070002', '添加', '1', '', null, 'f84a8562694e4b8ebd67f5ec39f2e4b3', '0', '2017-11-07 11:18:33');
 INSERT INTO `sys_resource` VALUES ('294f8355c701400996c0e86db6815e85', '/activiti/claimTask', '029', '签收', '1', '', 'ajax', '7595d0149dc049d68c2b89ab999ad882', '1', '2017-08-20 22:25:30');
 INSERT INTO `sys_resource` VALUES ('3', '/sysResource/add', '003', '添加', '1', '', 'ajax', '2', '1', null);
-INSERT INTO `sys_resource` VALUES ('30159bb15c28446788d46e7f808f730d', '/activiti/delegateTask', 'NO201711060003', '委派', '0', '', null, '5be30dbf587a4d37a8a4628c2a875821', '0', '2017-11-06 09:35:37');
+INSERT INTO `sys_resource` VALUES ('30159bb15c28446788d46e7f808f730d', '/activiti/delegateTask', 'NO201711060003', '委派', '1', '', null, '5be30dbf587a4d37a8a4628c2a875821', '0', '2017-11-06 09:35:37');
 INSERT INTO `sys_resource` VALUES ('3323b161301747fe8892f6338924a53f', '/sysOperLog/manager', '036', '操作日志', '0', 'fi-database', null, '8a1a2f49ad8b431e8155ca5fbcc65ed5', '1', '2017-08-28 00:03:36');
 INSERT INTO `sys_resource` VALUES ('397c47b362f84ddcb5c7679201366333', '/sysUser/delete', '008', '删除', '1', '', 'ajax', 'eeea90fb6bf346888592bd5ccbe5e475', '2', '2017-08-12 11:17:01');
 INSERT INTO `sys_resource` VALUES ('3a0e79e02205402a956a78ea95f9c752', '/activiti/transferTask', '032', '转办', '1', '', 'ajax', '7595d0149dc049d68c2b89ab999ad882', '4', '2017-08-20 22:27:43');
@@ -106,20 +106,27 @@ INSERT INTO `sys_resource` VALUES ('41077feebcfd47caab1bc51d838735a0', '/tVacati
 INSERT INTO `sys_resource` VALUES ('4896a4e8a90d478390bd0b4bdbb8fe0d', '/sysRole/add', '011', '添加', '1', '', 'ajax', '8cd65d6021e5425ab55a7e22e66b27a1', '1', '2017-08-12 12:59:38');
 INSERT INTO `sys_resource` VALUES ('4c32091fad9548f6b737b574090c4c5d', '/tUserTask/manager', '022', '流程配置', '0', 'fi-widget', 'ajax', '1be8588cf60a4c0a95211b5dbfab5bc7', '2', '2017-08-18 15:54:18');
 INSERT INTO `sys_resource` VALUES ('5', '/sysRsource/edit', '005', '编辑', '1', '', 'ajax', '2', '3', null);
+INSERT INTO `sys_resource` VALUES ('5015bf9b1a31430e85126e90d2e4ee5b', '/app/add', 'NO201711060002', '添加', '1', '', null, '8bd73fb8c092459dbf9285b69799c9ef', '0', '2017-11-06 15:41:29');
+INSERT INTO `sys_resource` VALUES ('57eb059e400c4d55ad0e6a472ba2d79c', '/app/edit', 'NO201711060003', '编辑', '1', '', null, '8bd73fb8c092459dbf9285b69799c9ef', '1', '2017-11-06 15:42:39');
 INSERT INTO `sys_resource` VALUES ('5be30dbf587a4d37a8a4628c2a875821', '/activiti/allTaskManager', 'NO201711060001', '全部任务', '0', 'fi-list', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '0', '2017-11-06 09:21:35');
 INSERT INTO `sys_resource` VALUES ('670bb8d8a8bf4e4f9046b8da2bc7d124', '/sysDepartment/manager', '014', '部门管理', '0', 'fi-thumbnails', 'ajax', '1', '4', '2017-08-12 13:05:13');
 INSERT INTO `sys_resource` VALUES ('7595d0149dc049d68c2b89ab999ad882', '/activiti/taskManager', '028', '我的任务', '0', 'fi-list-thumbnails', 'ajax', '1be8588cf60a4c0a95211b5dbfab5bc7', '3', '2017-08-20 17:22:53');
 INSERT INTO `sys_resource` VALUES ('7929d9b9a356491693c90f2068daeb70', '/sysRole/delete', '012', '删除', '1', '', 'ajax', '8cd65d6021e5425ab55a7e22e66b27a1', '2', '2017-08-12 13:01:42');
+INSERT INTO `sys_resource` VALUES ('85bbb83c680f4684b102c8db1127217c', '/activiti/model/edit', 'NO201711070003', '编辑', '1', '', null, 'f84a8562694e4b8ebd67f5ec39f2e4b3', '1', '2017-11-07 11:19:16');
 INSERT INTO `sys_resource` VALUES ('8a1a2f49ad8b431e8155ca5fbcc65ed5', '', '018', '系统维护', '0', 'fi-torso-business', 'ajax', '', '1', '2017-08-12 18:35:12');
+INSERT INTO `sys_resource` VALUES ('8bd73fb8c092459dbf9285b69799c9ef', '/app/manage', 'NO201711060001', '应用管理', '0', 'fi-social-windows', null, '1', '5', '2017-11-06 09:38:00');
 INSERT INTO `sys_resource` VALUES ('8cd65d6021e5425ab55a7e22e66b27a1', '/sysRole/manager', '010', '角色管理', '0', 'fi-torso-business', 'ajax', '1', '3', '2017-08-12 12:58:38');
+INSERT INTO `sys_resource` VALUES ('964535f00cc54421965a559a4b2691ca', '/activiti/model/deploy', 'NO201711070004', '部署', '1', '', null, 'f84a8562694e4b8ebd67f5ec39f2e4b3', '2', '2017-11-07 11:19:48');
 INSERT INTO `sys_resource` VALUES ('98f0c0b5e51248b18f2f1ebd07cbd25c', '/activiti/processdefManager', '027', '流程定义', '0', 'fi-shuffle', 'ajax', '1be8588cf60a4c0a95211b5dbfab5bc7', '1', '2017-08-19 14:26:28');
 INSERT INTO `sys_resource` VALUES ('a5c29bad8b804849892787546f70d010', '/activiti/hisTaskManager', '034', '我的已办', '0', 'fi-checkbox', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '4', '2017-08-31 21:01:47');
 INSERT INTO `sys_resource` VALUES ('a6c1d1c19147411fbddc534f85f82b91', '/icons', '019', '系统图标', '0', 'fi-photo', 'ajax', '8a1a2f49ad8b431e8155ca5fbcc65ed5', '2', '2017-08-12 18:42:12');
 INSERT INTO `sys_resource` VALUES ('a8bebd9c95d0484d92cbe368cb5081cf', '/activiti/deploy', '028', '流程部署', '1', '', 'ajax', '98f0c0b5e51248b18f2f1ebd07cbd25c', '1', '2017-08-19 14:37:21');
+INSERT INTO `sys_resource` VALUES ('ab854a1516204b6fa62102c1b94e6ebf', '/app/delete', 'NO201711060004', '删除', '1', '', null, '8bd73fb8c092459dbf9285b69799c9ef', '2', '2017-11-06 15:42:55');
 INSERT INTO `sys_resource` VALUES ('af6a5e6f09124fa4aa010c3010165d0b', '/sysRole/grant', '020', '授权', '1', '', 'ajax', '8cd65d6021e5425ab55a7e22e66b27a1', '4', '2017-08-12 22:19:36');
 INSERT INTO `sys_resource` VALUES ('b13e0b774e6445c28b13536dc716bac5', '/sysRole/edit', '013', '编辑', '1', '', 'ajax', '8cd65d6021e5425ab55a7e22e66b27a1', '3', '2017-08-12 13:02:39');
 INSERT INTO `sys_resource` VALUES ('b7a1a2cf219d48178a450c71a45f3c45', '/sysUser/add', '007', '添加', '1', '', 'ajax', 'eeea90fb6bf346888592bd5ccbe5e475', '1', '2017-08-12 11:12:41');
 INSERT INTO `sys_resource` VALUES ('c2ac8926811a41908f74bf8dcef385ab', '/activiti/delegateTask', '031', '委派', '1', '', 'ajax', '7595d0149dc049d68c2b89ab999ad882', '3', '2017-08-20 22:27:03');
+INSERT INTO `sys_resource` VALUES ('c4b8b3c724344c70b6f9ac263adcf766', '/activiti/model/detail', 'NO201711070005', '详情', '1', '', null, 'f84a8562694e4b8ebd67f5ec39f2e4b3', '3', '2017-11-07 11:20:12');
 INSERT INTO `sys_resource` VALUES ('c6bcb99c20e7403787442e5f7aa68956', '/tVacation/getProcessImage', '038', '查看流程图', '1', '', null, 'effb8eb1d75a46f1a31f1a435bf4577c', '3', '2017-09-13 19:00:56');
 INSERT INTO `sys_resource` VALUES ('cea8161aba674721b3812078e1d611da', '/activiti/jumpTask', '033', '跳转', '1', '', 'ajax', '7595d0149dc049d68c2b89ab999ad882', '5', '2017-08-20 22:28:25');
 INSERT INTO `sys_resource` VALUES ('da9ce84c01a840ca8a71086dc64f2436', '/activiti/complateTask', '030', '办理', '1', '', 'ajax', '7595d0149dc049d68c2b89ab999ad882', '2', '2017-08-20 22:26:19');
@@ -130,17 +137,8 @@ INSERT INTO `sys_resource` VALUES ('effb8eb1d75a46f1a31f1a435bf4577c', '/tVacati
 INSERT INTO `sys_resource` VALUES ('f4de27ddadf340539ced1f9c0c0e307b', '/tUserTask/configUser', '034', '设定人员', '1', '', 'ajax', '4c32091fad9548f6b737b574090c4c5d', '1', '2017-08-23 12:16:28');
 INSERT INTO `sys_resource` VALUES ('f84a8562694e4b8ebd67f5ec39f2e4b3', '/activiti/model/modelManager', 'NO201711030001', '模型管理', '0', 'fi-paint-bucket', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '0', '2017-11-03 17:42:16');
 INSERT INTO `sys_resource` VALUES ('fa5459a821b34a30b07a676faaa806ae', '/sysDepartment/add', '015', '添加', '1', '', 'ajax', '670bb8d8a8bf4e4f9046b8da2bc7d124', '1', '2017-08-12 13:55:46');
-INSERT INTO `sys_resource` VALUES ('5015bf9b1a31430e85126e90d2e4ee5b', '/app/add','NO201711060002','添加','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','0','2017-11-06 15:41:29');
-INSERT INTO `sys_resource` VALUES ('57eb059e400c4d55ad0e6a472ba2d79c', '/app/edit','NO201711060003','编辑','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','1','2017-11-06 15:42:39');
-INSERT INTO `sys_resource` VALUES ('8bd73fb8c092459dbf9285b69799c9ef', '/app/manage','NO201711060001','应用管理','0','fi-social-windows',NULL,'1','5','2017-11-06 09:38:00');
-INSERT INTO `sys_resource` VALUES ('ab854a1516204b6fa62102c1b94e6ebf', '/app/delete','NO201711060004','删除','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','2','2017-11-06 15:42:55');
-INSERT INTO `sys_resource` VALUES ('fdf48b6775184da1999e49ceebfa7494', '/app/modelManage','NO201711070001','模型管理','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','4','2017-11-07 10:30:48');
-INSERT INTO `sys_resource` VALUES ('287c36805ee34a5e965919198c547509', '/activiti/model/create','NO201711070002','添加','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','0','2017-11-07 11:18:33');
-INSERT INTO `sys_resource` VALUES ('964535f00cc54421965a559a4b2691ca', '/activiti/model/deploy','NO201711070004','部署','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','2','2017-11-07 11:19:48');
-INSERT INTO `sys_resource` VALUES ('c4b8b3c724344c70b6f9ac263adcf766', '/activiti/model/detail','NO201711070005','详情','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','3','2017-11-07 11:20:12');
-INSERT INTO `sys_resource` VALUES ('85bbb83c680f4684b102c8db1127217c', '/activiti/model/edit','NO201711070003','编辑','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','1','2017-11-07 11:19:16');
+INSERT INTO `sys_resource` VALUES ('fdf48b6775184da1999e49ceebfa7494', '/app/modelManage', 'NO201711070001', '模型管理', '1', '', null, '8bd73fb8c092459dbf9285b69799c9ef', '4', '2017-11-07 10:30:48');
 INSERT INTO `sys_resource` VALUES ('fe10cc8d40914ca387f2c00afd75c452', '/activiti/transferTask', 'NO201711060002', '转办', '1', '', null, '5be30dbf587a4d37a8a4628c2a875821', '0', '2017-11-06 09:35:11');
-
 
 /*Table structure for table `sys_role` */
 
@@ -172,7 +170,77 @@ CREATE TABLE `sys_role_resource` (
 
 /*Data for the table `sys_role_resource` */
 
-insert  into `sys_role_resource`(`id`,`resource_id`,`role_id`) values ('032f4e084bc74c839a68efb7bb6438eb','a6c1d1c19147411fbddc534f85f82b91','1'),('0473de61dc104c94bdbc26385132e132','98f0c0b5e51248b18f2f1ebd07cbd25c','1'),('12aeae3ae585479fb1d3ff4952c2bb30','294f8355c701400996c0e86db6815e85','e1fa3ea4aff84a8ebf3aebcfc5c6d4fa'),('1fc54bf2a7ca43cbb896d8bc397ecb1d','3','1'),('2faaf0136a964938b8130b827ececbd5','c6bcb99c20e7403787442e5f7aa68956','1'),('3477076ea8f249a5be8e7e2294fd9ce3','3d6f03d570c5411284c57d60216ad76e','1'),('3548cd408d874d1eaa3afeba6e7d8172','7595d0149dc049d68c2b89ab999ad882','543c56799ed14d8d93294f1d2e93626d'),('3b129bcdb17a4e05ae6a2f022262d4c9','eb6fc407610842219f7e94dcf1fa82ea','1'),('3c3bc295fd7c4f82add81dfc49c78ed4','eeea90fb6bf346888592bd5ccbe5e475','1'),('3f41495619d14b5492b6d502ce74c0a6','1be8588cf60a4c0a95211b5dbfab5bc7','979e0715942e4cc09fc4a78e6c3544e7'),('45f0ada300cd4a47981c44657ddafe1b','294f8355c701400996c0e86db6815e85','543c56799ed14d8d93294f1d2e93626d'),('56ea84336468494d93af91479f6c540a','397c47b362f84ddcb5c7679201366333','1'),('57281ca02fd343c48b6bd14f96bec254','1bc000c4567c4ec6a9d304a0725d1cf6','1'),('58da1b713d5947deae8543978f8826b0','2','1'),('5a8ebf8e150f4e6985e149398180cbfe','','eb5cb38d0102457f8cfe4764198dbeae'),('621fc861f0184d5e9e87ad37a5d5e78d','1','1'),('6661046104714495903332f0410214fa','da9ce84c01a840ca8a71086dc64f2436','543c56799ed14d8d93294f1d2e93626d'),('6a6e49b0824a469bbb5185946cdd58e5','a5c29bad8b804849892787546f70d010','e1fa3ea4aff84a8ebf3aebcfc5c6d4fa'),('71e637135b354f67b9c62e6408270347','da9ce84c01a840ca8a71086dc64f2436','492cdebdbbe74ad98d047e627b696c66'),('742cc7bc79a74c1e8f21bba5293317fb','4896a4e8a90d478390bd0b4bdbb8fe0d','1'),('7649ee93281f4e90af71a2cfc0ed28fa','7595d0149dc049d68c2b89ab999ad882','e1fa3ea4aff84a8ebf3aebcfc5c6d4fa'),('79da2432940f4629a5e7c8047828a625','b7a1a2cf219d48178a450c71a45f3c45','1'),('7bf6fa9debd442ddaa095894026575bc','013ce0d0b44c4380b7ecd8af65756f71','1'),('7cffe53b6a0e463384608867da2fc9e4','a8bebd9c95d0484d92cbe368cb5081cf','1'),('80eef4785e6f426b9ca5b0af0f9d4e7d','8a1a2f49ad8b431e8155ca5fbcc65ed5','1'),('88707bfe301e434590cb48de335acde6','da9ce84c01a840ca8a71086dc64f2436','1'),('8add10dc45c34df9bbd62af155b68c50','294f8355c701400996c0e86db6815e85','492cdebdbbe74ad98d047e627b696c66'),('8e3993df070740f6ab56f0e3407c2466','7595d0149dc049d68c2b89ab999ad882','1'),('8e4b5ba6196243d2ac9e0ff88eb58057','7595d0149dc049d68c2b89ab999ad882','979e0715942e4cc09fc4a78e6c3544e7'),('8ed22fa90ff141b7a149857ca6a75a92','a5c29bad8b804849892787546f70d010','979e0715942e4cc09fc4a78e6c3544e7'),('91d3ca36c8804ec88e434d87480d22de','af6a5e6f09124fa4aa010c3010165d0b','1'),('9a65ed774ed34877b2674596b16750d5','b13e0b774e6445c28b13536dc716bac5','1'),('9b9611d585484bea98cda71284fe9f8c','670bb8d8a8bf4e4f9046b8da2bc7d124','1'),('ab63f790923a4cedb41ffb531164bb2f','da9ce84c01a840ca8a71086dc64f2436','979e0715942e4cc09fc4a78e6c3544e7'),('b23acaf15db64c2a927ab9298aa4ab6a','2275d7959c0b40d5897981f059c75200','1'),('b389ae3ad0fc4e3f9a01fef1b7afc758','8cd65d6021e5425ab55a7e22e66b27a1','1'),('b9e976fe631a4df9a869784a72bbd17b','7595d0149dc049d68c2b89ab999ad882','492cdebdbbe74ad98d047e627b696c66'),('cf0145360019499b8aab887d292b4c67','a5c29bad8b804849892787546f70d010','543c56799ed14d8d93294f1d2e93626d'),('d072a5950a034cffbbf0a296f5a60b11','4','1'),('d07874850cfa44dfa7c2c5a8ac89531e','5','1'),('d0d02303ae76450ba4843161348ac166','effb8eb1d75a46f1a31f1a435bf4577c','1'),('d1cb98b1183e4f3bb5aed67deb91392a','f4de27ddadf340539ced1f9c0c0e307b','1'),('d76d0658342548098bcda62c4ff0b63b','294f8355c701400996c0e86db6815e85','1'),('da277df902c14443921497af25091c4a','3323b161301747fe8892f6338924a53f','1'),('dbca3be41cfd4e74aae8545b647c28ce','fa5459a821b34a30b07a676faaa806ae','1'),('ddb6bbfd15694a388ef5e7b990982078','da9ce84c01a840ca8a71086dc64f2436','e1fa3ea4aff84a8ebf3aebcfc5c6d4fa'),('e269b3a186e94b73b841adc9760a9271','1be8588cf60a4c0a95211b5dbfab5bc7','1'),('e99de6fd20254ce086ba5571bcbace46','4c32091fad9548f6b737b574090c4c5d','1'),('e9edd710fdf84080bf3aab21dbc929cc','a5c29bad8b804849892787546f70d010','1'),('ea28a69b893f45fba894443ae5009885','294f8355c701400996c0e86db6815e85','979e0715942e4cc09fc4a78e6c3544e7'),('ecdc990352d84aeca7c57b28140c137e','7929d9b9a356491693c90f2068daeb70','1'),('ed7af00b4b484c339e428548cb06fa64','202edbee609e48fc97069c5cb91d8b36','1'),('f635616287394f5aab099e6f0af9a122','db0660daedcd48b0bfd7bfd724137e31','1'),('f6ec9f9ec5234e8594c7deb0abb87dca','41077feebcfd47caab1bc51d838735a0','1');
+INSERT INTO `sys_role_resource` VALUES ('00378f1d03cc430a935f005e92ea7909', '5015bf9b1a31430e85126e90d2e4ee5b', '1');
+INSERT INTO `sys_role_resource` VALUES ('06536906f8714fbc8904c246b4ef452d', '3a0e79e02205402a956a78ea95f9c752', '1');
+INSERT INTO `sys_role_resource` VALUES ('0fcf16b80e784f5780b139ad2fdd94b3', 'a8bebd9c95d0484d92cbe368cb5081cf', '1');
+INSERT INTO `sys_role_resource` VALUES ('12aeae3ae585479fb1d3ff4952c2bb30', '294f8355c701400996c0e86db6815e85', 'e1fa3ea4aff84a8ebf3aebcfc5c6d4fa');
+INSERT INTO `sys_role_resource` VALUES ('1d4840363ba94fa5887a353e94e4a883', 'c2ac8926811a41908f74bf8dcef385ab', '1');
+INSERT INTO `sys_role_resource` VALUES ('22bee7e6eb534b279d37bcecaec5d08b', 'da9ce84c01a840ca8a71086dc64f2436', '1');
+INSERT INTO `sys_role_resource` VALUES ('2665253707224ae98ad36589babab53e', 'eb6fc407610842219f7e94dcf1fa82ea', '1');
+INSERT INTO `sys_role_resource` VALUES ('28f538bd23154625b807ffd64476891d', '8bd73fb8c092459dbf9285b69799c9ef', '1');
+INSERT INTO `sys_role_resource` VALUES ('2a76521b4a9b421e8051b26d212ee709', '41077feebcfd47caab1bc51d838735a0', '1');
+INSERT INTO `sys_role_resource` VALUES ('2d4d566ee1294593b16aa72a4ae8bf02', '85bbb83c680f4684b102c8db1127217c', '1');
+INSERT INTO `sys_role_resource` VALUES ('2dd30b1e03f14ea7aa61195e56038818', 'fa5459a821b34a30b07a676faaa806ae', '1');
+INSERT INTO `sys_role_resource` VALUES ('339b79bf08c143d9aa132087b039f596', '98f0c0b5e51248b18f2f1ebd07cbd25c', '1');
+INSERT INTO `sys_role_resource` VALUES ('348f11e398174e60870ee6294fa8e94b', 'b13e0b774e6445c28b13536dc716bac5', '1');
+INSERT INTO `sys_role_resource` VALUES ('3548cd408d874d1eaa3afeba6e7d8172', '7595d0149dc049d68c2b89ab999ad882', '543c56799ed14d8d93294f1d2e93626d');
+INSERT INTO `sys_role_resource` VALUES ('37d14ff8812749d9ace1de779cad987f', '1be8588cf60a4c0a95211b5dbfab5bc7', '1');
+INSERT INTO `sys_role_resource` VALUES ('3f41495619d14b5492b6d502ce74c0a6', '1be8588cf60a4c0a95211b5dbfab5bc7', '979e0715942e4cc09fc4a78e6c3544e7');
+INSERT INTO `sys_role_resource` VALUES ('416e379eef9e4133902450587590251c', 'f4de27ddadf340539ced1f9c0c0e307b', '1');
+INSERT INTO `sys_role_resource` VALUES ('42a39c35babd431d8d627ea73bc12831', 'cea8161aba674721b3812078e1d611da', '1');
+INSERT INTO `sys_role_resource` VALUES ('45f0ada300cd4a47981c44657ddafe1b', '294f8355c701400996c0e86db6815e85', '543c56799ed14d8d93294f1d2e93626d');
+INSERT INTO `sys_role_resource` VALUES ('4ce623a636e143c1adab45e4d34c6115', 'af6a5e6f09124fa4aa010c3010165d0b', '1');
+INSERT INTO `sys_role_resource` VALUES ('51dac53c05e54c928c7310495127046b', '5be30dbf587a4d37a8a4628c2a875821', '1');
+INSERT INTO `sys_role_resource` VALUES ('520a29dbe31f442dbd9cf1f86b5bd747', '7595d0149dc049d68c2b89ab999ad882', '1');
+INSERT INTO `sys_role_resource` VALUES ('55f9da6f63544a6dbbec5e0445993f08', 'db0660daedcd48b0bfd7bfd724137e31', '1');
+INSERT INTO `sys_role_resource` VALUES ('5766bc9f2dfe4deab1635b58e1593cb1', '294f8355c701400996c0e86db6815e85', '1');
+INSERT INTO `sys_role_resource` VALUES ('587da56a57ea4c38bf54f268badfe859', '287c36805ee34a5e965919198c547509', '1');
+INSERT INTO `sys_role_resource` VALUES ('59d14d43efc5405a836819f1a1f0d75a', '3323b161301747fe8892f6338924a53f', '1');
+INSERT INTO `sys_role_resource` VALUES ('5a8ebf8e150f4e6985e149398180cbfe', '', 'eb5cb38d0102457f8cfe4764198dbeae');
+INSERT INTO `sys_role_resource` VALUES ('6661046104714495903332f0410214fa', 'da9ce84c01a840ca8a71086dc64f2436', '543c56799ed14d8d93294f1d2e93626d');
+INSERT INTO `sys_role_resource` VALUES ('6a6e49b0824a469bbb5185946cdd58e5', 'a5c29bad8b804849892787546f70d010', 'e1fa3ea4aff84a8ebf3aebcfc5c6d4fa');
+INSERT INTO `sys_role_resource` VALUES ('71e637135b354f67b9c62e6408270347', 'da9ce84c01a840ca8a71086dc64f2436', '492cdebdbbe74ad98d047e627b696c66');
+INSERT INTO `sys_role_resource` VALUES ('76235672e7474139a124fda7bd2dd295', '1bc000c4567c4ec6a9d304a0725d1cf6', '1');
+INSERT INTO `sys_role_resource` VALUES ('7649ee93281f4e90af71a2cfc0ed28fa', '7595d0149dc049d68c2b89ab999ad882', 'e1fa3ea4aff84a8ebf3aebcfc5c6d4fa');
+INSERT INTO `sys_role_resource` VALUES ('84f6ef0a576b4d3fae95d8afbc02f388', '8cd65d6021e5425ab55a7e22e66b27a1', '1');
+INSERT INTO `sys_role_resource` VALUES ('85e0a65b39134cd395eb900aa575d4e5', '3', '1');
+INSERT INTO `sys_role_resource` VALUES ('8add10dc45c34df9bbd62af155b68c50', '294f8355c701400996c0e86db6815e85', '492cdebdbbe74ad98d047e627b696c66');
+INSERT INTO `sys_role_resource` VALUES ('8b49ecd7e81544dcb4a9ad40cb84e26a', '30159bb15c28446788d46e7f808f730d', '1');
+INSERT INTO `sys_role_resource` VALUES ('8e4b5ba6196243d2ac9e0ff88eb58057', '7595d0149dc049d68c2b89ab999ad882', '979e0715942e4cc09fc4a78e6c3544e7');
+INSERT INTO `sys_role_resource` VALUES ('8ed22fa90ff141b7a149857ca6a75a92', 'a5c29bad8b804849892787546f70d010', '979e0715942e4cc09fc4a78e6c3544e7');
+INSERT INTO `sys_role_resource` VALUES ('90fee4ddc9e448d1889091b0537dbd33', '202edbee609e48fc97069c5cb91d8b36', '1');
+INSERT INTO `sys_role_resource` VALUES ('926684302a6f45489bd47e45c991434e', 'ab854a1516204b6fa62102c1b94e6ebf', '1');
+INSERT INTO `sys_role_resource` VALUES ('9592fea8846948eab90babdbc45e95ff', '4', '1');
+INSERT INTO `sys_role_resource` VALUES ('9a6c581047e94e4bb618f3f8e5b113d8', '7929d9b9a356491693c90f2068daeb70', '1');
+INSERT INTO `sys_role_resource` VALUES ('a71a0afa56be45b996bfc27b21439b92', '013ce0d0b44c4380b7ecd8af65756f71', '1');
+INSERT INTO `sys_role_resource` VALUES ('a7a1bcda7ba841f5a80a545e987cf211', 'c6bcb99c20e7403787442e5f7aa68956', '1');
+INSERT INTO `sys_role_resource` VALUES ('a9093c13f3f54257b3fb7cf2fd76724f', 'effb8eb1d75a46f1a31f1a435bf4577c', '1');
+INSERT INTO `sys_role_resource` VALUES ('ab63f790923a4cedb41ffb531164bb2f', 'da9ce84c01a840ca8a71086dc64f2436', '979e0715942e4cc09fc4a78e6c3544e7');
+INSERT INTO `sys_role_resource` VALUES ('b02e83212ac74fe092fd47a7ed49ccbe', '2', '1');
+INSERT INTO `sys_role_resource` VALUES ('b05c527d59ce42bca02f858155f68753', '57eb059e400c4d55ad0e6a472ba2d79c', '1');
+INSERT INTO `sys_role_resource` VALUES ('b9e976fe631a4df9a869784a72bbd17b', '7595d0149dc049d68c2b89ab999ad882', '492cdebdbbe74ad98d047e627b696c66');
+INSERT INTO `sys_role_resource` VALUES ('ba1417587767494c8d550705136bc10c', '5', '1');
+INSERT INTO `sys_role_resource` VALUES ('c24d2a2870b84c06b4d7acc5ac5cdceb', '397c47b362f84ddcb5c7679201366333', '1');
+INSERT INTO `sys_role_resource` VALUES ('c2f63ac74ae24891a0ca9e317889981e', 'a5c29bad8b804849892787546f70d010', '1');
+INSERT INTO `sys_role_resource` VALUES ('c486cb8b667b4b159d0ed026267fdc54', 'a6c1d1c19147411fbddc534f85f82b91', '1');
+INSERT INTO `sys_role_resource` VALUES ('c53ce38356cb496194c5a148107c366f', '4896a4e8a90d478390bd0b4bdbb8fe0d', '1');
+INSERT INTO `sys_role_resource` VALUES ('ca39f4591378454ea82ce4a8f0fceb77', 'fe10cc8d40914ca387f2c00afd75c452', '1');
+INSERT INTO `sys_role_resource` VALUES ('cf0145360019499b8aab887d292b4c67', 'a5c29bad8b804849892787546f70d010', '543c56799ed14d8d93294f1d2e93626d');
+INSERT INTO `sys_role_resource` VALUES ('d092572f39a649e1a908835f8abfd3d4', '964535f00cc54421965a559a4b2691ca', '1');
+INSERT INTO `sys_role_resource` VALUES ('d5153e1826544bedbebcdc1efd13920e', '1', '1');
+INSERT INTO `sys_role_resource` VALUES ('d93de7ee311247c1a6a6ae70da77dda4', '3d6f03d570c5411284c57d60216ad76e', '1');
+INSERT INTO `sys_role_resource` VALUES ('dcb08b53b0dc42138d1c81d5f245e047', '2275d7959c0b40d5897981f059c75200', '1');
+INSERT INTO `sys_role_resource` VALUES ('ddb6bbfd15694a388ef5e7b990982078', 'da9ce84c01a840ca8a71086dc64f2436', 'e1fa3ea4aff84a8ebf3aebcfc5c6d4fa');
+INSERT INTO `sys_role_resource` VALUES ('dfb64a1dcbad47dab2e7e688da504ea9', '8a1a2f49ad8b431e8155ca5fbcc65ed5', '1');
+INSERT INTO `sys_role_resource` VALUES ('e4944933b68f4c71b8e0ddf2b9cf0064', 'fdf48b6775184da1999e49ceebfa7494', '1');
+INSERT INTO `sys_role_resource` VALUES ('e75719c89ba44620bf6fd746e00255c4', 'f84a8562694e4b8ebd67f5ec39f2e4b3', '1');
+INSERT INTO `sys_role_resource` VALUES ('ea28a69b893f45fba894443ae5009885', '294f8355c701400996c0e86db6815e85', '979e0715942e4cc09fc4a78e6c3544e7');
+INSERT INTO `sys_role_resource` VALUES ('f5522e247c7e439eae0fd00255f7d3ae', 'b7a1a2cf219d48178a450c71a45f3c45', '1');
+INSERT INTO `sys_role_resource` VALUES ('f97c875304b449bea1b56cd24370bab6', '670bb8d8a8bf4e4f9046b8da2bc7d124', '1');
+INSERT INTO `sys_role_resource` VALUES ('fb18dbf485434fdea9f9f190452e384e', 'eeea90fb6bf346888592bd5ccbe5e475', '1');
+INSERT INTO `sys_role_resource` VALUES ('fbf0eefbc0534be89f42b3ce8202ce01', 'c4b8b3c724344c70b6f9ac263adcf766', '1');
+INSERT INTO `sys_role_resource` VALUES ('fca25692166b4426b9200745161cdfc9', '4c32091fad9548f6b737b574090c4c5d', '1');
+
 
 /*Table structure for table `sys_user` */
 

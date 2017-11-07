@@ -21,7 +21,7 @@ public interface WorkTaskService {
     /**
      * 开启任务
      * @param commonVo
-     * @return
+     * @return  返回部署的任务id
      */
     String startTask(CommonVo commonVo);
     /**

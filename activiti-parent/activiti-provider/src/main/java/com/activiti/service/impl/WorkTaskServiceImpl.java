@@ -3,7 +3,9 @@ package com.activiti.service.impl;
 import com.activiti.entity.CommonVo;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.main.ActivityMain;
+import com.activiti.model.SysUser;
 import com.activiti.model.TUserTask;
+import com.activiti.service.SysUserService;
 import com.activiti.service.TUserTaskService;
 import com.activiti.service.WorkTaskService;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
@@ -54,25 +56,22 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     @Resource
     RuntimeService runtimeService;
     @Resource
-    ManagementService managementService;
-    @Resource
     IdentityService identityService;
     @Resource
     TUserTaskService tUserTaskService;
-    @Autowired
-    ProcessEngineConfiguration processEngineConfiguration;
+    @Resource
+    SysUserService sysUserService;
+
 
     public String startTask(CommonVo commonVo) {
+        logger.info("startTask开启任务开始，参数"+commonVo.toString());
         if(StringUtils.isBlank(commonVo.getApplyTitle())||StringUtils.isBlank(commonVo.getApplyUserId())||StringUtils.isBlank(commonVo.getApplyUserName())||StringUtils.isBlank(commonVo.getBusinessKey())||StringUtils.isBlank(commonVo.getBusinessType())||StringUtils.isBlank(commonVo.getProDefinedKey())){
             throw new IllegalArgumentException("参数不合法，请检查参数是否正确,"+commonVo.toString());
         }
         commonVo.setApplyTitle(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey());
         Map<String,Object> variables=new HashMap<String,Object>();
-
         try {
-
             variables= com.activiti.common.BeanUtils.toMap(commonVo);
-
         } catch (Exception e) {
             try {
                 variables= org.apache.commons.beanutils.BeanUtils.describe(commonVo);
@@ -98,6 +97,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         return processInstance.getProcessInstanceId();
     }
+
 
 
     private List<String> getProcessKeys(String bussnessKey){
@@ -153,10 +153,13 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         Authentication.setAuthenticatedUserId(authName);
         //添加审批意见
         taskService.addComment(task.getId(),task.getProcessInstanceId(),note);
-        User user=identityService.createUserQuery().userId(currentUser).singleResult();
-        if(user==null){
-            throw new NotFoundException("用户不存在: " + currentUser );
+        EntityWrapper<SysUser> wrapper=new EntityWrapper<SysUser>();
+        wrapper.where("id={0}",currentUser);
+        SysUser sysUser=sysUserService.selectOne(wrapper);
+        if(sysUser==null){
+            throw new RuntimeException("用户信息不存在"+currentUser);
         }
+
         boolean canCompleteTask = false;
         if(!currentUser.equals(task.getAssignee())){
 
@@ -164,7 +167,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
                 if (historicProcessInstance != null && StringUtils.isNotEmpty(historicProcessInstance.getStartUserId())) {
                     String processInstanceStartUserId = historicProcessInstance.getStartUserId();
-                    if (String.valueOf(user.getId()).equals(processInstanceStartUserId)) {
+                    if (String.valueOf(sysUser.getId()).equals(processInstanceStartUserId)) {
                         BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
                         FlowElement flowElement = bpmnModel.getFlowElement(task.getTaskDefinitionKey());
                         if (flowElement != null && flowElement instanceof UserTask) {
