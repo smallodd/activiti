@@ -177,7 +177,7 @@
 			order="2" />
 
 	</aop:config>
-	<bean class="com.activiti.listener.InstantiationTracingBeanPostProcessor"></bean>
+	<!--<bean class="com.activiti.listener.InstantiationTracingBeanPostProcessor"></bean>-->
 	<import resource="activiti.cfg.xml"></import>
 	<import resource="spring-activiti-provider.xml" />
 
