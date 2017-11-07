@@ -75,11 +75,11 @@
                             str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                             str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-del" data-options="plain:true,iconCls:\'fi-x icon-red\'" onclick="deleteAppFun(\'{0}\');" >删除</a>', row.id);
                         </shiro:hasPermission>
-                        <shiro:hasPermission name="/app/delete">
+                        <shiro:hasPermission name="/app/modelManage">
                             str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                             str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-model-edit" data-options="plain:true,iconCls:\'fi-widget icon-blue\'" onclick="grantModelFun(\'{0}\');" >模型管理</a>', row.id);
-                        //</shiro:hasPermission>
-                            //<shiro:hasPermission name="/app/delete">
+                        </shiro:hasPermission>
+                        //<shiro:hasPermission name="/app/delete">
                             //str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                             //str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-model-list" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-green\'" onclick="deleteAppFun(\'{0}\');" >查看模型</a>', row.id);
                         //</shiro:hasPermission>
