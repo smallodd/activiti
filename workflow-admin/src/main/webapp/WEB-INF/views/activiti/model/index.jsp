@@ -79,7 +79,7 @@
                     str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-sleep" data-options="plain:true,iconCls:\'fi-upload icon-blue\'" onclick="processDeploy(\'{0}\');" >部署</a>', row.id);
                 </shiro:hasPermission>
 
-                <shiro:hasPermission name="/activiti/active/detail">
+                <shiro:hasPermission name="/activiti/model/detail">
                     str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-active" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="modelDetail(\'{0}\');" >详情</a>', row.id);
                 </shiro:hasPermission>
 
