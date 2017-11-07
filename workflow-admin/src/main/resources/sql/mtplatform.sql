@@ -86,6 +86,7 @@ CREATE TABLE `sys_resource` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='菜单表';
 
 /*Data for the table `sys_resource` */
+
 INSERT INTO `sys_resource` VALUES ('013ce0d0b44c4380b7ecd8af65756f71', '', '023', '申请管理', '0', 'fi-page-multiple', 'ajax', '', '3', '2017-08-18 16:16:55');
 INSERT INTO `sys_resource` VALUES ('1', '', '001', '系统管理', '0', 'fi-folder', 'ajax', '', '0', null);
 INSERT INTO `sys_resource` VALUES ('1bc000c4567c4ec6a9d304a0725d1cf6', '/sysDepartment/delete', '016', '删除', '1', '', 'ajax', '670bb8d8a8bf4e4f9046b8da2bc7d124', '2', '2017-08-12 17:25:18');
@@ -129,6 +130,15 @@ INSERT INTO `sys_resource` VALUES ('effb8eb1d75a46f1a31f1a435bf4577c', '/tVacati
 INSERT INTO `sys_resource` VALUES ('f4de27ddadf340539ced1f9c0c0e307b', '/tUserTask/configUser', '034', '设定人员', '1', '', 'ajax', '4c32091fad9548f6b737b574090c4c5d', '1', '2017-08-23 12:16:28');
 INSERT INTO `sys_resource` VALUES ('f84a8562694e4b8ebd67f5ec39f2e4b3', '/activiti/model/modelManager', 'NO201711030001', '模型管理', '0', 'fi-paint-bucket', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '0', '2017-11-03 17:42:16');
 INSERT INTO `sys_resource` VALUES ('fa5459a821b34a30b07a676faaa806ae', '/sysDepartment/add', '015', '添加', '1', '', 'ajax', '670bb8d8a8bf4e4f9046b8da2bc7d124', '1', '2017-08-12 13:55:46');
+INSERT INTO `sys_resource` VALUES ('5015bf9b1a31430e85126e90d2e4ee5b', '/app/add','NO201711060002','添加','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','0','2017-11-06 15:41:29');
+INSERT INTO `sys_resource` VALUES ('57eb059e400c4d55ad0e6a472ba2d79c', '/app/edit','NO201711060003','编辑','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','1','2017-11-06 15:42:39');
+INSERT INTO `sys_resource` VALUES ('8bd73fb8c092459dbf9285b69799c9ef', '/app/manage','NO201711060001','应用管理','0','fi-social-windows',NULL,'1','5','2017-11-06 09:38:00');
+INSERT INTO `sys_resource` VALUES ('ab854a1516204b6fa62102c1b94e6ebf', '/app/delete','NO201711060004','删除','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','2','2017-11-06 15:42:55');
+INSERT INTO `sys_resource` VALUES ('fdf48b6775184da1999e49ceebfa7494', '/app/modelManage','NO201711070001','模型管理','1','',NULL,'8bd73fb8c092459dbf9285b69799c9ef','4','2017-11-07 10:30:48');
+INSERT INTO `sys_resource` VALUES ('287c36805ee34a5e965919198c547509', '/activiti/model/create','NO201711070002','添加','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','0','2017-11-07 11:18:33');
+INSERT INTO `sys_resource` VALUES ('964535f00cc54421965a559a4b2691ca', '/activiti/model/deploy','NO201711070004','部署','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','2','2017-11-07 11:19:48');
+INSERT INTO `sys_resource` VALUES ('c4b8b3c724344c70b6f9ac263adcf766', '/activiti/model/detail','NO201711070005','详情','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','3','2017-11-07 11:20:12');
+INSERT INTO `sys_resource` VALUES ('85bbb83c680f4684b102c8db1127217c', '/activiti/model/edit','NO201711070003','编辑','1','',NULL,'f84a8562694e4b8ebd67f5ec39f2e4b3','1','2017-11-07 11:19:16');
 INSERT INTO `sys_resource` VALUES ('fe10cc8d40914ca387f2c00afd75c452', '/activiti/transferTask', 'NO201711060002', '转办', '1', '', null, '5be30dbf587a4d37a8a4628c2a875821', '0', '2017-11-06 09:35:11');
 
 
@@ -258,6 +268,27 @@ CREATE TABLE `t_vacation` (
   `vacation_type` int(10) DEFAULT NULL COMMENT '请假类型',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='请假表';
+
+DROP TABLE IF EXISTS `t_app`;
+CREATE TABLE `t_app` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL COMMENT '应用名称',
+  `key` varchar(64) NOT NULL COMMENT '应用KEY',
+  `creator` varchar(64) NOT NULL COMMENT '应用创建者ID',
+  `updater` varchar(64) NOT NULL COMMENT '应用更新者ID',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '修改时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='应用表';
+
+DROP TABLE IF EXISTS `t_app_model`;
+CREATE TABLE `t_app_model` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `app_key` varchar(64) DEFAULT NULL COMMENT '关联t_app key',
+  `model_key` varchar(64) DEFAULT NULL COMMENT '关联act_re_model key_',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='应用模型关联表';
 
 /*Data for the table `t_vacation` */
 

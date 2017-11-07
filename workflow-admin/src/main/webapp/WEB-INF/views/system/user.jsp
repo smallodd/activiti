@@ -25,7 +25,7 @@
     <div data-options="region:'center',border:true,title:'用户列表'" >
         <table id="userDataGrid" data-options="fit:true,border:false"></table>
     </div>
-    <div data-options="region:'west',border:true,split:false,title:'组织机构'"  style="width:150px;overflow: hidden; ">
+    <div data-options="region:'west',border:true,split:false,title:'组织机构'"  style="width:150px;">
         <ul id="departmentTree" style="width:160px;margin: 10px 10px 10px 10px"></ul>
     </div>
 </div>

@@ -111,7 +111,7 @@ public class TUserTaskController extends BaseController{
 					tUserTask.setProcDefKey(pd.getKey());
 					tUserTask.setProcDefName(pd.getName());
 					tUserTask.setTaskDefKey(taskDefinition.getKey());
-					tUserTask.setTaskName(taskDefinition.getNameExpression().toString());
+					tUserTask.setTaskName(taskDefinition.getNameExpression()==null?null:taskDefinition.getNameExpression().toString());
 					tUserTaskService.insert(tUserTask);
 				}else if(activityBehavior instanceof ParallelMultiInstanceBehavior){
 		            TUserTask tUserTask = new TUserTask();

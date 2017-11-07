@@ -7,6 +7,7 @@ import com.hengtian.activiti.service.ActivitiModelService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.result.Tree;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import net.sf.json.JSONObject;
@@ -18,6 +19,7 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -253,5 +256,28 @@ public class ActivitiModelController extends BaseController {
             out.write("未找到对应数据");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 查询所有的模型tree
+     */
+    @RequestMapping("/allTrees")
+    @ResponseBody
+    public Object allTree() {
+        List<Tree> trees = new ArrayList<Tree>();
+        List<Model> list = repositoryService.createModelQuery().list();
+        if(CollectionUtils.isNotEmpty(list)){
+            for(Model model : list){
+                Tree tree = new Tree();
+                tree.setId(model.getKey());
+                tree.setPid("0");
+                tree.setText(model.getName());
+                tree.setIconCls("fi-folder");
+                tree.setAttributes(null);
+                trees.add(tree);
+            }
+        }
+
+        return trees;
     }
 }
