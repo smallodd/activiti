@@ -22,12 +22,12 @@ public class SpringTest {
         ApplicationContext act=new ClassPathXmlApplicationContext("dubbo-server-consumer.xml");
         WorkTaskService workTaskService= (WorkTaskService) act.getBean("workTaskService");
         CommonVo commonVo=new CommonVo();
-        commonVo.setApplyTitle("测试");
-        commonVo.setApplyUserId("H000012");
-        commonVo.setApplyUserName("测试人");
-        commonVo.setBusinessKey("业务主键0901");
-        commonVo.setBusinessType("测试系统");
-        commonVo.setProDefinedKey("process");
+        commonVo.setApplyTitle("测试sssssssss");
+        commonVo.setApplyUserId("hhhhh");
+        commonVo.setApplyUserName("测试人sssssssssssss");
+        commonVo.setBusinessKey("业务ssssssssssssss");
+        commonVo.setBusinessType("测试系统ssssssssssssssssss");
+        commonVo.setProDefinedKey("terst");
         workTaskService.startTask(commonVo);
     }
 }

@@ -3,7 +3,10 @@ package com.activiti.service.impl;
 import com.activiti.entity.CommonVo;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.main.ActivityMain;
+import com.activiti.model.TUserTask;
+import com.activiti.service.TUserTaskService;
 import com.activiti.service.WorkTaskService;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.github.pagehelper.PageInfo;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.ExtensionElement;
@@ -34,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.Resource;
 import javax.ws.rs.NotFoundException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Wrapper;
 import java.util.*;
 
 /**
@@ -54,7 +58,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     @Resource
     IdentityService identityService;
     @Resource
-
+    TUserTaskService tUserTaskService;
     @Autowired
     ProcessEngineConfiguration processEngineConfiguration;
 
@@ -78,7 +82,20 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
         ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(commonVo.getProDefinedKey(),commonVo.getBusinessKey(),variables);
-
+        Task task=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).singleResult();
+        EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
+        wrapper.where("task_def_key!= {0}",task.getTaskDefinitionKey());
+        TUserTask tUserTask=tUserTaskService.selectOne(wrapper);
+        if(tUserTask==null){
+            throw new RuntimeException("操作失败，请在工作流管理平台设置审批人后在创建任务");
+        }
+        if("candidateGroup".equals(tUserTask.getTaskType())){
+            taskService.addCandidateGroup(task.getId(),tUserTask.getCandidateIds());
+        }else if("candidateUser".equals(tUserTask.getTaskType())){
+            taskService.addCandidateUser(task.getId(),tUserTask.getCandidateIds());
+        }else {
+            taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
+        }
         return processInstance.getProcessInstanceId();
     }
 

@@ -109,7 +109,7 @@ public class ActivitiServiceImpl implements ActivitiService{
     	
     	TaskQuery taskQuery;
     	if(!isAll){
-			taskQuery=taskService.createTaskQuery().taskCandidateOrAssigned(shiroUser.getId());
+			taskQuery=taskService.createTaskQuery().taskAssigneeLike("%"+shiroUser.getId()+"%");
 		}else{
 			taskQuery=taskService.createTaskQuery();
 		}

@@ -79,7 +79,10 @@ public class Scheduler {
     }
 
     public void executeDepartment(){
-
+        if(ConfigUtil.getValue("syn").equals("false")){
+            logger.info("不执行数据同步");
+            return;
+        }
         List<Map<String, Object>> list=sqlService.execQuery("select *  from org" ,null);
 
         for(Map<String,Object> map:list){

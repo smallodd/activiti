@@ -21,7 +21,7 @@
 						<select id="${task.taskDefKey}" onchange="clearUser()" class="easyui-combobox" data-options="width:160,height:29,panelHeight:'auto'">
                             <option value="assignee" selected="selected">受理人</option>
                             <option value="candidateUser">候选人</option>
-                            <option value="candidateGroup">候选组</option>
+                            <%--<option value="candidateGroup">候选组</option>--%>
                             <option value="counterSign">会签人</option>
                         </select>
                     </td>
