@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.hengtian.common.utils.BeanUtils;
 import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.IdentityService;
@@ -123,7 +125,9 @@ public class ActivitiServiceImpl implements ActivitiService{
 			vo.setTaskCreateTime(task.getCreateTime());
 			ProcessInstance processInstance= runtimeService.createProcessInstanceQuery()
 			.processInstanceId(task.getProcessInstanceId()).singleResult();
-			CommonVo commonVo= (CommonVo)runtimeService.getVariable(processInstance.getId(), ConstantUtils.MODEL_KEY);
+			Map<String,Object> map=runtimeService.getVariables(task.getExecutionId());
+			CommonVo commonVo=BeanUtils.toBean(map,CommonVo.class);
+//			CommonVo commonVo= (CommonVo)runtimeService.getVariable(task.getExecutionId(), ConstantUtils.MODEL_KEY);
 			vo.setSuspended(processInstance.isSuspended()==true?"2":"1");
 			vo.setProcessDefinitionId(processInstance.getProcessDefinitionId());
 			vo.setBusinessName(commonVo.getApplyTitle());

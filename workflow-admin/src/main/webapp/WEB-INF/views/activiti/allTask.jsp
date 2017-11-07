@@ -90,12 +90,12 @@
             title : '操作',
             width : 350,
             formatter : function(value, row, index) {
-                var str = '';
-                if(row.taskState==='1'){
+                  var str = '';
+
                 	<shiro:hasPermission name="/activiti/claimTask">
                     	str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-claimTask" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="claimTaskFun(\'{0}\');" >签收</a>', row.id);
                 	</shiro:hasPermission>
-                }else{
+
                 	<shiro:hasPermission name="/activiti/complateTask">
                 		str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="complateTaskFun(\'{0}\');" >办理</a>', row.id);
             		</shiro:hasPermission>
@@ -111,7 +111,7 @@
             			str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
             			str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-jumpTask" data-options="plain:true,iconCls:\'fi-share icon-yellow\'" onclick="jumpTaskFun(\'{0}\');" >跳转</a>', row.id);
         			</shiro:hasPermission>
-                }
+
                 return str;
             }
         } ] ],

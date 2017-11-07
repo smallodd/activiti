@@ -1,5 +1,6 @@
 package com.activiti.service.impl;
 
+import com.activiti.entity.CommonVo;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.main.ActivityMain;
 import com.activiti.service.WorkTaskService;
@@ -21,17 +22,19 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.DateUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import javax.ws.rs.NotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * Created by ma on 2017/7/18.
@@ -54,6 +57,31 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     @Autowired
     ProcessEngineConfiguration processEngineConfiguration;
+
+    public String startTask(CommonVo commonVo) {
+        if(StringUtils.isBlank(commonVo.getApplyTitle())||StringUtils.isBlank(commonVo.getApplyUserId())||StringUtils.isBlank(commonVo.getApplyUserName())||StringUtils.isBlank(commonVo.getBusinessKey())||StringUtils.isBlank(commonVo.getBusinessType())||StringUtils.isBlank(commonVo.getProDefinedKey())){
+            throw new IllegalArgumentException("参数不合法，请检查参数是否正确,"+commonVo.toString());
+        }
+        commonVo.setApplyTitle(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey());
+        Map<String,Object> variables=new HashMap<String,Object>();
+
+        try {
+
+            variables= com.activiti.common.BeanUtils.toMap(commonVo);
+
+        } catch (Exception e) {
+            try {
+                variables= org.apache.commons.beanutils.BeanUtils.describe(commonVo);
+            } catch (Exception e1) {
+                throw new IllegalArgumentException("参数不合法，请检查参数是否正确,"+commonVo.toString());
+            }
+        }
+        identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
+        ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(commonVo.getProDefinedKey(),commonVo.getBusinessKey(),variables);
+
+        return processInstance.getProcessInstanceId();
+    }
+
 
     private List<String> getProcessKeys(String bussnessKey){
         List<Model> models=repositoryService.createNativeModelQuery().sql("select ad.model_key 'key',ad.id from act_de_model ad where ad.id in(SELECT admr.model_id from act_de_model_relation admr LEFT JOIN act_de_model adm on  admr.parent_model_id= adm.id  where adm.model_key='"+bussnessKey+"')").list();

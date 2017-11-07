@@ -86,7 +86,6 @@ CREATE TABLE `sys_resource` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='菜单表';
 
 /*Data for the table `sys_resource` */
-
 INSERT INTO `sys_resource` VALUES ('013ce0d0b44c4380b7ecd8af65756f71', '', '023', '申请管理', '0', 'fi-page-multiple', 'ajax', '', '3', '2017-08-18 16:16:55');
 INSERT INTO `sys_resource` VALUES ('1', '', '001', '系统管理', '0', 'fi-folder', 'ajax', '', '0', null);
 INSERT INTO `sys_resource` VALUES ('1bc000c4567c4ec6a9d304a0725d1cf6', '/sysDepartment/delete', '016', '删除', '1', '', 'ajax', '670bb8d8a8bf4e4f9046b8da2bc7d124', '2', '2017-08-12 17:25:18');
@@ -96,6 +95,7 @@ INSERT INTO `sys_resource` VALUES ('202edbee609e48fc97069c5cb91d8b36', '/tVacati
 INSERT INTO `sys_resource` VALUES ('2275d7959c0b40d5897981f059c75200', '/sysUser/edit', '009', '编辑', '1', '', 'ajax', 'eeea90fb6bf346888592bd5ccbe5e475', '3', '2017-08-12 11:19:23');
 INSERT INTO `sys_resource` VALUES ('294f8355c701400996c0e86db6815e85', '/activiti/claimTask', '029', '签收', '1', '', 'ajax', '7595d0149dc049d68c2b89ab999ad882', '1', '2017-08-20 22:25:30');
 INSERT INTO `sys_resource` VALUES ('3', '/sysResource/add', '003', '添加', '1', '', 'ajax', '2', '1', null);
+INSERT INTO `sys_resource` VALUES ('30159bb15c28446788d46e7f808f730d', '/activiti/delegateTask', 'NO201711060003', '委派', '0', '', null, '5be30dbf587a4d37a8a4628c2a875821', '0', '2017-11-06 09:35:37');
 INSERT INTO `sys_resource` VALUES ('3323b161301747fe8892f6338924a53f', '/sysOperLog/manager', '036', '操作日志', '0', 'fi-database', null, '8a1a2f49ad8b431e8155ca5fbcc65ed5', '1', '2017-08-28 00:03:36');
 INSERT INTO `sys_resource` VALUES ('397c47b362f84ddcb5c7679201366333', '/sysUser/delete', '008', '删除', '1', '', 'ajax', 'eeea90fb6bf346888592bd5ccbe5e475', '2', '2017-08-12 11:17:01');
 INSERT INTO `sys_resource` VALUES ('3a0e79e02205402a956a78ea95f9c752', '/activiti/transferTask', '032', '转办', '1', '', 'ajax', '7595d0149dc049d68c2b89ab999ad882', '4', '2017-08-20 22:27:43');
@@ -105,6 +105,7 @@ INSERT INTO `sys_resource` VALUES ('41077feebcfd47caab1bc51d838735a0', '/tVacati
 INSERT INTO `sys_resource` VALUES ('4896a4e8a90d478390bd0b4bdbb8fe0d', '/sysRole/add', '011', '添加', '1', '', 'ajax', '8cd65d6021e5425ab55a7e22e66b27a1', '1', '2017-08-12 12:59:38');
 INSERT INTO `sys_resource` VALUES ('4c32091fad9548f6b737b574090c4c5d', '/tUserTask/manager', '022', '流程配置', '0', 'fi-widget', 'ajax', '1be8588cf60a4c0a95211b5dbfab5bc7', '2', '2017-08-18 15:54:18');
 INSERT INTO `sys_resource` VALUES ('5', '/sysRsource/edit', '005', '编辑', '1', '', 'ajax', '2', '3', null);
+INSERT INTO `sys_resource` VALUES ('5be30dbf587a4d37a8a4628c2a875821', '/activiti/allTaskManager', 'NO201711060001', '全部任务', '0', 'fi-list', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '0', '2017-11-06 09:21:35');
 INSERT INTO `sys_resource` VALUES ('670bb8d8a8bf4e4f9046b8da2bc7d124', '/sysDepartment/manager', '014', '部门管理', '0', 'fi-thumbnails', 'ajax', '1', '4', '2017-08-12 13:05:13');
 INSERT INTO `sys_resource` VALUES ('7595d0149dc049d68c2b89ab999ad882', '/activiti/taskManager', '028', '我的任务', '0', 'fi-list-thumbnails', 'ajax', '1be8588cf60a4c0a95211b5dbfab5bc7', '3', '2017-08-20 17:22:53');
 INSERT INTO `sys_resource` VALUES ('7929d9b9a356491693c90f2068daeb70', '/sysRole/delete', '012', '删除', '1', '', 'ajax', '8cd65d6021e5425ab55a7e22e66b27a1', '2', '2017-08-12 13:01:42');
@@ -128,6 +129,7 @@ INSERT INTO `sys_resource` VALUES ('effb8eb1d75a46f1a31f1a435bf4577c', '/tVacati
 INSERT INTO `sys_resource` VALUES ('f4de27ddadf340539ced1f9c0c0e307b', '/tUserTask/configUser', '034', '设定人员', '1', '', 'ajax', '4c32091fad9548f6b737b574090c4c5d', '1', '2017-08-23 12:16:28');
 INSERT INTO `sys_resource` VALUES ('f84a8562694e4b8ebd67f5ec39f2e4b3', '/activiti/model/modelManager', 'NO201711030001', '模型管理', '0', 'fi-paint-bucket', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '0', '2017-11-03 17:42:16');
 INSERT INTO `sys_resource` VALUES ('fa5459a821b34a30b07a676faaa806ae', '/sysDepartment/add', '015', '添加', '1', '', 'ajax', '670bb8d8a8bf4e4f9046b8da2bc7d124', '1', '2017-08-12 13:55:46');
+INSERT INTO `sys_resource` VALUES ('fe10cc8d40914ca387f2c00afd75c452', '/activiti/transferTask', 'NO201711060002', '转办', '1', '', null, '5be30dbf587a4d37a8a4628c2a875821', '0', '2017-11-06 09:35:11');
 
 
 /*Table structure for table `sys_role` */

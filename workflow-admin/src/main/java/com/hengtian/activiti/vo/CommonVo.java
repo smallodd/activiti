@@ -34,6 +34,10 @@ public class CommonVo implements Serializable{
 	 */
 	private String businessType;
 	/**
+	 * 流程定义key
+	 */
+	private  String prodefinedKey;
+	/**
 	 * 对应业务的KEY
 	 */
 	private String businessKey;
@@ -133,6 +137,12 @@ public class CommonVo implements Serializable{
 	public void setHistoricTaskInstance(HistoricTaskInstance historicTaskInstance) {
 		this.historicTaskInstance = historicTaskInstance;
 	}
-	
+	@Transient
+	public String getProdefinedKey() {
+		return prodefinedKey;
+	}
 
+	public void setProdefinedKey(String prodefinedKey) {
+		this.prodefinedKey = prodefinedKey;
+	}
 }

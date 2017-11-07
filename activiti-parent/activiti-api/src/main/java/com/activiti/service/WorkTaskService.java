@@ -1,5 +1,6 @@
 package com.activiti.service;
 
+import com.activiti.entity.CommonVo;
 import com.activiti.expection.WorkFlowException;
 import com.github.pagehelper.PageInfo;
 import org.activiti.engine.history.HistoricActivityInstance;
@@ -17,6 +18,12 @@ import java.util.Map;
  * Created by ma on 2017/7/18.
  */
 public interface WorkTaskService {
+    /**
+     * 开启任务
+     * @param commonVo
+     * @return
+     */
+    String startTask(CommonVo commonVo);
     /**
      * 通过用户相关信息查询待审批任务
      * @param userId  用户信息 一般是id
