@@ -140,7 +140,7 @@
 	parent.$.modalDialog({
         title : '办理',
         width : 400,
-        height : 450,
+        height : 400,
         href : '${ctx}/activiti/complateTaskPage?id='+id,
         buttons : [ {
             text : '确定',

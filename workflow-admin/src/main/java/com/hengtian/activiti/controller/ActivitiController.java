@@ -1,40 +1,5 @@
 package com.hengtian.activiti.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipInputStream;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.activiti.engine.ActivitiObjectNotFoundException;
-import org.activiti.engine.ActivitiTaskAlreadyClaimedException;
-import org.activiti.engine.IdentityService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Comment;
-import org.activiti.engine.task.DelegationState;
-import org.activiti.engine.task.Task;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.shiro.SecurityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.activiti.model.TMailLog;
 import com.hengtian.activiti.model.TUserTask;
@@ -44,8 +9,6 @@ import com.hengtian.activiti.service.TUserTaskService;
 import com.hengtian.activiti.vo.CommentVo;
 import com.hengtian.activiti.vo.ProcessDefinitionVo;
 import com.hengtian.activiti.vo.TaskVo;
-import com.hengtian.application.model.TVacation;
-import com.hengtian.application.service.TVacationService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.shiro.ShiroUser;
@@ -57,6 +20,27 @@ import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysDepartmentService;
 import com.hengtian.system.service.SysUserService;
+import org.activiti.engine.*;
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Comment;
+import org.activiti.engine.task.DelegationState;
+import org.activiti.engine.task.Task;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.shiro.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.zip.ZipInputStream;
 
 @Controller
 @RequestMapping("/activiti")
@@ -73,8 +57,6 @@ public class ActivitiController extends BaseController{
 	private RuntimeService runtimeService;
 	@Autowired
 	private IdentityService identityService;
-	@Autowired 
-	private TVacationService tVacationService;
 	@Autowired
     private SysUserService sysUserService;
 	@Autowired
@@ -83,6 +65,8 @@ public class ActivitiController extends BaseController{
 	private TMailLogService tMailLogService;
 	@Autowired
 	private SysDepartmentService sysDepartmentService;
+	@Autowired
+	private HistoryService historyService;
 	/**
      * 部署流程定义页
      * @return
@@ -111,8 +95,6 @@ public class ActivitiController extends BaseController{
 			return renderError("部署失败！");
 		}
     }
-    
-    
     
     /**
      * 流程部署管理页
@@ -227,12 +209,7 @@ public class ActivitiController extends BaseController{
     public String complateTaskPage(Model model,String id) {
     	Task task = taskService.createTaskQuery().taskId(id).singleResult();
     	String processInstanceId = task.getProcessInstanceId();
-		ProcessInstance pi = runtimeService.createProcessInstanceQuery()
-				.processInstanceId(processInstanceId).singleResult();
-		
-		EntityWrapper<TVacation> wrapper =new EntityWrapper<TVacation>();
-		wrapper.where("proc_inst_id = {0}", pi.getId());
-		TVacation vacation= tVacationService.selectOne(wrapper);
+
 		List<CommentVo> comments = new ArrayList<CommentVo>();
 		List<Comment> commentList= taskService.getProcessInstanceComments(processInstanceId);
 		for(Comment comment : commentList){
@@ -243,8 +220,7 @@ public class ActivitiController extends BaseController{
 			vo.setCommentContent(comment.getFullMessage());
 			comments.add(vo);
 		}
-		
-		model.addAttribute("vacation", vacation);
+
 		model.addAttribute("task", task);
 		model.addAttribute("comments", comments);
 		
@@ -259,7 +235,6 @@ public class ActivitiController extends BaseController{
     
     /**
      * 办理任务(完成任务)
-     * @param vacationId
      * @param taskId
      * @param commentContent
      * @param commentResult
@@ -268,8 +243,7 @@ public class ActivitiController extends BaseController{
     @SysLog(value="办理任务")
     @RequestMapping("/complateTask")
     @ResponseBody
-    public Object complateTask( @RequestParam("vacationId") String vacationId,
-					    		@RequestParam("taskId") String taskId,
+    public Object complateTask( @RequestParam("taskId") String taskId,
 					    		@RequestParam("commentContent") String commentContent,
 					    		@RequestParam("commentResult") Integer commentResult){
     	
@@ -282,15 +256,14 @@ public class ActivitiController extends BaseController{
     	taskService.addComment(task.getId(), processInstance.getId(),String.valueOf(commentResult), commentContent);
     	//完成任务
     	Map<String, Object> variables = new HashMap<String, Object>();
-    	TVacation vacation = tVacationService.selectById(vacationId);
     	if(ConstantUtils.vacationStatus.PASSED.getValue()==commentResult){
     		variables.put("isPass", true);
     		//存请假结果的变量
-        	runtimeService.setVariable(vacation.getProcInstId(), "vacationResult", "pass");
+        	runtimeService.setVariable(processInstanceId, "vacationResult", "pass");
     	}else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue()==commentResult){
     		variables.put("isPass", false);
     		//存请假结果的变量
-        	runtimeService.setVariable(vacation.getProcInstId(), "vacationResult", "notPass");
+        	runtimeService.setVariable(processInstanceId, "vacationResult", "notPass");
     	}
     	
     	// 完成委派任务
@@ -301,40 +274,7 @@ public class ActivitiController extends BaseController{
     	
     	//完成正常办理任务
     	taskService.complete(task.getId(), variables);
-    	
-    	//发送邮件
-    	SysUser mailToUser= sysUserService.selectById(vacation.getUserId());
-    	SysUser mailFromUser= sysUserService.selectById(shiroUser.getId());
-    	SysDepartment dept=sysDepartmentService.selectById(mailFromUser.getDepartmentId());
-    	String resultStr="";
-    	if(ConstantUtils.vacationStatus.PASSED.getValue()==commentResult){
-    		resultStr="办理通过";
-    	}else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue()==commentResult){
-    		resultStr="办理不通过，请在系统中我的任务栏调整申请";
-    	}
-    	Map<String,String> templateStr = new HashMap<String,String>();
-    	templateStr.put("deptName", dept.getDepartmentName());
-    	templateStr.put("complateUserName", mailFromUser.getUserName());
-    	templateStr.put("vacationCode", vacation.getVacationCode());
-    	templateStr.put("resultStr", resultStr);
-    	templateStr.put("commentContent", commentContent);
-    	String resultText= MailTemplateUtils.getMailTemplate(templateStr);
-    	
-    	Map<String,Object> params = new HashMap<String,Object>();
-    	params.put("from", ConstantUtils.MAIL_ADDRESS);
-    	params.put("to", mailToUser.getUserEmail());
-    	params.put("subject", "请假业务办理进度");
-    	params.put("text", resultText);
-    	activitiService.sendMailService(params);
-    	
-    	//添加发送邮件的记录
-    	TMailLog mailLog = new TMailLog();
-    	mailLog.setMailFrom(mailFromUser.getUserName());
-    	mailLog.setMailTo(mailToUser.getUserName());
-    	mailLog.setMailSubject("请假业务办理进度");
-    	mailLog.setMailText(resultText);
-    	mailLog.setSendTime(new Date());
-    	tMailLogService.insert(mailLog);
+
     	return renderSuccess("办理成功！");
     }
     
@@ -496,5 +436,42 @@ public class ActivitiController extends BaseController{
 			return renderError("流程激活失败！");
 		}
     }
-    
+
+	/**
+	 * 发送邮件
+	 */
+	private void sendMail(String fromUserId,String toUserId,Integer commentResult,String commentContent){
+		//发送邮件
+		SysUser mailToUser= sysUserService.selectById(fromUserId);
+		SysUser mailFromUser= sysUserService.selectById(toUserId);
+		SysDepartment dept=sysDepartmentService.selectById(mailFromUser.getDepartmentId());
+		String resultStr="";
+		if(ConstantUtils.vacationStatus.PASSED.getValue()==commentResult){
+			resultStr="办理通过";
+		}else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue()==commentResult){
+			resultStr="办理不通过，请在系统中我的任务栏调整申请";
+		}
+		Map<String,String> templateStr = new HashMap<String,String>();
+		templateStr.put("deptName", dept.getDepartmentName());
+		templateStr.put("complateUserName", mailFromUser.getUserName());
+		templateStr.put("resultStr", resultStr);
+		templateStr.put("commentContent", commentContent);
+		String resultText= MailTemplateUtils.getMailTemplate(templateStr);
+
+		Map<String,Object> params = new HashMap<String,Object>();
+		params.put("from", ConstantUtils.MAIL_ADDRESS);
+		params.put("to", mailToUser.getUserEmail());
+		params.put("subject", "请假业务办理进度");
+		params.put("text", resultText);
+		activitiService.sendMailService(params);
+
+		//添加发送邮件的记录
+		TMailLog mailLog = new TMailLog();
+		mailLog.setMailFrom(mailFromUser.getUserName());
+		mailLog.setMailTo(mailToUser.getUserName());
+		mailLog.setMailSubject("请假业务办理进度");
+		mailLog.setMailText(resultText);
+		mailLog.setSendTime(new Date());
+		tMailLogService.insert(mailLog);
+	}
 }
