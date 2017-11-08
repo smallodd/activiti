@@ -27,7 +27,6 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
@@ -456,6 +455,24 @@ public class ActivitiController extends BaseController{
 			return renderError("流程激活失败！");
 		}
     }
+
+	/**
+	 * 任务撤回页面
+	 * @return
+	 */
+	@GetMapping("/taskCallback")
+	public String taskCallback() {
+		return "activiti/taskCallback";
+	}
+
+	/**
+	 * 任务驳回页面
+	 * @return
+	 */
+	@GetMapping("/taskback")
+	public String taskback() {
+		return "activiti/taskback";
+	}
 
 	/**
 	 * 发送邮件
