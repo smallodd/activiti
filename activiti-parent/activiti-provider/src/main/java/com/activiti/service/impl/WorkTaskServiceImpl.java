@@ -89,7 +89,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 throw new RuntimeException("请不要设置重复的属性和commonVo中有的属性");
             }
         }
-
         resutl.putAll(paramMap);
         identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
         EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
@@ -103,11 +102,9 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         if(tUserTasks==null||tasks.size()==0){
             throw new RuntimeException("操作失败，请在工作流管理平台设置审批人后在创建任务");
         }
-
-
             for(Task task:tasks){
                 for(TUserTask tUserTask:tUserTasks){
-
+                    task.setDescription(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey()+"的任务");
                     if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
                         if ("candidateGroup".equals(tUserTask.getTaskType())) {
                             taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
@@ -175,10 +172,10 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
-    public String completeTask(String taskId,String currentUser, String commentContent,String commentResult) throws WorkFlowException{
+    public String completeTask(String processInstanceId,String currentUser, String commentContent,String commentResult) throws WorkFlowException{
         //TODO 需要处理
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        String processInstanceId = task.getProcessInstanceId();
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssignee(currentUser).singleResult();
+        String taskId = task.getId();
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 
         identityService.setAuthenticatedUserId(currentUser);
@@ -198,7 +195,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         // 完成委派任务
         if(DelegationState.PENDING == task.getDelegationState()){
             this.taskService.resolveTask(taskId, variables);
-            return taskId;
+            return processInstanceId;
         }
         Map map=taskService.getVariables(taskId);
         //完成正常办理任务
@@ -223,7 +220,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             }
 
         }
-     return null;
+     return processInstanceId;
 
 
     }
