@@ -276,6 +276,7 @@ public class ActivitiController extends BaseController{
     	//完成正常办理任务
     	taskService.complete(task.getId(), variables);
 
+    	//指派下一节点任务
     	Task currentTask = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
 		EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
 		wrapper.where("task_def_key!= {0}",currentTask.getTaskDefinitionKey());
