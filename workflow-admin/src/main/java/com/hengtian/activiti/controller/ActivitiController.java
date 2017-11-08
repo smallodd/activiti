@@ -27,6 +27,7 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
@@ -275,6 +276,20 @@ public class ActivitiController extends BaseController{
     	//完成正常办理任务
     	taskService.complete(task.getId(), variables);
 
+    	Task currentTask = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+		EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
+		wrapper.where("task_def_key!= {0}",currentTask.getTaskDefinitionKey());
+		TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
+		if(tUserTask==null){
+			throw new RuntimeException("操作失败，请在工作流管理平台设置审批人后在创建任务");
+		}
+		if("candidateGroup".equals(tUserTask.getTaskType())){
+			taskService.addCandidateGroup(task.getId(),tUserTask.getCandidateIds());
+		}else if("candidateUser".equals(tUserTask.getTaskType())){
+			taskService.addCandidateUser(task.getId(),tUserTask.getCandidateIds());
+		}else {
+			taskService.setAssignee(currentTask.getId(), tUserTask.getCandidateIds());
+		}
     	return renderSuccess("办理成功！");
     }
     

@@ -16,6 +16,7 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -203,12 +204,22 @@ public class ActivitiServiceImpl implements ActivitiService{
 			TaskVo vo = new TaskVo();
 			vo.setTaskCreateTime(his.getCreateTime());
 			vo.setTaskName(his.getName());
-			CommonVo commonVo= (CommonVo)historyService.createHistoricVariableInstanceQuery()
+			/*CommonVo commonVo= (CommonVo)historyService.createHistoricVariableInstanceQuery()
 						.processInstanceId(his.getProcessInstanceId())
 						.variableName(ConstantUtils.MODEL_KEY)
 						.singleResult().getValue();
 			vo.setBusinessName(commonVo.getApplyTitle());
-			vo.setProcessOwner(commonVo.getApplyUserName());
+			vo.setProcessOwner(commonVo.getApplyUserName());*/
+			List<HistoricVariableInstance> variableList = historyService.createHistoricVariableInstanceQuery().processInstanceId(his.getProcessInstanceId()).list();
+			for(HistoricVariableInstance v : variableList){
+				if("applyTitle".equals(v.getVariableName())){
+					vo.setBusinessName((String)v.getValue());
+				}else{
+					if("applyUserName".equals(v.getVariableName())){
+						vo.setProcessOwner((String)v.getValue());
+					}
+				}
+			}
 			tasks.add(vo);
 		}
 		pageInfo.setRows(tasks);
