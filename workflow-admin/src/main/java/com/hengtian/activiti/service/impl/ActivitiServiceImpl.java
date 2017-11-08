@@ -219,9 +219,5 @@ public class ActivitiServiceImpl implements ActivitiService{
 	public void sendMailService(Map<String, Object> params) {
 		runtimeService.startProcessInstanceByKey(ConstantUtils.MAILKEY, params);
 	}
-	
-	
-	
-	
 
 }
