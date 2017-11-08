@@ -21,9 +21,10 @@ public interface WorkTaskService {
     /**
      * 开启任务
      * @param commonVo
+     * @param paramMap   流程定义中线上的参数，键是线上的键
      * @return  返回部署的任务id
      */
-    String startTask(CommonVo commonVo);
+    String startTask(CommonVo commonVo,Map<String,Object> paramMap);
     /**
      * 通过用户相关信息查询待审批任务
      * @param userId  用户信息 一般是id
@@ -51,14 +52,14 @@ public interface WorkTaskService {
     /**
      * 审批接口
      *         注：当下一个审批人的唯一标识为空或不传时，直接完成该任务
-     * @param processInstanceId  流程定义id
+     * @param taskId  任务id
      * @param currentUser  当前审批人信息
-     * @param note      审批意见
-     * @param authName 审批人姓名
+     * @param commentResult     2  审批通过   3 审批拒绝
+     * @param commentContent    审批意见
      * @return   返回 true  or false
      * @exception  WorkFlowException 返回审批异常
      */
-    Boolean  completeTask(String processInstanceId,String currentUser ,String note, String authName) throws WorkFlowException;
+    String  completeTask(String taskId,String currentUser ,String commentContent, String commentResult) throws WorkFlowException;
 
     /**
      * 回退到上一节点

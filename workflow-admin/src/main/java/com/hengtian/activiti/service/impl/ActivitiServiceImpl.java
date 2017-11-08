@@ -1,10 +1,7 @@
 package com.hengtian.activiti.service.impl;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.hengtian.common.utils.BeanUtils;
 import org.activiti.engine.ActivitiObjectNotFoundException;
@@ -16,6 +13,7 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -185,6 +183,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 		ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl)this.repositoryService)
 				.getDeployedProcessDefinition(currentTaskEntity.getProcessDefinitionId()); 
 		ActivityImpl activity = (ActivityImpl) pde.findActivity(taskDefinitionKey);
+
 		Command<Void> deleteCmd = new DeleteActiveTaskCmd(currentTaskEntity, "jump", true);
 		Command<Void> StartCmd = new StartActivityCmd(currentTaskEntity.getExecutionId(), activity);
 		managementService.executeCommand(deleteCmd);
@@ -203,10 +202,12 @@ public class ActivitiServiceImpl implements ActivitiService{
 			TaskVo vo = new TaskVo();
 			vo.setTaskCreateTime(his.getCreateTime());
 			vo.setTaskName(his.getName());
-			CommonVo commonVo= (CommonVo)historyService.createHistoricVariableInstanceQuery()
-						.processInstanceId(his.getProcessInstanceId())
-						.variableName(ConstantUtils.MODEL_KEY)
-						.singleResult().getValue();
+			List<HistoricVariableInstance> results=historyService.createHistoricVariableInstanceQuery().processInstanceId(his.getProcessInstanceId()).list();
+			Map<String,Object> map=new HashMap<>();
+			for(HistoricVariableInstance historicVariableInstance:results){
+				map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
+			}
+			CommonVo commonVo=BeanUtils.toBean(map,CommonVo.class);
 			vo.setBusinessName(commonVo.getApplyTitle());
 			vo.setProcessOwner(commonVo.getApplyUserName());
 			tasks.add(vo);

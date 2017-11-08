@@ -23,8 +23,10 @@ import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
+import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -63,12 +65,13 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     SysUserService sysUserService;
 
 
-    public String startTask(CommonVo commonVo) {
+    public String startTask(CommonVo commonVo,Map<String,Object> paramMap) {
         logger.info("startTask开启任务开始，参数"+commonVo.toString());
         if(StringUtils.isBlank(commonVo.getApplyTitle())||StringUtils.isBlank(commonVo.getApplyUserId())||StringUtils.isBlank(commonVo.getApplyUserName())||StringUtils.isBlank(commonVo.getBusinessKey())||StringUtils.isBlank(commonVo.getBusinessType())||StringUtils.isBlank(commonVo.getProDefinedKey())){
             throw new IllegalArgumentException("参数不合法，请检查参数是否正确,"+commonVo.toString());
         }
-        commonVo.setApplyTitle(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey());
+        //commonVo.setApplyTitle(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey());
+        Map<String,Object> resutl=new HashMap<>();
         Map<String,Object> variables=new HashMap<String,Object>();
         try {
             variables= com.activiti.common.BeanUtils.toMap(commonVo);
@@ -79,22 +82,48 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 throw new IllegalArgumentException("参数不合法，请检查参数是否正确,"+commonVo.toString());
             }
         }
+        resutl.putAll(variables);
+        Set<String> set=paramMap.keySet();
+        for(String key: set){
+            if(resutl.containsKey(key)){
+                throw new RuntimeException("请不要设置重复的属性和commonVo中有的属性");
+            }
+        }
+
+        resutl.putAll(paramMap);
         identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
-        ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(commonVo.getProDefinedKey(),commonVo.getBusinessKey(),variables);
-        Task task=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).singleResult();
         EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-        wrapper.where("task_def_key!= {0}",task.getTaskDefinitionKey());
-        TUserTask tUserTask=tUserTaskService.selectOne(wrapper);
-        if(tUserTask==null){
+        wrapper.where("proc_def_key= {0}",commonVo.getProDefinedKey());
+        List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
+
+        ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(commonVo.getProDefinedKey(),commonVo.getBusinessKey(),resutl);
+
+        List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
+
+        if(tUserTasks==null||tasks.size()==0){
             throw new RuntimeException("操作失败，请在工作流管理平台设置审批人后在创建任务");
         }
-        if("candidateGroup".equals(tUserTask.getTaskType())){
-            taskService.addCandidateGroup(task.getId(),tUserTask.getCandidateIds());
-        }else if("candidateUser".equals(tUserTask.getTaskType())){
-            taskService.addCandidateUser(task.getId(),tUserTask.getCandidateIds());
-        }else {
-            taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
-        }
+
+
+            for(Task task:tasks){
+                for(TUserTask tUserTask:tUserTasks){
+
+                    if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
+                        if ("candidateGroup".equals(tUserTask.getTaskType())) {
+                            taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
+                        } else if ("candidateUser".equals(tUserTask.getTaskType())) {
+                            taskService.addCandidateUser(task.getId(), tUserTask.getCandidateIds());
+                        } else {
+                            if("counterSign".equals(tUserTask.getTaskType())){
+
+                                taskService.setVariable(task.getId(),"counterSign",tUserTask.getCandidateIds());
+                            }
+                            taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
+                        }
+                    }
+                }
+            }
+
         return processInstance.getProcessInstanceId();
     }
 
@@ -146,51 +175,55 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
-    public Boolean completeTask(String processInstanceId,String currentUser, String note,String authName) throws WorkFlowException{
-        logger.info("--------------------审批任务开始-----------------------");
-        Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
-        //添加审批人
-        Authentication.setAuthenticatedUserId(authName);
-        //添加审批意见
-        taskService.addComment(task.getId(),task.getProcessInstanceId(),note);
-        EntityWrapper<SysUser> wrapper=new EntityWrapper<SysUser>();
-        wrapper.where("id={0}",currentUser);
-        SysUser sysUser=sysUserService.selectOne(wrapper);
-        if(sysUser==null){
-            throw new RuntimeException("用户信息不存在"+currentUser);
+    public String completeTask(String taskId,String currentUser, String commentContent,String commentResult) throws WorkFlowException{
+        //TODO 需要处理
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        String processInstanceId = task.getProcessInstanceId();
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+        identityService.setAuthenticatedUserId(currentUser);
+        taskService.addComment(task.getId(), processInstance.getId(),commentResult, commentContent);
+        //完成任务
+        Map<String, Object> variables = new HashMap<String, Object>();
+        if("2".equals(commentResult)){
+            variables.put("isPass", true);
+            //存请假结果的变量
+            runtimeService.setVariable(processInstanceId, "vacationResult", "pass");
+        }else if("3".equals(commentResult)){
+            variables.put("isPass", false);
+            //存请假结果的变量
+            runtimeService.setVariable(processInstanceId, "vacationResult", "notPass");
         }
 
-        boolean canCompleteTask = false;
-        if(!currentUser.equals(task.getAssignee())){
+        // 完成委派任务
+        if(DelegationState.PENDING == task.getDelegationState()){
+            this.taskService.resolveTask(taskId, variables);
+            return taskId;
+        }
+        Map map=taskService.getVariables(taskId);
+        //完成正常办理任务
+        taskService.complete(task.getId(), variables);
 
-            if (task.getProcessInstanceId() != null) {
-                HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
-                if (historicProcessInstance != null && StringUtils.isNotEmpty(historicProcessInstance.getStartUserId())) {
-                    String processInstanceStartUserId = historicProcessInstance.getStartUserId();
-                    if (String.valueOf(sysUser.getId()).equals(processInstanceStartUserId)) {
-                        BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
-                        FlowElement flowElement = bpmnModel.getFlowElement(task.getTaskDefinitionKey());
-                        if (flowElement != null && flowElement instanceof UserTask) {
-                            UserTask userTask = (UserTask) flowElement;
-                            List<ExtensionElement> extensionElements = userTask.getExtensionElements().get("initiator-can-complete");
-                            if (CollectionUtils.isNotEmpty(extensionElements)) {
-                                String value = extensionElements.get(0).getElementText();
-                                if (StringUtils.isNotEmpty(value) && Boolean.valueOf(value)) {
-                                    canCompleteTask = true;
-                                }
-                            }
-                        }
-                    }
+
+        List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+        for(Task task1:tasks) {
+            EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+            wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString());
+            TUserTask tUser=tUserTaskService.selectOne(wrapper);
+            if ("candidateGroup".equals(tUser.getTaskType())) {
+                taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
+            } else if ("candidateUser".equals(tUser.getTaskType())) {
+                taskService.addCandidateUser(task1.getId(), tUser.getCandidateIds());
+            } else {
+                if("counterSign".equals(tUser.getTaskType())){
+
+                    taskService.setVariable(task1.getId(),"counterSign",tUser.getCandidateIds());
                 }
+                taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
             }
-        }
-        if(!canCompleteTask){
-           throw new NotFoundException("该用户无法审批任务："+currentUser+",任务id:"+task.getId());
-        }
-        taskService.complete(task.getId());
 
-        logger.info("--------------------审批任务结束-----------------------");
-        return true;
+        }
+     return null;
 
 
     }

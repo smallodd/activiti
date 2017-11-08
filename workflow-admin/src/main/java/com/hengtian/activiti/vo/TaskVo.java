@@ -58,6 +58,8 @@ public class TaskVo implements Serializable{
 	 * 挂起状态(1.未挂起 2.已挂起)
 	 */
     private String suspended;
+
+
     
 	public String getId() {
 		return id;

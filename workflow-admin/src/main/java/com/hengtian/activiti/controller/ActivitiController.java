@@ -20,8 +20,8 @@ import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysDepartmentService;
 import com.hengtian.system.service.SysUserService;
+import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
-import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
@@ -271,10 +271,29 @@ public class ActivitiController extends BaseController{
     		this.taskService.resolveTask(taskId, variables);
     		return renderSuccess("办理委派任务成功！");
     	}
-    	
+		Map map=taskService.getVariables(taskId);
     	//完成正常办理任务
     	taskService.complete(task.getId(), variables);
 
+
+    	List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+    	for(Task task1:tasks) {
+			EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+			wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString());
+			TUserTask tUser=tUserTaskService.selectOne(wrapper);
+			if ("candidateGroup".equals(tUser.getTaskType())) {
+				taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
+			} else if ("candidateUser".equals(tUser.getTaskType())) {
+				taskService.addCandidateUser(task1.getId(), tUser.getCandidateIds());
+			} else {
+				if("counterSign".equals(tUser.getTaskType())){
+
+					taskService.setVariable(task1.getId(),"counterSign",tUser.getCandidateIds());
+				}
+				taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
+			}
+
+		}
     	return renderSuccess("办理成功！");
     }
     
