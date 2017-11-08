@@ -30,7 +30,7 @@ public class AppController extends BaseController {
     private AppService appService;
 
     @Autowired
-    StrongUuidGenerator uuidGenerator;
+    private StrongUuidGenerator uuidGenerator;
 
     @RequestMapping("/manage")
     public String manage(){
