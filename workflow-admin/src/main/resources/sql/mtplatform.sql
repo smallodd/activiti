@@ -108,9 +108,9 @@ INSERT INTO `sys_resource` VALUES ('4c32091fad9548f6b737b574090c4c5d', '/tUserTa
 INSERT INTO `sys_resource` VALUES ('5', '/sysRsource/edit', '005', '编辑', '1', '', 'ajax', '2', '3', null);
 INSERT INTO `sys_resource` VALUES ('5015bf9b1a31430e85126e90d2e4ee5b', '/app/add', 'NO201711060002', '添加', '1', '', null, '8bd73fb8c092459dbf9285b69799c9ef', '0', '2017-11-06 15:41:29');
 INSERT INTO `sys_resource` VALUES ('57eb059e400c4d55ad0e6a472ba2d79c', '/app/edit', 'NO201711060003', '编辑', '1', '', null, '8bd73fb8c092459dbf9285b69799c9ef', '1', '2017-11-06 15:42:39');
-INSERT INTO `sys_resource` VALUES ('5be30dbf587a4d37a8a4628c2a875821', '/activiti/allTaskManager', 'NO201711060001', '全部任务', '0', 'fi-list', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '0', '2017-11-06 09:21:35');
+INSERT INTO `sys_resource` VALUES ('5be30dbf587a4d37a8a4628c2a875821', '/activiti/allTaskManager', 'NO201711060001', '全部任务', '0', 'fi-list', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '3', '2017-11-06 09:21:35');
 INSERT INTO `sys_resource` VALUES ('670bb8d8a8bf4e4f9046b8da2bc7d124', '/sysDepartment/manager', '014', '部门管理', '0', 'fi-thumbnails', 'ajax', '1', '4', '2017-08-12 13:05:13');
-INSERT INTO `sys_resource` VALUES ('7595d0149dc049d68c2b89ab999ad882', '/activiti/taskManager', '028', '我的任务', '0', 'fi-list-thumbnails', 'ajax', '1be8588cf60a4c0a95211b5dbfab5bc7', '3', '2017-08-20 17:22:53');
+INSERT INTO `sys_resource` VALUES ('7595d0149dc049d68c2b89ab999ad882', '/activiti/taskManager', '028', '我的任务', '0', 'fi-list-thumbnails', 'ajax', '1be8588cf60a4c0a95211b5dbfab5bc7', '4', '2017-08-20 17:22:53');
 INSERT INTO `sys_resource` VALUES ('7929d9b9a356491693c90f2068daeb70', '/sysRole/delete', '012', '删除', '1', '', 'ajax', '8cd65d6021e5425ab55a7e22e66b27a1', '2', '2017-08-12 13:01:42');
 INSERT INTO `sys_resource` VALUES ('85bbb83c680f4684b102c8db1127217c', '/activiti/model/edit', 'NO201711070003', '编辑', '1', '', null, 'f84a8562694e4b8ebd67f5ec39f2e4b3', '1', '2017-11-07 11:19:16');
 INSERT INTO `sys_resource` VALUES ('8a1a2f49ad8b431e8155ca5fbcc65ed5', '', '018', '系统维护', '0', 'fi-torso-business', 'ajax', '', '1', '2017-08-12 18:35:12');
@@ -118,7 +118,7 @@ INSERT INTO `sys_resource` VALUES ('8bd73fb8c092459dbf9285b69799c9ef', '/app/man
 INSERT INTO `sys_resource` VALUES ('8cd65d6021e5425ab55a7e22e66b27a1', '/sysRole/manager', '010', '角色管理', '0', 'fi-torso-business', 'ajax', '1', '3', '2017-08-12 12:58:38');
 INSERT INTO `sys_resource` VALUES ('964535f00cc54421965a559a4b2691ca', '/activiti/model/deploy', 'NO201711070004', '部署', '1', '', null, 'f84a8562694e4b8ebd67f5ec39f2e4b3', '2', '2017-11-07 11:19:48');
 INSERT INTO `sys_resource` VALUES ('98f0c0b5e51248b18f2f1ebd07cbd25c', '/activiti/processdefManager', '027', '流程定义', '0', 'fi-shuffle', 'ajax', '1be8588cf60a4c0a95211b5dbfab5bc7', '1', '2017-08-19 14:26:28');
-INSERT INTO `sys_resource` VALUES ('a5c29bad8b804849892787546f70d010', '/activiti/hisTaskManager', '034', '我的已办', '0', 'fi-checkbox', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '4', '2017-08-31 21:01:47');
+INSERT INTO `sys_resource` VALUES ('a5c29bad8b804849892787546f70d010', '/activiti/hisTaskManager', '034', '我的已办', '0', 'fi-checkbox', null, '1be8588cf60a4c0a95211b5dbfab5bc7', '5', '2017-08-31 21:01:47');
 INSERT INTO `sys_resource` VALUES ('a6c1d1c19147411fbddc534f85f82b91', '/icons', '019', '系统图标', '0', 'fi-photo', 'ajax', '8a1a2f49ad8b431e8155ca5fbcc65ed5', '2', '2017-08-12 18:42:12');
 INSERT INTO `sys_resource` VALUES ('a8bebd9c95d0484d92cbe368cb5081cf', '/activiti/deploy', '028', '流程部署', '1', '', 'ajax', '98f0c0b5e51248b18f2f1ebd07cbd25c', '1', '2017-08-19 14:37:21');
 INSERT INTO `sys_resource` VALUES ('ab854a1516204b6fa62102c1b94e6ebf', '/app/delete', 'NO201711060004', '删除', '1', '', null, '8bd73fb8c092459dbf9285b69799c9ef', '2', '2017-11-06 15:42:55');

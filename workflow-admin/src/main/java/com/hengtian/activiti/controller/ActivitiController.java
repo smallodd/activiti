@@ -27,6 +27,7 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.shiro.SecurityUtils;

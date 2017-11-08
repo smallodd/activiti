@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="login" onkeydown="keylogin()">
-    <div class="message">工作流管理平台</div>
+    <div class="message">恒天财富-工作流管理平台</div>
     <div id="darkbannerwrap"></div>
 	<form name="loginform" id="loginform" method="post">
 		<input name="loginName" placeholder="请输入用户名" required type="text">
