@@ -59,6 +59,11 @@ public class TaskVo implements Serializable{
 	 */
     private String suspended;
 
+	/**
+	 * 流程实例ID
+	 */
+	private String processInstanceId;
+
 
     
 	public String getId() {
@@ -126,9 +131,13 @@ public class TaskVo implements Serializable{
 		return taskDefinitionKey;
 	}
 	public void setTaskDefinitionKey(String taskDefinitionKey) {
-		this.taskDefinitionKey = taskDefinitionKey;
+		this.taskDefinitionKey = processInstanceId;
 	}
-    
-    
+	public String getProcessInstanceId() {
+		return processInstanceId;
+	}
+	public void setProcessInstanceId(String processInstanceId) {
+		this.processInstanceId = processInstanceId;
+	}
 
 }

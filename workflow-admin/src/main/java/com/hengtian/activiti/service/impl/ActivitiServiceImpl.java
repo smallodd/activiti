@@ -135,6 +135,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			vo.setBusinessName(commonVo.getApplyTitle());
 			vo.setProcessOwner(commonVo.getApplyUserName());
 			vo.setTaskDefinitionKey(task.getTaskDefinitionKey());
+			vo.setProcessInstanceId(task.getProcessInstanceId());
 			//vo.setProcessDefinitionKey(processDefinitionKey);
 			list.add(vo);
 		}

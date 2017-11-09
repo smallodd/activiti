@@ -113,7 +113,7 @@
             			str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-jumpTask" data-options="plain:true,iconCls:\'fi-share icon-yellow\'" onclick="jumpTaskFun(\'{0}\');" >跳转</a>', row.id);
         			</shiro:hasPermission>
                     str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-taskProgress" data-options="plain:true,iconCls:\'fi-arrow-right icon-grey\'" onclick="showTaskFun(\'{0}\');" >进度</a>', row.id);
+                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-taskProgress" data-options="plain:true,iconCls:\'fi-arrow-right icon-grey\'" onclick="showTaskFun(\'{0}\');" >进度</a>', row.processInstanceId);
                 return str;
             }
         } ] ],
@@ -268,14 +268,8 @@
 /**
  * 查看任务进度
  */
-function showTaskFun(id) {
-    if (id == undefined) {
-        var rows = taskDataGrid.datagrid('getSelections');
-        id = rows[0].id;
-    } else {
-        taskDataGrid.datagrid('unselectAll').datagrid('uncheckAll');
-    }
-    var contentStr= $.formatString('<img src="${ctx}/activiti/showTask/{0}"></img>',id);
+function showTaskFun(processInstanceId) {
+    var contentStr= $.formatString('<img src="${ctx}/activiti/showTask/{0}"></img>',processInstanceId);
     $("#shwoTask").window({
         title : '任务进度',
         width : 900,

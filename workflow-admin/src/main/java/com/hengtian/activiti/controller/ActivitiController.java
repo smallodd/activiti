@@ -419,11 +419,9 @@ public class ActivitiController extends BaseController{
 		}
     }
 
-	@RequestMapping("/showTask/{taskId}")
-	public void showTask(HttpServletRequest request, HttpServletResponse response, @PathVariable("taskId") String taskId) throws IOException{
-    	Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+	@RequestMapping("/showTask/{processInstanceId}")
+	public void showTask(HttpServletRequest request, HttpServletResponse response, @PathVariable("processInstanceId") String processInstanceId) throws IOException{
 
-		String processInstanceId = task.getProcessInstanceId();
 		//获取历史流程实例
 		HistoricProcessInstance processInstance =  historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 		//获取流程图
