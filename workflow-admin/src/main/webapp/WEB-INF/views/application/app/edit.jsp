@@ -18,6 +18,10 @@
                 </td>
         	</tr>
             <tr>
+                <td>KEY</td>
+                <td><input name="key" type="text" class="easyui-textbox" style="width:200;height:29" data-options="required:true" value="${app.key}"></td>
+            </tr>
+            <tr>
                 <td>备注</td>
                 <td><textarea name="description" style="width:300px;height:100px;">${app.description}</textarea></td>
             </tr>
