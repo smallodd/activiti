@@ -65,25 +65,9 @@ public interface WorkTaskService {
      */
     String  completeTask(String processId,String currentUser ,String commentContent, String commentResult) throws WorkFlowException;
 
-    /**
-     * 回退到上一节点
-     * @param taskId  任务id
-     * @param note    审批意见
-     * @return  返回成功或失败
-     *          true:成功
-     *          false:失败
-     */
-    //boolean rollBack(String taskId,String note);
 
-    /**
-     * 审批不通过
-     * @param processId  流程任务中的processId
-     * @param reason     拒绝理由
-     * @return           返回成功或失败
-     *                      true:成功
-     *                      false:失败
-     */
-    Boolean refuseTask(String processId,String reason) throws WorkFlowException;
+
+
     /**
      * 获取申请人提交的任务
      * @param userid  申请人信息
@@ -91,38 +75,41 @@ public interface WorkTaskService {
      * @param pageSzie    查询多少条数
      * @param status      0 :审批中的任务
      *                    1 ：审批完成的任务
-     *
+     *@param businessType  业务键值
      * @return    返回申请人提交的任务
      */
-    List<HistoricProcessInstance> getApplyTasks(String userid, int startPage, int pageSzie, int status);
+    List<HistoricProcessInstance> getApplyTasks(String userid, int startPage, int pageSzie, int status,String businessType);
     /**
-     * 获取参与审批用户的审批历史任务
+     * 获取用户涉及的审批历史任务
      * @param userid   审批人用户唯一标识
      * @param startPage   起始页数
      * @param pageSzie     查询多少条数
-
+        @param  bussnessType 系统key
      *
      * @return    返回参与用户的审批历史信息
      */
-    List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie);
+    List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie,String bussnessType);
 
     /**
      * 通过用户主键查询历史审批过的任务
      * @param userId   用户主键
      * @param startPage   开始页数
      * @param pagegSize   每页显示数
+     * @param bussnessType 系统key
+     *
      * @return            返回审批历史人物信息列表
      */
-    PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pagegSize);
+    PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pagegSize,String bussnessType);
 
     /**
      * 通过用户主键查询审批拒绝的信息
      * @param userId   用户主键
      * @param startPage 开始页数
      * @param pageSize   结束页数
+     * @param bussnessType  系统的key
      * @return            返回用户拒绝的信息
      */
-    PageInfo<HistoricTaskInstance> selectMyRefuse(String userId,int startPage,int pageSize);
+    PageInfo<HistoricTaskInstance> selectMyRefuse(String userId,int startPage,int pageSize,String bussnessType);
     /**
      *查询任务当所在节点
      * @param processId  流程定义id

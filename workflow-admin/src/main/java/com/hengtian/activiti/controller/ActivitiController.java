@@ -264,6 +264,8 @@ public class ActivitiController extends BaseController{
 				variables.put("isPass", false);
 				//存请假结果的变量
 				runtimeService.setVariable(processInstanceId, "vacationResult", "notPass");
+				runtimeService.deleteProcessInstance(processInstanceId,"refuse");
+				return renderSuccess("办理成功！");
 			}
 
 			// 完成委派任务

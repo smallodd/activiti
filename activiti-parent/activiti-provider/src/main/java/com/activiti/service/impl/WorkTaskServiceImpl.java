@@ -64,6 +64,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
 
     public String startTask(CommonVo commonVo,Map<String,Object> paramMap) {
+
         logger.info("startTask开启任务开始，参数"+commonVo.toString());
         if(StringUtils.isBlank(commonVo.getApplyTitle())||StringUtils.isBlank(commonVo.getApplyUserId())||StringUtils.isBlank(commonVo.getApplyUserName())||StringUtils.isBlank(commonVo.getBusinessKey())||StringUtils.isBlank(commonVo.getBusinessType())||StringUtils.isBlank(commonVo.getModelKey())){
             throw new IllegalArgumentException("参数不合法，请检查参数是否正确,"+commonVo.toString());
@@ -99,6 +100,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             }
         }
         resutl.putAll(paramMap);
+        resutl.put("proDefinedKey",prodefinKey);
         //设置当前申请人
         identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
         //查询自定义任务列表当前流程定义下的审批人
@@ -116,7 +118,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
             for(Task task:tasks){
                 for(TUserTask tUserTask:tUserTasks){
-                    task.setDescription(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey()+"的任务");
+
                     if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
                         if ("candidateGroup".equals(tUserTask.getTaskType())) {
                             taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
@@ -133,80 +135,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return processInstance.getProcessInstanceId();
     }
 
-
-
-
-    @Override
-    public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize,String bussnessType) {
-        logger.info("------------------------通过用户相关信息查询待审批任务开始------------------------");
-        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
-        wrapper.where("app_key={0}",bussnessType);
-        List<AppModel> listAppModel=appModelService.selectList(wrapper);
-        List<String> keys=new ArrayList<>();
-        for(AppModel appModel:listAppModel){
-
-            keys.add(getProdefineKey(appModel.getModelKey()));
-        }
-
-
-        TaskQuery  query= taskService.createTaskQuery();
-        query.processDefinitionKeyIn(keys);
-        long count=0;
-        if(StringUtils.isNotBlank(userId)){
-            query=query.taskAssignee(userId);
-            count=query.count();
-        }else{
-            count=query.count();
-        }
-        PageInfo<Task> pageInfo=new PageInfo<>();
-        List<Task> list=query.orderByTaskCreateTime().desc().listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
-        pageInfo.setList(list);
-        pageInfo.setTotal(count);
-        logger.info("------------------------通过用户相关信息查询待审批任务结束------------------------");
-        return pageInfo;
-    }
-
-
-
-    @Override
-    public List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize,String bussnessType,int type) {
-        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
-        wrapper.where("app_key={0}",bussnessType);
-        List<AppModel> listAppModel=appModelService.selectList(wrapper);
-        List<String> keys=new ArrayList<>();
-        for(AppModel appModel:listAppModel){
-            //通过model key查询model
-
-            keys.add(getProdefineKey(appModel.getModelKey()));
-        }
-       HistoricTaskInstanceQuery query= historyService.createHistoricTaskInstanceQuery().processDefinitionKeyIn(keys);
-       if(type==1){
-           query.finished();
-       }else if(type==0){
-           query.unfinished();
-       }
-        return query.taskAssignee(userId).listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
-    }
-
-    /**
-     * 通过模型key获取流程定义key
-     * @param modelKey
-     * @return
-     */
-    private String getProdefineKey(String modelKey){
-        try {
-            Model model=repositoryService.createModelQuery().modelKey(modelKey).singleResult();
-            //通过部署id查询流程定义
-            ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().deploymentId(model.getDeploymentId()).latestVersion().singleResult();
-
-            String prodefinKey= processDefinition.getKey();
-            return  prodefinKey;
-        }catch (Exception e){
-            logger.info("获取流程定义key失败，模型键是："+modelKey);
-            return "";
-        }
-
-    }
     @Override
     public String completeTask(String processInstanceId,String currentUser, String commentContent,String commentResult) throws WorkFlowException{
 
@@ -259,21 +187,87 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             }
 
         }
-     return processInstanceId;
+        return processInstanceId;
 
 
     }
 
 
     @Override
-    public Boolean refuseTask(String processId, String reason) throws WorkFlowException{
-        logger.info("---------------------------拒绝任务开始---------------------------");
-        Task task=taskService.createTaskQuery().processInstanceId(processId).singleResult();
-        taskService.addComment(task.getId(),processId,reason);
-        runtimeService.deleteProcessInstance(task.getProcessInstanceId(),"refuse");
-        logger.info("---------------------------拒绝任务结束---------------------------");
-        return true;
+    public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize,String bussnessType) {
+        logger.info("------------------------通过用户相关信息查询待审批任务开始------------------------");
+        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
+        wrapper.where("app_key={0}",bussnessType);
+        List<AppModel> listAppModel=appModelService.selectList(wrapper);
+        List<String> keys=new ArrayList<>();
+        for(AppModel appModel:listAppModel){
+
+            keys.add(getProdefineKey(appModel.getModelKey()));
+        }
+
+
+        TaskQuery  query= taskService.createTaskQuery().processVariableValueEquals("businessType",bussnessType);
+        query.processDefinitionKeyIn(keys);
+        long count=0;
+        if(StringUtils.isNotBlank(userId)){
+            query=query.taskAssignee(userId);
+            count=query.count();
+        }else{
+            count=query.count();
+        }
+        PageInfo<Task> pageInfo=new PageInfo<>();
+        List<Task> list=query.orderByTaskCreateTime().desc().listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+        pageInfo.setList(list);
+        pageInfo.setTotal(count);
+        logger.info("------------------------通过用户相关信息查询待审批任务结束------------------------");
+        return pageInfo;
     }
+
+
+
+    @Override
+    public List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize,String bussnessType,int type) {
+        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
+        wrapper.where("app_key={0}",bussnessType);
+        List<AppModel> listAppModel=appModelService.selectList(wrapper);
+        List<String> keys=new ArrayList<>();
+        for(AppModel appModel:listAppModel){
+            //通过model key查询model
+
+            keys.add(getProdefineKey(appModel.getModelKey()));
+        }
+       HistoricTaskInstanceQuery query= historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("businessType",bussnessType).processDefinitionKeyIn(keys);
+       if(type==1){
+           query.finished();
+       }else if(type==0){
+           query.unfinished();
+       }
+        return query.taskAssignee(userId).listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+    }
+
+    /**
+     * 通过模型key获取流程定义key
+     * @param modelKey
+     * @return
+     */
+    private String getProdefineKey(String modelKey){
+        try {
+            Model model=repositoryService.createModelQuery().modelKey(modelKey).singleResult();
+            //通过部署id查询流程定义
+            ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().deploymentId(model.getDeploymentId()).latestVersion().singleResult();
+
+            String prodefinKey= processDefinition.getKey();
+            return  prodefinKey;
+        }catch (Exception e){
+            logger.info("获取流程定义key失败，模型键是："+modelKey);
+            return "";
+        }
+
+    }
+
+
+
+
 
     /**
      * 获取申请人提交的任务
@@ -285,9 +279,19 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      *
      * @return
      */
-    public List<HistoricProcessInstance> getApplyTasks(String userid,int startPage,int pageSzie,int status){
+    public List<HistoricProcessInstance> getApplyTasks(String userid,int startPage,int pageSzie,int status,String bussnessType){
+
         logger.info("--------------------获取申请人提交的任务开始----------------");
-        HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery();
+        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
+        wrapper.where("app_key={0}",bussnessType);
+        List<AppModel> listAppModel=appModelService.selectList(wrapper);
+        List<String> keys=new ArrayList<>();
+        for(AppModel appModel:listAppModel){
+            //通过model key查询model
+
+            keys.add(getProdefineKey(appModel.getModelKey()));
+        }
+        HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery().processDefinitionKeyIn(keys).variableValueEquals("businessType",bussnessType);
         if(status==0){
             query.unfinished();
         }else {
@@ -301,7 +305,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     /**
-     * 获取参与审批用户的审批历史信息
+     * 获取用户涉及的的审批历史信息
      * @param userid   审批人用户唯一标识
      * @param startPage    起始页数
      * @param pageSzie     每页显示数
@@ -310,20 +314,40 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      *
      * @return
      */
-    public List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie){
+    public List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie,String bussnessType){
         logger.info("---------------------获取参与审批用户的审批历史信息开始--------------");
-        HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery();
+        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
+        wrapper.where("app_key={0}",bussnessType);
+        List<AppModel> listAppModel=appModelService.selectList(wrapper);
+        List<String> keys=new ArrayList<>();
+        for(AppModel appModel:listAppModel){
+            //通过model key查询model
+
+            keys.add(getProdefineKey(appModel.getModelKey()));
+        }
+        HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery().processDefinitionKeyIn(keys).variableValueEquals("businessType",bussnessType);
 
         query.orderByProcessInstanceStartTime().desc();
         logger.info("---------------------获取参与审批用户的审批历史信息结束--------------");
         return  query.involvedUser(userid).listPage((startPage-1)*pageSzie,pageSzie);
     }
 
-    public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pageSize){
+    public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pageSize,String bussnessType){
+
         logger.info("-----------------------查询用户历史审批过的任务开始----------------");
+        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
+        wrapper.where("app_key={0}",bussnessType);
+        List<AppModel> listAppModel=appModelService.selectList(wrapper);
+        List<String> keys=new ArrayList<>();
+        for(AppModel appModel:listAppModel){
+            //通过model key查询model
+
+            keys.add(getProdefineKey(appModel.getModelKey()));
+        }
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
-        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).finished().orderByHistoricTaskInstanceEndTime().desc().listPage((startPage-1)*pageSize,pageSize);
-        long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId+"%").finished().count();
+        HistoricTaskInstanceQuery query= historyService.createHistoricTaskInstanceQuery().processDefinitionKeyIn(keys).processVariableValueEquals("businessType",bussnessType);
+        List<HistoricTaskInstance> list= query.taskAssignee(userId).finished().orderByHistoricTaskInstanceEndTime().desc().listPage((startPage-1)*pageSize,pageSize);
+        long count=query.taskAssigneeLike("%"+userId+"%").finished().count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         logger.info("-----------------------查询用户历史审批过的任务结束----------------");
@@ -331,17 +355,28 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     @Override
-    public PageInfo<HistoricTaskInstance> selectMyRefuse(String userId, int startPage, int pageSize) {
+    public PageInfo<HistoricTaskInstance> selectMyRefuse(String userId, int startPage, int pageSize,String bussnessType) {
         logger.info("----------------------查询用户审批拒绝的信息列表开始----------------");
+        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
+        wrapper.where("app_key={0}",bussnessType);
+        List<AppModel> listAppModel=appModelService.selectList(wrapper);
+        List<String> keys=new ArrayList<>();
+        for(AppModel appModel:listAppModel){
+            //通过model key查询model
+
+            keys.add(getProdefineKey(appModel.getModelKey()));
+        }
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
-        List<HistoricTaskInstance> list= historyService.createHistoricTaskInstanceQuery().taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
-        long count=historyService.createHistoricTaskInstanceQuery().taskAssigneeLike("%"+userId+"%").taskDeleteReason("refused").count();
+        HistoricTaskInstanceQuery query= historyService.createHistoricTaskInstanceQuery().processDefinitionKeyIn(keys).processVariableValueEquals("businessType",bussnessType);
+        List<HistoricTaskInstance> list= query.taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+        long count=query.taskAssigneeLike("%"+userId+"%").taskDeleteReason("refused").count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         logger.info("----------------------查询用户审批拒绝的信息列表结束----------------");
         return pageInfo;
     }
 
+    //TODO
 
     @Override
     public boolean checekBunessKeyIsInFlow(String bussinessKey) {
