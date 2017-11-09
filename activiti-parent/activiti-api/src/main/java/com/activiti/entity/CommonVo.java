@@ -40,9 +40,9 @@ public class CommonVo implements Serializable{
 	private String businessKey;
 
 	/**
-	 * 流程定义key
+	 * 模型定义key
 	 */
-	private  String proDefinedKey;
+	private  String modelKey;
 
 	
 	@Transient
@@ -80,15 +80,16 @@ public class CommonVo implements Serializable{
 	public void setBusinessKey(String businessKey) {
 		this.businessKey = businessKey;
 	}
-
 	@Transient
-	public String getProDefinedKey() {
-		return proDefinedKey;
+	public String getModelKey() {
+		return modelKey;
 	}
 
-	public void setProDefinedKey(String proDefinedKey) {
-		this.proDefinedKey = proDefinedKey;
+	public void setModelKey(String modelKey) {
+		this.modelKey = modelKey;
 	}
+
+
 
 
 
@@ -101,7 +102,7 @@ public class CommonVo implements Serializable{
 				", applyUserName='" + applyUserName + '\'' +
 				", businessType='" + businessType + '\'' +
 				", businessKey='" + businessKey + '\'' +
-				", prodefinedKey='" + proDefinedKey + '\'' +
+				", prodefinedKey='" + modelKey + '\'' +
 				'}';
 	}
 }
