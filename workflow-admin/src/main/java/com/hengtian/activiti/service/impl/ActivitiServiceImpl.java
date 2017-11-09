@@ -1,16 +1,20 @@
 package com.hengtian.activiti.service.impl;
 
-import java.io.InputStream;
-import java.util.*;
-
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.hengtian.activiti.model.TUserTask;
+import com.hengtian.activiti.service.ActivitiService;
+import com.hengtian.activiti.service.TUserTaskService;
+import com.hengtian.activiti.vo.CommonVo;
+import com.hengtian.activiti.vo.ProcessDefinitionVo;
+import com.hengtian.activiti.vo.TaskVo;
+import com.hengtian.common.result.Result;
+import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.BeanUtils;
-import org.activiti.engine.ActivitiObjectNotFoundException;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.IdentityService;
-import org.activiti.engine.ManagementService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import com.hengtian.common.utils.ConstantUtils;
+import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
+import com.hengtian.common.workflow.cmd.StartActivityCmd;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.history.HistoricVariableInstance;
@@ -22,22 +26,18 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.hengtian.activiti.service.ActivitiService;
-import com.hengtian.activiti.vo.CommonVo;
-import com.hengtian.activiti.vo.ProcessDefinitionVo;
-import com.hengtian.activiti.vo.TaskVo;
-import com.hengtian.common.shiro.ShiroUser;
-import com.hengtian.common.utils.ConstantUtils;
-import com.hengtian.common.utils.PageInfo;
-import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
-import com.hengtian.common.workflow.cmd.StartActivityCmd;
+import java.io.InputStream;
+import java.util.*;
 
 
 @Service
@@ -56,7 +56,10 @@ public class ActivitiServiceImpl implements ActivitiService{
 	private ManagementService managementService;
 	@Autowired
 	private HistoryService historyService;
-	
+	@Autowired
+	private TUserTaskService tUserTaskService;
+
+	Logger logger = Logger.getLogger(ActivitiServiceImpl.class);
 	
 	@Override
 	public void selectProcessDefinitionDataGrid(PageInfo pageInfo) {
@@ -143,6 +146,83 @@ public class ActivitiServiceImpl implements ActivitiService{
 	public void claimTask(String userId, String taskId) {
 		identityService.setAuthenticatedUserId(userId);
         taskService.claim(taskId, userId);
+	}
+
+	/**
+	 * 办理任务
+	 * @param taskId
+	 * @param commentContent
+	 * @param commentResult
+	 */
+	@Override
+	@Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
+	public Result complateTask(String taskId,String commentContent,Integer commentResult){
+		Result result = new Result();
+		try{
+			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+			String processInstanceId = task.getProcessInstanceId();
+			ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+			//添加意见
+			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
+			identityService.setAuthenticatedUserId(shiroUser.getId());
+			taskService.addComment(task.getId(), processInstance.getId(),String.valueOf(commentResult), commentContent);
+			//完成任务
+			Map<String, Object> variables = new HashMap<String, Object>();
+			if(ConstantUtils.vacationStatus.PASSED.getValue()==commentResult){
+				variables.put("isPass", true);
+				//存请假结果的变量
+				runtimeService.setVariable(processInstanceId, "vacationResult", "pass");
+			}else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue()==commentResult){
+				variables.put("isPass", false);
+				//存请假结果的变量
+				runtimeService.setVariable(processInstanceId, "vacationResult", "notPass");
+				runtimeService.deleteProcessInstance(processInstanceId,"refuse");
+
+				result.setSuccess(true);
+				result.setMsg("办理成功！");
+				return result;
+			}
+
+			// 完成委派任务
+			if(DelegationState.PENDING == task.getDelegationState()){
+				this.taskService.resolveTask(taskId, variables);
+
+				result.setSuccess(true);
+				result.setMsg("办理委派任务成功！");
+				return result;
+			}
+			Map map=taskService.getVariables(taskId);
+			//完成正常办理任务
+			taskService.complete(task.getId(), variables);
+
+
+			List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+			for(Task task1:tasks) {
+				EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+				wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString());
+				TUserTask tUser=tUserTaskService.selectOne(wrapper);
+				if ("candidateGroup".equals(tUser.getTaskType())) {
+					taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
+				} else if ("candidateUser".equals(tUser.getTaskType())) {
+					taskService.addCandidateUser(task1.getId(), tUser.getCandidateIds());
+				} else {
+					if("counterSign".equals(tUser.getTaskType())){
+
+						taskService.setVariable(task1.getId(),"counterSign",tUser.getCandidateIds());
+					}
+					taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
+				}
+
+			}
+			result.setSuccess(true);
+			result.setMsg("办理成功！");
+			return result;
+		} catch(Exception e){
+			logger.error("办理失败",e);
+			result.setSuccess(false);
+			result.setMsg("办理失败！");
+			return result;
+		}
 	}
 
 	@Override

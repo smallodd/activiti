@@ -30,15 +30,12 @@ import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
-import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -260,61 +257,7 @@ public class ActivitiController extends BaseController{
     public Object complateTask( @RequestParam("taskId") String taskId,
 					    		@RequestParam("commentContent") String commentContent,
 					    		@RequestParam("commentResult") Integer commentResult){
-    	try{
-			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-			String processInstanceId = task.getProcessInstanceId();
-			ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-			//添加意见
-			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
-			identityService.setAuthenticatedUserId(shiroUser.getId());
-			taskService.addComment(task.getId(), processInstance.getId(),String.valueOf(commentResult), commentContent);
-			//完成任务
-			Map<String, Object> variables = new HashMap<String, Object>();
-			if(ConstantUtils.vacationStatus.PASSED.getValue()==commentResult){
-				variables.put("isPass", true);
-				//存请假结果的变量
-				runtimeService.setVariable(processInstanceId, "vacationResult", "pass");
-			}else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue()==commentResult){
-				variables.put("isPass", false);
-				//存请假结果的变量
-				runtimeService.setVariable(processInstanceId, "vacationResult", "notPass");
-				runtimeService.deleteProcessInstance(processInstanceId,"refuse");
-				return renderSuccess("办理成功！");
-			}
-
-			// 完成委派任务
-			if(DelegationState.PENDING == task.getDelegationState()){
-				this.taskService.resolveTask(taskId, variables);
-				return renderSuccess("办理委派任务成功！");
-			}
-			Map map=taskService.getVariables(taskId);
-			//完成正常办理任务
-			taskService.complete(task.getId(), variables);
-
-
-			List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
-			for(Task task1:tasks) {
-				EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-				wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString());
-				TUserTask tUser=tUserTaskService.selectOne(wrapper);
-				if ("candidateGroup".equals(tUser.getTaskType())) {
-					taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
-				} else if ("candidateUser".equals(tUser.getTaskType())) {
-					taskService.addCandidateUser(task1.getId(), tUser.getCandidateIds());
-				} else {
-					if("counterSign".equals(tUser.getTaskType())){
-
-						taskService.setVariable(task1.getId(),"counterSign",tUser.getCandidateIds());
-					}
-					taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
-				}
-
-			}
-			return renderSuccess("办理成功！");
-		} catch(Exception e){
-			logger.error("办理失败",e);
-			return renderError("办理失败");
-		}
+		return activitiService.complateTask(taskId,commentContent,commentResult);
     }
     
     /**

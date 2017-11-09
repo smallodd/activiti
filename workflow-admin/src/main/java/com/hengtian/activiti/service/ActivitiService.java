@@ -1,9 +1,10 @@
 package com.hengtian.activiti.service;
 
+import com.hengtian.common.result.Result;
+import com.hengtian.common.utils.PageInfo;
+
 import java.io.InputStream;
 import java.util.Map;
-
-import com.hengtian.common.utils.PageInfo;
 
 /**
  * 工作流服务接口
@@ -28,7 +29,15 @@ public interface ActivitiService {
 	 * @param userId
 	 * @param taskId
 	 */
-	public void claimTask(String userId, String taskId);
+	 void claimTask(String userId, String taskId);
+
+	/**
+	 * 办理任务
+	 * @param taskId
+	 * @param commentContent
+	 * @param commentResult
+	 */
+	Result complateTask(String taskId, String commentContent, Integer commentResult);
 
 	/**
 	 * 获取流程资源文件
@@ -36,39 +45,39 @@ public interface ActivitiService {
 	 * @param processInstanceId
 	 * @return
 	 */
-	public InputStream getProcessResource(String resourceType, String processInstanceId);
+	 InputStream getProcessResource(String resourceType, String processInstanceId);
 
 	/**
 	 * 委派任务
 	 * @param userId
 	 * @param taskId
 	 */
-	public void delegateTask(String userId, String taskId);
+	 void delegateTask(String userId, String taskId);
 
 	/**
 	 * 转办任务
 	 * @param userId
 	 * @param taskId
 	 */
-	public void transferTask(String userId, String taskId);
+	 void transferTask(String userId, String taskId);
 
 	/**
 	 * 跳转任务
 	 * @param taskId
 	 * @param taskDefinitionKey
 	 */
-	public void jumpTask(String taskId, String taskDefinitionKey);
+	 void jumpTask(String taskId, String taskDefinitionKey);
 
 	/**
 	 * 我的已办任务
 	 * @param pageInfo
 	 */
-	public void selectHisTaskDataGrid(PageInfo pageInfo);
+	 void selectHisTaskDataGrid(PageInfo pageInfo);
 	
 	
 	/**
 	 * 提供公共的发送邮件服务
 	 */
-	public void sendMailService(Map<String,Object> params);
+	 void sendMailService(Map<String,Object> params);
 
 }
