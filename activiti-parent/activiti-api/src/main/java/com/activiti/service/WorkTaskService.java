@@ -54,7 +54,7 @@ public interface WorkTaskService {
     /**
      * 审批接口
      *         注：当下一个审批人的唯一标识为空或不传时，直接完成该任务
-     * @param processId  任务id
+     * @param processId  proc_inst_id值
      * @param currentUser  当前审批人信息
      * @param commentResult 审批类型
      *                     2  审批通过
