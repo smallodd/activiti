@@ -4,6 +4,8 @@ package com.hengtian.thirdparty;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.hengtian.common.utils.ConfigUtil;
+import com.hengtian.common.utils.DigestUtils;
+import com.hengtian.common.utils.StringUtils;
 import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.model.SysRole;
 import com.hengtian.system.model.SysUser;
@@ -15,6 +17,7 @@ import com.hengtian.thirdparty.service.SqlService;
 import org.activiti.engine.IdentityService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,7 @@ public class Scheduler {
     SysRoleService roleService;
     @Autowired
     SysDepartmentService sysDepartmentService;
+
     public void executeUser(){
             if(ConfigUtil.getValue("syn").equals("false")){
                 logger.info("不执行数据同步");
@@ -53,7 +57,9 @@ public class Scheduler {
                     String password = (String) map.get("password");
                     String name = (String) map.get("name");
                     String email = (String) map.get("email");
-
+                    if(StringUtils.isBlank(password)){
+                        password= DigestUtils.md5Hex("123456").toUpperCase();
+                    }
                     userVo.setUserEmail(email);
                     userVo.setId(code);
                     userVo.setLoginName(code);

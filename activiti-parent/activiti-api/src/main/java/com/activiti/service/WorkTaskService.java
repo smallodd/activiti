@@ -30,9 +30,10 @@ public interface WorkTaskService {
      * @param userId  用户信息 一般是id
      * @param  startPage  起始页数
      * @param  pageSize   每页显示数
+     * @param  bussnessType  业务系统的key
      * @return  返回任务列表
      */
-    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize,String bussnessKey);
+    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize,String bussnessType);
 
 
 
@@ -45,6 +46,7 @@ public interface WorkTaskService {
      *                   0：未完成的历史任务
      *                   1：已完成的历史任务
      *                   -1：全部历史任务
+     * @param bussnessKey  业务系统key
      * @return 历史审批任务信息列表
      */
     List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize,String bussnessKey,int type);
@@ -52,14 +54,16 @@ public interface WorkTaskService {
     /**
      * 审批接口
      *         注：当下一个审批人的唯一标识为空或不传时，直接完成该任务
-     * @param taskId  任务id
+     * @param processId  proc_inst_id值
      * @param currentUser  当前审批人信息
-     * @param commentResult     2  审批通过   3 审批拒绝
+     * @param commentResult 审批类型
+     *                     2  审批通过
+     *                     3 审批拒绝
      * @param commentContent    审批意见
      * @return   返回 true  or false
      * @exception  WorkFlowException 返回审批异常
      */
-    String  completeTask(String taskId,String currentUser ,String commentContent, String commentResult) throws WorkFlowException;
+    String  completeTask(String processId,String currentUser ,String commentContent, String commentResult) throws WorkFlowException;
 
     /**
      * 回退到上一节点
