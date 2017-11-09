@@ -7,10 +7,6 @@ import com.hengtian.application.service.AppService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.shiro.ShiroUser;
-import com.hengtian.common.utils.AutoCreateCodeUtil;
-import com.hengtian.common.utils.ConstantUtils;
-import com.hengtian.system.model.SysResource;
-import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,9 +24,6 @@ public class AppController extends BaseController {
 
     @Autowired
     private AppService appService;
-
-    @Autowired
-    private StrongUuidGenerator uuidGenerator;
 
     @RequestMapping("/manage")
     public String manage(){
@@ -75,8 +68,19 @@ public class AppController extends BaseController {
         }else{
             return renderError("名称为空！");
         }
+        if(StringUtils.isNotEmpty(app.getKey())){
+            App _app = new App();
+            _app.setKey(app.getKey());
+            EntityWrapper<App> wrapper =new EntityWrapper<App>(_app);
+            wrapper.isNotNull("`key`");
+            _app = appService.selectOne(wrapper);
+            if(_app != null){
+                return renderError("KEY重复！");
+            }
+        }else{
+            return renderError("KEY为空！");
+        }
         ShiroUser shiroUser = getShiroUser();
-        app.setKey(uuidGenerator.getNextId());
         app.setCreateTime(new Date());
         app.setCreator(shiroUser.getId());
 
@@ -117,6 +121,18 @@ public class AppController extends BaseController {
                 }
             }else{
                 return renderError("名称为空！");
+            }
+            if(StringUtils.isNotEmpty(app.getKey())) {
+                App _app = new App();
+                _app.setKey(app.getKey());
+                EntityWrapper<App> wrapper =new EntityWrapper<App>(_app);
+                wrapper.isNotNull("`key`");
+                _app = appService.selectOne(wrapper);
+                if(_app != null && !_app.getId().equals(app.getId())){
+                    return renderError("KEY重复！");
+                }
+            }else{
+                return renderError("KEY为空！");
             }
         }else{
             return renderError("ID为空！");
