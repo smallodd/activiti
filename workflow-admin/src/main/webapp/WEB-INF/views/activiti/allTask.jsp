@@ -35,7 +35,7 @@
 <div id="delegateTaskDialog"></div>
 <div id="transferTaskDialog"></div>
 <div id="jumpTaskDialog"></div>
-<div id="shwoTask"></div>
+<div id="showTaskWindow"></div>
 <script type="text/javascript">
     var taskDataGrid;
     $(function() {
@@ -270,7 +270,7 @@
  */
 function showTaskFun(processInstanceId) {
     var contentStr= $.formatString('<img src="${ctx}/activiti/showTask/{0}"></img>',processInstanceId);
-    $("#shwoTask").window({
+    $("#showTaskWindow").window({
         title : '任务进度',
         width : 900,
         height : 500,
@@ -278,7 +278,7 @@ function showTaskFun(processInstanceId) {
         buttons : [ {
             text : '关闭',
             handler : function() {
-                $("#shwoTask").dialog("close");
+                $("#showTaskWindow").dialog("close");
             }
         } ]
     });
