@@ -272,9 +272,9 @@
  * 查看任务进度
  */
 function showTaskFun(processInstanceId) {
-    var dialogParent = $('#userCreate').parent();
+    var dialogParent = $('#showTaskDialog').parent();
     //克隆弹框里面的内容
-    var dialogOwn = $('#userCreate').clone();
+    var dialogOwn = $('#showTaskDialog').clone();
     var contentStr= $.formatString('<img src="${ctx}/activiti/showTask/{0}"></img>',processInstanceId);
     $("#showTaskDialog").dialog({
         title : '任务进度',
@@ -282,6 +282,7 @@ function showTaskFun(processInstanceId) {
         height : 500,
         minimizable : true,
         maximizable : true,
+        position: { my: "center", at: "left+800px top+500px ", of: window } ,
         content:contentStr,
         modal : true,
         close:function(){
