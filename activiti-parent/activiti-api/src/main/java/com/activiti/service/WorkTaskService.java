@@ -243,4 +243,11 @@ public interface WorkTaskService {
      * @throws Exception
      */
     void jointProcess(String taskId, List<String> userCodes) throws Exception;
+
+    /**
+     * 流程任务跟踪标识
+     * @param processInstanceId
+     * @return
+     */
+    byte[] getTaskSchedule(String processInstanceId);
 }
