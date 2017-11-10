@@ -35,7 +35,7 @@
 <div id="delegateTaskDialog"></div>
 <div id="transferTaskDialog"></div>
 <div id="jumpTaskDialog"></div>
-<div id="showTaskWindow"></div>
+<div id="showTaskDialog"></div>
 <script type="text/javascript">
     var taskDataGrid;
     $(function() {
@@ -191,6 +191,7 @@
 	        title : '选择受理人',
 	        width : 500,
 	        height : 450,
+            modal : true,
 	        href :  '${ctx}/activiti/taskDelegate',
 	        buttons : [ {
 	            text : '确定',
@@ -219,6 +220,7 @@
  	        title : '选择受理人',
  	        width : 500,
  	        height : 450,
+            modal : true,
  	        href :  '${ctx}/activiti/taskDelegate',
  	        buttons : [ {
  	            text : '确定',
@@ -246,6 +248,7 @@
 	        title : '选择任务节点',
 	        width : 300,
 	        height : 200,
+            modal : true,
 	        href :  '${ctx}/activiti/taskJump?id='+id,
 	        buttons : [ {
 	            text : '确定',
@@ -269,18 +272,23 @@
  * 查看任务进度
  */
 function showTaskFun(processInstanceId) {
+    var dialogParent = $('#userCreate').parent();
+    //克隆弹框里面的内容
+    var dialogOwn = $('#userCreate').clone();
     var contentStr= $.formatString('<img src="${ctx}/activiti/showTask/{0}"></img>',processInstanceId);
-    $("#showTaskWindow").window({
+    $("#showTaskDialog").dialog({
         title : '任务进度',
         width : 900,
         height : 500,
+        minimizable : true,
+        maximizable : true,
         content:contentStr,
-        buttons : [ {
-            text : '关闭',
-            handler : function() {
-                $("#showTaskWindow").dialog("close");
-            }
-        } ]
+        modal : true,
+        close:function(){
+            //添加内容到父节点
+            dialogOwn.appendTo(dialogParent);
+            $(this).dialog("destroy").remove();
+        }
     });
 }
 
