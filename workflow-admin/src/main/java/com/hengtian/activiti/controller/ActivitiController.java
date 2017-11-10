@@ -34,6 +34,7 @@ import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -433,8 +434,35 @@ public class ActivitiController extends BaseController{
 		ProcessDefinitionEntity definitionEntity = (ProcessDefinitionEntity)repositoryService.getProcessDefinition(processInstance.getProcessDefinitionId());
 
 		List<HistoricActivityInstance> highLightedActivitList =  historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).list();
+
+
 		//高亮环节id集合
 		List<String> highLightedActivitis = new ArrayList<String>();
+
+		//任务跳转时处理
+		EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
+		wrapper.where("proc_def_key = {0}", definitionEntity.getKey());
+		List<TUserTask> userTaskList= tUserTaskService.selectList(wrapper);
+		Map<String,Integer> taskMap = new HashMap<String,Integer>();
+		if(CollectionUtils.isNotEmpty(userTaskList)){
+			Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+			Iterator<TUserTask> iterator = userTaskList.iterator();
+			while (iterator.hasNext()) {
+				TUserTask tUserTask = iterator.next();
+				taskMap.put(tUserTask.getTaskDefKey(),1);
+				if(tUserTask.getTaskDefKey().equals(task.getTaskDefinitionKey())){
+					break;
+				}
+			}
+
+			Iterator<HistoricActivityInstance> it = highLightedActivitList.iterator();
+			while(it.hasNext()){
+				HistoricActivityInstance hai = it.next();
+				if(!taskMap.containsKey(hai.getActivityId()) && "userTask".equals(hai.getActivityType())){
+					it.remove();
+				}
+			}
+		}
 
 		//高亮线路id集合
 		List<String> highLightedFlows = getHighLightedFlows(definitionEntity,highLightedActivitList);
