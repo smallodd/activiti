@@ -8,9 +8,9 @@
       "id" : "process_id",
       "type" : "String",
       "title" : "流程标识",
-      "value" : "process",
+      "value" : "",
       "description" : "Unique identifier of the process definition.",
-      "popular" : true
+      "popular" : false
     } ]
   }, {
     "name" : "overrideidpackage",

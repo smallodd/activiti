@@ -1,5 +1,6 @@
  package com.hengtian.editor.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.ByteArrayInputStream;
@@ -9,6 +10,7 @@ import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
@@ -45,10 +47,13 @@ public class ModelSaveRestResource
       modelJson.put("description", (String)values.getFirst("description"));
       model.setMetaInfo(modelJson.toString());
       model.setName((String)values.getFirst("name"));
+      String str=(String)values.getFirst("json_xml");
+      JSONObject jsonObject=JSONObject.parseObject(str);
+      jsonObject.getJSONObject("properties").put("process_id",model.getKey());
 
       this.repositoryService.saveModel(model);
 
-      this.repositoryService.addModelEditorSource(model.getId(), ((String)values.getFirst("json_xml")).getBytes("utf-8"));
+      this.repositoryService.addModelEditorSource(model.getId(), (jsonObject.toJSONString()).getBytes("utf-8"));
 
       InputStream svgStream = new ByteArrayInputStream(((String)values.getFirst("svg_xml")).getBytes("utf-8"));
       TranscoderInput input = new TranscoderInput(svgStream);
