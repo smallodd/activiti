@@ -73,7 +73,10 @@ public class Scheduler {
                     EntityWrapper<SysUser> userWrapper=new EntityWrapper<>();
                     userWrapper.where("id='"+code+"'");
                     SysUser sysUser=userService.selectOne(userWrapper);
-                    if(sysUser!=null){
+                    if(map.get("enable_state").toString().equals("离职")){
+                        logger.info("删除离职人员"+code+"---"+password+"---"+name+"----"+email);
+                        userService.deleteUserById(code);
+                    }else if(sysUser!=null){
                         logger.info("更新"+code+"---"+password+"---"+name+"----"+email);
                         userService.updateByVo(userVo);
                     }else{
