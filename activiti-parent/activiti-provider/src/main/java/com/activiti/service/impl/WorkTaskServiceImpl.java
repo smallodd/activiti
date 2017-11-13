@@ -891,7 +891,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
         String processInstanceId = historicTaskInstance.getProcessInstanceId();
 
-        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).list();
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().desc().list();
 
         //获取全部评论
         List<Comment> comments = taskService.getProcessInstanceComments(processInstanceId);
@@ -912,7 +912,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         SysUser user = new SysUser();//用户临时存储对象
         EntityWrapper<SysUser> wrapper = new EntityWrapper<SysUser>(user);
         List<HistoryTaskVo> taskList = new ArrayList<HistoryTaskVo>();
-        int isFinished = 0;
+        ProcessInstance pi = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        int isFinished = (pi == null)?1:0;
         for (HistoricTaskInstance hti : list) {
 
             HistoryTaskVo ht = new HistoryTaskVo();
