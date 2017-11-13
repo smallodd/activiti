@@ -890,25 +890,36 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         logger.info("获取历史任务");
         HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
         String processInstanceId = historicTaskInstance.getProcessInstanceId();
-        HistoricActivityInstanceQuery historicActivityInstanceQuery = historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId);
-        List<HistoricActivityInstance> list = historicActivityInstanceQuery.finished().orderByHistoricActivityInstanceStartTime().desc().list();
 
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).list();
+
+        //获取全部评论
+        List<Comment> comments = taskService.getProcessInstanceComments(processInstanceId);
+        Map<String,List<String>> commentMap = new HashMap<String,List<String>>();
+        for(Comment c : comments){
+            if(commentMap.containsKey(c.getTaskId())){
+                if(StringUtils.isNotBlank(c.getFullMessage())){
+                    commentMap.get(c.getTaskId()).add(c.getFullMessage());
+                }
+            }else{
+                if(StringUtils.isNotBlank(c.getFullMessage())){
+                    List<String> commentList = new ArrayList<String>();
+                    commentList.add(c.getFullMessage());
+                    commentMap.put(c.getTaskId(),commentList);
+                }
+            }
+        }
         SysUser user = new SysUser();//用户临时存储对象
         EntityWrapper<SysUser> wrapper = new EntityWrapper<SysUser>(user);
         List<HistoryTaskVo> taskList = new ArrayList<HistoryTaskVo>();
         int isFinished = 0;
-        for (HistoricActivityInstance his : list) {
-            if("startEvent".equals(his.getActivityType())){
-                continue;
-            }else if("endEvent".equals(his.getActivityType())){
-                isFinished = 1;
-                continue;
-            }
+        for (HistoricTaskInstance hti : list) {
+
             HistoryTaskVo ht = new HistoryTaskVo();
 
-            ht.setTaskId(his.getTaskId());
+            ht.setTaskId(hti.getId());
             //审核人
-            user.setId(his.getAssignee());
+            user.setId(hti.getAssignee());
             wrapper.isNotNull("id");
             user = sysUserService.selectOne(wrapper);
             ht.setOperator(user.getLoginName());
@@ -916,15 +927,10 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             if(1==isFinished){
                 isFinished = 0;
             }
-            ht.setStartTime(his.getStartTime());
-            ht.setEndTime(his.getEndTime());
+            ht.setStartTime(hti.getStartTime());
+            ht.setEndTime(hti.getEndTime());
             //审核意见
-            List<Comment> taskComments = taskService.getTaskComments(his.getTaskId());
-            List<String> commentList = new ArrayList<String>();
-            for(Comment c : taskComments){
-                commentList.add(c.getFullMessage());
-            }
-            ht.setComment(commentList);
+            ht.setComment(commentMap.get(hti.getId()));
 
             taskList.add(ht);
         }
