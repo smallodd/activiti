@@ -1,11 +1,14 @@
 package com.activiti.service.impl;
 
-import com.activiti.dao.AppModelDao;
 import com.activiti.entity.CommonVo;
+import com.activiti.entity.HistoryTaskVo;
+import com.activiti.entity.HistoryTasksVo;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.model.AppModel;
+import com.activiti.model.SysUser;
 import com.activiti.model.TUserTask;
 import com.activiti.service.AppModelService;
+import com.activiti.service.SysUserService;
 import com.activiti.service.TUserTaskService;
 import com.activiti.service.WorkTaskService;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
@@ -30,7 +33,6 @@ import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.delegate.ActivityBehavior;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
-import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
@@ -75,6 +77,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     ProcessEngineConfiguration processEngineConfiguration;
     @Autowired
     ProcessEngineFactoryBean processEngine;
+    @Autowired
+    SysUserService sysUserService;
 
 
     public String startTask(CommonVo commonVo,Map<String,Object> paramMap) {
@@ -904,5 +908,76 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             }
         }
         return highFlows;
+    }
+
+    /**
+     * 根据任务ID查询历史任务信息
+     * @param taskId
+     * @param variableNames
+     * @return
+     */
+    public HistoryTasksVo getTaskHistoryBytaskId(String taskId, List<String> variableNames){
+        if(StringUtils.isBlank(taskId)){
+            return null;
+        }
+
+        HistoryTasksVo hisTask = new HistoryTasksVo();
+
+        logger.info("获取历史任务");
+        HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+        String processInstanceId = historicTaskInstance.getProcessInstanceId();
+        HistoricActivityInstanceQuery historicActivityInstanceQuery = historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId);
+        List<HistoricActivityInstance> list = historicActivityInstanceQuery.finished().orderByHistoricActivityInstanceStartTime().desc().list();
+
+        SysUser user = new SysUser();//用户临时存储对象
+        EntityWrapper<SysUser> wrapper = new EntityWrapper<SysUser>(user);
+        List<HistoryTaskVo> taskList = new ArrayList<HistoryTaskVo>();
+        int isFinished = 0;
+        for (HistoricActivityInstance his : list) {
+            if("startEvent".equals(his.getActivityType())){
+                continue;
+            }else if("endEvent".equals(his.getActivityType())){
+                isFinished = 1;
+                continue;
+            }
+            HistoryTaskVo ht = new HistoryTaskVo();
+
+            ht.setTaskId(his.getTaskId());
+            //审核人
+            user.setId(his.getAssignee());
+            wrapper.isNotNull("id");
+            user = sysUserService.selectOne(wrapper);
+            ht.setOperator(user.getLoginName());
+            ht.setIsLastApprove(isFinished);
+            if(1==isFinished){
+                isFinished = 0;
+            }
+            ht.setStartTime(his.getStartTime());
+            ht.setEndTime(his.getEndTime());
+            //审核意见
+            List<Comment> taskComments = taskService.getTaskComments(his.getTaskId());
+            List<String> commentList = new ArrayList<String>();
+            for(Comment c : taskComments){
+                commentList.add(c.getFullMessage());
+            }
+            ht.setComment(commentList);
+
+            taskList.add(ht);
+        }
+        hisTask.setTaskList(taskList);
+        logger.info("获取属性值");
+        Map<String,Object> variableMap = null;
+        if(variableNames != null && variableNames.size() > 0){
+            variableMap = new HashMap<String,Object>();
+            List<HistoricVariableInstance> variables = historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
+            for(HistoricVariableInstance hvi : variables){
+                if(variableNames.contains(hvi.getVariableName())){
+                    variableMap.put(hvi.getVariableName(),hvi.getValue());
+                }
+            }
+        }
+
+        hisTask.setVariables(variableMap);
+        return hisTask;
     }
 }
