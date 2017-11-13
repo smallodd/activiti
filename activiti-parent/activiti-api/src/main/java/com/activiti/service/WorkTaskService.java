@@ -54,14 +54,14 @@ public interface WorkTaskService {
 
     /**
      * 审批接口
-     *         注：当下一个审批人的唯一标识为空或不传时，直接完成该任务
+     *
      * @param processId  proc_inst_id值
      * @param currentUser  当前审批人信息
      * @param commentResult 审批类型
      *                     2  审批通过
      *                     3 审批拒绝
      * @param commentContent    审批意见
-     * @return   返回 true  or false
+     * @return   返回 processId
      * @exception  WorkFlowException 返回审批异常
      */
     String  completeTask(String processId,String currentUser ,String commentContent, String commentResult) throws WorkFlowException;
@@ -76,7 +76,7 @@ public interface WorkTaskService {
      * @param pageSzie    查询多少条数
      * @param status      0 :审批中的任务
      *                    1 ：审批完成的任务
-     *@param businessType  业务键值
+     *@param businessType  业务系统的key
      * @return    返回申请人提交的任务
      */
     List<HistoricProcessInstance> getApplyTasks(String userid, int startPage, int pageSzie, int status,String businessType);
@@ -85,7 +85,7 @@ public interface WorkTaskService {
      * @param userid   审批人用户唯一标识
      * @param startPage   起始页数
      * @param pageSzie     查询多少条数
-        @param  bussnessType 系统key
+        @param  bussnessType 业务系统的key
      *
      * @return    返回参与用户的审批历史信息
      */
@@ -96,7 +96,7 @@ public interface WorkTaskService {
      * @param userId   用户主键
      * @param startPage   开始页数
      * @param pagegSize   每页显示数
-     * @param bussnessType 系统key
+     * @param bussnessType 业务系统的key
      *
      * @return            返回审批历史人物信息列表
      */
@@ -107,7 +107,7 @@ public interface WorkTaskService {
      * @param userId   用户主键
      * @param startPage 开始页数
      * @param pageSize   结束页数
-     * @param bussnessType  系统的key
+     * @param bussnessType  业务系统的key
      * @return            返回用户拒绝的信息
      */
     PageInfo<HistoricTaskInstance> selectMyRefuse(String userId,int startPage,int pageSize,String bussnessType);
@@ -121,7 +121,7 @@ public interface WorkTaskService {
     /**
      * 查询业务主键是否再流程钟
      * @param bussinessKey   业务主键
-     * @param bussinessType  业务系统
+     * @param bussinessType  业务系统的key
      * @return   返回true or false
      */
     boolean checekBunessKeyIsInFlow(String bussinessKey,String bussinessType);
@@ -196,19 +196,6 @@ public interface WorkTaskService {
      */
     boolean checkIsPass(String processId);
 
-/*    *//**
-     * 获取最后审批人
-     * @param processId  流程中processId
-     * @return  返回最后审批人userCode
-     *//*
-    String getLastApprover(String processId);
-
-    *//**
-     * 加入会签
-     * @param taskId  任务id
-     * @param list   人员userCode列表
-     *//*
-    void jointProcess(String taskId,List<String> list);*/
 
     /**
      * 通过流程定义id查询任务
@@ -254,7 +241,7 @@ public interface WorkTaskService {
     /**
      * 根据任务ID查询历史任务信息
      * @param taskId
-     * @param paramTypeList
+     * @param variableNames
      * @return
      */
     HistoryTasksVo getTaskHistoryBytaskId(String taskId,List<String> variableNames);
