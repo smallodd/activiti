@@ -1,4 +1,5 @@
 import com.activiti.entity.CommonVo;
+import com.activiti.entity.HistoryTasksVo;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
 import org.activiti.engine.task.Comment;
@@ -13,6 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +42,8 @@ public class SpringTest {
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("测试人员");
         commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("key");
-        commonVo.setModelKey("hahah");
+        commonVo.setBusinessType("ddcecfb0-c516-11e7-ab9c-4ccc6ac949f4");
+        commonVo.setModelKey("ceshitiaojian");
         Map map=new HashMap();
         map.put("param",10000);
         String processId=workTaskService.startTask(commonVo,map);
@@ -74,4 +76,14 @@ public class SpringTest {
         List<Comment> list=workTaskService.selectListComment("111");
         System.out.print(list.size());
     }
+
+     @Test
+     public void testQueryHistoryTask(){
+         String taskId = "2513";
+         List<String> variableNames = new ArrayList<String>();
+         variableNames.add("applyUserName");
+         variableNames.add("isPass");
+         HistoryTasksVo taskHistory = workTaskService.getTaskHistoryBytaskId(taskId, variableNames);
+         System.out.print(taskHistory);
+     }
 }

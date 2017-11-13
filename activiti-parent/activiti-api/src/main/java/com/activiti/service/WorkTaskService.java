@@ -1,6 +1,7 @@
 package com.activiti.service;
 
 import com.activiti.entity.CommonVo;
+import com.activiti.entity.HistoryTasksVo;
 import com.activiti.expection.WorkFlowException;
 import com.github.pagehelper.PageInfo;
 import org.activiti.engine.history.HistoricActivityInstance;
@@ -249,4 +250,12 @@ public interface WorkTaskService {
      * @return
      */
     byte[] getTaskSchedule(String processInstanceId);
+
+    /**
+     * 根据任务ID查询历史任务信息
+     * @param taskId
+     * @param paramTypeList
+     * @return
+     */
+    HistoryTasksVo getTaskHistoryBytaskId(String taskId,List<String> variableNames);
 }
