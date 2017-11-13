@@ -12,10 +12,10 @@
         <form id="complateTaskForm" method="post">
 			<input type="hidden" name="taskId" value="${task.id}">
             <table class="grid">
-                <tr>
-                	<td>任务说明</td>
-                	<td><textarea style="width: 240px; height: 49px;" readonly="readonly">${task.description}</textarea></td>
-                </tr>
+                <%--<tr>--%>
+                	<%--<td>任务说明</td>--%>
+                	<%--<td><textarea style="width: 240px; height: 49px;" readonly="readonly">${task.description}</textarea></td>--%>
+                <%--</tr>--%>
                 <tr><td>意见列表:</td><td><c:if test="${empty comments}">暂无意见 ！</c:if></td></tr>
                 <c:forEach var="comment" items="${comments}">
 					<tr>

@@ -1,6 +1,7 @@
 import com.activiti.entity.CommonVo;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
+import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,8 +40,8 @@ public class SpringTest {
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("测试人员");
         commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("ddcecfb0-c516-11e7-ab9c-4ccc6ac949f4");
-        commonVo.setModelKey("ceshitiaojian");
+        commonVo.setBusinessType("key");
+        commonVo.setModelKey("hahah");
         Map map=new HashMap();
         map.put("param",10000);
         String processId=workTaskService.startTask(commonVo,map);
@@ -49,7 +50,7 @@ public class SpringTest {
     //审批任务
     @Test
     public void  testComplete(){
-        workTaskService.completeTask("30015","cf42f07adc69455b94e82f8ce06de09e","3","我同意这个审批");
+        workTaskService.completeTask("5034","c28fb2ff582d484ea77692279ae56fff","我不同意这个审批","3");
     }
 
     /**
@@ -57,7 +58,20 @@ public class SpringTest {
      */
     @Test
      public void queryList(){
-      PageInfo<Task> pageInfo= workTaskService.queryByAssign("cf42f07adc69455b94e82f8ce06de09e",1,10,"ddcecfb0-c516-11e7-ab9c-4ccc6ac949f4");
+      PageInfo<Task> pageInfo= workTaskService.queryByAssign("c28fb2ff582d484ea77692279ae56fff",1,10,"key");
       System.out.print(pageInfo.getTotal());
      }
+    /**
+     * 查询完成的列表
+     */
+    @Test
+    public void queryCompleteList(){
+        PageInfo pageInfo= workTaskService.selectMyComplete("c28fb2ff582d484ea77692279ae56fff",1,10,"key");
+        System.out.print(pageInfo.getTotal());
+    }
+    @Test
+    public void queryComments(){
+        List<Comment> list=workTaskService.selectListComment("111");
+        System.out.print(list.size());
+    }
 }

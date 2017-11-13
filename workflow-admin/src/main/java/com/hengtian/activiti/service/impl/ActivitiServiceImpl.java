@@ -122,6 +122,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			TaskVo vo = new TaskVo();
 			vo.setId(task.getId());
 			vo.setTaskName(task.getName());
+
 			vo.setTaskAssign(task.getAssignee());
 			vo.setTaskState(task.getAssignee()==null?"1":"2");
 			vo.setTaskCreateTime(task.getCreateTime());
