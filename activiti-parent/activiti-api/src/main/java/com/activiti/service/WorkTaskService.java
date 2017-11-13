@@ -120,16 +120,12 @@ public interface WorkTaskService {
     /**
      * 查询业务主键是否再流程钟
      * @param bussinessKey   业务主键
+     * @param bussinessType  业务系统
      * @return   返回true or false
      */
-    boolean checekBunessKeyIsInFlow(String bussinessKey);
+    boolean checekBunessKeyIsInFlow(String bussinessKey,String bussinessType);
 
-    /**
-     * 获取当前历史任务的审批意见
-     * @param taskId   任务id
-     * @return  返回审批意见
-     */
-    Comment selectComment(String taskId);
+
 
     /**
      * 通过流程实例id查询任务审批历史信息
@@ -169,25 +165,28 @@ public interface WorkTaskService {
      * 查询所有待审批的任务
      * @param startPage  开始页
      * @param pageSize    每页显示数
+     *  @param  bussinessType  业务系统键
      * @return   分页显示审批任务列表
      */
-    PageInfo<Task> selectAllWaitApprove(int startPage,int pageSize);
+    PageInfo<Task> selectAllWaitApprove(int startPage,int pageSize,String bussinessType);
 
     /**
      * 查询所有通过的任务
      * @param startPage  开始页
      * @param pageSize   每页显示数
+     *  @param  bussinessType  业务系统键
      * @return  分页显示审批通过任务列表
      */
-    PageInfo<HistoricProcessInstance> selectAllPassApprove(int startPage, int pageSize);
+    PageInfo<HistoricProcessInstance> selectAllPassApprove(int startPage, int pageSize,String bussinessType);
 
     /**
      * 查询所有拒绝的任务
      * @param startPage  开始页
      * @param pageSize   每页显示数
+     *  @param  bussinessType  业务系统键
      * @return  分页显示所有拒绝的任务列表
      */
-    PageInfo<HistoricProcessInstance> selectAllRefuseApprove(int startPage,int pageSize);
+    PageInfo<HistoricProcessInstance> selectAllRefuseApprove(int startPage,int pageSize,String bussinessType);
 
     /**
      * 通过流程定义id判断活动是否通过
