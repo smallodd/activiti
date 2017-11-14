@@ -93,7 +93,7 @@ $(function() {
             }
         }
     });
-    document.getElementById('main').innerHTML="欢迎使用工作流管理平台"
+    //document.getElementById('main').innerHTML="欢迎使用工作流管理平台"
 	// 基于准备好的dom，初始化echarts实例
 	// var myChart = echarts.init(document.getElementById('main'));
 	// var dataAll = [389, 259, 262, 324, 232, 176, 196, 214, 133, 370];

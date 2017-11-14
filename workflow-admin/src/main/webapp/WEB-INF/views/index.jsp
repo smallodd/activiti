@@ -33,7 +33,13 @@
         <div data-options="region:'center'" style="overflow: hidden;">
             <div id="index_tabs" style="overflow: hidden;">
                 <div title="首页" data-options="iconCls:'fi-home',border:false" style="overflow: hidden;">
-                	<div id="main" style="width:100%;height:100%;"></div>
+                	<div id="main" style="width:100%;height:100%;margin-left:10px;margin-top:10px;">
+                        <div class="welinfo">
+                            <span>
+                                <iframe name="weather_inc" src="http://i.tianqi.com/index.php?c=code&id=13" width="650" height="221" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
