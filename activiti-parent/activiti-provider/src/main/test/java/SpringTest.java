@@ -42,8 +42,8 @@ public class SpringTest {
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("测试人员");
         commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("ddcecfb0-c516-11e7-ab9c-4ccc6ac949f4");
-        commonVo.setModelKey("ceshitiaojian");
+        commonVo.setBusinessType("lgb");
+        commonVo.setModelKey("test");
         Map map=new HashMap();
         map.put("param",10000);
         String processId=workTaskService.startTask(commonVo,map);
@@ -79,7 +79,7 @@ public class SpringTest {
 
      @Test
      public void testQueryHistoryTask(){
-         String taskId = "2513";
+         String taskId = "23";
          List<String> variableNames = new ArrayList<String>();
          variableNames.add("applyUserName");
          variableNames.add("isPass");
