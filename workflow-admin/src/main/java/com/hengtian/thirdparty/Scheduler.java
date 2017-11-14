@@ -44,8 +44,15 @@ public class Scheduler {
                 return;
             }
 
-            List<Map<String, Object>> list = sqlService.execQuery("select * from emp", null);
-
+            List<Map<String, Object>> list;
+            int count=userService.selectCount(new EntityWrapper<>());
+            List<Map<String, Object>> mapList=sqlService.execQuery("select count(1) count from emp where enable_state!='离职' ",null);
+            Long countUser= (long) mapList.get(0).get("count");
+            if(countUser-count>1000){
+                list= sqlService.execQuery("select * from emp where enable_state!='离职'", null);
+            }else{
+                list=sqlService.execQuery("select * from emp where create_time between date_sub(date_format(now(),'%Y-%m-%d %H:00:00'),interval 1 hour) and date_format(now(),'%Y-%m-%d %H:00:00') or  update_time between date_sub(date_format(now(),'%Y-%m-%d %H:00:00'),interval 1 hour) and date_format(now(),'%Y-%m-%d %H:00:00')", null);
+            }
             if(list==null||list.size()==0){
                logger.info("没有数据");
             }else{
@@ -92,8 +99,15 @@ public class Scheduler {
             logger.info("不执行数据同步");
             return;
         }
-        List<Map<String, Object>> list=sqlService.execQuery("select *  from org" ,null);
-
+        int count=sysDepartmentService.selectCount(new EntityWrapper<>());
+        List<Map<String, Object>> mapList=sqlService.execQuery("select count(1) count  from org",null);
+        Long coutDep= (long) mapList.get(0).get("count");
+        List<Map<String, Object>> list;
+        if(coutDep-count>20){
+            list=sqlService.execQuery("select *  from org" ,null);
+        }else{
+            list=sqlService.execQuery("select * from org where create_time between date_sub(date_format(now(),'%Y-%m-%d %H:00:00'),interval 1 hour) and date_format(now(),'%Y-%m-%d %H:00:00') or  update_time between date_sub(date_format(now(),'%Y-%m-%d %H:00:00'),interval 1 hour) and date_format(now(),'%Y-%m-%d %H:00:00')", null);
+        }
         for(Map<String,Object> map:list){
             String code= (String) map.get("code");
             String fatherCode= (String) map.get("father_code");
