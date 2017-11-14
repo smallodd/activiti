@@ -120,21 +120,16 @@ function modelCreate() {
  * @param url
  */
 function modelEdit(modelId) {
-    window.open("/activiti/model/update/"+modelId);
-    /*parent.$.modalDialog({
-        title : '编辑模型',
-        width : 300,
-        height : 200,
-        href : '${ctx}/activiti/model/update/'+modelId,
-        buttons : [ {
-            text : '确定',
-            handler : function() {
-                parent.$.modalDialog.openner_dataGrid = modelDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
-                var f = parent.$.modalDialog.handler.find('#processdefDeployForm');
-                f.submit();
-            }
-        } ]
-    });*/
+    //window.open("/activiti/model/update/"+modelId);
+    var url = "/activiti/model/update/"+modelId;
+    var content = '<iframe scrolling="auto" frameborder="0"  src="'+url+'" style="width:100%;height:100%;"></iframe>';
+    var currTab =  self.parent.$('#index_tabs').tabs('getSelected'); //获得当前tab
+    self.parent.$('#index_tabs').tabs('update', {
+        tab : currTab,
+        options : {
+            content : content
+        }
+    });
     /*var newTab = $('#index_tabs', parent.document);
     newTab = $('#processdefToolbar');
     var title = "11";
