@@ -1,5 +1,6 @@
 package com.activiti.service.impl;
 
+import com.activiti.common.EmailUtil;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTaskVo;
 import com.activiti.entity.HistoryTasksVo;
@@ -12,6 +13,7 @@ import com.activiti.service.SysUserService;
 import com.activiti.service.TUserTaskService;
 import com.activiti.service.WorkTaskService;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.common.util.ConfigUtil;
 import com.github.pagehelper.PageInfo;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
@@ -149,6 +151,26 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                             taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
                         }
                     }
+                    Boolean flag=Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
+                    if(flag) {
+                        String[] strs = tUserTask.getCandidateIds().split(",");
+                        for (String str : strs) {
+                            SysUser sysUser = sysUserService.selectById(str);
+                            if (StringUtils.isNotBlank(sysUser.getUserEmail())) {
+                                EmailUtil emailUtil = EmailUtil.getEmailUtil();
+                                try {
+                                    emailUtil.sendEmail(
+                                            ConfigUtil.getValue("email.send.account"),
+                                            "System emmail",
+                                            sysUser.getUserEmail(),
+                                            "您有一个待审批邮件待处理",
+                                            commonVo.getApplyUserName() + "填写一个审批申请，标题为：" + commonVo.getApplyTitle() + ",请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -204,6 +226,28 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             } {
 
                 taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
+            }
+            Boolean flag=Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
+            if(flag) {
+                String[] strs = task.getAssignee().split(",");
+                for (String str : strs) {
+                    SysUser sysUser = sysUserService.selectById(str);
+                    if (StringUtils.isNotBlank(sysUser.getUserEmail())) {
+                        EmailUtil emailUtil = EmailUtil.getEmailUtil();
+                        try {
+                            emailUtil.sendEmail(
+                                    ConfigUtil.getValue("email.send.account"),
+                                    "System emmail",
+                                    sysUser.getUserEmail(),
+                                    "您有一个待审批邮件待处理",
+                                    map.get("applyUserName") + "填写一个审批申请，标题为：" + map.get("applyTitle") + ",请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            continue;
+
+                        }
+                    }
+                }
             }
 
         }
