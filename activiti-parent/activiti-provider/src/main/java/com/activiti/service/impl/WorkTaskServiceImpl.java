@@ -818,14 +818,17 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             wrapper.where("proc_def_key = {0}", definitionEntity.getKey());
             List<TUserTask> userTaskList= tUserTaskService.selectList(wrapper);
             Map<String,Integer> taskMap = new HashMap<String,Integer>();
+            boolean flag = false;
             if(CollectionUtils.isNotEmpty(userTaskList)){
                 Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
                 Iterator<TUserTask> iterator = userTaskList.iterator();
                 while (iterator.hasNext()) {
                     TUserTask tUserTask = iterator.next();
-                    taskMap.put(tUserTask.getTaskDefKey(),1);
-                    if(tUserTask.getTaskDefKey().equals(task.getTaskDefinitionKey())){
-                        break;
+                    if(tUserTask.getTaskDefKey().equals(task.getTaskDefinitionKey()) && !flag){
+                        flag = true;
+                    }
+                    if(flag){
+                        taskMap.put(tUserTask.getTaskDefKey(),1);
                     }
                 }
 
