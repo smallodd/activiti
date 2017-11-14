@@ -261,7 +261,7 @@ KISBPM.TOOLBAR = {
         },
         
         closeEditor: function(services) {
-            window.location.href = "/activiti/model/modelManager";
+        	window.location.href = "./";
         },
         
         /**
@@ -326,7 +326,7 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
 
     $scope.saveAndClose = function () {
     	$scope.save(function() {
-    		window.location.href = "/activiti/model/modelManager";
+    		window.location.href = "./";
     	});
     };
     $scope.save = function (successCallback) {
