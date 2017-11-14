@@ -43,15 +43,28 @@
                 progressClose();
                 result = $.parseJSON(result);
                 if (result.success) {
-                    window.location.href="/modeler.html?modelId="+result.obj;
-                    parent.$.modalDialog.openner_dataGrid.datagrid('reload');//之所以能在这里调用到parent.$.modalDialog.openner_dataGrid这个对象，是因为user.jsp页面预定义好了
+                    //window.location.href="/modeler.html?modelId="+result.obj;
+                    //parent.$.modalDialog.openner_dataGrid.datagrid('reload');//之所以能在这里调用到parent.$.modalDialog.openner_dataGrid这个对象，是因为user.jsp页面预定义好了
                     parent.$.modalDialog.handler.dialog('close');
+                    openEditor(result.obj);
                 } else {
                     parent.$.messager.alert('错误', result.msg, 'error');
                 }
             }
         });
     });
+
+    function openEditor(modelId){
+        var url = "/activiti/model/update/"+modelId;
+        var content = '<iframe scrolling="auto" frameborder="0"  src="'+url+'" style="width:100%;height:100%;"></iframe>';
+        var currTab =  self.parent.$('#index_tabs').tabs('getSelected'); //获得当前tab
+        self.parent.$('#index_tabs').tabs('update', {
+            tab : currTab,
+            options : {
+                content : content
+            }
+        });
+    }
 </script>
 </body>
 </html>
