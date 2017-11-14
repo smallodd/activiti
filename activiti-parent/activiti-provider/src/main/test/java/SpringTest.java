@@ -1,3 +1,4 @@
+import com.activiti.common.EmailUtil;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
 import com.activiti.service.WorkTaskService;
@@ -38,12 +39,12 @@ public class SpringTest {
 
 
         CommonVo commonVo=new CommonVo();
-        commonVo.setApplyTitle("测试dubbo接口");
+        commonVo.setApplyTitle("测试邮件发送");
         commonVo.setApplyUserId("H000000");
-        commonVo.setApplyUserName("测试人员");
+        commonVo.setApplyUserName("测试");
         commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("lgb");
-        commonVo.setModelKey("test");
+        commonVo.setBusinessType("ceshi");
+        commonVo.setModelKey("ceshi");
         Map map=new HashMap();
         map.put("param",10000);
         String processId=workTaskService.startTask(commonVo,map);
@@ -79,11 +80,22 @@ public class SpringTest {
 
      @Test
      public void testQueryHistoryTask(){
-         String taskId = "23";
+         String taskId = "2513";
          List<String> variableNames = new ArrayList<String>();
          variableNames.add("applyUserName");
          variableNames.add("isPass");
          HistoryTasksVo taskHistory = workTaskService.getTaskHistoryBytaskId(taskId, variableNames);
          System.out.print(taskHistory);
      }
+    @Test
+    public void testMailSend() throws Exception {
+        EmailUtil emailUtil=EmailUtil.getEmailUtil();
+        emailUtil.sendEmail(
+                "13601094934@163.com",
+                "sender name",
+                "577415138@qq.com",
+                "mail subject: how are you?",
+                "<font color='red'>can you see?ол╣Щ</font>");
+        System.out.println("send out successfully");
+    }
 }
