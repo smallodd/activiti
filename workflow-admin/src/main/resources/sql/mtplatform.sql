@@ -15,7 +15,7 @@ MySQL - 5.7.18-log : Database - mtplatform
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 CREATE DATABASE /*!32312 IF NOT EXISTS*/`mtplatform` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
-USE `mtplatform`;
+
 
 /*Table structure for table `act_evt_log` */
 
