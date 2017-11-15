@@ -5,7 +5,7 @@
 	
 	<groupId>com.activiti</groupId>
 	<artifactId>activiti-parent</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>activiti-parent</name>
 	<url>http://172.16.163.52:8081/nexus</url>
@@ -14,7 +14,7 @@
 		<repository>
 			<id>nexus-releases</id>
 			<name>nexus-releases</name>
-			<url>http://172.16.163.52:8081/nexus/content/repositories/hengtian/</url>
+			<url>http://172.16.163.52:8081/nexus/content/repositories/hengtian-snapshot/</url>
 		</repository>
 	</distributionManagement>
 
@@ -212,6 +212,11 @@
 			<groupId>com.github.sgroschupf</groupId>
 			<artifactId>zkclient</artifactId>
 			<version>0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.pagehelper</groupId>
+			<artifactId>pagehelper</artifactId>
+			<version>4.0.3</version>
 		</dependency>
 	</dependencies>
 	<build>

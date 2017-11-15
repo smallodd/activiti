@@ -39,12 +39,12 @@ public class SpringTest {
 
 
         CommonVo commonVo=new CommonVo();
-        commonVo.setApplyTitle("测试邮件发送");
+        commonVo.setApplyTitle("测试在线换审批人");
         commonVo.setApplyUserId("H000000");
-        commonVo.setApplyUserName("测试");
+        commonVo.setApplyUserName("测试111111111111");
         commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("ceshi");
-        commonVo.setModelKey("ceshi");
+        commonVo.setBusinessType("yingxiao");
+        commonVo.setModelKey("test");
         Map map=new HashMap();
         map.put("param",10000);
         String processId=workTaskService.startTask(commonVo,map);

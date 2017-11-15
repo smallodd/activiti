@@ -1,13 +1,5 @@
 package com.activiti.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
-
-import javax.persistence.Transient;
 import java.io.Serializable;
 
 /**
