@@ -261,16 +261,32 @@ public class ActivitiServiceImpl implements ActivitiService{
 	}
 
 	@Override
+	@Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
 	public void jumpTask(String taskId, String taskDefinitionKey) {
 		TaskEntity currentTaskEntity = (TaskEntity) this.taskService.createTaskQuery().taskId(taskId).singleResult();
-		ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl)this.repositoryService)
-				.getDeployedProcessDefinition(currentTaskEntity.getProcessDefinitionId()); 
-		ActivityImpl activity = (ActivityImpl) pde.findActivity(taskDefinitionKey);
 
-		Command<Void> deleteCmd = new DeleteActiveTaskCmd(currentTaskEntity, "jump", true);
-		Command<Void> StartCmd = new StartActivityCmd(currentTaskEntity.getExecutionId(), activity);
-		managementService.executeCommand(deleteCmd);
-		managementService.executeCommand(StartCmd);
+		if(currentTaskEntity != null){
+			ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl)this.repositoryService)
+					.getDeployedProcessDefinition(currentTaskEntity.getProcessDefinitionId());
+			ActivityImpl activity = (ActivityImpl) pde.findActivity(taskDefinitionKey);
+
+			Command<Void> deleteCmd = new DeleteActiveTaskCmd(currentTaskEntity, "jump", true);
+			Command<Void> StartCmd = new StartActivityCmd(currentTaskEntity.getExecutionId(), activity);
+			managementService.executeCommand(deleteCmd);
+			managementService.executeCommand(StartCmd);
+
+			//给跳转节点添加审批人
+			EntityWrapper<TUserTask> wrapper = new EntityWrapper<TUserTask>();
+			wrapper.where("proc_def_key={0}",pde.getKey()).andNew("task_def_key={0}",taskDefinitionKey);
+			//wrapper.where("task_def_key",taskDefinitionKey);
+			Task task = taskService.createTaskQuery().processInstanceId(currentTaskEntity.getProcessInstanceId()).singleResult();
+			TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
+			String assign = currentTaskEntity.getAssignee();
+			taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
+			taskService.setOwner(task.getId(), assign);
+		}else{
+			throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
+		}
 	}
 
 	@Override
