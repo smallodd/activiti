@@ -265,7 +265,7 @@ public class ActivitiModelController extends BaseController {
     @ResponseBody
     public Object allTree() {
         List<Tree> trees = new ArrayList<Tree>();
-        List<Model> list = repositoryService.createModelQuery().list();
+        List<Model> list = repositoryService.createModelQuery().deployed().list();
         if(CollectionUtils.isNotEmpty(list)){
             for(Model model : list){
                 Tree tree = new Tree();
