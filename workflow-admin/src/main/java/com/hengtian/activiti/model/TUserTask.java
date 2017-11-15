@@ -58,6 +58,11 @@ public class TUserTask implements Serializable {
      */
     @TableField(value="candidate_ids")
     private String candidateIds;
+    /**
+     * 处理人顺序
+     */
+    @TableField(value="order_num")
+    private int orderNum;
 
 
     public String getId() {
@@ -122,5 +127,13 @@ public class TUserTask implements Serializable {
 
     public void setCandidateIds(String candidateIds) {
         this.candidateIds = candidateIds;
+    }
+
+    public int getOrderNum() {
+        return orderNum;
+    }
+
+    public void setOrderNum(int orderNum) {
+        this.orderNum = orderNum;
     }
 }

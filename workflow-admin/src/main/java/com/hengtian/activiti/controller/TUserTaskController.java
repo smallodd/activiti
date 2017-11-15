@@ -94,10 +94,13 @@ public class TUserTaskController extends BaseController{
     			.processDefinitionId(id).singleResult();
     	EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
 		wrapper.where("proc_def_key = {0}", pd.getKey());
+		wrapper.orderBy("order_num",true);
 		List<TUserTask> tasks= tUserTaskService.selectList(wrapper);
+
 		if(tasks==null || tasks.size()==0){
 			ProcessDefinitionEntity pde= (ProcessDefinitionEntity)repositoryService.getProcessDefinition(pd.getId());
 			List<ActivityImpl> list= pde.getActivities();
+			int orderNum = 1;
 			for(ActivityImpl activity : list){
 				ActivityBehavior activityBehavior = activity.getActivityBehavior();
 				//是否为用户任务
@@ -112,6 +115,7 @@ public class TUserTaskController extends BaseController{
 					tUserTask.setProcDefName(pd.getName());
 					tUserTask.setTaskDefKey(taskDefinition.getKey());
 					tUserTask.setTaskName(taskDefinition.getNameExpression()==null?null:taskDefinition.getNameExpression().toString());
+					tUserTask.setOrderNum(orderNum++);
 					tUserTaskService.insert(tUserTask);
 				}else if(activityBehavior instanceof ParallelMultiInstanceBehavior){
 		            TUserTask tUserTask = new TUserTask();
@@ -122,6 +126,7 @@ public class TUserTaskController extends BaseController{
 					TaskDefinition taskDefinition = userTaskActivityBehavior.getTaskDefinition();
 					tUserTask.setTaskDefKey(taskDefinition.getKey());
 					tUserTask.setTaskName(taskDefinition.getNameExpression().toString());
+					tUserTask.setOrderNum(orderNum++);
 					tUserTaskService.insert(tUserTask);
 				}
 			}
