@@ -924,20 +924,18 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     /**
      * 根据任务ID查询历史任务信息
-     * @param taskId
+     * @param processInstanceId
      * @param variableNames
      * @return
      */
-    public HistoryTasksVo getTaskHistoryBytaskId(String taskId, List<String> variableNames){
-        if(StringUtils.isBlank(taskId)){
+    public HistoryTasksVo getTaskHistoryBytaskId(String processInstanceId, List<String> variableNames){
+        if(StringUtils.isBlank(processInstanceId)){
             return null;
         }
 
         HistoryTasksVo hisTask = new HistoryTasksVo();
 
         logger.info("获取历史任务");
-        HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        String processInstanceId = historicTaskInstance.getProcessInstanceId();
 
         List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().desc().list();
 

@@ -238,9 +238,9 @@ public interface WorkTaskService {
 
     /**
      * 根据任务ID查询历史任务信息
-     * @param taskId
+     * @param processInstanceId
      * @param variableNames
      * @return
      */
-    HistoryTasksVo getTaskHistoryBytaskId(String taskId,List<String> variableNames);
+    HistoryTasksVo getTaskHistoryBytaskId(String processInstanceId,List<String> variableNames);
 }
