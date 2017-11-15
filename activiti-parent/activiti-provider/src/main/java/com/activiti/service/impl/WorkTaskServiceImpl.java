@@ -199,6 +199,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             variables.put("isPass", false);
             //存请假结果的变量
             runtimeService.setVariable(processInstanceId, "vacationResult", "notPass");
+            runtimeService.deleteProcessInstance(processInstanceId,"refuse");
+            return processInstanceId;
         }else{
             throw  new WorkFlowException("参数不合法，commentResult 请传 2 审批通过 或 3 审批拒绝");
         }
