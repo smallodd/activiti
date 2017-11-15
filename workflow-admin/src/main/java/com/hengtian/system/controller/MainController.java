@@ -55,7 +55,7 @@ public class MainController extends BaseController {
      * @return {Object}
      */
     @SysLog(value="用户登录")
-    @PostMapping(value="/login",produces="text/html;charset=UTF-8")
+    @PostMapping(value="/login")
     @ResponseBody
     public Object loginPost(HttpServletRequest request, String loginName, String loginPwd) {
         if (StringUtils.isBlank(loginName)) {
