@@ -3,15 +3,13 @@ package com.activiti.service;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
 import com.activiti.expection.WorkFlowException;
+
 import com.github.pagehelper.PageInfo;
-import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +32,7 @@ public interface WorkTaskService {
      * @param  bussnessType  业务系统的key
      * @return  返回任务列表
      */
-    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize,String bussnessType);
+    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize, String bussnessType);
 
 
 
