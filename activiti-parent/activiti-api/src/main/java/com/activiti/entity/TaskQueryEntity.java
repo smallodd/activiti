@@ -6,15 +6,14 @@ import java.io.Serializable;
  * Created by ma on 2017/11/16.
  */
 public class TaskQueryEntity implements Serializable {
-
-
+    /**
+     * 业务系统类型
+     */
     private  String bussinessType;
+    /**
+     * 模型的key
+     */
     private  String modelKey;
-
-
-
-
-
 
     public  void setBussinessType(String bussinessType){
 
