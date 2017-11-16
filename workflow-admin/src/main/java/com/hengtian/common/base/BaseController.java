@@ -2,6 +2,8 @@ package com.hengtian.common.base;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import com.alibaba.fastjson.JSONObject;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.web.bind.ServletRequestDataBinder;
@@ -61,7 +63,8 @@ public abstract class BaseController {
     public Object renderError(String msg) {
         Result result = new Result();
         result.setMsg(msg);
-        return result;
+
+        return JSONObject.toJSONString(result);
     }
 
     /**
@@ -71,7 +74,7 @@ public abstract class BaseController {
     public Object renderSuccess() {
         Result result = new Result();
         result.setSuccess(true);
-        return result;
+        return JSONObject.toJSONString(result);
     }
 
     /**
@@ -83,7 +86,7 @@ public abstract class BaseController {
         Result result = new Result();
         result.setSuccess(true);
         result.setMsg(msg);
-        return result;
+        return JSONObject.toJSONString(result);
     }
 
     /**
@@ -95,7 +98,7 @@ public abstract class BaseController {
         Result result = new Result();
         result.setSuccess(true);
         result.setObj(obj);
-        return result;
+        return JSONObject.toJSONString(result);
     }
     
     public <T> Page<T> getPage(int current, int size, String sort, String order){
