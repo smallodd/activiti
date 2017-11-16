@@ -6,13 +6,11 @@ import com.activiti.entity.HistoryTaskVo;
 import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
 import com.activiti.expection.WorkFlowException;
+import com.activiti.model.App;
 import com.activiti.model.AppModel;
 import com.activiti.model.SysUser;
 import com.activiti.model.TUserTask;
-import com.activiti.service.AppModelService;
-import com.activiti.service.SysUserService;
-import com.activiti.service.TUserTaskService;
-import com.activiti.service.WorkTaskService;
+import com.activiti.service.*;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.common.util.ConfigUtil;
 import com.github.pagehelper.PageInfo;
@@ -76,6 +74,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     TUserTaskService tUserTaskService;
     @Resource
     AppModelService appModelService;
+    @Resource
+    AppService appService;
     @Autowired
     ProcessEngineConfiguration processEngineConfiguration;
     @Autowired
@@ -844,6 +844,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @param processInstanceId
      * @return
      */
+    @Override
     public byte[] getTaskSchedule(String processInstanceId){
         if(StringUtils.isBlank(processInstanceId)){
             return null;
@@ -977,6 +978,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @param variableNames
      * @return
      */
+    @Override
     public HistoryTasksVo getTaskHistoryBytaskId(String processInstanceId, List<String> variableNames){
         if(StringUtils.isBlank(processInstanceId)){
             return null;
@@ -1045,5 +1047,30 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
         hisTask.setVariables(variableMap);
         return hisTask;
+    }
+
+    /**
+     * 获取应用列表
+     * @return
+     */
+    @Override
+    public List<App> getAppList(){
+        EntityWrapper<App> wrapper = new EntityWrapper<App>();
+        wrapper.where("status",1);
+        return appService.selectList(wrapper);
+    }
+
+    /**
+     * 根据应用key获取应用所属的模型列表
+     * @param appKey
+     * @return
+     */
+    @Override
+    public List<Model> getModelListByAppKey(String appKey){
+        if(StringUtils.isBlank(appKey)){
+            return null;
+        }
+        String sql = "SELECT arm.* FROM `act_re_model` AS arm,`t_app_model` AS tam,`t_app` AS ta WHERE tam.APP_KEY='"+appKey+"' AND ta.KEY=tam.APP_KEY AND arm.KEY_=tam.MODEL_KEY ";
+        return repositoryService.createNativeModelQuery().sql(sql).list();
     }
 }

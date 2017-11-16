@@ -4,6 +4,7 @@ import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
+import org.activiti.engine.repository.Model;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.junit.Before;
@@ -104,5 +105,11 @@ public class SpringTest {
                 "mail subject: how are you?",
                 "<font color='red'>can you see?ол╣Щ</font>");
         System.out.println("send out successfully");
+    }
+
+    @Test
+    public void testGetModelListByAppKey(){
+        List<Model> lgb = workTaskService.getModelListByAppKey("lgb");
+        System.out.print(lgb.size());
     }
 }

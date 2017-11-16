@@ -1,4 +1,4 @@
-package com.hengtian.application.model;
+package com.activiti.model;
 
 import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableId;
@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 系统APP
+ * 系统应用
  * @author houjinrong
  */
 @TableName("t_app")
@@ -44,11 +44,6 @@ public class App implements Serializable {
     @TableField(value="updater")
     private String updater;
     /**
-     * 状态：1-启用；0-禁用
-     */
-    @TableField(value="status")
-    private int status;
-    /**
      * 描述
      */
     @TableField(value="description")
@@ -65,6 +60,11 @@ public class App implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @TableField(value="update_time")
     private Date updateTime;
+    /**
+     * 状态：1-启用；0-禁用
+     */
+    @TableField(value="status")
+    private int status;
 
     public String getId() {
         return id;
@@ -106,14 +106,6 @@ public class App implements Serializable {
         this.updater = updater;
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -136,5 +128,13 @@ public class App implements Serializable {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 }
