@@ -44,6 +44,11 @@ public class App implements Serializable {
     @TableField(value="updater")
     private String updater;
     /**
+     * 状态：1-启用；0-禁用
+     */
+    @TableField(value="status")
+    private int status;
+    /**
      * 描述
      */
     @TableField(value="description")
@@ -99,6 +104,14 @@ public class App implements Serializable {
 
     public void setUpdater(String updater) {
         this.updater = updater;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public String getDescription() {
