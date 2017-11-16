@@ -869,22 +869,18 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             //任务跳转时处理
             EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
             wrapper.where("proc_def_key = {0}", definitionEntity.getKey());
+            wrapper.orderBy("order_num",true);
             List<TUserTask> userTaskList= tUserTaskService.selectList(wrapper);
             Map<String,Integer> taskMap = new HashMap<String,Integer>();
-            boolean flag = false;
+
             if(CollectionUtils.isNotEmpty(userTaskList)){
                 Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
-                Iterator<TUserTask> iterator = userTaskList.iterator();
-                while (iterator.hasNext()) {
-                    TUserTask tUserTask = iterator.next();
-                    if(tUserTask.getTaskDefKey().equals(task.getTaskDefinitionKey()) && !flag){
-                        flag = true;
-                    }
-                    if(flag){
-                        taskMap.put(tUserTask.getTaskDefKey(),1);
+                for (TUserTask u:userTaskList) {
+                    taskMap.put(u.getTaskDefKey(),1);
+                    if(u.getTaskDefKey().equals(task.getTaskDefinitionKey())){
+                        break;
                     }
                 }
-
                 Iterator<HistoricActivityInstance> it = highLightedActivitList.iterator();
                 while(it.hasNext()){
                     HistoricActivityInstance hai = it.next();
