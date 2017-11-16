@@ -344,6 +344,7 @@ public class ActivitiController extends BaseController{
     	//根据流程定义KEY查询用户任务
     	EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
 		wrapper.where("proc_def_key = {0}", pd.getKey());
+		wrapper.orderBy("order_num",true);
 		List<TUserTask> tasks= tUserTaskService.selectList(wrapper);
     	model.addAttribute("tasks",tasks);
         return "activiti/taskJump";
