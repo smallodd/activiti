@@ -7,6 +7,7 @@ import com.hengtian.application.service.AppService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.shiro.ShiroUser;
+import org.activiti.engine.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +25,9 @@ public class AppController extends BaseController {
 
     @Autowired
     private AppService appService;
+
+    @Autowired
+    private RepositoryService repositoryService;
 
     @RequestMapping("/manage")
     public String manage(){
@@ -153,8 +157,21 @@ public class AppController extends BaseController {
     @RequestMapping("/delete")
     @ResponseBody
     public Object delete(String id) {
-        appService.deleteById(id);
-        return renderSuccess("删除成功！");
+        if(StringUtils.isEmpty(id)){
+            return renderError("ID为空，删除失败！");
+        }
+        String sql = "SELECT COUNT(*) FROM `act_re_model` AS arm,`t_app_model` AS tam,`t_app` AS ta WHERE ta.ID='"+id+"' AND ta.KEY=tam.APP_KEY AND arm.KEY_=tam.MODEL_KEY ";
+        long count = repositoryService.createNativeModelQuery().sql(sql).count();
+        if(count == 0){
+            boolean b = appService.deleteById(id);
+            if(b){
+                return renderSuccess("删除成功！");
+            }else{
+                return renderError("删除失败！");
+            }
+        }else{
+            return renderError("该应用使用中，无法进行删除操作");
+        }
     }
 
     /**
