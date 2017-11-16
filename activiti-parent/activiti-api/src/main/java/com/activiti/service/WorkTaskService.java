@@ -2,6 +2,7 @@ package com.activiti.service;
 
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
+import com.activiti.entity.TaskQueryEntity;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.model.App;
 import com.github.pagehelper.PageInfo;
@@ -30,10 +31,10 @@ public interface WorkTaskService {
      * @param userId  用户信息 一般是id
      * @param  startPage  起始页数
      * @param  pageSize   每页显示数
-     * @param  bussnessType  业务系统的key
+     * @param  taskQueryEntity  查询任务query
      * @return  返回任务列表
      */
-    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize, String bussnessType);
+    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize, TaskQueryEntity taskQueryEntity);
 
 
 
@@ -46,10 +47,10 @@ public interface WorkTaskService {
      *                   0：未完成的历史任务
      *                   1：已完成的历史任务
      *                   -1：全部历史任务
-     * @param bussnessKey  业务系统key
+     * @param taskQueryEntity  任务查询query
      * @return 历史审批任务信息列表
      */
-    List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize,String bussnessKey,int type);
+    List<HistoricTaskInstance> queryHistoryList(String userId, int startPage, int pageSize,TaskQueryEntity taskQueryEntity,int type);
 
     /**
      * 审批接口
@@ -75,55 +76,51 @@ public interface WorkTaskService {
      * @param pageSzie    查询多少条数
      * @param status      0 :审批中的任务
      *                    1 ：审批完成的任务
-     *@param businessType  业务系统的key
+     *@param taskQueryEntity  任务查询query
      * @return    返回申请人提交的任务
      */
-    List<HistoricProcessInstance> getApplyTasks(String userid, int startPage, int pageSzie, int status,String businessType);
+    List<HistoricProcessInstance> getApplyTasks(String userid, int startPage, int pageSzie, int status,TaskQueryEntity taskQueryEntity);
     /**
      * 获取用户涉及的审批历史任务
      * @param userid   审批人用户唯一标识
      * @param startPage   起始页数
      * @param pageSzie     查询多少条数
-        @param  bussnessType 业务系统的key
+        @param  taskQueryEntity  查询任务query
      *
      * @return    返回参与用户的审批历史信息
      */
-    List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie,String bussnessType);
+    List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie,TaskQueryEntity taskQueryEntity);
 
     /**
      * 通过用户主键查询历史审批过的任务
      * @param userId   用户主键
      * @param startPage   开始页数
      * @param pagegSize   每页显示数
-     * @param bussnessType 业务系统的key
+     * @param taskQueryEntity 查询任务query
      *
      * @return            返回审批历史人物信息列表
      */
-    PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pagegSize,String bussnessType);
+    PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pagegSize,TaskQueryEntity taskQueryEntity);
 
     /**
      * 通过用户主键查询审批拒绝的信息
      * @param userId   用户主键
      * @param startPage 开始页数
      * @param pageSize   结束页数
-     * @param bussnessType  业务系统的key
+     * @param taskQueryEntity  查询任务query
      * @return            返回用户拒绝的信息
      */
-    PageInfo<HistoricTaskInstance> selectMyRefuse(String userId,int startPage,int pageSize,String bussnessType);
+    PageInfo<HistoricTaskInstance> selectMyRefuse(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity);
     /**
-     *查询任务当所在节点
-     * @param processId  流程定义id
-     * @return  返回图片流 ，二进制
-     */
-/*    byte[] generateImage(String processId);*/
+
 
     /**
      * 查询业务主键是否再流程钟
-     * @param bussinessKey   业务主键
-     * @param bussinessType  业务系统的key
+     * @param taskQueryEntity  任务查询query
+     * @param bussinessKey 业务主键
      * @return   返回true or false
      */
-    boolean checekBunessKeyIsInFlow(String bussinessKey,String bussinessType);
+    boolean checekBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussinessKey);
 
 
 
