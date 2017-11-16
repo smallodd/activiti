@@ -257,7 +257,7 @@ CREATE TABLE `sys_user` (
 
 /*Data for the table `sys_user` */
 
-insert  into `sys_user`(`id`,`login_name`,`login_pwd`,`user_name`,`user_phone`,`user_email`,`user_type`,`user_sex`,`register_time`,`department_id`) values ('1','admin','E10ADC3949BA59ABBE56E057F20F883E','管理员','123456','liujunyang@moutum.com','0','0','2014-02-19 01:00:00','1'),('474693d0b9a345feb6a07479019c9ff5','litao','E10ADC3949BA59ABBE56E057F20F883E','李涛','434343123','litao@moutum.com','1','0','2017-08-16 19:53:21','1'),('6414f0ca9eaf4ba596736eb7db0ad157','shiluyao','E10ADC3949BA59ABBE56E057F20F883E','史路遥','4343833434343','shiluyao@moutum.com','1','0','2017-08-16 19:45:05','9da171a27291411eaf1c16e2a09b9bd4'),('9baf237adfb6407ba529382fc8f7aa7b','wangzhao','E10ADC3949BA59ABBE56E057F20F883E','王钊','1590000111123','wangzhao@moutum.com','1','0','2017-09-13 09:14:49','1'),('a29de2c7d5eb4f269c2fc14363810f9c','longxinxin','E10ADC3949BA59ABBE56E057F20F883E','龙鑫鑫','3434355','longxinxin@moutum.com','1','1','2017-08-16 19:47:57','5b5493a951674e568a6c501525eb779a'),('c28fb2ff582d484ea77692279ae56fff','tongliang','E10ADC3949BA59ABBE56E057F20F883E','同亮','43434335','tongliang@moutum.com','1','0','2017-08-16 19:43:25','1'),('cf42f07adc69455b94e82f8ce06de09e','test','E10ADC3949BA59ABBE56E057F20F883E','测试员','123123','liujunyang@moutum.com','1','0','2017-08-13 14:05:04','a69ffd17a000465894b41530a3db149c'),('d7dadc0fd4fa40e9be886ca966522614','liujunyang','E10ADC3949BA59ABBE56E057F20F883E','刘俊阳','43434365','liujunyang@moutum.com','1','0','2017-08-16 19:52:31','9da171a27291411eaf1c16e2a09b9bd4');
+insert  into `sys_user`(`id`,`login_name`,`login_pwd`,`user_name`,`user_phone`,`user_email`,`user_type`,`user_sex`,`register_time`,`department_id`) values ('1','admin','E10ADC3949BA59ABBE56E057F20F883E','管理员','123456','liujunyang@moutum.com','0','0','2014-02-19 01:00:00','1');
 
 /*Table structure for table `sys_user_role` */
 
@@ -272,7 +272,7 @@ CREATE TABLE `sys_user_role` (
 
 /*Data for the table `sys_user_role` */
 
-insert  into `sys_user_role`(`id`,`user_id`,`role_id`) values ('8dfd4328d9054004a5a98325fcb391af','6414f0ca9eaf4ba596736eb7db0ad157','979e0715942e4cc09fc4a78e6c3544e7'),('955dc5a9f4d945e18a93a7c8c165ee9e','9baf237adfb6407ba529382fc8f7aa7b','e1fa3ea4aff84a8ebf3aebcfc5c6d4fa'),('9c5636622c8e4b609e0ac4bd9d848a03','474693d0b9a345feb6a07479019c9ff5','492cdebdbbe74ad98d047e627b696c66'),('9f0e1b06582f48f3847d07aa94f5a2af','c28fb2ff582d484ea77692279ae56fff','e1fa3ea4aff84a8ebf3aebcfc5c6d4fa'),('b0aa7180c2f1400dba95ab43b5d4d59e','1','1'),('b658259dfadb4a498f650b6cbb708276','cf42f07adc69455b94e82f8ce06de09e','543c56799ed14d8d93294f1d2e93626d'),('cd2f4398338d4be187f094d33f67b263','a29de2c7d5eb4f269c2fc14363810f9c','979e0715942e4cc09fc4a78e6c3544e7'),('fc78e9c596fe4b5e9de87aaac880d0ab','d7dadc0fd4fa40e9be886ca966522614','543c56799ed14d8d93294f1d2e93626d');
+insert  into `sys_user_role`(`id`,`user_id`,`role_id`) values ('b0aa7180c2f1400dba95ab43b5d4d59e','1','1');
 
 /*Table structure for table `t_mail_log` */
 
