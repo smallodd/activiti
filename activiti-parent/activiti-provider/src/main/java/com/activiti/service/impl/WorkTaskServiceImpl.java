@@ -444,7 +444,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @return
      */
 
-    public String getNextNode(String procInstanceId){
+    private String getNextNode(String procInstanceId){
         // 1、首先是根据流程ID获取当前任务：
         List<Task> tasks = taskService.createTaskQuery().processInstanceId(procInstanceId).list();
         String nextId = "";
