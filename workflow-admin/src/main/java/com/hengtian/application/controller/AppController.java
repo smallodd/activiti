@@ -198,4 +198,50 @@ public class AppController extends BaseController {
         appService.updateAppModel(app.getKey(), modelKeys);
         return renderSuccess("授权成功！");
     }
+
+    /**
+     * 启用
+     * @param id
+     * @return
+     */
+    @SysLog(value="启用")
+    @RequestMapping("/active")
+    @ResponseBody
+    public Object active(String id) {
+        if(StringUtils.isEmpty(id)){
+            return renderError("启用失败！");
+        }
+        App app = new App();
+        app.setId(id);
+        app.setStatus(1);
+        boolean b = appService.updateById(app);
+        if(b){
+            return renderSuccess("启用成功！");
+        }else{
+            return renderError("启用失败！");
+        }
+    }
+
+    /**
+     * 禁用
+     * @param id
+     * @return
+     */
+    @SysLog(value="禁用")
+    @RequestMapping("/sleep")
+    @ResponseBody
+    public Object sleep(String id) {
+        if(StringUtils.isEmpty(id)){
+            return renderError("禁用失败！");
+        }
+        App app = new App();
+        app.setId(id);
+        app.setStatus(0);
+        boolean b = appService.updateById(app);
+        if(b){
+            return renderSuccess("禁用成功！");
+        }else{
+            return renderError("禁用失败！");
+        }
+    }
 }
