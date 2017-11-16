@@ -37,7 +37,7 @@ public class ModelSaveRestResource
   @Autowired
   private ObjectMapper objectMapper;
 
-  @RequestMapping(value={"/service/model/{modelId}/save"}, method={org.springframework.web.bind.annotation.RequestMethod.PUT})
+  @RequestMapping(value={"/service/model/{modelId}/save"})
   @ResponseStatus(HttpStatus.OK)
   public void saveModel(@PathVariable String modelId, @RequestBody MultiValueMap<String, String> values) { try { Model model = this.repositoryService.getModel(modelId);
   	  System.out.println("ModelSaveRestResource.saveModel----------");
