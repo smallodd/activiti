@@ -5,7 +5,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
 <meta http-equiv="Pragma" content="no-cache"> 
 <meta http-equiv="Cache-Control" content="no-cache"> 
-<meta http-equiv="Expires" content="0"> 
+<meta http-equiv="Expires" content="0">
+<meta name="renderer" content="webkit">
 <title>登录页</title>
 <link rel="stylesheet" type="text/css" href="/resource/system/login.css"/>
 <script type="text/javascript" src="/resource/jeasyui/jquery.min.js"></script>
