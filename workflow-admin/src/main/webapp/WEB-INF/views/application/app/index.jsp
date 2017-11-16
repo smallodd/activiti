@@ -71,10 +71,10 @@
                         <shiro:hasPermission name="/app/edit">
                             str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-edit" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="editAppFun(\'{0}\');" >编辑</a>', row.id);
                         </shiro:hasPermission>
-                        //<shiro:hasPermission name="/app/delete">
-                            //str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                            //str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-del" data-options="plain:true,iconCls:\'fi-x icon-red\'" onclick="deleteAppFun(\'{0}\');" >删除</a>', row.id);
-                        //</shiro:hasPermission>
+                        <shiro:hasPermission name="/app/delete">
+                            str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                            str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-del" data-options="plain:true,iconCls:\'fi-x icon-red\'" onclick="deleteAppFun(\'{0}\');" >删除</a>', row.id);
+                        </shiro:hasPermission>
                         <shiro:hasPermission name="/app/modelManage">
                             str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                             str += $.formatString('<a href="javascript:void(0)" class="app-easyui-linkbutton-model-edit" data-options="plain:true,iconCls:\'fi-widget icon-blue\'" onclick="grantModelFun(\'{0}\');" >模型管理</a>', row.id);
@@ -84,7 +84,7 @@
             } ] ],
             onLoadSuccess:function(data){
                 $('.app-easyui-linkbutton-edit').linkbutton({text:'编辑'});
-                //$('.app-easyui-linkbutton-del').linkbutton({text:'删除'});
+                $('.app-easyui-linkbutton-del').linkbutton({text:'删除'});
                 $('.app-easyui-linkbutton-model-edit').linkbutton({text:'模型管理'});
             },
             toolbar : '#roleToolbar'
@@ -131,6 +131,8 @@
                         parent.$.messager.alert('提示', result.msg, 'info');
                         appListGrid.datagrid('reload');
                         parent.layout_west_tree.tree('reload');
+                    }else{
+                        parent.$.messager.alert('提示', result.msg, 'info');
                     }
                     progressClose();
                 }, 'JSON');
