@@ -83,7 +83,7 @@ public class AppController extends BaseController {
         ShiroUser shiroUser = getShiroUser();
         app.setCreateTime(new Date());
         app.setCreator(shiroUser.getId());
-
+        app.setStatus(1);
         app.setUpdater(shiroUser.getId());
         appService.insert(app);
         return renderSuccess("添加成功！");
