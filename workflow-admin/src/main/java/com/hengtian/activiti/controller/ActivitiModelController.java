@@ -147,7 +147,7 @@ public class ActivitiModelController extends BaseController {
             result.setMsg(msg);
         }
 
-        return result;
+        return com.alibaba.fastjson.JSONObject.toJSONString(result);
     }
 
     /**
