@@ -1,6 +1,7 @@
 import com.activiti.common.EmailUtil;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
+import com.activiti.entity.TaskQueryEntity;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
 import org.activiti.engine.task.Comment;
@@ -10,11 +11,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +27,12 @@ import java.util.Map;
 public class SpringTest {
     ApplicationContext act;
     WorkTaskService workTaskService;
+
     @Before
     public void testBefore(){
         act=new ClassPathXmlApplicationContext("dubbo-server-consumer.xml");
          workTaskService= (WorkTaskService) act.getBean("workTaskService");
+
     }
     //开启任务
     @Test
@@ -43,17 +44,17 @@ public class SpringTest {
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("测试111111111111");
         commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("yingxiao");
-        commonVo.setModelKey("test");
+        commonVo.setBusinessType("maket");
+        commonVo.setModelKey("ceshi");
         Map map=new HashMap();
         map.put("param",10000);
         String processId=workTaskService.startTask(commonVo,map);
-        System.out.print("返回结果为："+processId);
+        System.out.println("返回结果为："+processId);
     }
     //审批任务
     @Test
     public void  testComplete(){
-        workTaskService.completeTask("5034","c28fb2ff582d484ea77692279ae56fff","我不同意这个审批","3");
+        workTaskService.completeTask("22520", "6414f0ca9eaf4ba596736eb7db0ad157","我不同意这个审批","3");
     }
 
     /**
@@ -61,7 +62,10 @@ public class SpringTest {
      */
     @Test
      public void queryList(){
-      PageInfo<Task> pageInfo= workTaskService.queryByAssign("c28fb2ff582d484ea77692279ae56fff",1,10,"key");
+        TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
+        taskQueryEntity.setBussinessType("maket");
+        taskQueryEntity.setModelKey("ceshi");
+      PageInfo<Task> pageInfo= workTaskService.queryByAssign("c28fb2ff582d484ea77692279ae56fff",1,10,taskQueryEntity);
       System.out.print(pageInfo.getTotal());
      }
     /**
@@ -69,7 +73,10 @@ public class SpringTest {
      */
     @Test
     public void queryCompleteList(){
-        PageInfo pageInfo= workTaskService.selectMyComplete("c28fb2ff582d484ea77692279ae56fff",1,10,"key");
+        TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
+        taskQueryEntity.setBussinessType("maket");
+        taskQueryEntity.setModelKey("ceshi");
+        PageInfo pageInfo= workTaskService.selectMyComplete("c28fb2ff582d484ea77692279ae56fff",1,10,taskQueryEntity);
         System.out.print(pageInfo.getTotal());
     }
     @Test
