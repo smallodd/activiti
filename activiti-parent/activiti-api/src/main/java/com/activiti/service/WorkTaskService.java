@@ -3,10 +3,11 @@ package com.activiti.service;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
 import com.activiti.expection.WorkFlowException;
-
+import com.activiti.model.App;
 import com.github.pagehelper.PageInfo;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.repository.Model;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 
@@ -243,4 +244,17 @@ public interface WorkTaskService {
      * @return
      */
     HistoryTasksVo getTaskHistoryBytaskId(String processInstanceId,List<String> variableNames);
+
+    /**
+     * 获取应用列表
+     * @return
+     */
+    List<App> getAppList();
+
+    /**
+     * 根据应用key获取应用所属的模型列表
+     * @param appKey
+     * @return
+     */
+    List<Model> getModelListByAppKey(String appKey);
 }
