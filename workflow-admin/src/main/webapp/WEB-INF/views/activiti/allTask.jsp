@@ -38,9 +38,6 @@
         <a onclick="taskAddFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-page-add'">添加</a>
     </shiro:hasPermission> --%>
 </div>
-<div id="delegateTaskDialog"></div>
-<div id="transferTaskDialog"></div>
-<div id="jumpTaskDialog"></div>
 <div id="showTaskWindow"></div>
 <script type="text/javascript">
     var taskDataGrid;
