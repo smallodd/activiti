@@ -11,8 +11,8 @@
 	<form id="userSearchForm">
 		<table>
 			<tr>
-				<th>名称/工号:</th>
-				<td><input class="easyui-searchbox" name="userName" placeholder="名称/工号"/></td>
+				<th>姓名/工号:</th>
+				<td><input class="easyui-searchbox" name="userName" placeholder="姓名/工号"/></td>
 				<td>
 					<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="userSearchFun();">查询</a>
 					<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="userCleanFun();">清空</a>
