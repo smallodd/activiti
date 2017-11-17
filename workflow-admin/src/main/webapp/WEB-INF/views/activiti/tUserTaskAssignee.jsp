@@ -22,7 +22,7 @@
 	</form>
 </div>
 <div class="easyui-layout" data-options="fit:true,border:false" style="overflow: auto;padding: 8px;">
-    <table id="userGrid" class="easyui-datagrid"
+    <table id="taskAssigneeGrid" class="easyui-datagrid"
 		    data-options="fit:true,border:true,pagination : true,
 		    fitColumns:true,singleSelect : true,
 		    columns : [[{width : '150',title : '所属部门',field : 'departmentName'},
@@ -36,14 +36,14 @@
      */
     function userCleanFun() {
         $('#userSearchForm input').val('');
-        $("#userGrid").datagrid('load', {});
+        $("#taskAssigneeGrid").datagrid('load', {});
     }
 
     /**
      * 搜索
      */
     function userSearchFun() {
-        $("#userGrid").datagrid('load', $.serializeObject($('#userSearchForm')));
+        $("#taskAssigneeGrid").datagrid('load', $.serializeObject($('#userSearchForm')));
     }
 </script>
 </body>
