@@ -93,8 +93,9 @@ public class TUserTaskController extends BaseController{
     	ProcessDefinition pd= repositoryService.createProcessDefinitionQuery()
     			.processDefinitionId(id).singleResult();
     	EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-		wrapper.where("proc_def_key = {0}", pd.getKey());
+		wrapper.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
 		wrapper.orderBy("order_num",true);
+
 		List<TUserTask> tasks= tUserTaskService.selectList(wrapper);
 
 		if(tasks==null || tasks.size()==0){
@@ -116,6 +117,7 @@ public class TUserTaskController extends BaseController{
 					tUserTask.setTaskDefKey(taskDefinition.getKey());
 					tUserTask.setTaskName(taskDefinition.getNameExpression()==null?null:taskDefinition.getNameExpression().toString());
 					tUserTask.setOrderNum(orderNum++);
+					tUserTask.setVersion(pd.getVersion());
 					tUserTaskService.insert(tUserTask);
 				}else if(activityBehavior instanceof ParallelMultiInstanceBehavior){
 		            TUserTask tUserTask = new TUserTask();
@@ -127,11 +129,12 @@ public class TUserTaskController extends BaseController{
 					tUserTask.setTaskDefKey(taskDefinition.getKey());
 					tUserTask.setTaskName(taskDefinition.getNameExpression().toString());
 					tUserTask.setOrderNum(orderNum++);
+					tUserTask.setVersion(pd.getVersion());
 					tUserTaskService.insert(tUserTask);
 				}
 			}
 			EntityWrapper<TUserTask> wrapper2 =new EntityWrapper<TUserTask>();
-			wrapper2.where("proc_def_key = {0}", pd.getKey());
+			wrapper2.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
 			List<TUserTask> tasks2= tUserTaskService.selectList(wrapper2);
 			model.addAttribute("tasks", tasks2);
 		}else{

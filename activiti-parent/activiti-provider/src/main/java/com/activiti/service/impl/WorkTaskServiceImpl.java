@@ -101,6 +101,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
 
        String prodefinKey= getProdefineKey(commonVo.getModelKey());
+     int version=   repositoryService.createProcessDefinitionQuery().processDefinitionKey(prodefinKey).latestVersion().singleResult().getVersion();
         //commonVo.setApplyTitle(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey());
         Map<String,Object> resutl=new HashMap<>();
         Map<String,Object> variables=new HashMap<String,Object>();
@@ -122,11 +123,13 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         resutl.putAll(paramMap);
         resutl.put("proDefinedKey",prodefinKey);
+        resutl.put("version",version);
         //设置当前申请人
         identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
         //查询自定义任务列表当前流程定义下的审批人
         EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-        wrapper.where("proc_def_key= {0}",prodefinKey);
+        wrapper.where("proc_def_key= {0}",prodefinKey).andNew("version_={0}",version);
+
         List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
         //启动一个流程
         ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),resutl);
@@ -216,11 +219,11 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         taskService.complete(task.getId(), variables);
 
 
-
+        int version= (int) map.get("version");
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
         for(Task task1:tasks) {
             EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-            wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString());
+            wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString()).andNew("version_={0}",version);
             TUserTask tUser=tUserTaskService.selectOne(wrapper);
             if ("candidateGroup".equals(tUser.getTaskType())) {
                 taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
@@ -869,7 +872,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
             //任务跳转时处理
             EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-            wrapper.where("proc_def_key = {0}", definitionEntity.getKey());
+            wrapper.where("proc_def_key = {0}", definitionEntity.getKey()).andNew("version_={0}",  definitionEntity.getVersion());
             wrapper.orderBy("order_num",true);
             List<TUserTask> userTaskList= tUserTaskService.selectList(wrapper);
             Map<String,Integer> taskMap = new HashMap<String,Integer>();

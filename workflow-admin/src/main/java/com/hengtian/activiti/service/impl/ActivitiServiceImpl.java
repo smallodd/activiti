@@ -71,7 +71,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 		List<ProcessDefinition> pdList = repositoryService
 				.createProcessDefinitionQuery()
 				.orderByProcessDefinitionVersion()
-				.asc()
+				.asc().latestVersion()
 				.listPage(pageInfo.getFrom(), pageInfo.getSize());
 		//过滤出最新版本
 		Map<String, ProcessDefinition> map = new LinkedHashMap<String, ProcessDefinition>();
@@ -178,6 +178,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 	public Result complateTask(String taskId,String commentContent,Integer commentResult){
 		Result result = new Result();
 		try{
+
 			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
 			String processInstanceId = task.getProcessInstanceId();
 			ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
@@ -213,12 +214,12 @@ public class ActivitiServiceImpl implements ActivitiService{
 			Map map=taskService.getVariables(taskId);
 			//完成正常办理任务
 			taskService.complete(task.getId(), variables);
-
+			ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(map.get("proDefinedKey").toString()).singleResult();
 
 			List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
 			for(Task task1:tasks) {
 				EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-				wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString());
+				wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString()).andNew("version_={0}",processDefinition.getVersion());
 				TUserTask tUser=tUserTaskService.selectOne(wrapper);
 				if ("candidateGroup".equals(tUser.getTaskType())) {
 					taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
@@ -291,10 +292,10 @@ public class ActivitiServiceImpl implements ActivitiService{
 			Command<Void> StartCmd = new StartActivityCmd(currentTaskEntity.getExecutionId(), activity);
 			managementService.executeCommand(deleteCmd);
 			managementService.executeCommand(StartCmd);
-
+			ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(pde.getKey()).singleResult();
 			//给跳转节点添加审批人
 			EntityWrapper<TUserTask> wrapper = new EntityWrapper<TUserTask>();
-			wrapper.where("proc_def_key={0}",pde.getKey()).andNew("task_def_key={0}",taskDefinitionKey);
+			wrapper.where("proc_def_key={0}",pde.getKey()).andNew("task_def_key={0}",taskDefinitionKey).andNew("version_={0}",processDefinition.getVersion());
 			//wrapper.where("task_def_key",taskDefinitionKey);
 			Task task = taskService.createTaskQuery().processInstanceId(currentTaskEntity.getProcessInstanceId()).singleResult();
 			TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
