@@ -1,5 +1,6 @@
 package com.hengtian.activiti.service;
 
+import com.hengtian.activiti.vo.TaskVo;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 
@@ -22,7 +23,7 @@ public interface ActivitiService {
 	 * 查询我的待办任务
 	 * @param pageInfo
 	 */
-	public void selectTaskDataGrid(PageInfo pageInfo,boolean isAll);
+	public void selectTaskDataGrid(PageInfo pageInfo, boolean isAll, TaskVo taskVo);
 
 	/**
 	 * 签收任务
@@ -72,7 +73,7 @@ public interface ActivitiService {
 	 * 我的已办任务
 	 * @param pageInfo
 	 */
-	 void selectHisTaskDataGrid(PageInfo pageInfo);
+	 void selectHisTaskDataGrid(PageInfo pageInfo,boolean flag,TaskVo taskVo);
 	
 	
 	/**

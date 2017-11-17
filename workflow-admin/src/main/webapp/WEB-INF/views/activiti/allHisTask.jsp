@@ -43,7 +43,7 @@
     var hisTaskDataGrid;
     $(function() {
         hisTaskDataGrid = $('#hisTaskDataGrid').datagrid({
-        url : '${ctx}/activiti/hisTaskDataGrid',
+        url : '${ctx}/activiti/allHisTaskDataGrid',
         striped : true,
         rownumbers : true,
         pagination : true,
@@ -64,17 +64,27 @@
             title : '申请人',
             field : 'processOwner'
         },{
-            width : '450',
+            width : '350',
             title : '标题',
             field : 'businessName'
         },{
             width : '140',
-            title : '任务节点名称',
-            field : 'taskName'
+            title : '模型key',
+            field : 'processDefinitionKey'
         }, {
             width : '140',
-            title : '办理时间',
-            field : 'taskCreateTime',
+            title : '系统名称',
+            field : 'appName',
+
+        }, {
+            width : '140',
+            title : '业务主键',
+            field : 'businessKey',
+
+        }, {
+            width : '140',
+            title : '结束时间',
+            field : 'taskEndTime',
             sortable : true
         }]],
         toolbar : '#taskToolbar'

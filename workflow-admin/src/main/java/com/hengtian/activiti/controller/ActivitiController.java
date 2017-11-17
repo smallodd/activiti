@@ -156,7 +156,7 @@ public class ActivitiController extends BaseController{
 	@ResponseBody
 	public PageInfo alltaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
 		PageInfo pageInfo = new PageInfo(page, rows);
-		activitiService.selectTaskDataGrid(pageInfo,true);
+		activitiService.selectTaskDataGrid(pageInfo,true,taskVo);
 		return pageInfo;
 	}
     /**
@@ -182,7 +182,7 @@ public class ActivitiController extends BaseController{
     @ResponseBody
     public PageInfo taskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
     	PageInfo pageInfo = new PageInfo(page, rows);
-    	activitiService.selectTaskDataGrid(pageInfo,false);
+    	activitiService.selectTaskDataGrid(pageInfo,false,taskVo);
         return pageInfo;
     }
     
@@ -194,7 +194,14 @@ public class ActivitiController extends BaseController{
     public String hisTaskManager() {
         return "activiti/hisTask";
     }
-    
+	/**
+	 * 所有已办任务管理页
+	 * @return
+	 */
+	@GetMapping("/allHisTaskManager")
+	public String allHisTaskManager() {
+		return "activiti/allHisTask";
+	}
     /**
      * 查询我的已办任务(历史任务)
      * @param taskVo
@@ -208,9 +215,25 @@ public class ActivitiController extends BaseController{
     @ResponseBody
     public PageInfo hisTaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
     	PageInfo pageInfo = new PageInfo(page, rows);
-    	activitiService.selectHisTaskDataGrid(pageInfo);
+    	activitiService.selectHisTaskDataGrid(pageInfo,false,taskVo);
         return pageInfo;
     }
+	/**
+	 * 查询所有已办任务(历史任务)
+	 * @param taskVo
+	 * @param page
+	 * @param rows
+	 * @param sort
+	 * @param order
+	 * @return
+	 */
+	@PostMapping("/allHisTaskDataGrid")
+	@ResponseBody
+	public PageInfo allHisTaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
+		PageInfo pageInfo = new PageInfo(page, rows);
+		activitiService.selectHisTaskDataGrid(pageInfo,true,taskVo);
+		return pageInfo;
+	}
     
     
     /**
