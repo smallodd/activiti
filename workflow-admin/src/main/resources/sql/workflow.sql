@@ -311,6 +311,7 @@ CREATE TABLE `t_user_task` (
   `candidate_name` varchar(255) DEFAULT NULL COMMENT '[受理人,候选人,候选组]名称',
   `candidate_ids` varchar(255) DEFAULT NULL COMMENT '[受理人,候选人,候选组]ID',
   `order_num` tinyint(4) NOT NULL COMMENT '任务节点顺序号',
+  `version_` tinyint(4) NOT NULL COMMENT '流程定义版本',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='用户任务表';
 

@@ -366,7 +366,7 @@ public class ActivitiController extends BaseController{
     	.processDefinitionId(task.getProcessDefinitionId()).singleResult();
     	//根据流程定义KEY查询用户任务
     	EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-		wrapper.where("proc_def_key = {0}", pd.getKey());
+		wrapper.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
 		wrapper.orderBy("order_num",true);
 		List<TUserTask> tasks= tUserTaskService.selectList(wrapper);
     	model.addAttribute("tasks",tasks);
@@ -464,7 +464,7 @@ public class ActivitiController extends BaseController{
 
 		//任务跳转时处理
 		EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-		wrapper.where("proc_def_key = {0}", definitionEntity.getKey());
+		wrapper.where("proc_def_key = {0}", definitionEntity.getKey()).andNew("version_={0}",definitionEntity.getVersion());
 		wrapper.orderBy("order_num",true);
 		List<TUserTask> userTaskList= tUserTaskService.selectList(wrapper);
 		Map<String,Integer> taskMap = new HashMap<String,Integer>();

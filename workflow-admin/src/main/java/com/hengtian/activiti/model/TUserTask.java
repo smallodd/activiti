@@ -63,6 +63,8 @@ public class TUserTask implements Serializable {
      */
     @TableField(value="order_num")
     private int orderNum;
+    @TableField(value = "version_")
+    private int version;
 
 
     public String getId() {
@@ -135,5 +137,13 @@ public class TUserTask implements Serializable {
 
     public void setOrderNum(int orderNum) {
         this.orderNum = orderNum;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 }
