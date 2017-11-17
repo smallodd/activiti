@@ -74,7 +74,7 @@
             title : '申请人',
             field : 'processOwner'
         },{
-            width : '450',
+            width : '350',
             title : '标题',
             field : 'businessName'
         },{
@@ -90,6 +90,11 @@
             title : '当前任务创建时间',
             field : 'taskCreateTime',
             sortable : true
+        },{
+            width : '140',
+            title : '业务主键',
+            field : 'businessKey',
+
         }, {
             field : 'action',
             title : '操作',

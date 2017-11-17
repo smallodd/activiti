@@ -7,6 +7,8 @@ import com.hengtian.activiti.service.TUserTaskService;
 import com.hengtian.activiti.vo.CommonVo;
 import com.hengtian.activiti.vo.ProcessDefinitionVo;
 import com.hengtian.activiti.vo.TaskVo;
+import com.hengtian.application.model.App;
+import com.hengtian.application.service.AppService;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.BeanUtils;
@@ -15,9 +17,7 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import org.activiti.engine.*;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.history.HistoricTaskInstanceQuery;
-import org.activiti.engine.history.HistoricVariableInstance;
+import org.activiti.engine.history.*;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -58,6 +58,8 @@ public class ActivitiServiceImpl implements ActivitiService{
 	private HistoryService historyService;
 	@Autowired
 	private TUserTaskService tUserTaskService;
+	@Autowired
+	private AppService appService;
 
 	Logger logger = Logger.getLogger(ActivitiServiceImpl.class);
 	
@@ -137,6 +139,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			vo.setProcessOwner(commonVo.getApplyUserName());
 			vo.setTaskDefinitionKey(task.getTaskDefinitionKey());
 			vo.setProcessInstanceId(task.getProcessInstanceId());
+			vo.setBusinessKey(commonVo.getBusinessKey());
 			//vo.setProcessDefinitionKey(processDefinitionKey);
 			list.add(vo);
 		}
@@ -290,29 +293,66 @@ public class ActivitiServiceImpl implements ActivitiService{
 	}
 
 	@Override
-	public void selectHisTaskDataGrid(PageInfo pageInfo) {
-		ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
-		HistoricTaskInstanceQuery taskQuery= historyService.createHistoricTaskInstanceQuery();
-		List<HistoricTaskInstance> list= taskQuery.taskAssignee(shiroUser.getId())
-										.orderByTaskCreateTime().desc()
-										.listPage(pageInfo.getFrom(), pageInfo.getSize());
+	public void selectHisTaskDataGrid(PageInfo pageInfo,boolean flag) {
+
 		List<TaskVo> tasks = new ArrayList<TaskVo>();
-		for(HistoricTaskInstance his : list){
-			TaskVo vo = new TaskVo();
-			vo.setTaskCreateTime(his.getCreateTime());
-			vo.setTaskName(his.getName());
-			List<HistoricVariableInstance> results=historyService.createHistoricVariableInstanceQuery().processInstanceId(his.getProcessInstanceId()).list();
-			Map<String,Object> map=new HashMap<>();
-			for(HistoricVariableInstance historicVariableInstance:results){
-				map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
+		if(!flag){
+			HistoricTaskInstanceQuery taskQuery= historyService.createHistoricTaskInstanceQuery();
+			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
+			taskQuery.taskAssignee(shiroUser.getId());
+			List<HistoricTaskInstance> list= taskQuery
+					.orderByTaskCreateTime().desc()
+					.listPage(pageInfo.getFrom(), pageInfo.getSize());
+			for(HistoricTaskInstance his : list){
+				TaskVo vo = new TaskVo();
+				vo.setTaskCreateTime(his.getCreateTime());
+				vo.setTaskName(his.getName());
+				List<HistoricVariableInstance> results=historyService.createHistoricVariableInstanceQuery().processInstanceId(his.getProcessInstanceId()).list();
+				Map<String,Object> map=new HashMap<>();
+				for(HistoricVariableInstance historicVariableInstance:results){
+					map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
+				}
+				CommonVo commonVo=BeanUtils.toBean(map,CommonVo.class);
+				vo.setBusinessName(commonVo.getApplyTitle());
+				vo.setProcessOwner(commonVo.getApplyUserName());
+				vo.setBusinessKey(commonVo.getBusinessKey());
+				tasks.add(vo);
 			}
-			CommonVo commonVo=BeanUtils.toBean(map,CommonVo.class);
-			vo.setBusinessName(commonVo.getApplyTitle());
-			vo.setProcessOwner(commonVo.getApplyUserName());
-			tasks.add(vo);
+			pageInfo.setRows(tasks);
+			pageInfo.setTotal(taskQuery.list().size());
+		}else{
+			HistoricProcessInstanceQuery historicProcessInstanceQuery=historyService.createHistoricProcessInstanceQuery().orderByProcessInstanceStartTime().desc().finished();
+			List<HistoricProcessInstance> list=historicProcessInstanceQuery.listPage(pageInfo.getFrom(), pageInfo.getSize());
+			for(HistoricProcessInstance his : list){
+				TaskVo vo = new TaskVo();
+				vo.setTaskCreateTime(his.getStartTime());
+				vo.setTaskEndTime(his.getEndTime());
+				vo.setTaskName(his.getName());
+				List<HistoricVariableInstance> results=historyService.createHistoricVariableInstanceQuery().processInstanceId(his.getId()).list();
+				Map<String,Object> map=new HashMap<>();
+				for(HistoricVariableInstance historicVariableInstance:results){
+					map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
+				}
+				CommonVo commonVo=BeanUtils.toBean(map,CommonVo.class);
+				vo.setBusinessName(commonVo.getApplyTitle());
+				vo.setProcessOwner(commonVo.getApplyUserName());
+				vo.setProcessDefinitionKey(commonVo.getModelKey());
+				EntityWrapper<App> wrapper=new EntityWrapper<>();
+				wrapper.where("`key`={0}",commonVo.getBusinessType());
+				App app=appService.selectOne(wrapper);
+				vo.setAppName(app==null?"":app.getName());
+				vo.setBusinessKey(commonVo.getBusinessKey());
+				tasks.add(vo);
+			}
+
+			pageInfo.setRows(tasks);
+			pageInfo.setTotal(historicProcessInstanceQuery.list().size());
 		}
-		pageInfo.setRows(tasks);
-		pageInfo.setTotal(taskQuery.list().size());
+
+
+
+
+
 	}
 
 	@Override

@@ -63,8 +63,18 @@ public class TaskVo implements Serializable{
 	 * 流程实例ID
 	 */
 	private String processInstanceId;
-
-
+	/**
+	 * 任务结束时间
+	 */
+	private Date taskEndTime;
+	/**
+	 * 系统名称
+	 */
+	private String appName;
+	/**
+	 * 业务主键
+	 */
+	private String businessKey;
     
 	public String getId() {
 		return id;
@@ -139,5 +149,28 @@ public class TaskVo implements Serializable{
 	public void setProcessInstanceId(String processInstanceId) {
 		this.processInstanceId = processInstanceId;
 	}
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+	public Date getTaskEndTime() {
+		return taskEndTime;
+	}
 
+	public void setTaskEndTime(Date taskEndTime) {
+		this.taskEndTime = taskEndTime;
+	}
+
+	public String getAppName() {
+		return appName;
+	}
+
+	public void setAppName(String appName) {
+		this.appName = appName;
+	}
+
+	public String getBusinessKey() {
+		return businessKey;
+	}
+
+	public void setBusinessKey(String businessKey) {
+		this.businessKey = businessKey;
+	}
 }

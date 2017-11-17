@@ -72,7 +72,7 @@ public interface ActivitiService {
 	 * 我的已办任务
 	 * @param pageInfo
 	 */
-	 void selectHisTaskDataGrid(PageInfo pageInfo);
+	 void selectHisTaskDataGrid(PageInfo pageInfo,boolean flag);
 	
 	
 	/**

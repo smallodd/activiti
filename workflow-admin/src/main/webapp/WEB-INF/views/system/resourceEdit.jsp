@@ -26,7 +26,7 @@
             </tr>
             <tr>
                 <td>资源路径</td>
-                <td><input name="url" type="text" value="${resource.resourceUrl}" class="easyui-textbox" style="width:160;height:29" ></td>
+                <td><input name="resourceUrl" type="text" value="${resource.resourceUrl}" class="easyui-textbox" style="width:160;height:29" ></td>
                 <!-- <td>打开方式</td>
                 <td>
                     <select id="resourceEditOpenMode" name="openMode" class="easyui-combobox" data-options="width:140,height:29,editable:false,panelHeight:'auto'">
