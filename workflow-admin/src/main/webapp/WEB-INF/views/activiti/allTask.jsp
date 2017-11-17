@@ -12,8 +12,14 @@
         <form id="taskSearchForm">
             <table>
                 <tr>
-                    <th>名称:</th>
-                    <td><input name="name" placeholder="搜索条件"/></td>
+                    <th>标题:</th>
+                    <td><input name="businessName" placeholder="标题"/></td>
+                    <th>业务主键:</th>
+                    <td><input name="businessKey" placeholder="业务主键"/></td>
+                    <th>申请人:</th>
+                    <td><input name="processOwner" placeholder="申请人"/></td>
+                    <th>当前审批人:</th>
+                    <td><input name="taskAssign" placeholder="当前审批人"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="taskSearchFun();">查询</a>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="taskCleanFun();">清空</a>

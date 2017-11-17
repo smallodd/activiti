@@ -14,6 +14,7 @@ import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.BeanUtils;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.utils.StringUtils;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import org.activiti.engine.*;
@@ -106,16 +107,29 @@ public class ActivitiServiceImpl implements ActivitiService{
 	}
 
 	@Override
-	public void selectTaskDataGrid(PageInfo pageInfo,boolean isAll) {
+	public void selectTaskDataGrid(PageInfo pageInfo,boolean isAll,TaskVo taskVo ) {
 		List<TaskVo> list = new ArrayList<TaskVo>();
 		//获取Shiro中的用户信息
-    	ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
+
     	
     	TaskQuery taskQuery;
     	if(!isAll){
+			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 			taskQuery=taskService.createTaskQuery().taskAssigneeLike("%"+shiroUser.getId()+"%");
 		}else{
 			taskQuery=taskService.createTaskQuery();
+		}
+		if(StringUtils.isNotBlank(taskVo.getBusinessKey())){
+    		taskQuery.processInstanceBusinessKeyLike("%"+taskVo.getBusinessKey()+"%");
+		}
+		if(StringUtils.isNotBlank(taskVo.getBusinessName())){
+			taskQuery.processVariableValueLike("applyTitle","%"+taskVo.getBusinessName()+"%");
+		}
+		if(isAll&&StringUtils.isNotBlank(taskVo.getTaskAssign())){
+			taskQuery.taskAssigneeLike("%"+taskVo.getTaskAssign()+"%");
+		}
+		if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
+			taskQuery.processVariableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
 		}
 		List<Task> taskList = taskQuery.orderByTaskCreateTime().desc()
 				.listPage(pageInfo.getFrom(), pageInfo.getSize());
@@ -293,13 +307,23 @@ public class ActivitiServiceImpl implements ActivitiService{
 	}
 
 	@Override
-	public void selectHisTaskDataGrid(PageInfo pageInfo,boolean flag) {
+	public void selectHisTaskDataGrid(PageInfo pageInfo,boolean flag,TaskVo taskVo) {
 
 		List<TaskVo> tasks = new ArrayList<TaskVo>();
 		if(!flag){
 			HistoricTaskInstanceQuery taskQuery= historyService.createHistoricTaskInstanceQuery();
 			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 			taskQuery.taskAssignee(shiroUser.getId());
+			if(StringUtils.isNotBlank(taskVo.getBusinessKey())){
+				taskQuery.processInstanceBusinessKeyLike("%"+taskVo.getBusinessKey()+"%");
+			}
+			if(StringUtils.isNotBlank(taskVo.getBusinessName())){
+				taskQuery.processVariableValueLike("applyTitle","%"+taskVo.getBusinessName()+"%");
+			}
+
+			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
+				taskQuery.processVariableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
+			}
 			List<HistoricTaskInstance> list= taskQuery
 					.orderByTaskCreateTime().desc()
 					.listPage(pageInfo.getFrom(), pageInfo.getSize());
@@ -322,6 +346,17 @@ public class ActivitiServiceImpl implements ActivitiService{
 			pageInfo.setTotal(taskQuery.list().size());
 		}else{
 			HistoricProcessInstanceQuery historicProcessInstanceQuery=historyService.createHistoricProcessInstanceQuery().orderByProcessInstanceStartTime().desc().finished();
+			if(StringUtils.isNotBlank(taskVo.getBusinessKey())){
+
+				historicProcessInstanceQuery.processInstanceBusinessKey(taskVo.getBusinessKey());
+			}
+			if(StringUtils.isNotBlank(taskVo.getBusinessName())){
+				historicProcessInstanceQuery.variableValueLike("applyTitle","%"+taskVo.getBusinessName()+"%");
+			}
+
+			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
+				historicProcessInstanceQuery.variableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
+			}
 			List<HistoricProcessInstance> list=historicProcessInstanceQuery.listPage(pageInfo.getFrom(), pageInfo.getSize());
 			for(HistoricProcessInstance his : list){
 				TaskVo vo = new TaskVo();
