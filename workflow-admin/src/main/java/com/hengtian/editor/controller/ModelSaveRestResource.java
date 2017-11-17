@@ -50,7 +50,7 @@ public class ModelSaveRestResource
       String str=(String)values.getFirst("json_xml");
       JSONObject jsonObject=JSONObject.parseObject(str);
       jsonObject.getJSONObject("properties").put("process_id",model.getKey());
-
+      model.setVersion(model.getVersion()+1);//每次修改模型，版本升级
       this.repositoryService.saveModel(model);
 
       this.repositoryService.addModelEditorSource(model.getId(), (jsonObject.toJSONString()).getBytes("utf-8"));
