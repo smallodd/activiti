@@ -9,12 +9,34 @@
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
 	<div data-options="region:'center',border:false" style="overflow:auto;padding-top:30px;text-align:center">
-    	 <select id="jumpTaskKey" class="easyui-combobox" data-options="width:240,height:29,panelHeight:'auto'">
-    	 	<c:forEach items="${tasks}" var="task">
-    	 		<option value="${task.taskDefKey}">${task.taskName}</option>
-    	 	</c:forEach>
-    	 </select>
+		<form id="taskJumpForm" method="post">
+			<input type="hidden" name="taskId" id="taskId" value="${taskId}"/>
+			 <select name="taskDefinitionKey" id="taskDefinitionKey" class="easyui-combobox" data-options="width:240,height:29,panelHeight:'auto'">
+				 <c:forEach items="${tasks}" var="task">
+					<option value="${task.taskDefKey}">${task.taskName}</option>
+				 </c:forEach>
+			 </select>
+		</form>
     </div>
 </div>
+<script type="text/javascript">
+    $(function() {
+        $('#taskJumpForm').form({
+            url : '${ctx}/activiti/jumpTask',
+            success : function(result) {
+                result = $.parseJSON(result);
+                progressClose();
+                if (result.success) {
+                    $.messager.alert('提示', result.msg,'info');
+                    parent.$.modalDialog.openner_dataGrid.datagrid('reload');
+                    parent.$.modalDialog.handler.dialog('close');
+                } else {
+                    $.messager.alert('错误', result.msg, 'error');
+                }
+            }
+        });
+
+    });
+</script>
 </body>
 </html>

@@ -211,17 +211,10 @@
 	        buttons : [ {
 	            text : '确定',
 	            handler : function() {
-	            	var rows = $("#delegateTaskGrid").datagrid("getSelections");
-	            	$.post("${ctx}/activiti/delegateTask", { "taskId": id, "userId": rows[0].id },function (result) {
-	            		console.log(result);
-	                    if (result.success) {
-	                    	$.messager.alert('提示', result.msg,'info');
-	                    	$('#taskDataGrid').datagrid('reload');
-	                        $("#delegateTaskDialog").dialog('close');
-	                    } else {
-	                        $.messager.alert('错误', result.msg, 'error');
-	                    }
-	                })
+                    parent.$.modalDialog.openner_dataGrid = taskDataGrid;
+                    var f = parent.$.modalDialog.handler.find('#taskDelegateForm');
+                    f.find("#taskId").val(id);
+                    f.submit();
 	            }
 	        }]
 	    });
@@ -240,16 +233,10 @@
  	        buttons : [ {
  	            text : '确定',
  	            handler : function() {
- 	            	var rows = $("#delegateTaskGrid").datagrid("getSelections");
- 	            	$.post("${ctx}/activiti/transferTask", { "taskId": id, "userId": rows[0].id },function (result) {
- 	                    if (result.success) {
- 	                    	$.messager.alert('提示', result.msg,'info');
- 	                    	$('#taskDataGrid').datagrid('reload');
- 	                        $("#transferTaskDialog").dialog('close');
- 	                    } else {
- 	                        $.messager.alert('错误', result.msg, 'error');
- 	                    }
- 	                })
+                    parent.$.modalDialog.openner_dataGrid = taskDataGrid;
+                    var f = parent.$.modalDialog.handler.find('#taskTransferForm');
+                    f.find("#taskId_").val(id);
+                    f.submit();
  	            }
  	        }]
  	    });
@@ -259,25 +246,18 @@
  * 跳转任务
  */
  function jumpTaskFun(id){
-	 $("#jumpTaskDialog").dialog({
+    parent.$.modalDialog({
 	        title : '选择任务节点',
 	        width : 300,
 	        height : 200,
             modal : true,
-	        href :  '${ctx}/activiti/taskJump?id='+id,
+	        href :  '${ctx}/activiti/taskJump?taskId='+id,
 	        buttons : [ {
 	            text : '确定',
 	            handler : function() {
-	            	var taskDefinitionKey = $("#jumpTaskKey").val();
-	            	$.post("${ctx}/activiti/jumpTask", { "taskId": id, "taskDefinitionKey": taskDefinitionKey },function (result) {
-	                    if (result.success) {
-	                    	$.messager.alert('提示', result.msg,'info');
-	                    	$('#taskDataGrid').datagrid('reload');
-	                        $("#jumpTaskDialog").dialog('close');
-	                    } else {
-	                        $.messager.alert('错误', result.msg, 'error');
-	                    }
-	                })
+                    parent.$.modalDialog.openner_dataGrid = taskDataGrid;
+                    var f = parent.$.modalDialog.handler.find('#taskJumpForm');
+                    f.submit();
 	            }
 	        }]
 	    });

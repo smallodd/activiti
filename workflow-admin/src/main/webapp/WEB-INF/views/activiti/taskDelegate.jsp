@@ -30,6 +30,17 @@
             {width : '200',title : '工号',field : 'loginName',sortable : true}]],url:'${ctx}/sysUser/selectDataGrid',toolbar:'#tb'"></table>
             
 </div>
+
+<form id="taskDelegateForm" method="post">
+	<input type="hidden" name="taskId" id="taskId"/>
+	<input type="hidden" name="userId" id="userId"/>
+</form>
+
+<form id="taskTransferForm" method="post">
+	<input type="hidden" name="taskId" id="taskId_"/>
+	<input type="hidden" name="userId" id="userId_"/>
+</form>
+
 <script>
     /**
      * 清除
@@ -45,6 +56,62 @@
     function userSearchFun() {
         $("#delegateTaskGrid").datagrid('load', $.serializeObject($('#userSearchForm')));
     }
+
+    /**
+	 * 委派
+     */
+    $(function() {
+        $('#taskDelegateForm').form({
+            url : '${ctx}/activiti/delegateTask',
+            onSubmit : function() {
+                progressLoad();
+                var rows = $("#delegateTaskGrid").datagrid("getSelections");
+                $("#userId").val(rows[0].id);
+                return true;
+            },
+
+            success : function(result) {
+                result = $.parseJSON(result);
+                progressClose();
+                if (result.success) {
+                    $.messager.alert('提示', result.msg,'info');
+                    parent.$.modalDialog.openner_dataGrid.datagrid('reload');
+                    parent.$.modalDialog.handler.dialog('close');
+                } else {
+                    $.messager.alert('错误', result.msg, 'error');
+                }
+            }
+        });
+
+    });
+
+    /**
+     * 转办
+     */
+    $(function() {
+        $('#taskTransferForm').form({
+            url : '${ctx}/activiti/transferTask',
+            onSubmit : function() {
+                progressLoad();
+                var rows = $("#delegateTaskGrid").datagrid("getSelections");
+                $("#userId_").val(rows[0].id);
+                return true;
+            },
+
+            success : function(result) {
+                result = $.parseJSON(result);
+                progressClose();
+                if (result.success) {
+                    $.messager.alert('提示', result.msg,'info');
+                    parent.$.modalDialog.openner_dataGrid.datagrid('reload');
+                    parent.$.modalDialog.handler.dialog('close');
+                } else {
+                    $.messager.alert('错误', result.msg, 'error');
+                }
+            }
+        });
+
+    });
 </script>
 </body>
 </html>
