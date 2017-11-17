@@ -68,7 +68,7 @@
                 u.department_id = #{departmentId}
             </if>
             <if test=" userName != null ">
-                u.user_name like #{userName}
+                (u.user_name like #{userName} or u.login_name like #{userName})
             </if>
         </where>
     </select>

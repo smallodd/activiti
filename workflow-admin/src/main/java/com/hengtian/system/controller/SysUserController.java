@@ -61,11 +61,11 @@ public class SysUserController extends BaseController{
         Map<String, Object> condition = new HashMap<String, Object>();
 
         if (StringUtils.isNotBlank(userVo.getUserName())) {
-            condition.put("userName", "%"+userVo.getUserName()+"%");
+            condition.put("userName", "%"+userVo.getUserName().trim()+"%");
         }
 
         if(StringUtils.isNotBlank(userVo.getDepartmentId())){
-            condition.put("departmentId", userVo.getDepartmentId());
+            condition.put("departmentId", userVo.getDepartmentId().trim());
         }
         pageInfo.setCondition(condition);
         sysUserService.selectDataGridAlert(pageInfo);
