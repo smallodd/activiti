@@ -135,6 +135,7 @@ public class TUserTaskController extends BaseController{
 			}
 			EntityWrapper<TUserTask> wrapper2 =new EntityWrapper<TUserTask>();
 			wrapper2.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
+			wrapper.orderBy("order_num",true);
 			List<TUserTask> tasks2= tUserTaskService.selectList(wrapper2);
 			model.addAttribute("tasks", tasks2);
 		}else{
