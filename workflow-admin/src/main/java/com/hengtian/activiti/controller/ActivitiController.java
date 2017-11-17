@@ -359,7 +359,7 @@ public class ActivitiController extends BaseController{
      * 任务跳转页面 
      */
     @GetMapping("/taskJump")
-    public String taskJump(Model model,@RequestParam("id") String taskId) {
+    public String taskJump(Model model,@RequestParam("taskId") String taskId) {
     	Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
     	//查询流程定义
     	ProcessDefinition pd= repositoryService.createProcessDefinitionQuery()
@@ -370,6 +370,7 @@ public class ActivitiController extends BaseController{
 		wrapper.orderBy("order_num",true);
 		List<TUserTask> tasks= tUserTaskService.selectList(wrapper);
     	model.addAttribute("tasks",tasks);
+		model.addAttribute("taskId",taskId);
         return "activiti/taskJump";
     }
     
@@ -387,6 +388,7 @@ public class ActivitiController extends BaseController{
 			activitiService.jumpTask(taskId, taskDefinitionKey);
 			return renderSuccess("任务跳转成功！");
 		} catch (Exception e) {
+    		logger.info("任务跳转失败！",e);
 			return renderError("任务跳转失败！");
 		}
     }
