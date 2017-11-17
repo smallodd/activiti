@@ -202,7 +202,7 @@
  * 委派任务(同代办)
  */
  function delegateTaskFun(id){
-	 $("#delegateTaskDialog").dialog({
+    parent.$.modalDialog({
 	        title : '选择受理人',
 	        width : 500,
 	        height : 450,
@@ -231,7 +231,7 @@
   * 转办任务
   */
   function transferTaskFun(id){
- 	 $("#transferTaskDialog").dialog({
+     parent.$.modalDialog({
  	        title : '选择受理人',
  	        width : 500,
  	        height : 450,
