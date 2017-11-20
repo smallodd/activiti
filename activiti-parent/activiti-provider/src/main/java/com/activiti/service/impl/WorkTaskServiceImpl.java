@@ -864,7 +864,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
             ProcessDefinitionEntity definitionEntity = (ProcessDefinitionEntity)repositoryService.getProcessDefinition(processInstance.getProcessDefinitionId());
 
-            List<HistoricActivityInstance> highLightedActivitList =  historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).list();
+            List<HistoricActivityInstance> highLightedActivitList =  historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
 
 
             //高亮环节id集合
