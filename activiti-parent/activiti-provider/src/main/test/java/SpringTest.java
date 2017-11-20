@@ -43,10 +43,10 @@ public class SpringTest {
         CommonVo commonVo=new CommonVo();
         commonVo.setApplyTitle("测试在线换审批人");
         commonVo.setApplyUserId("H000000");
-        commonVo.setApplyUserName("测试111111111111");
+        commonVo.setApplyUserName("测试人");
         commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("dee");
-        commonVo.setModelKey("key");
+        commonVo.setBusinessType("lgb");
+        commonVo.setModelKey("m1");
         Map map=new HashMap();
         map.put("param",10000);
         String processId=workTaskService.startTask(commonVo,map);
@@ -86,15 +86,18 @@ public class SpringTest {
         System.out.print(list.size());
     }
 
-     @Test
-     public void testQueryHistoryTask(){
-         String taskId = "2513";
-         List<String> variableNames = new ArrayList<String>();
-         variableNames.add("applyUserName");
-         variableNames.add("isPass");
-         HistoryTasksVo taskHistory = workTaskService.getTaskHistoryBytaskId(taskId, variableNames);
-         System.out.print(taskHistory);
-     }
+    /**
+     * 根据流程实例ID查询历史任务信息
+     */
+    @Test
+    public void testQueryHistoryTask(){
+        String processInstanceId = "2513";
+        List<String> variableNames = new ArrayList<String>();
+        variableNames.add("applyUserName");
+        variableNames.add("isPass");
+        HistoryTasksVo taskHistory = workTaskService.getTaskHistoryByProcessInstanceId(processInstanceId, variableNames);
+        System.out.print(taskHistory);
+    }
     @Test
     public void testMailSend() throws Exception {
         EmailUtil emailUtil=EmailUtil.getEmailUtil();
@@ -107,9 +110,28 @@ public class SpringTest {
         System.out.println("send out successfully");
     }
 
+    /**
+     * 测试根据应用KEY获取模型列表
+     */
     @Test
     public void testGetModelListByAppKey(){
         List<Model> lgb = workTaskService.getModelListByAppKey("lgb");
         System.out.print(lgb.size());
+    }
+
+    /**
+     * 测试委派任务
+     */
+    @Test
+    public void testDelegateTask(){
+        workTaskService.delegateTask("H019233","5003");
+    }
+
+    /**
+     * 测试转办任务
+     */
+    @Test
+    public void testTransferTaskTask(){
+        workTaskService.transferTask("H019236","5003");
     }
 }
