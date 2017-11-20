@@ -66,6 +66,10 @@
             onSubmit : function() {
                 progressLoad();
                 var rows = $("#delegateTaskGrid").datagrid("getSelections");
+                if(rows == ""){
+                    progressClose();
+                    return false;
+				}
                 $("#userId").val(rows[0].id);
                 return true;
             },
@@ -94,6 +98,10 @@
             onSubmit : function() {
                 progressLoad();
                 var rows = $("#delegateTaskGrid").datagrid("getSelections");
+                if(rows == ""){
+                    progressClose();
+                    return false;
+                }
                 $("#userId_").val(rows[0].id);
                 return true;
             },
