@@ -329,6 +329,9 @@ public class ActivitiServiceImpl implements ActivitiService{
 					.orderByTaskCreateTime().desc()
 					.listPage(pageInfo.getFrom(), pageInfo.getSize());
 			for(HistoricTaskInstance his : list){
+				if(his.getEndTime() == null){
+					continue;
+				}
 				TaskVo vo = new TaskVo();
 				vo.setTaskCreateTime(his.getCreateTime());
 				vo.setTaskName(his.getName());
@@ -360,6 +363,9 @@ public class ActivitiServiceImpl implements ActivitiService{
 			}
 			List<HistoricProcessInstance> list=historicProcessInstanceQuery.listPage(pageInfo.getFrom(), pageInfo.getSize());
 			for(HistoricProcessInstance his : list){
+				if(his.getEndTime() == null){
+					continue;
+				}
 				TaskVo vo = new TaskVo();
 				vo.setTaskCreateTime(his.getStartTime());
 				vo.setTaskEndTime(his.getEndTime());
@@ -384,11 +390,6 @@ public class ActivitiServiceImpl implements ActivitiService{
 			pageInfo.setRows(tasks);
 			pageInfo.setTotal(historicProcessInstanceQuery.list().size());
 		}
-
-
-
-
-
 	}
 
 	@Override
