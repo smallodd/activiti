@@ -229,6 +229,7 @@ public interface WorkTaskService {
 
     /**
      * 流程任务跟踪标识
+     * @author houjinrong
      * @param processInstanceId
      * @return
      */
@@ -236,6 +237,7 @@ public interface WorkTaskService {
 
     /**
      * 根据任务ID查询历史任务信息
+     * @author houjinrong
      * @param processInstanceId
      * @param variableNames
      * @return
@@ -250,8 +252,27 @@ public interface WorkTaskService {
 
     /**
      * 根据应用key获取应用所属的模型列表
+     * @author houjinrong
      * @param appKey
      * @return
      */
     List<Model> getModelListByAppKey(String appKey);
+
+    /**
+     * 委派任务
+     * @author houjinrong
+     * @param userId 当前任务节点ID
+     * @param taskId 被委派人工号
+     * @return
+     */
+    boolean delegateTask(String userId, String taskId);
+
+    /**
+     * 转办任务
+     * @author houjinrong
+     * @param userId 当前任务节点ID
+     * @param taskId 被转办人工号
+     * @return
+     */
+    boolean transferTask(String userId, String taskId);
 }

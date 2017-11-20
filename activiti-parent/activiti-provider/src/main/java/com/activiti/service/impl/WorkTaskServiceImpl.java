@@ -1076,4 +1076,47 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         String sql = "SELECT arm.* FROM `act_re_model` AS arm,`t_app_model` AS tam,`t_app` AS ta WHERE ta.KEY='"+appKey+"' AND ta.KEY=tam.APP_KEY AND arm.KEY_=tam.MODEL_KEY ";
         return repositoryService.createNativeModelQuery().sql(sql).list();
     }
+
+    /**
+     * 委派任务
+     * @author houjinrong
+     * @param userId 当前任务节点ID
+     * @param taskId 被委派人工号
+     * @return
+     */
+    @Override
+    public boolean delegateTask(String userId, String taskId){
+        try{
+            taskService.delegateTask(taskId, userId);
+        } catch (Exception e){
+            logger.error("委派任务失败",e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 转办任务
+     * @author houjinrong
+     * @param userId 当前任务节点ID
+     * @param taskId 被转办人工号
+     * @return
+     */
+    @Override
+    public boolean transferTask(String userId, String taskId){
+        try{
+            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            if(task != null){
+                String assign = task.getAssignee();
+                taskService.setAssignee(taskId, userId);
+                taskService.setOwner(taskId, assign);
+            }else{
+                throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
+            }
+        } catch (Exception e){
+            logger.error("转办任务失败",e);
+            return false;
+        }
+        return true;
+    }
 }
