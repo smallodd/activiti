@@ -367,6 +367,10 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
 
         // Parse dom to string
         var svgDOM = DataManager.serialize(svgClone);
+        //以下3行代码为解决IE不能保存模型的问题
+        svgDOM = svgDOM.replace(/marker-start="url\("#/g,"marker-start=\"url(#").replace(/start"\)"/g,"start\)\"");
+        svgDOM = svgDOM.replace(/marker-mid="url\("#/g,"marker-mid=\"url(#").replace(/mid"\)"/g,"mid\)\"");
+        svgDOM = svgDOM.replace(/marker-end="url\("#/g,"marker-end=\"url(#").replace(/end"\)"/g,"end\)\"");
 
         var params = {
             json_xml: json,
