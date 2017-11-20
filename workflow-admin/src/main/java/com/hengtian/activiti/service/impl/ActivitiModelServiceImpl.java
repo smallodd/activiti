@@ -28,10 +28,18 @@ public class ActivitiModelServiceImpl implements ActivitiModelService {
      * @param pageInfo
      */
     @Override
-    public void selectActivitiModelDataGrid(PageInfo pageInfo){
-        List<Model> modelList = repositoryService.createModelQuery().listPage(pageInfo.getFrom(), pageInfo.getSize());
-        pageInfo.setRows(modelList);
-        long count= repositoryService.createModelQuery().count();
-        pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+    public void selectActivitiModelDataGrid(PageInfo pageInfo,String name){
+        if(name != null){
+            name = "%"+name+"%";
+            List<Model> modelList = repositoryService.createModelQuery().modelNameLike(name).listPage(pageInfo.getFrom(), pageInfo.getSize());
+            pageInfo.setRows(modelList);
+            long count= repositoryService.createModelQuery().modelNameLike(name).count();
+            pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+        }else{
+            List<Model> modelList = repositoryService.createModelQuery().listPage(pageInfo.getFrom(), pageInfo.getSize());
+            pageInfo.setRows(modelList);
+            long count= repositoryService.createModelQuery().count();
+            pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+        }
     }
 }

@@ -77,9 +77,10 @@ public class ActivitiModelController extends BaseController {
     @SysLog(value="查询流程模型")
     @PostMapping("/modelDataGrid")
     @ResponseBody
-    public PageInfo dataGrid(Integer page, Integer rows, String sort, String order) {
+    public PageInfo dataGrid(Integer page, Integer rows, String sort, String order,String name) {
+        name = StringUtils.isBlank(name)?null:name.trim();
         PageInfo pageInfo = new PageInfo(page, rows);
-        activitiModelService.selectActivitiModelDataGrid(pageInfo);
+        activitiModelService.selectActivitiModelDataGrid(pageInfo,name);
         return pageInfo;
     }
 
