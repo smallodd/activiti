@@ -27,7 +27,7 @@
     "properties" : [ {
       "id" : "name",
       "type" : "String",
-      "title" : "名称",
+      "title" : "流程名称",
       "value" : "",
       "description" : "BPMN元素名称.",
       "popular" : true,
