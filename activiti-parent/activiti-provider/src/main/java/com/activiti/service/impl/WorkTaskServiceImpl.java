@@ -976,13 +976,13 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     }
 
     /**
-     * 根据任务ID查询历史任务信息
+     * 根据流程实例ID查询历史任务信息
      * @param processInstanceId
      * @param variableNames
      * @return
      */
     @Override
-    public HistoryTasksVo getTaskHistoryBytaskId(String processInstanceId, List<String> variableNames){
+    public HistoryTasksVo getTaskHistoryByProcessInstanceId(String processInstanceId, List<String> variableNames){
         if(StringUtils.isBlank(processInstanceId)){
             return null;
         }

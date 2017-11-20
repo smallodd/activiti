@@ -236,13 +236,13 @@ public interface WorkTaskService {
     byte[] getTaskSchedule(String processInstanceId);
 
     /**
-     * 根据任务ID查询历史任务信息
+     * 根据流程实例ID查询历史任务信息
      * @author houjinrong
      * @param processInstanceId
      * @param variableNames
      * @return
      */
-    HistoryTasksVo getTaskHistoryBytaskId(String processInstanceId,List<String> variableNames);
+    HistoryTasksVo getTaskHistoryByProcessInstanceId(String processInstanceId,List<String> variableNames);
 
     /**
      * 获取应用列表
