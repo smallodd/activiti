@@ -72,6 +72,7 @@ public class Scheduler {
                     userVo.setLoginName(code);
                     userVo.setLoginPwd(password);
                     userVo.setUserName(name);
+                    userVo.setUserType("1");
                     userVo.setDepartmentId(map.get("dept_code").toString());
                     EntityWrapper<SysRole> wrapper=new EntityWrapper<>();
                     wrapper.where("role_code='006'");
