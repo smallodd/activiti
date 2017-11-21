@@ -15,15 +15,15 @@
         <a href="javascript:void(0)" class="easyui-linkbutton" style="width:100%;height:32px;margin-bottom:8px;color:steelblue;">提示：密码只能为字母数字下划线，长度为6-20位</a>
         <div style="margin-bottom:20px">
             <div>旧密码:</div>
-            <input type="password" name="oldPassword" class="easyui-textbox" data-options="required:true,missingMessage:'用户名称不能为空',prompt:'Password',iconCls:'icon-lock',iconWidth:38" style="width:100%;height:40px">
+            <input type="password" name="oldPassword" class="easyui-textbox" data-options="required:true,missingMessage:'用户名称不能为空',prompt:'请输入旧密码',iconCls:'icon-lock',iconWidth:38" style="width:100%;height:40px">
         </div>
         <div style="margin-bottom:20px">
             <div>新密码:</div>
-            <input type="password" name="newPassword" id="newPassword" class="easyui-textbox" data-options="required:true,validType:['password'],prompt:'Password',iconCls:'icon-lock',iconWidth:38" style="width:100%;height:40px">
+            <input type="password" name="newPassword" id="newPassword" class="easyui-textbox" data-options="required:true,validType:['password'],prompt:'请输入新密码',iconCls:'icon-lock',iconWidth:38" style="width:100%;height:40px">
         </div>
         <div style="margin-bottom:20px">
             <div>确认密码:</div>
-            <input type="password" name="confirmPassword" class="easyui-textbox" data-options="required:true,validType:['equalTo[\'#newPassword\']','password'],prompt:'Password',iconCls:'icon-lock',iconWidth:38" style="width:100%;height:40px">
+            <input type="password" name="confirmPassword" class="easyui-textbox" data-options="required:true,validType:['equalTo[\'#newPassword\']','password'],prompt:'再次输入新密码',iconCls:'icon-lock',iconWidth:38" style="width:100%;height:40px">
         </div>
 
         <div>
