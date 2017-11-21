@@ -117,8 +117,10 @@
             			str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
             			str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-jumpTask" data-options="plain:true,iconCls:\'fi-share icon-yellow\'" onclick="jumpTaskFun(\'{0}\');" >跳转</a>', row.id);
         			</shiro:hasPermission>
+                    <shiro:hasPermission name="/activiti/showTask">
                     str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                     str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-taskProgress" data-options="plain:true,iconCls:\'fi-arrow-right icon-grey\'" onclick="showTaskFun(\'{0}\');" >进度</a>', row.processInstanceId);
+                    </shiro:hasPermission>
                 }
                 return str;
             }

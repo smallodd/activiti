@@ -14,7 +14,7 @@
                 <td>资源名称</td>
                 <td>
                     <input name="id" type="hidden"  value="${resource.id}" >
-                    <input name="name" type="text" class="easyui-textbox" style="width:160;height:29" value="${resource.resourceName}" data-options="required:true" >
+                    <input name="resourceName" type="text" class="easyui-textbox" style="width:160;height:29" value="${resource.resourceName}" data-options="required:true" >
                 </td>
                 <td>资源类型</td>
                 <td>
