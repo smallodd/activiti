@@ -13,7 +13,7 @@
             <table>
                 <tr>
                     <th>姓名:</th>
-                    <td><input tepe="text" name="userName" placeholder="请输入用户姓名"/></td>
+                    <td><input type="text" name="userName" placeholder="请输入用户姓名"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="searchUserFun();">查询</a>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="cleanUserFun();">清空</a>
