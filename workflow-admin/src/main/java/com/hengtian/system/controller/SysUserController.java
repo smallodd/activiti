@@ -1,18 +1,5 @@
 package com.hengtian.system.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.utils.DigestUtils;
@@ -22,6 +9,18 @@ import com.hengtian.system.model.SysRole;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysUserService;
 import com.hengtian.system.vo.SysUserVo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -202,5 +201,40 @@ public class SysUserController extends BaseController{
     public Object delete(String id) {
         sysUserService.deleteUserById(id);
         return renderSuccess("删除成功！");
+    }
+
+    /**
+     * 密码管理页
+     * @return
+     */
+    @RequestMapping("/password")
+    public String passwordManager(){
+        return "system/password";
+    }
+
+    /**
+     * 密码管理页
+     * @return
+     */
+    @RequestMapping("/updatePassword")
+    @ResponseBody
+    public Object updatePassword(String oldPassword,String newPassword){
+        if(StringUtils.isBlank(oldPassword)){
+            return renderError("旧密码不能为空");
+        }else if(StringUtils.isBlank(newPassword)){
+            return renderError("新密码不能为空");
+        }
+        SysUser sysUser = sysUserService.selectById(getUserId());
+
+        if(sysUser != null && sysUser.getId() != null){
+            if(DigestUtils.md5Hex(oldPassword).toUpperCase().equals(sysUser.getLoginPwd())){
+                sysUserService.updatePwdByUserId(sysUser.getId(),DigestUtils.md5Hex(newPassword).toUpperCase());
+            }else{
+                return renderError("旧密码不正确");
+            }
+        }else{
+            return renderError("用户不存在或未登录，不可进行修改密码操作");
+        }
+        return renderSuccess("密码修改成功");
     }
 }
