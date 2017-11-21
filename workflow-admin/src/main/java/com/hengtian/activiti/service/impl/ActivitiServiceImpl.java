@@ -131,6 +131,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 		if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
 			taskQuery.processVariableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
 		}
+		pageInfo.setTotal(taskQuery.list().size());
 		List<Task> taskList = taskQuery.orderByTaskCreateTime().desc()
 				.listPage(pageInfo.getFrom(), pageInfo.getSize());
 		
@@ -158,7 +159,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			list.add(vo);
 		}
 		pageInfo.setRows(list);
-		pageInfo.setTotal(taskQuery.list().size());
+
 	}
 
 	@Override
@@ -325,6 +326,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
 				taskQuery.processVariableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
 			}
+			pageInfo.setTotal(taskQuery.list().size());
 			List<HistoricTaskInstance> list= taskQuery
 					.orderByTaskCreateTime().desc()
 					.listPage(pageInfo.getFrom(), pageInfo.getSize());
@@ -347,7 +349,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 				tasks.add(vo);
 			}
 			pageInfo.setRows(tasks);
-			pageInfo.setTotal(taskQuery.list().size());
+
 		}else{
 			HistoricProcessInstanceQuery historicProcessInstanceQuery=historyService.createHistoricProcessInstanceQuery().orderByProcessInstanceStartTime().desc().finished();
 			if(StringUtils.isNotBlank(taskVo.getBusinessKey())){
@@ -361,6 +363,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
 				historicProcessInstanceQuery.variableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
 			}
+			pageInfo.setTotal(historicProcessInstanceQuery.list().size());
 			List<HistoricProcessInstance> list=historicProcessInstanceQuery.listPage(pageInfo.getFrom(), pageInfo.getSize());
 			for(HistoricProcessInstance his : list){
 				if(his.getEndTime() == null){
@@ -388,7 +391,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			}
 
 			pageInfo.setRows(tasks);
-			pageInfo.setTotal(historicProcessInstanceQuery.list().size());
+
 		}
 	}
 
