@@ -11,7 +11,7 @@
 <body>
 <div style="margin:20px 0;"></div>
 <div class="easyui-panel" title="修改密码" style="width:400px;padding:30px 60px">
-    <form id="updatePasswordForm" method="get" action="/sysUser/addPage">
+    <form id="updatePasswordForm" method="get">
         <a href="javascript:void(0)" class="easyui-linkbutton" style="width:100%;height:32px;margin-bottom:8px;color:steelblue;">提示：密码只能为字母数字下划线，长度为6-20位</a>
         <div style="margin-bottom:20px">
             <div>旧密码:</div>
