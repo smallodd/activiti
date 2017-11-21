@@ -8,15 +8,15 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/`workflow` /*!40100 DEFAULT CHARACTER SE
 
 
 
-/*Table structure for table `act_evt_log` */
+
 
 DROP TABLE IF EXISTS `act_evt_log`;
 
-/*Data for the table `act_ru_variable` */
 
 
 
-/*Table structure for table `sys_department` */
+
+
 
 DROP TABLE IF EXISTS `sys_department`;
 
@@ -281,11 +281,7 @@ CREATE TABLE `t_mail_log` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='邮件发送日志';
 
-/*Data for the table `t_mail_log` */
 
-
-
-/*Table structure for table `t_user_task` */
 
 DROP TABLE IF EXISTS `t_user_task`;
 
@@ -303,10 +299,8 @@ CREATE TABLE `t_user_task` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='用户任务表';
 
-/*Data for the table `t_user_task` */
 
 
-/*Table structure for table `t_vacation` */
 
 DROP TABLE IF EXISTS `t_vacation`;
 
@@ -347,9 +341,4 @@ CREATE TABLE `t_app_model` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='应用模型关联表';
 
-/*Data for the table `t_vacation` */
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
