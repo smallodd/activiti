@@ -6,17 +6,7 @@ MySQL - 5.7.18-log : Database - workflow
 
 CREATE DATABASE /*!32312 IF NOT EXISTS*/`workflow` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
-
-
-
-
 DROP TABLE IF EXISTS `act_evt_log`;
-
-
-
-
-
-
 
 DROP TABLE IF EXISTS `sys_department`;
 
@@ -55,8 +45,6 @@ CREATE TABLE `sys_oper_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='系统操作日志';
 
 /*Data for the table `sys_oper_log` */
-
-
 
 /*Table structure for table `sys_resource` */
 
@@ -130,7 +118,7 @@ INSERT INTO `sys_resource` VALUES ('f84a8562694e4b8ebd67f5ec39f2e4b3', '/activit
 INSERT INTO `sys_resource` VALUES ('fa5459a821b34a30b07a676faaa806ae', '/sysDepartment/add', '015', '添加', '1', '', 'ajax', '670bb8d8a8bf4e4f9046b8da2bc7d124', 1, '2017-8-12 13:55:46');
 INSERT INTO `sys_resource` VALUES ('fdf48b6775184da1999e49ceebfa7494', '/app/modelManage', 'NO201711070001', '模型管理', '1', '', NULL, '8bd73fb8c092459dbf9285b69799c9ef', 4, '2017-11-7 10:30:48');
 INSERT INTO `sys_resource` VALUES ('fe10cc8d40914ca387f2c00afd75c452', '/activiti/adminTransferTask', 'NO201711060002', '转办', '1', '', NULL, 'deee316b106e43668da06e3e11756b1a', 0, '2017-11-6 09:35:11');
-
+INSERT INTO `sys_resource` VALUES ('e372a4a8ec0941ddbf9a9658ba24a471','/sysUser/password','NO201711210001','密码管理','0','fi-key',NULL,'','3','2017-11-21 10:37:37');
 
 /*Table structure for table `sys_role` */
 
@@ -227,6 +215,9 @@ INSERT INTO `sys_role_resource` VALUES ('ddb6bbfd15694a388ef5e7b990982078', 'da9
 INSERT INTO `sys_role_resource` VALUES ('ea28a69b893f45fba894443ae5009885', '294f8355c701400996c0e86db6815e85', '979e0715942e4cc09fc4a78e6c3544e7');
 INSERT INTO `sys_role_resource` VALUES ('eaf4de4b1f3942998d2a4adf516f1d72', '8bd73fb8c092459dbf9285b69799c9ef', '1');
 INSERT INTO `sys_role_resource` VALUES ('eaff1751e3fe4413b470e2065baa65ed', '397c47b362f84ddcb5c7679201366333', '1');
+INSERT INTO `sys_role_resource` VALUES ('f31732aa5de4492aaea0d3a52c44dece', 'e372a4a8ec0941ddbf9a9658ba24a471', '1');
+INSERT INTO `sys_role_resource` VALUES ('eb291f45327d4cba9fc4d0fd7bacad36', 'a5b2352b339f4eed8a70e5dbd5af4326', '1');
+INSERT INTO `sys_role_resource` VALUES ('e7e535e8e7914bfd98c4fb2881b5f76e', 'deee316b106e43668da06e3e11756b1a', '1');
 
 /*Table structure for table `sys_user` */
 
@@ -282,7 +273,6 @@ CREATE TABLE `t_mail_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='邮件发送日志';
 
 
-
 DROP TABLE IF EXISTS `t_user_task`;
 
 CREATE TABLE `t_user_task` (
@@ -298,8 +288,6 @@ CREATE TABLE `t_user_task` (
   `version_` tinyint(4) NOT NULL COMMENT '流程定义版本',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='用户任务表';
-
-
 
 
 DROP TABLE IF EXISTS `t_vacation`;
@@ -340,5 +328,4 @@ CREATE TABLE `t_app_model` (
   `model_key` varchar(64) DEFAULT NULL COMMENT '关联act_re_model key_',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='应用模型关联表';
-
 
