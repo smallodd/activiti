@@ -12,7 +12,7 @@
         <form id="modelSearchForm">
             <table>
                 <tr>
-                    <th>名称:</th>
+                    <th>模型名称:</th>
                     <td><input name="name" placeholder="搜索条件"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="modelSearchFun();">查询</a>
