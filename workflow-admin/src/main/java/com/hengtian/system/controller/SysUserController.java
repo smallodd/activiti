@@ -303,7 +303,7 @@ public class SysUserController extends BaseController{
         }
         request.setAttribute("loginName",loginName);
         request.setAttribute("flag",flag);
-
+        RedisClusterUtil.del(loginName);
         return "system/password/passwordReset";
     }
 

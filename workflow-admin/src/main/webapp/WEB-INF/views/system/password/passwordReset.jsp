@@ -6,10 +6,11 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>添加资源</title>
+	<title>重置密码</title>
 </head>
 <body>
 <div style="margin:20px 0;"></div>
+<div id="resetPass">
 <div class="easyui-panel" title="重置密码" style="width:400px;padding:30px 60px">
     <c:if test="${flag==-1}">请求不合法</c:if>
     <c:if test="${flag==0}">链接已过期，请重试</c:if>
@@ -35,7 +36,13 @@
     </form>
     </c:if>
 </div>
+</div>
 
+<div id="resetSuccess" style="display:none;width:400px;">
+<div class="easyui-panel" title="重置密码" style="width:400px;padding:30px 60px;">
+    <a href="/login" class="easyui-linkbutton" iconCls="icon-ok" style="width:260px;height:32px">密码已修改成功，点击登录</a>
+</div>
+</div>
 <script type="text/javascript">
     function fixTextPlaceholder() {
         $(".easyui-textbox").each(function (i) {
@@ -74,10 +81,12 @@
                 }
                 return isValid;
             },
-            success : function(result) {alert(result);
+            success : function(result) {
                 progressClose();
                 result = $.parseJSON(result);
                 if (result.success) {
+                    $("#resetPass").remove();
+                    $("#resetSuccess").css("display","block");
                     parent.$.messager.alert('提示',result.msg,'info');
                 }else{
                     parent.$.messager.alert('提示',result.msg,'error');

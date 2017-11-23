@@ -17,6 +17,7 @@
 </head>
 <body style="text-align:center">
 <div style="margin:20px 0;"></div>
+<div id="validateMail">
 <div class="easyui-panel" title="登录名称验证" style="width:400px;padding:30px 60px;">
     <form id="updatePasswordForm" method="get">
         <div style="margin-bottom:12px">
@@ -34,7 +35,15 @@
     </form>
     <span style="width:100%;height:32px;margin-bottom:8px;color:steelblue;font-size:5px;">提示：请填写正确的邮箱地址，点击邮箱中地址修改</span>
 </div>
+</div>
 
+<div id="validateSuccess" style="display:none">
+<div class="easyui-panel" title="提示" style="width:400px;padding:30px 60px;">
+    <a href="#" class="easyui-linkbutton" style="width:260px;height:60px">
+        您的密码修改请求已发送到您邮箱，请进入邮箱修改,如无其它需求请关闭该页面.
+    </a>
+</div>
+</div>
 <script type="text/javascript">
     function fixTextPlaceholder() {
         $(".easyui-textbox").each(function (i) {
@@ -63,6 +72,8 @@
                 progressClose();
                 result = $.parseJSON(result);
                 if (result.success) {
+                    $("#validateMail").remove();
+                    $("#validateSuccess").show();
                     parent.$.messager.alert('提示',result.msg,'info');
                 }else{
                     parent.$.messager.alert('提示',result.msg,'error');
