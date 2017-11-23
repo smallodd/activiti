@@ -25,7 +25,7 @@
         </div>
         <div style="margin-bottom:12px;">
             <input type="text" name="code" class="easyui-textbox" data-options="required:true,missingMessage:'验证码不能为空'" placeholder="请输入验证码" style="width:150px;height:40px;float:left;vertical-align: middle;">
-            <img class="double-border" src="/createCaptcha" onclick="this.src='/createCaptcha?loginName='+$('#loginName').val()+'&ran='+Math.random()" style="margin-left:10px;vertical-align: middle;"/>
+            <img class="double-border" src="/resource/images/default_code.png" onclick="this.src='/createCaptcha?loginName='+$('#loginName').val()+'&ran='+Math.random()" style="margin-left:10px;vertical-align: middle;"/>
         </div>
 
         <div>
