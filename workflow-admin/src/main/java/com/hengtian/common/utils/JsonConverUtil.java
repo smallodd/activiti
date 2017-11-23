@@ -1,5 +1,6 @@
 package com.hengtian.common.utils;
 
+import com.alibaba.druid.sql.visitor.functions.Char;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -28,9 +29,11 @@ public class JsonConverUtil {
         jsonConfig.registerJsonValueProcessor(Date.class, new JsonDateValueProcessor(formatString));
         String jsonString = null;
         if(null != object) {
-            if(!(object instanceof Collection) && !(object instanceof Object[])) {
+            if((object instanceof Collection) || (object instanceof Object[])) {
                 jsonString = JSONObject.fromObject(object, jsonConfig).toString();
-            } else {
+            }else if(object instanceof String || object instanceof  Integer || object instanceof  Boolean ||object instanceof  Long || object instanceof Double ||object instanceof  Float ||object instanceof  Byte || object instanceof Char ||object instanceof  Short) {
+                jsonString=object.toString();
+            }else {
                 jsonString = JSONArray.fromObject(object, jsonConfig).toString();
             }
         }
