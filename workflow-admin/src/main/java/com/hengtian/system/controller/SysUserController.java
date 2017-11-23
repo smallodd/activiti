@@ -283,7 +283,7 @@ public class SysUserController extends BaseController{
             return renderError("邮箱验证失败，请联系管理员");
         }
 
-        return renderError("邮件已发送，请进入邮箱修改");
+        return renderSuccess("邮件已发送，请进入邮箱修改");
     }
 
     /**
