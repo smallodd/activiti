@@ -41,12 +41,12 @@ public class SpringTest {
 
 
         CommonVo commonVo=new CommonVo();
-        commonVo.setApplyTitle("测试在线换审批人");
+        commonVo.setApplyTitle("测试转办任务");
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("测试人");
         commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("lgb");
-        commonVo.setModelKey("m1");
+        commonVo.setBusinessType("sys1");
+        commonVo.setModelKey("ceshi");
         Map map=new HashMap();
         map.put("param",10000);
         String processId=workTaskService.startTask(commonVo,map);
@@ -102,7 +102,7 @@ public class SpringTest {
     public void testMailSend() throws Exception {
         EmailUtil emailUtil=EmailUtil.getEmailUtil();
         emailUtil.sendEmail(
-                "13601094934@163.com",
+                "mayl@myl888.xyz",
                 "sender name",
                 "577415138@qq.com",
                 "mail subject: how are you?",

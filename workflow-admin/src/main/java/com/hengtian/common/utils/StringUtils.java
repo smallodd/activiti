@@ -68,4 +68,22 @@ public class StringUtils extends org.springframework.util.StringUtils {
     public static String join(Object[] arr, String delim) {
         return StringUtils.arrayToDelimitedString(arr, delim);
     }
+    public static String setPrefix(String proPrefix, String key) {
+        return proPrefix != null && !"".equals(proPrefix.trim())?proPrefix + "_" + key:null;
+    }
+    public static String concat(String... params) {
+
+        StringBuffer buff = new StringBuffer();
+        String[] var2 = params;
+        int var3 = params.length;
+
+        for(int var4 = 0; var4 < var3; ++var4) {
+            String str = var2[var4];
+            if(org.apache.commons.lang3.StringUtils.isNotEmpty(str)) {
+                buff.append(str);
+            }
+        }
+
+        return buff.toString();
+    }
 }
