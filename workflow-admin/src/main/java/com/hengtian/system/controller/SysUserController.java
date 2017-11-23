@@ -1,10 +1,9 @@
 package com.hengtian.system.controller;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
-import com.hengtian.common.utils.DigestUtils;
-import com.hengtian.common.utils.PageInfo;
-import com.hengtian.common.utils.StringUtils;
+import com.hengtian.common.utils.*;
 import com.hengtian.system.model.SysRole;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysUserService;
@@ -17,6 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -209,7 +211,7 @@ public class SysUserController extends BaseController{
      */
     @RequestMapping("/password")
     public String passwordManager(){
-        return "system/password";
+        return "system/password/passwordUpdate";
     }
 
     /**
@@ -236,5 +238,98 @@ public class SysUserController extends BaseController{
             return renderError("用户不存在或未登录，不可进行修改密码操作");
         }
         return renderSuccess("密码修改成功");
+    }
+
+    /**
+     * 忘记密码
+     * @return
+     */
+    @RequestMapping("/passwordForget")
+    public String passwordForget(){
+        return "system/password/passwordForget";
+    }
+
+    /**
+     * 重置密码邮箱验证
+     * @return
+     */
+    @RequestMapping("/password/mailValidate")
+    @ResponseBody
+    public Object validateMail(HttpServletRequest request,String loginName, String code){
+        if(StringUtils.isBlank(loginName) || StringUtils.isBlank(code)){
+            return renderError("登录名称或验证码为空");
+        }
+        String redisCode = RedisClusterUtil.get(loginName);
+        if(StringUtils.isBlank(redisCode)){
+            return renderError("图形验证码不存在或已过期，请重试");
+        }else if(!redisCode.equals(code.toLowerCase())){
+            return renderError("图形验证码不正确");
+        }
+        EntityWrapper<SysUser> wrapper = new EntityWrapper<SysUser>();
+        wrapper.where("login_name={0}",loginName);
+        SysUser user = sysUserService.selectOne(wrapper);
+        if(user == null || user.getId() == null){
+            return renderError("用户【"+loginName+"】不存在");
+        }
+
+        try {
+            String update_password_url = getRequestBaseUrl(request) + "/sysUser/passwordReset?loginName="+loginName+"&code="+DigestUtils.md5Hex(redisCode);
+            String subject = "工作流管理平台-修改密码";
+            String msg = "<a href='"+ update_password_url +"'>点击进入修改密码页面（有效期10分钟）</a>";
+
+            EmailUtil.getEmailUtil().sendEmail(ConfigUtil.getValue("email.send.account"), "工作流管理平台", user.getUserEmail(), subject, msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return renderError("邮箱验证失败，请联系管理员");
+        }
+
+        return renderError("邮件已发送，请进入邮箱修改");
+    }
+
+    /**
+     * 重置密码页
+     * @return
+     */
+    @RequestMapping("/passwordReset")
+    public String passwordReset(HttpServletRequest request,String loginName,String code){
+        int flag = 1;
+        if(StringUtils.isBlank(loginName) || StringUtils.isBlank(code)){//请求不合法
+            flag = -1;
+        }
+
+        String redisCode = RedisClusterUtil.get(loginName);
+        if(StringUtils.isBlank(redisCode) || !DigestUtils.md5Hex(redisCode).equals(code)){//链接已过期
+            flag = 0;
+        }
+        request.setAttribute("loginName",loginName);
+        request.setAttribute("flag",flag);
+
+        return "system/password/passwordReset";
+    }
+
+    /**
+     * 重置密码
+     * @return
+     */
+    @RequestMapping("/resetPassword")
+    @ResponseBody
+    public Object resetPassword(String loginName,String password){
+        if(StringUtils.isBlank(loginName) || StringUtils.isBlank(password)){
+            return renderError("密码为空");
+        }
+        EntityWrapper<SysUser> wrapper = new EntityWrapper<SysUser>();
+        wrapper.where("login_name={0}",loginName);
+        SysUser user = sysUserService.selectOne(wrapper);
+
+        if(user != null && user.getId() != null){
+            sysUserService.updatePwdByUserId(user.getId(),DigestUtils.md5Hex(password).toUpperCase());
+        }else{
+            return renderError("用户不存在或未登录，不可进行修改密码操作");
+        }
+        return renderSuccess("密码修改成功");
+    }
+
+    private String getRequestBaseUrl(HttpServletRequest request){
+        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
     }
 }
