@@ -18,22 +18,20 @@
 <body style="text-align:center">
 <div style="margin:20px 0;"></div>
 <div id="validateMail">
-<div class="easyui-panel" title="登录名称验证" style="width:400px;padding:30px 60px;">
+<div class="easyui-panel" title="忘记密码" style="width:400px;padding:30px 60px;">
     <form id="updatePasswordForm" method="get">
         <div style="margin-bottom:12px">
-            <div>登录名称:</div>
-            <input type="text" id="loginName" name="loginName" class="easyui-textbox" data-options="required:true,missingMessage:'登录名称不能为空',iconCls:'icon-man',iconWidth:38" placeholder="请输入登录名称" style="width:100%;height:40px;">
+            <input type="text" id="loginName" name="loginName" class="easyui-textbox" data-options="required:true,missingMessage:'登录名称不能为空',iconCls:'icon-man',iconWidth:38" placeholder="请输入登录名称/工号" style="width:100%;height:40px;">
         </div>
         <div style="margin-bottom:12px;">
-            <input type="text" name="code" class="easyui-textbox" data-options="required:true,missingMessage:'验证码不能为空'" placeholder="请输入验证码" style="width:150px;height:40px;float:left;vertical-align: middle;">
-            <img class="double-border" src="/resource/images/default_code.png" onclick="this.src='/createCaptcha?loginName='+$('#loginName').val()+'&ran='+Math.random()" style="margin-left:10px;vertical-align: middle;"/>
+            <img id="captcha" class="double-border" src="/resource/images/default_code.png" onclick="createCaptcha()" style="vertical-align: middle;height:30px;"/>
+            <input type="text" name="code" class="easyui-textbox" data-options="required:true,missingMessage:'验证码不能为空'" placeholder="请输入验证码" style="width:180px;height:40px;float:left;vertical-align: middle;">
         </div>
-
         <div>
             <a href="javascript:$('#updatePasswordForm').submit()" class="easyui-linkbutton" style="width:100%;height:32px">发送</a>
         </div>
     </form>
-    <span style="width:100%;height:32px;margin-bottom:8px;color:steelblue;font-size:5px;">提示：请填写正确的邮箱地址，点击邮箱中地址修改</span>
+    <span style="width:100%;height:32px;margin-bottom:8px;color:steelblue;font-size:5px;">提示：请填写正确的信息，点击邮箱中地址修改</span>
 </div>
 </div>
 
@@ -81,6 +79,14 @@
             }
         });
     });
+
+    function createCaptcha(){
+        if($("#loginName").val() != ""){
+            $("#captcha").attr("src",this.src='/createCaptcha?loginName='+$('#loginName').val()+'&ran='+Math.random());
+        }else{
+            parent.$.messager.alert('提示',"请填写登录名称/工号",'info');
+        }
+    }
 </script>
 </body>
 </html>
