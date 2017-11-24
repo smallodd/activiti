@@ -1,33 +1,32 @@
-package com.hengtian.common.workflow.listener;
+package com.activiti.listener;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.activiti.model.TUserTask;
+import com.activiti.service.TUserTaskService;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.hengtian.activiti.model.TUserTask;
-import com.hengtian.activiti.service.TUserTaskService;
-
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * 流程配置监听器
  * @author liu.junyang
  */
-@Component("userTaskListener")
+
 public class UserTaskListener implements TaskListener{
 	private static final long serialVersionUID = 1L;
 	
 	@Autowired
-    private RepositoryService repositoryService;
+    private RepositoryService repositoryService= (RepositoryService) SpringContextUtils.getBeanById("repositoryService");
 	@Autowired
-	private TUserTaskService tUserTaskService;
+	private TUserTaskService tUserTaskService= (TUserTaskService) SpringContextUtils.getBeanById("tUserTaskService");
 	
 	@Override
 	public void notify(DelegateTask delegateTask) {

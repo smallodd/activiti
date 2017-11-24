@@ -76,6 +76,13 @@
             title : '办理时间',
             field : 'taskCreateTime',
             sortable : true
+        }, {
+            width : '50',
+            title : '最后审批人',
+            field : 'taskAssign'
+        }, {width : '50',
+            title : '成功状态',
+            field : 'taskState'
         }]],
         toolbar : '#taskToolbar'
     });

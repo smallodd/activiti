@@ -11,10 +11,7 @@ import com.hengtian.application.model.App;
 import com.hengtian.application.service.AppService;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
-import com.hengtian.common.utils.BeanUtils;
-import com.hengtian.common.utils.ConstantUtils;
-import com.hengtian.common.utils.PageInfo;
-import com.hengtian.common.utils.StringUtils;
+import com.hengtian.common.utils.*;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import org.activiti.engine.*;
@@ -322,7 +319,6 @@ public class ActivitiServiceImpl implements ActivitiService{
 			if(StringUtils.isNotBlank(taskVo.getBusinessName())){
 				taskQuery.processVariableValueLike("applyTitle","%"+taskVo.getBusinessName()+"%");
 			}
-
 			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
 				taskQuery.processVariableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
 			}
@@ -346,6 +342,12 @@ public class ActivitiServiceImpl implements ActivitiService{
 				vo.setBusinessName(commonVo.getApplyTitle());
 				vo.setProcessOwner(commonVo.getApplyUserName());
 				vo.setBusinessKey(commonVo.getBusinessKey());
+				vo.setTaskAssign(his.getAssignee());
+				if("refuse".equals(his.getDeleteReason())) {
+					vo.setTaskState("拒绝");
+				}else if("completed".equals(his.getDeleteReason())){
+					vo.setTaskState("通过");
+				}
 				tasks.add(vo);
 			}
 			pageInfo.setRows(tasks);
@@ -387,6 +389,13 @@ public class ActivitiServiceImpl implements ActivitiService{
 				App app=appService.selectOne(wrapper);
 				vo.setAppName(app==null?"":app.getName());
 				vo.setBusinessKey(commonVo.getBusinessKey());
+				HistoricTaskInstance taskInstance=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getId()).singleResult();
+				vo.setTaskAssign(taskInstance.getAssignee());
+				if("refuse".equals(his.getDeleteReason())) {
+					vo.setTaskState("拒绝");
+				}else if(his.getEndTime()!=null){
+					vo.setTaskState("通过");
+				}
 				tasks.add(vo);
 			}
 
