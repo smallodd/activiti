@@ -7,10 +7,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
@@ -64,7 +61,8 @@ public class TVacationController extends BaseController{
 	private RepositoryService repositoryService;
 	@Autowired
 	private ActivitiService activitiService;
-	
+	@Autowired
+	ProcessEngineConfiguration processEngineConfiguration;
     /**
      * 请假列表页面
      * @return
@@ -174,8 +172,12 @@ public class TVacationController extends BaseController{
 				BpmnModel bpmnModel = repositoryService.getBpmnModel(ins.getProcessDefinitionId());
 				List<String> highLightedActivities = runtimeService.getActiveActivityIds(procInsId);
 				ProcessDiagramGenerator processDiagramGenerator = new DefaultProcessDiagramGenerator();
-				InputStream in = processDiagramGenerator.generateDiagram(bpmnModel,"png", highLightedActivities,
-						new ArrayList<String>(),"宋体","宋体","宋体",null,1.0D);
+				InputStream in = processDiagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivities, 	new ArrayList<String>(),
+						processEngineConfiguration.getLabelFontName(),
+						processEngineConfiguration.getActivityFontName(),
+						processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
+				//5.22.0
+				//InputStream in = processDiagramGenerator.generateDiagram(bpmnModel,"png", highLightedActivities,new ArrayList<String>(),"宋体","宋体","宋体",null,1.0);
 				byte[] b = new byte[1024];
 				int len = -1;
 				while ((len = in.read(b, 0, 1024)) != -1) {

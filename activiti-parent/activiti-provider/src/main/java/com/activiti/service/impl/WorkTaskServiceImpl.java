@@ -101,7 +101,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
 
        String prodefinKey= getProdefineKey(commonVo.getModelKey());
-     int version=   repositoryService.createProcessDefinitionQuery().processDefinitionKey(prodefinKey).latestVersion().singleResult().getVersion();
+        ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().processDefinitionKey(prodefinKey).latestVersion().singleResult();
+     int version=  processDefinition .getVersion();
         //commonVo.setApplyTitle(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey());
         Map<String,Object> resutl=new HashMap<>();
         Map<String,Object> variables=new HashMap<String,Object>();
@@ -654,9 +655,9 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      */
     private String getProdefineKey(String modelKey){
         try {
-            Model model=repositoryService.createModelQuery().modelKey(modelKey).singleResult();
+
             //通过部署id查询流程定义
-            ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().deploymentId(model.getDeploymentId()).latestVersion().singleResult();
+            ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().processDefinitionKey(modelKey).latestVersion().singleResult();
 
             String prodefinKey= processDefinition.getKey();
             return  prodefinKey;
@@ -920,9 +921,14 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 String activityId = tempActivity.getActivityId();
                 highLightedActivitis.add(activityId);
             }
-
+//生成流图片  5.18.0
+            InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
+                    processEngineConfiguration.getLabelFontName(),
+                    processEngineConfiguration.getActivityFontName(),
+                    processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
             //中文显示的是口口口，设置字体就好了
-            InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
+            //5.22.0
+           // InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
             //单独返回流程图，不高亮显示
             //InputStream imageStream = diagramGenerator.generatePngDiagram(bpmnModel);
             // 输出资源内容到相应对象

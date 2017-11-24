@@ -497,7 +497,13 @@ public class ActivitiController extends BaseController{
 		}
 
 		//中文显示的是口口口，设置字体就好了
-		InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
+		//生成流图片  5.18.0
+		InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
+				processEngineConfiguration.getLabelFontName(),
+				processEngineConfiguration.getActivityFontName(),
+				processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
+		//5.22.0
+		//InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
 		//单独返回流程图，不高亮显示
 //      InputStream imageStream = diagramGenerator.generatePngDiagram(bpmnModel);
 		// 输出资源内容到相应对象
