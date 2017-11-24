@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
  * </p>
  * @author junyang.liu
  */
-@Service
+@Service(value = "tUserTaskService")
 public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> implements TUserTaskService {
     
     

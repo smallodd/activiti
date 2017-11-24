@@ -86,6 +86,13 @@
             title : '结束时间',
             field : 'taskEndTime',
             sortable : true
+        }, {
+            width : '50',
+            title : '最后审批人',
+            field : 'taskAssign'
+        }, {width : '50',
+            title : '成功状态',
+            field : 'taskState'
         }]],
         toolbar : '#taskToolbar'
     });

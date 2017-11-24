@@ -141,6 +141,9 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             throw new RuntimeException("操作失败，请在工作流管理平台设置审批人后在创建任务");
         }
             for(Task task:tasks){
+                if(StringUtils.isNotBlank(task.getAssignee())){
+                    continue;
+                }
                 for(TUserTask tUserTask:tUserTasks){
                     if(StringUtils.isBlank(tUserTask.getCandidateIds())){
                         throw  new RuntimeException("操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
