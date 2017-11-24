@@ -221,12 +221,24 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
         taskService.complete(task.getId(), variables);
 
+        Object object=map.get("version");
+        int version= 0;
+        if(object!=null){
+            version= (int) object;
+        }
 
-        int version= (int) map.get("version");
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
         for(Task task1:tasks) {
             EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-            wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString()).andNew("version_={0}",version);
+            wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey());
+            if(map.get("proDefinedKey")!=null){
+                wrapper.andNew("proc_def_key={0}", map.get("proDefinedKey").toString());
+            }else{
+                wrapper.andNew("proc_def_key={0}",processInstance.getProcessDefinitionKey());
+            }
+            if(version!=0){
+                wrapper.andNew("version_={0}",version);
+            }
             TUserTask tUser=tUserTaskService.selectOne(wrapper);
             if ("candidateGroup".equals(tUser.getTaskType())) {
                 taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
@@ -405,7 +417,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     @Override
     public boolean checekBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussineeKey) {
-        if(StringUtils.isBlank(taskQueryEntity.getBussinessType())||StringUtils.isBlank(taskQueryEntity.getModelKey())){
+        if((StringUtils.isBlank(taskQueryEntity.getBussinessType())||StringUtils.isBlank(taskQueryEntity.getModelKey()))&&!"maket".equals(taskQueryEntity.getBussinessType())){
             throw new RuntimeException("参数不合法,业务系统key和modekey 必须都传:"+taskQueryEntity.toString());
         }
 
@@ -582,11 +594,13 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         if(StringUtils.isBlank(taskQueryEntity.getBussinessType())){
             throw new RuntimeException("参数不合法，业务系统key必须传值");
         }
-        historicTaskInstanceQuery.processVariableValueEquals("businessType",taskQueryEntity.getBussinessType());
+        if(!"maket".equals(taskQueryEntity.getBussinessType())) {
+            historicTaskInstanceQuery.processVariableValueEquals("businessType", taskQueryEntity.getBussinessType());
+        }
         if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
             Model model = repositoryService.createModelQuery().modelKey(taskQueryEntity.getModelKey()).singleResult();
             historicTaskInstanceQuery .deploymentId(model.getDeploymentId());
-        }else{
+        }else if((StringUtils.isNotBlank(taskQueryEntity.getBussinessType()))&&!"maket".equals(taskQueryEntity.getBussinessType())){
             List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
             historicTaskInstanceQuery.processDefinitionKeyIn(keys);
         }
@@ -602,11 +616,13 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         if(StringUtils.isBlank(taskQueryEntity.getBussinessType())){
             throw new RuntimeException("参数不合法，业务系统key必须传值");
         }
-        query.processVariableValueEquals("businessType",taskQueryEntity.getBussinessType());
+        if(!"maket".equals(taskQueryEntity.getBussinessType())) {
+            query.processVariableValueEquals("businessType", taskQueryEntity.getBussinessType());
+        }
         if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
             Model model = repositoryService.createModelQuery().modelKey(taskQueryEntity.getModelKey()).singleResult();
             query .deploymentId(model.getDeploymentId());
-        }else{
+        }else if(StringUtils.isNotBlank(taskQueryEntity.getBussinessType())&&!"maket".equals(taskQueryEntity.getBussinessType())){
             List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
             query.processDefinitionKeyIn(keys);
         }
@@ -1121,5 +1137,31 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String getLastApprover(String processId) {
+        Task task = taskService.createTaskQuery().processInstanceId(processId).singleResult();
+        if (task == null){
+            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().finished().list().get(0);
+            return taskInstance.getAssignee();
+        }else{
+            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().unfinished().list().get(0);
+            return taskInstance.getAssignee();
+        }
+    }
+
+    @Override
+    public Comment selectComment(String taskid, String userName) {
+        List<Comment> list= taskService.getTaskComments(taskid);
+        if(list==null||list.size()==0){
+            return null;
+        }
+        for(Comment comment:list){
+            if(comment.getUserId().equals(userName)){
+                return comment;
+            }
+        }
+        return null;
     }
 }

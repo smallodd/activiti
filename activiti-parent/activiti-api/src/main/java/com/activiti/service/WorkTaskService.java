@@ -275,4 +275,18 @@ public interface WorkTaskService {
      * @return
      */
     boolean transferTask(String userId, String taskId);
+
+    /**
+     * 通过流程实例id查询最后审批人
+     * @param processId
+     * @return
+     */
+    String  getLastApprover(String processId);
+
+    /**
+     * 通过任务id查询评论
+     * @param taskid
+     * @return
+     */
+    Comment selectComment(String taskid,String userName);
 }
