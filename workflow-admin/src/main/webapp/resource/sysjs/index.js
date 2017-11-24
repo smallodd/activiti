@@ -84,12 +84,14 @@ $(function() {
                 url = basePath + url;
             }
             node.openMode='iframe';
-            if (node.openMode == 'iframe') {
-                opts.content = '<iframe src="' + url + '" frameborder="0" style="border:0;width:100%;height:99.5%;"></iframe>';
-                addTab(opts);
-            } else if (url) {
-                opts.href = url;
-                addTab(opts);
+            if(url != ""){
+                if (node.openMode == 'iframe') {
+                    opts.content = '<iframe src="' + url + '" frameborder="0" style="border:0;width:100%;height:99.5%;"></iframe>';
+                    addTab(opts);
+                } else if (url) {
+                    opts.href = url;
+                    addTab(opts);
+                }
             }
         }
     });
