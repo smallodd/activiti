@@ -261,7 +261,15 @@ KISBPM.TOOLBAR = {
         },
         
         closeEditor: function(services) {
-            window.location.href = "/activiti/model/modelManager";
+            var content = '<iframe scrolling="auto" frameborder="0"  src="/activiti/model/modelManager" style="width:100%;height:100%;"></iframe>';
+            var currTab =  self.parent.$('#index_tabs').tabs('getSelected'); //获得当前tab
+            self.parent.$('#index_tabs').tabs('update', {
+                tab : currTab,
+                options : {
+                    content : content
+                }
+            });
+           // window.location.href = "/activiti/model/modelManager";
         },
         
         /**
@@ -326,7 +334,14 @@ var SaveModelCtrl = [ '$rootScope', '$scope', '$http', '$route', '$location',
 
     $scope.saveAndClose = function () {
     	$scope.save(function() {
-    		window.location.href = "/activiti/model/modelManager";
+            var content = '<iframe scrolling="auto" frameborder="0"  src="/activiti/model/modelManager" style="width:100%;height:100%;"></iframe>';
+            var currTab =  self.parent.$('#index_tabs').tabs('getSelected'); //获得当前tab
+            self.parent.$('#index_tabs').tabs('update', {
+                tab : currTab,
+                options : {
+                    content : content
+                }
+            });
     	});
     };
     $scope.save = function (successCallback) {
