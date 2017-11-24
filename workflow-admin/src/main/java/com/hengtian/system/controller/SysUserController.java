@@ -303,7 +303,7 @@ public class SysUserController extends BaseController{
         }
         request.setAttribute("loginName",loginName);
         request.setAttribute("flag",flag);
-        RedisClusterUtil.del(loginName);
+
         return "system/password/passwordReset";
     }
 
@@ -326,6 +326,7 @@ public class SysUserController extends BaseController{
         }else{
             return renderError("用户不存在或未登录，不可进行修改密码操作");
         }
+        RedisClusterUtil.del(loginName);
         return renderSuccess("密码修改成功");
     }
 
