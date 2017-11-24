@@ -1,6 +1,11 @@
 package com.hengtian.system.controller;
 
-import javax.servlet.http.HttpServletRequest;
+import com.hengtian.common.base.BaseController;
+import com.hengtian.common.operlog.SysLog;
+import com.hengtian.common.utils.CaptchaUtil;
+import com.hengtian.common.utils.DigestUtils;
+import com.hengtian.common.utils.RedisClusterUtil;
+import com.hengtian.common.utils.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.DisabledAccountException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -10,12 +15,11 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.hengtian.common.base.BaseController;
-import com.hengtian.common.operlog.SysLog;
-import com.hengtian.common.utils.DigestUtils;
-import com.hengtian.common.utils.StringUtils;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -127,8 +131,27 @@ public class MainController extends BaseController {
     /**
      * 系统图标
      */
-   @GetMapping("/icons")
+    @GetMapping("/icons")
     public String icons() {
-        return "icons";
+       return "icons";
+    }
+
+    /**
+     * 生成图形验证码
+     */
+    @RequestMapping("/createCaptcha")
+    public void createCaptcha(HttpServletResponse response,String loginName){
+        try {
+            //生成随机字串
+            String verifyCode = CaptchaUtil.generateVerifyCode(4);
+            //存入redis
+            RedisClusterUtil.set(loginName, verifyCode.toLowerCase(), 10*60);//有效期十分钟
+            String ss = RedisClusterUtil.get(loginName);
+            //生成图片
+            int w = 100, h = 40;
+            CaptchaUtil.outputImage(w, h, response.getOutputStream(), verifyCode);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
     }
 }

@@ -25,6 +25,7 @@
 		<hr class="hr20">
 		<div style="margin-top:18px;text-align: center"><span id="msg" style="color:red;"></span></div>
 	</form>
+	<a style="margin-left:280px;" href="/sysUser/passwordForget">忘记密码</a>
 </div>
 <script type="text/javascript">
 	//点击登录
