@@ -39,38 +39,41 @@ public class ModelSaveRestResource
 
   @RequestMapping(value={"/service/model/{modelId}/save"})
   @ResponseStatus(HttpStatus.OK)
-  public void saveModel(@PathVariable String modelId, @RequestBody MultiValueMap<String, String> values) { try { Model model = this.repositoryService.getModel(modelId);
-  	  System.out.println("ModelSaveRestResource.saveModel----------");
-      ObjectNode modelJson = (ObjectNode)this.objectMapper.readTree(model.getMetaInfo());
+  public void saveModel(@PathVariable String modelId, @RequestBody MultiValueMap<String, String> values) {
+      try {
+          Model model = this.repositoryService.getModel(modelId);
+          System.out.println("ModelSaveRestResource.saveModel----------");
+          ObjectNode modelJson = (ObjectNode)this.objectMapper.readTree(model.getMetaInfo());
 
-      modelJson.put("name", (String)values.getFirst("name"));
-      modelJson.put("description", (String)values.getFirst("description"));
-      model.setMetaInfo(modelJson.toString());
-      model.setName((String)values.getFirst("name"));
-      String str=(String)values.getFirst("json_xml");
-      JSONObject jsonObject=JSONObject.parseObject(str);
-      jsonObject.getJSONObject("properties").put("process_id",model.getKey());
-      model.setVersion(model.getVersion()+1);//每次修改模型，版本升级
-      this.repositoryService.saveModel(model);
+          modelJson.put("name", (String)values.getFirst("name"));
+          modelJson.put("description", (String)values.getFirst("description"));
+          model.setMetaInfo(modelJson.toString());
+          model.setName((String)values.getFirst("name"));
+          String str=(String)values.getFirst("json_xml");
+          JSONObject jsonObject=JSONObject.parseObject(str);
+          jsonObject.getJSONObject("properties").put("process_id",model.getKey());
+          model.setVersion(model.getVersion()+1);//每次修改模型，版本升级
+          this.repositoryService.saveModel(model);
 
-      this.repositoryService.addModelEditorSource(model.getId(), (jsonObject.toJSONString()).getBytes("utf-8"));
+          this.repositoryService.addModelEditorSource(model.getId(), (jsonObject.toJSONString()).getBytes("utf-8"));
 
-      InputStream svgStream = new ByteArrayInputStream(((String)values.getFirst("svg_xml")).getBytes("utf-8"));
-      TranscoderInput input = new TranscoderInput(svgStream);
+          InputStream svgStream = new ByteArrayInputStream(((String)values.getFirst("svg_xml")).getBytes("utf-8"));
+          TranscoderInput input = new TranscoderInput(svgStream);
 
-      PNGTranscoder transcoder = new PNGTranscoder();
+          PNGTranscoder transcoder = new PNGTranscoder();
 
-      ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-      TranscoderOutput output = new TranscoderOutput(outStream);
+          ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+          TranscoderOutput output = new TranscoderOutput(outStream);
 
-      transcoder.transcode(input, output);
-      byte[] result = outStream.toByteArray();
-      this.repositoryService.addModelEditorSourceExtra(model.getId(), result);
-      outStream.close();
-    } catch (Exception e)
-    {
-      LOGGER.error("Error saving model", e);
-      throw new ActivitiException("Error saving model", e);
-    }
+          transcoder.transcode(input, output);
+          byte[] result = outStream.toByteArray();
+          this.repositoryService.addModelEditorSourceExtra(model.getId(), result);
+          outStream.close();
+
+      } catch (Exception e)
+        {
+          LOGGER.error("Error saving model", e);
+          throw new ActivitiException("Error saving model", e);
+        }
   }
 }

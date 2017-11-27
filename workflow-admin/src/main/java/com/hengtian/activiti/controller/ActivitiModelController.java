@@ -86,6 +86,7 @@ public class ActivitiModelController extends BaseController {
         return pageInfo;
     }
 
+
     /**
      * 创建流程模型页面
      */
@@ -93,7 +94,14 @@ public class ActivitiModelController extends BaseController {
     public String addPage() {
         return "activiti/model/add";
     }
-
+    /**
+     * 创建流程模型页面
+     */
+    @GetMapping("/copyPage/{modelId}")
+    public String copyPage(@PathVariable String modelId, org.springframework.ui.Model model) {
+        model.addAttribute("id",modelId);
+        return "activiti/model/copy";
+    }
     /**
      * 创建模型
      */
@@ -115,7 +123,6 @@ public class ActivitiModelController extends BaseController {
             }else{
                 key = uuidGenerator.getNextId();
             }
-
             name = StringUtils.isBlank(name)?default_model_name:name.trim();
             ObjectMapper objectMapper = new ObjectMapper();
             ObjectNode editorNode = objectMapper.createObjectNode();
@@ -167,6 +174,57 @@ public class ActivitiModelController extends BaseController {
             }
         } catch (Exception e) {
             System.out.println("编辑模型失败：");
+        }
+    }
+    /**
+     * 根据模型部署流程
+     */
+    @SysLog(value="根据模型部署流程")
+    @ResponseBody
+    @RequestMapping(value = "/copy")
+    public Object copy( String id,String name,String key) {
+
+        JSONObject result = new JSONObject();
+        if(StringUtils.isNotBlank(key)){
+            Model model = repositoryService.createModelQuery().modelKey(key).singleResult();
+            if(model != null){
+                String msg = "复制模型时KEY重复";
+                logger.info(msg);
+                return renderError(msg);
+            }
+        }else{
+            key = uuidGenerator.getNextId();
+        }
+        try {
+
+            //获取原模型数据
+            Model modelData = repositoryService.getModel(id);
+            //获取原节点数据
+            ObjectNode modelNode = (ObjectNode) new ObjectMapper()
+                    .readTree(repositoryService.getModelEditorSource(modelData.getId()));
+            ObjectNode properties = (ObjectNode) modelNode.path("properties");
+            properties.put("process_id",key);
+            modelNode.set("properties",properties);
+
+            String metaInfo=modelData.getMetaInfo();
+            JSONObject jsonObject=JSONObject.fromObject(metaInfo);
+            Model model=repositoryService.newModel();
+            jsonObject.put("name",name);
+            jsonObject.put("description",jsonObject.get("description"));
+            model.setMetaInfo(jsonObject.toString());
+            model.setKey(key);
+            model.setName(name);
+            repositoryService.saveModel(model);
+
+
+            repositoryService.addModelEditorSource(model.getId(), modelNode.toString().getBytes("utf-8"));
+
+
+            logger.info("复制成功成功");
+            return renderSuccess("流程部署成功！");
+        } catch (Exception e) {
+            logger.error("部署失败",e);
+            return renderError("流程部署失败！");
         }
     }
 
