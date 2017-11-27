@@ -67,7 +67,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 
 		List<ProcessDefinition> pdList = new ArrayList<ProcessDefinition>();
 		//查询流程定义
-		if(pageInfo.getCondition().containsKey("key")){
+		if(pageInfo.getCondition() != null && pageInfo.getCondition().containsKey("key")){
 			pdList = repositoryService
 					.createProcessDefinitionQuery()
 					.orderByProcessDefinitionVersion()

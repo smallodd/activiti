@@ -1,7 +1,9 @@
 package com.hengtian.activiti.controller;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
@@ -75,8 +77,13 @@ public class TUserTaskController extends BaseController{
    
     @PostMapping("/dataGrid")
     @ResponseBody
-    public PageInfo dataGrid(ProcessDefinitionVo processDefinitionVo, Integer page, Integer rows, String sort,String order) {
+    public PageInfo dataGrid(ProcessDefinitionVo processDefinitionVo, Integer page, Integer rows, String sort,String order,String key) {
     	PageInfo pageInfo = new PageInfo(page, rows);
+		Map<String,Object> params = new HashMap<String,Object>();
+		if(StringUtils.isNotBlank(key)){
+			params.put("key",key.trim());
+		}
+		pageInfo.setCondition(params);
     	activitiService.selectProcessDefinitionDataGrid(pageInfo);
         return pageInfo;
     }
