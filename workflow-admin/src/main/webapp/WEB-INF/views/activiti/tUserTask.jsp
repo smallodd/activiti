@@ -12,8 +12,8 @@
         <form id="tUserTaskSearchForm">
             <table>
                 <tr>
-                    <th>名称:</th>
-                    <td><input name="name" placeholder="搜索条件"/></td>
+                    <th>流程定义KEY:</th>
+                    <td><input name="key" placeholder="搜索条件"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="tUserTaskSearchFun();">查询</a>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="tUserTaskCleanFun();">清空</a>
@@ -138,14 +138,14 @@ function configUserFun(id) {
  */
 function tUserTaskCleanFun() {
     $('#tUserTaskSearchForm input').val('');
-    dataGrid.datagrid('load', {});
+    tUserTaskDataGrid.datagrid('load', {});
 }
 
 /**
  * 搜索
  */
 function tUserTaskSearchFun() {
-	dataGrid.datagrid('load', $.serializeObject($('#tUserTaskSearchForm')));
+    tUserTaskDataGrid.datagrid('load', $.serializeObject($('#tUserTaskSearchForm')));
 }
 </script>
 </body>
