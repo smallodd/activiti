@@ -12,7 +12,7 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import net.sf.json.JSONObject;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
-import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.*;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.RepositoryService;
@@ -34,7 +34,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/activiti/model")
@@ -183,6 +185,25 @@ public class ActivitiModelController extends BaseController {
             byte[] bpmnBytes = null;
 
             BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
+            Collection<FlowElement> flowElements=model.getMainProcess().getFlowElements();
+
+            boolean startEvent=false;
+            boolean endEvent=false;
+            for(FlowElement flowElement:flowElements){
+                if(startEvent&&endEvent){
+                    break;
+                }
+                if(flowElement instanceof StartEvent){
+                    startEvent=true;
+                }
+                if(flowElement instanceof EndEvent){
+                    endEvent=true;
+                }
+
+            }
+            if(!startEvent||!endEvent){
+                 return renderError("开始节点和结束节点必须同时拥有才能部署！");
+            }
             bpmnBytes = new BpmnXMLConverter().convertToXML(model);
 
             String processName = modelData.getName() + ".bpmn20.xml";
