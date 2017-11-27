@@ -82,7 +82,9 @@
                 <shiro:hasPermission name="/activiti/model/detail">
                     str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-active" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="modelDetail(\'{0}\');" >详情</a>', row.id);
                 </shiro:hasPermission>
-
+                <shiro:hasPermission name="/activiti/model/copy">
+                str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-copy" data-options="plain:true,iconCls:\'fi-page-copy icon-blue\'" onclick="modelCopy(\'{0}\');" >复制</a>', row.id);
+                </shiro:hasPermission>
                 return str;
             }
         } ] ],
@@ -90,6 +92,7 @@
             $('.model-easyui-linkbutton-edit').linkbutton({text:'编辑'});
             $('.model-easyui-linkbutton-sleep').linkbutton({text:'部署'});
             $('.model-easyui-linkbutton-active').linkbutton({text:'详情'});
+            $('.model-easyui-linkbutton-copy').linkbutton({text:'复制'});
         },
         toolbar : '#modelToolbar'
     });
@@ -148,7 +151,38 @@ function modelEdit(modelId) {
         });
     }*/
 }
-
+  function  modelCopy(id){
+      parent.$.modalDialog({
+          title : '创建流程模型',
+          width : 500,
+          height : 300,
+          href : '${ctx}/activiti/model/copyPage/'+id,
+          buttons : [ {
+              text : '确定',
+              handler : function() {
+                  parent.$.modalDialog.openner_dataGrid = modelDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
+                  var f = parent.$.modalDialog.handler.find('#modelAddForm');
+                  f.submit();
+              }
+          } ]
+      });
+      <%--parent.$.messager.confirm('询问', '您是否要复制该模型流程？复制后会出现一条完全一模一样的数据！', function(b) {--%>
+          <%--if (b) {--%>
+              <%--progressLoad();--%>
+              <%--$.post('${ctx}/activiti/model/copy/'+id, {--%>
+                  <%--id : id--%>
+              <%--}, function(result) {--%>
+                  <%--if (result.success) {--%>
+                      <%--parent.$.messager.alert('提示', result.msg, 'info');--%>
+                      <%--modelDataGrid.datagrid('reload');--%>
+                  <%--} else {--%>
+                      <%--parent.$.messager.alert('错误', result.msg, 'error');--%>
+                  <%--}--%>
+                  <%--progressClose();--%>
+              <%--}, 'JSON');--%>
+          <%--}--%>
+      <%--});--%>
+  }
 /**
  * 流程部署
  * @param url
@@ -217,6 +251,7 @@ function modelCleanFun() {
 function modelSearchFun() {
     modelDataGrid.datagrid('load', $.serializeObject($('#modelSearchForm')));
 }
+
 </script>
 </body>
 </html>
