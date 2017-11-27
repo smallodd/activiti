@@ -95,12 +95,19 @@ public class ActivitiModelController extends BaseController {
         return "activiti/model/add";
     }
     /**
-     * 创建流程模型页面
+     * 复制流程页面
      */
     @GetMapping("/copyPage/{modelId}")
     public String copyPage(@PathVariable String modelId, org.springframework.ui.Model model) {
         model.addAttribute("id",modelId);
         return "activiti/model/copy";
+    }  /**
+     * 重置key页面
+     */
+    @GetMapping("/resetKey/{modelId}")
+    public String resetKey(@PathVariable String modelId, org.springframework.ui.Model model) {
+        model.addAttribute("id",modelId);
+        return "activiti/model/resetKey";
     }
     /**
      * 创建模型
@@ -177,9 +184,9 @@ public class ActivitiModelController extends BaseController {
         }
     }
     /**
-     * 根据模型部署流程
+     * 复制流程
      */
-    @SysLog(value="根据模型部署流程")
+    @SysLog(value="复制流程")
     @ResponseBody
     @RequestMapping(value = "/copy")
     public Object copy( String id,String name,String key) {
@@ -220,11 +227,54 @@ public class ActivitiModelController extends BaseController {
             repositoryService.addModelEditorSource(model.getId(), modelNode.toString().getBytes("utf-8"));
 
 
-            logger.info("复制成功成功");
-            return renderSuccess("流程部署成功！");
+            logger.info("复制成功");
+            return renderSuccess("复制成功！");
         } catch (Exception e) {
-            logger.error("部署失败",e);
-            return renderError("流程部署失败！");
+            logger.error("复制失败",e);
+            return renderError("复制失败！");
+        }
+    } /**
+     * 重置key
+     */
+    @SysLog(value="重置key")
+    @ResponseBody
+    @RequestMapping(value = "/resetKey")
+    public Object resetKey( String id,String key) {
+
+        JSONObject result = new JSONObject();
+        if(StringUtils.isNotBlank(key)){
+            Model model = repositoryService.createModelQuery().modelKey(key).singleResult();
+            if(model != null){
+                String msg = "重置key时失败，key已存在";
+                logger.info(msg);
+                return renderError(msg);
+            }
+        }else{
+            key = uuidGenerator.getNextId();
+        }
+        try {
+
+            //获取原模型数据
+            Model modelData = repositoryService.getModel(id);
+            //获取原节点数据
+            ObjectNode modelNode = (ObjectNode) new ObjectMapper()
+                    .readTree(repositoryService.getModelEditorSource(modelData.getId()));
+            ObjectNode properties = (ObjectNode) modelNode.path("properties");
+            properties.put("process_id",key);
+            modelNode.set("properties",properties);
+
+            modelData.setKey(key);
+
+            repositoryService.saveModel(modelData);
+
+            repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
+
+
+            logger.info("重置key成功");
+            return renderSuccess("重置key成功！");
+        } catch (Exception e) {
+            logger.error("重置key失败",e);
+            return renderError("重置key失败！");
         }
     }
 

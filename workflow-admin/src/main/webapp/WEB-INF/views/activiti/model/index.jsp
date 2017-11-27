@@ -64,10 +64,15 @@
             width : '140',
             title : '流程模型版本',
             field : 'version'
+        },{
+            width : '140',
+            title : '部署id',
+            field : 'deploymentId',
+            hidden:true
         }, {
             field : 'action',
             title : '操作',
-            width : 260,
+            width : 360,
             formatter : function(value, row, index) {
                 var str = '';
 
@@ -85,6 +90,11 @@
                 <shiro:hasPermission name="/activiti/model/copy">
                 str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-copy" data-options="plain:true,iconCls:\'fi-page-copy icon-blue\'" onclick="modelCopy(\'{0}\');" >复制</a>', row.id);
                 </shiro:hasPermission>
+                <shiro:hasPermission name="/activiti/model/resetKey">
+                if(row.deploymentId==null||row.deploymentId==""){
+                    str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-reset" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="modelResetKey(\'{0}\');" >重置key</a>', row.id);
+                }
+                </shiro:hasPermission>
                 return str;
             }
         } ] ],
@@ -93,6 +103,7 @@
             $('.model-easyui-linkbutton-sleep').linkbutton({text:'部署'});
             $('.model-easyui-linkbutton-active').linkbutton({text:'详情'});
             $('.model-easyui-linkbutton-copy').linkbutton({text:'复制'});
+            $('.model-easyui-linkbutton-reset').linkbutton({text:'重置key'});
         },
         toolbar : '#modelToolbar'
     });
@@ -150,6 +161,22 @@ function modelEdit(modelId) {
             iconCls : node.iconCls
         });
     }*/
+}
+    function modelResetKey(id){
+        parent.$.modalDialog({
+            title : '创建流程模型',
+            width : 500,
+            height : 300,
+            href : '${ctx}/activiti/model/resetKey/'+id,
+            buttons : [ {
+                text : '确定',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = modelDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#modelAddForm');
+                    f.submit();
+                }
+            } ]
+    });
 }
   function  modelCopy(id){
       parent.$.modalDialog({

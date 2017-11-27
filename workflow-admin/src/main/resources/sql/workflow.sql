@@ -120,7 +120,7 @@ INSERT INTO `sys_resource` VALUES ('f84a8562694e4b8ebd67f5ec39f2e4b3', '/activit
 INSERT INTO `sys_resource` VALUES ('fa5459a821b34a30b07a676faaa806ae', '/sysDepartment/add', '015', '添加', '1', '', 'ajax', '670bb8d8a8bf4e4f9046b8da2bc7d124', 1, '2017-8-12 13:55:46');
 INSERT INTO `sys_resource` VALUES ('fdf48b6775184da1999e49ceebfa7494', '/app/modelManage', 'NO201711070001', '模型管理', '1', '', NULL, '8bd73fb8c092459dbf9285b69799c9ef', 4, '2017-11-7 10:30:48');
 INSERT INTO `sys_resource` VALUES ('fe10cc8d40914ca387f2c00afd75c452', '/activiti/adminTransferTask', 'NO201711060002', '转办', '1', '', NULL, 'deee316b106e43668da06e3e11756b1a', 0, '2017-11-6 09:35:11');
-
+INSERT INTO `sys_resource` VALUES ('fbb959e2f8e04e92bf60305994ec6e48', '/activiti/model/resetKey', 'NO201711270002', '重置key', '1', '', NULL, 'f84a8562694e4b8ebd67f5ec39f2e4b3', 0, '2017-11-27 17:39:15');
 
 /*Table structure for table `sys_role` */
 
