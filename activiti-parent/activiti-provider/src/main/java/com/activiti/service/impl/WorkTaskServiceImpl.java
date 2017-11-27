@@ -891,28 +891,28 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             List<String> highLightedActivitis = new ArrayList<String>();
 
             //任务跳转时处理
-            EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-            wrapper.where("proc_def_key = {0}", definitionEntity.getKey()).andNew("version_={0}",  definitionEntity.getVersion());
-            wrapper.orderBy("order_num",true);
-            List<TUserTask> userTaskList= tUserTaskService.selectList(wrapper);
-            Map<String,Integer> taskMap = new HashMap<String,Integer>();
-
-            if(CollectionUtils.isNotEmpty(userTaskList)){
-                Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
-                for (TUserTask u:userTaskList) {
-                    taskMap.put(u.getTaskDefKey(),1);
-                    if(u.getTaskDefKey().equals(task.getTaskDefinitionKey())){
-                        break;
-                    }
-                }
-                Iterator<HistoricActivityInstance> it = highLightedActivitList.iterator();
-                while(it.hasNext()){
-                    HistoricActivityInstance hai = it.next();
-                    if(!taskMap.containsKey(hai.getActivityId()) && "userTask".equals(hai.getActivityType())){
-                        it.remove();
-                    }
-                }
-            }
+//            EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
+//            wrapper.where("proc_def_key = {0}", definitionEntity.getKey()).andNew("version_={0}",  definitionEntity.getVersion());
+//            wrapper.orderBy("order_num",true);
+//            List<TUserTask> userTaskList= tUserTaskService.selectList(wrapper);
+//            Map<String,Integer> taskMap = new HashMap<String,Integer>();
+//
+//            if(CollectionUtils.isNotEmpty(userTaskList)){
+//                Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+//                for (TUserTask u:userTaskList) {
+//                    taskMap.put(u.getTaskDefKey(),1);
+//                    if(u.getTaskDefKey().equals(task.getTaskDefinitionKey())){
+//                        break;
+//                    }
+//                }
+//                Iterator<HistoricActivityInstance> it = highLightedActivitList.iterator();
+//                while(it.hasNext()){
+//                    HistoricActivityInstance hai = it.next();
+//                    if(!taskMap.containsKey(hai.getActivityId()) && "userTask".equals(hai.getActivityType())){
+//                        it.remove();
+//                    }
+//                }
+//            }
 
             //高亮线路id集合
             List<String> highLightedFlows = getHighLightedFlows(definitionEntity,highLightedActivitList);
