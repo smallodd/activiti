@@ -64,12 +64,23 @@ public class ActivitiServiceImpl implements ActivitiService{
 	@Override
 	public void selectProcessDefinitionDataGrid(PageInfo pageInfo) {
 		List<ProcessDefinitionVo> list = new ArrayList<ProcessDefinitionVo>();
+
+		List<ProcessDefinition> pdList = new ArrayList<ProcessDefinition>();
 		//查询流程定义
-		List<ProcessDefinition> pdList = repositoryService
-				.createProcessDefinitionQuery()
-				.orderByProcessDefinitionVersion()
-				.asc().latestVersion()
-				.listPage(pageInfo.getFrom(), pageInfo.getSize());
+		if(pageInfo.getCondition().containsKey("key")){
+			pdList = repositoryService
+					.createProcessDefinitionQuery()
+					.orderByProcessDefinitionVersion()
+					.asc().latestVersion().processDefinitionKeyLike("%"+pageInfo.getCondition().get("key")+"%")
+					.listPage(pageInfo.getFrom(), pageInfo.getSize());
+		}else{
+			pdList = repositoryService
+					.createProcessDefinitionQuery()
+					.orderByProcessDefinitionVersion()
+					.asc().latestVersion()
+					.listPage(pageInfo.getFrom(), pageInfo.getSize());
+		}
+
 		//过滤出最新版本
 		Map<String, ProcessDefinition> map = new LinkedHashMap<String, ProcessDefinition>();
         if(pdList!=null && pdList.size()>0){
