@@ -8,10 +8,17 @@ import com.hengtian.application.model.App;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppService;
 import com.hengtian.application.vo.AppVo;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.TaskService;
+import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 系统APP
@@ -23,7 +30,8 @@ public class AppServiceImpl extends ServiceImpl<AppDao, App> implements AppServi
     @Autowired private AppDao appDao;
 
 	@Autowired private AppModelDao appModelDao;
-
+	@Autowired
+	private RepositoryService repositoryService;
 	/**
 	 * 查询系统应用
 	 */
@@ -41,8 +49,21 @@ public class AppServiceImpl extends ServiceImpl<AppDao, App> implements AppServi
 	 * @return
 	 */
 	@Override
-	public List<String> findModelKeyListByAppId(String id){
-		return appDao.findModelKeyListByAppId(id);
+	public Map findModelKeyListByAppId(String id){
+		List<String> list=appDao.findModelKeyListByAppId(id);
+
+		Map map=new HashMap();
+		if(list!=null&&list.size()>0) {
+			for (String key : list) {
+				Model model=repositoryService.createModelQuery().deployed().modelKey(key).singleResult();
+				if (model == null) {
+					map.put(key, false);
+				} else {
+					map.put(key, true);
+				}
+			}
+		}
+		return map;
 	}
 
 	@Override

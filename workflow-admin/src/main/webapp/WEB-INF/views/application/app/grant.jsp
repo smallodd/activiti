@@ -41,17 +41,26 @@
                 $.post( '${ctx}/app/findModelKeyListByAppId', {
                     id : '${id}'
                 }, function(result) {
-                    var ids;
+                    debugger;
+                    var maps;
                     if (result.success == true && result.obj != undefined) {
-                        ids = $.stringToList(result.obj + '');
+                        maps=result.obj;
+
                     }
-                    if (ids.length > 0) {
-                        for ( var i = 0; i < ids.length; i++) {
-                            if (modelTree.tree('find', ids[i])) {
-                                modelTree.tree('check', modelTree.tree('find', ids[i]).target);
+                        for ( var key in maps) {
+                            var flag=maps[key];
+
+                            if (modelTree.tree('find', key)) {
+                                modelTree.tree('check', modelTree.tree('find', key).target);
+                               $(modelTree.tree('find', key)).attr("flag",flag);
+                                if(flag) {
+                                    $(modelTree.tree('find', key).target).unbind().click(function () {
+                                        return false;
+                                    });
+                                }
                             }
                         }
-                    }
+
                 }, 'json');
                 progressClose();
             },
@@ -92,7 +101,9 @@
     function checkAll() {
         var nodes = modelTree.tree('getChecked', 'unchecked');
         if (nodes && nodes.length > 0) {
+
             for ( var i = 0; i < nodes.length; i++) {
+
                 modelTree.tree('check', nodes[i].target);
             }
         }
@@ -100,7 +111,12 @@
     function uncheckAll() {
         var nodes = modelTree.tree('getChecked');
         if (nodes && nodes.length > 0) {
+            debugger;
             for ( var i = 0; i < nodes.length; i++) {
+                var flag=  nodes[i].flag;
+                if(flag){
+                    continue;
+                }
                 modelTree.tree('uncheck', nodes[i].target);
             }
         }
@@ -115,6 +131,10 @@
         }
         if (checknodes && checknodes.length > 0) {
             for ( var i = 0; i < checknodes.length; i++) {
+                var flag=  checknodes[i].flag;
+                if(flag){
+                    continue;
+                }
                 modelTree.tree('uncheck', checknodes[i].target);
             }
         }

@@ -25,8 +25,9 @@
         SELECT
         tam.model_key AS modelKey
         FROM
-        t_app ta
-        LEFT JOIN t_app_model tam ON ta.key = tam.app_key
+        t_app_model tam
+
+        LEFT JOIN   t_app ta ON ta.key = tam.app_key
         WHERE
         ta.id = #{id}
     </select>

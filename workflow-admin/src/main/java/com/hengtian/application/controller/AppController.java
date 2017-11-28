@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/app")
@@ -194,7 +195,7 @@ public class AppController extends BaseController {
     @RequestMapping("/findModelKeyListByAppId")
     @ResponseBody
     public Object findModelKeyListByAppId(String id) {
-        List<String> resources = appService.findModelKeyListByAppId(id);
+        Map resources = appService.findModelKeyListByAppId(id);
         return renderSuccess(resources);
     }
 

@@ -166,7 +166,7 @@
         }
 
         parent.$.modalDialog({
-            title : '授权',
+            title : '授权<span style="color: red">【注:已部署的流程不可再去掉勾选】</span>',
             width : 500,
             height : 500,
             href : '${ctx}/app/grantPage?id=' + id,

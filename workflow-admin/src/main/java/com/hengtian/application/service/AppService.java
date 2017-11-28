@@ -5,6 +5,7 @@ import com.hengtian.application.model.App;
 import com.hengtian.application.vo.AppVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 系统APP
@@ -21,7 +22,7 @@ public interface AppService extends IService<App> {
 	 * 授权页面页面根据应用查询模型
 	 * @return
 	 */
-	List<String> findModelKeyListByAppId(String id);
+	Map findModelKeyListByAppId(String id);
 
 	/**
 	 * 授权
