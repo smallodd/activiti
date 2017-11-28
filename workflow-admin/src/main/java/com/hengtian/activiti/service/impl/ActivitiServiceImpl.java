@@ -400,7 +400,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 				App app=appService.selectOne(wrapper);
 				vo.setAppName(app==null?"":app.getName());
 				vo.setBusinessKey(commonVo.getBusinessKey());
-				HistoricTaskInstance taskInstance=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getId()).singleResult();
+				HistoricTaskInstance taskInstance=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getId()).orderByHistoricTaskInstanceEndTime().desc().finished().list().get(0);
 				vo.setTaskAssign(taskInstance.getAssignee());
 				if("refuse".equals(his.getDeleteReason())) {
 					vo.setTaskState("拒绝");

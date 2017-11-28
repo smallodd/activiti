@@ -97,7 +97,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         AppModel appModelResult=appModelService.selectOne(wrapperApp);
 
         if(appModelResult==null){
-            throw new WorkFlowException("系统键值："+commonVo.getBusinessKey()+"对应的modelkey:"+commonVo.getModelKey());
+            throw new WorkFlowException("系统键值：【"+commonVo.getBusinessType()+"】对应的modelkey:【"+commonVo.getModelKey()+"】关系不存在");
         }
 
        String prodefinKey= getProdefineKey(commonVo.getModelKey());
