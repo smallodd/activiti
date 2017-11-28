@@ -292,7 +292,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             count=query.count();
         }
         PageInfo<Task> pageInfo=new PageInfo<>();
-        List<Task> list=query.orderByTaskCreateTime().desc().listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+        List<Task> list=query.orderByTaskCreateTime().desc().listPage((startPage-1)*pageSize,pageSize);
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         logger.info("------------------------通过用户相关信息查询待审批任务结束------------------------");
@@ -309,7 +309,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
        }else if(type==0){
            query.unfinished();
        }
-        return query.taskAssignee(userId).listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+        return query.taskAssignee(userId).listPage((startPage-1)*pageSize,pageSize);
     }
 
 
@@ -406,7 +406,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         HistoricTaskInstanceQuery query=createHistoricTaskInstanceQuery(taskQueryEntity);
-        List<HistoricTaskInstance> list= query.taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+        List<HistoricTaskInstance> list= query.taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,pageSize);
         long count=query.taskAssigneeLike("%"+userId+"%").taskDeleteReason("refused").count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
@@ -509,7 +509,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         List<String> keys=getProcessKeyByBussnessType(bussinessType);
         PageInfo<Task> pageInfo=new PageInfo<>();
 
-        List<Task> list= taskService.createTaskQuery().processDefinitionKeyIn(keys).listPage((startPage-1)*pageSize,(startPage-1)*pageSize+pageSize);
+        List<Task> list= taskService.createTaskQuery().processDefinitionKeyIn(keys).listPage((startPage-1)*pageSize,pageSize);
         long count =taskService.createTaskQuery().processDefinitionKeyIn(keys).count();
         pageInfo.setTotal(count);
         pageInfo.setList(list);
@@ -523,7 +523,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         logger.info("-------------查询所有通过的任务开始--------------");
         List<String> keys=getProcessKeyByBussnessType(bussinessType);
         int startColum=(startPage-1)*pageSize;
-        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().processDefinitionKeyIn(keys).finished().notDeleted().listPage(startColum,startColum+pageSize);
+        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().processDefinitionKeyIn(keys).finished().notDeleted().listPage(startColum,pageSize);
         long count=historyService.createHistoricProcessInstanceQuery().processDefinitionKeyIn(keys).finished().notDeleted().count();
         PageInfo pageInfo=new PageInfo();
         pageInfo.setList(list);
@@ -536,7 +536,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     public PageInfo<HistoricProcessInstance> selectAllRefuseApprove(int startPage, int pageSize,String bussinessType) {
         int startColum=(startPage-1)*pageSize;
         List<String> keys=getProcessKeyByBussnessType(bussinessType);
-        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().processDefinitionKeyIn(keys).finished().deleted().listPage(startColum,startColum+pageSize);
+        List<HistoricProcessInstance> list=historyService.createHistoricProcessInstanceQuery().processDefinitionKeyIn(keys).finished().deleted().listPage(startColum,pageSize);
         long count=historyService.createHistoricProcessInstanceQuery().processDefinitionKeyIn(keys).finished().deleted().count();
         PageInfo pageInfo=new PageInfo();
         pageInfo.setList(list);
