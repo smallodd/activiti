@@ -25,7 +25,7 @@ public interface WorkTaskService {
      * @param paramMap   流程定义中线上的参数，键是线上的键
      * @return  返回部署的任务id
      */
-    String startTask(CommonVo commonVo,Map<String,Object> paramMap);
+    String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException;
     /**
      * 通过用户相关信息查询待审批任务
      * @param userId  用户信息 一般是id

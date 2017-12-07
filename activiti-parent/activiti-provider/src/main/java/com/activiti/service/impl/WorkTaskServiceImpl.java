@@ -1,5 +1,6 @@
 package com.activiti.service.impl;
 
+import com.activiti.common.CodeConts;
 import com.activiti.common.EmailUtil;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTaskVo;
@@ -84,11 +85,11 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     SysUserService sysUserService;
 
 
-    public String startTask(CommonVo commonVo,Map<String,Object> paramMap) {
+    public String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException {
 
         logger.info("startTask开启任务开始，参数"+commonVo.toString());
         if(StringUtils.isBlank(commonVo.getApplyTitle())||StringUtils.isBlank(commonVo.getApplyUserId())||StringUtils.isBlank(commonVo.getApplyUserName())||StringUtils.isBlank(commonVo.getBusinessKey())||StringUtils.isBlank(commonVo.getBusinessType())||StringUtils.isBlank(commonVo.getModelKey())){
-            throw new IllegalArgumentException("参数不合法，请检查参数是否正确,"+commonVo.toString());
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，请检查参数是否正确,"+commonVo.toString());
         }
         //通过系统key和model key查询系统是否有流程
         EntityWrapper<AppModel> wrapperApp=new EntityWrapper();
@@ -97,9 +98,15 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         AppModel appModelResult=appModelService.selectOne(wrapperApp);
 
         if(appModelResult==null){
-            throw new WorkFlowException("系统键值：【"+commonVo.getBusinessType()+"】对应的modelkey:【"+commonVo.getModelKey()+"】关系不存在");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_NOT_RELATION,"系统键值：【"+commonVo.getBusinessType()+"】对应的modelkey:【"+commonVo.getModelKey()+"】关系不存在");
         }
-
+        TaskQueryEntity taskQueryEntity=new TaskQueryEntity();
+        taskQueryEntity.setModelKey(commonVo.getModelKey());
+        taskQueryEntity.setBussinessType(commonVo.getBusinessType());
+        boolean isInFlow=checekBunessKeyIsInFlow(taskQueryEntity,commonVo.getBusinessKey());
+        if(isInFlow){
+            throw  new WorkFlowException(CodeConts.WORK_FLOW_BUSSINESS_IN_FLOW,"系统【"+commonVo.getBusinessType()+"】在模型【"+commonVo.getModelKey()+"】中的业务主键【"+commonVo.getBusinessKey()+"】还在流程中，请勿重复提交");
+        }
        String prodefinKey= getProdefineKey(commonVo.getModelKey());
         ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().processDefinitionKey(prodefinKey).latestVersion().singleResult();
      int version=  processDefinition .getVersion();
@@ -112,14 +119,14 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             try {
                 variables= org.apache.commons.beanutils.BeanUtils.describe(commonVo);
             } catch (Exception e1) {
-                throw new IllegalArgumentException("参数不合法，请检查参数是否正确,"+commonVo.toString());
+                throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，请检查参数是否正确,"+commonVo.toString());
             }
         }
         resutl.putAll(variables);
         Set<String> set=paramMap.keySet();
         for(String key: set){
             if(resutl.containsKey(key)){
-                throw new RuntimeException("请不要设置重复的属性和commonVo中有的属性");
+                throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_REPART,"请不要设置重复的属性和commonVo中有的属性");
             }
         }
         resutl.putAll(paramMap);
@@ -139,7 +146,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
 
         if(tUserTasks==null||tasks.size()==0){
-            throw new RuntimeException("操作失败，请在工作流管理平台设置审批人后在创建任务");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
         }
             for(Task task:tasks){
                 if(StringUtils.isNotBlank(task.getAssignee())){
@@ -147,7 +154,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 }
                 for(TUserTask tUserTask:tUserTasks){
                     if(StringUtils.isBlank(tUserTask.getCandidateIds())){
-                        throw  new RuntimeException("操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
+                        throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
                     }
                     if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
                         if ("candidateGroup".equals(tUserTask.getTaskType())) {
@@ -174,7 +181,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                                             "您有一个待审批邮件待处理",
                                             commonVo.getApplyUserName() + "填写一个审批申请，标题为：" + commonVo.getApplyTitle() + ",请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    throw new WorkFlowException(CodeConts.WORK_FLOW_SEND_FAIL,"邮件发送失败");
                                 }
                             }
                         }
@@ -190,7 +197,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssignee(currentUser).singleResult();
         if(task==null){
-            throw new WorkFlowException("当前用户没有该任务，此任务可能已完成或用户主键传的不正确");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_ERROR_TASK,"当前用户没有该任务，此任务可能已完成或非法请求");
         }
         String taskId = task.getId();
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
@@ -210,7 +217,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             runtimeService.deleteProcessInstance(processInstanceId,"refuse");
             return processInstanceId;
         }else{
-            throw  new WorkFlowException("参数不合法，commentResult 请传 2 审批通过 或 3 审批拒绝");
+            throw  new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，commentResult 请传 2 审批通过 或 3 审批拒绝");
         }
 
         // 完成委派任务
@@ -423,8 +430,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
 
 
-        Task task=createTaskQuqery(taskQueryEntity).processInstanceBusinessKey(bussineeKey).singleResult();
-        if(task!=null){
+        List<Task> tasks=createTaskQuqery(taskQueryEntity).processInstanceBusinessKey(bussineeKey).orderByTaskCreateTime().desc().listPage(0,1);
+        if(tasks!=null&&tasks.size()>0&&tasks.get(0)!=null){
             return  true;
         }
         return false;
@@ -841,7 +848,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @param  processInstanceId  流程实例Id信息
      * @return
      */
-    public String getGatewayCondition(String gatewayId, String processInstanceId) {
+    private String getGatewayCondition(String gatewayId, String processInstanceId) {
         Execution execution = runtimeService.createExecutionQuery().processInstanceId(processInstanceId).singleResult();
         Object object= runtimeService.getVariable(execution.getId(), gatewayId);
         return object==null? "":object.toString();
@@ -854,7 +861,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @param  value  el表达式传入值信息
      * @return
      */
-    public boolean isCondition(String key, String el, String value) {
+    private boolean isCondition(String key, String el, String value) {
         ExpressionFactory factory = new ExpressionFactoryImpl();
         SimpleContext context = new SimpleContext();
         context.setVariable(key, factory.createValueExpression(value, String.class));
