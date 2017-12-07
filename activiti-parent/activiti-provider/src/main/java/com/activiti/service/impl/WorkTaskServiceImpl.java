@@ -406,8 +406,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         HistoricTaskInstanceQuery query=createHistoricTaskInstanceQuery(taskQueryEntity);
-        List<HistoricTaskInstance> list= query.taskAssignee(userId).taskDeleteReason("refused").listPage((startPage-1)*pageSize,pageSize);
-        long count=query.taskAssigneeLike("%"+userId+"%").taskDeleteReason("refused").count();
+        List<HistoricTaskInstance> list= query.taskAssignee(userId).taskDeleteReason("refuse").listPage((startPage-1)*pageSize,pageSize);
+        long count=query.taskAssigneeLike("%"+userId+"%").taskDeleteReason("refuse").count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         logger.info("----------------------查询用户审批拒绝的信息列表结束----------------");
@@ -599,8 +599,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             historicTaskInstanceQuery.processVariableValueEquals("businessType", taskQueryEntity.getBussinessType());
         }
         if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
-            Model model = repositoryService.createModelQuery().modelKey(taskQueryEntity.getModelKey()).singleResult();
-            historicTaskInstanceQuery .deploymentId(model.getDeploymentId());
+
+            historicTaskInstanceQuery.processDefinitionKey(taskQueryEntity.getModelKey());
         }else if((StringUtils.isNotBlank(taskQueryEntity.getBussinessType()))&&!"maket".equals(taskQueryEntity.getBussinessType())){
             List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
             historicTaskInstanceQuery.processDefinitionKeyIn(keys);
