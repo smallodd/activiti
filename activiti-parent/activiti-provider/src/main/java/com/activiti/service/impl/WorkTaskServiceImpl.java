@@ -1163,7 +1163,9 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
     @Override
     public Comment selectComment(String taskid, String userName) {
-        List<Comment> list= taskService.getTaskComments(taskid);
+        List<Comment> list= taskService.getTaskComments(taskid,"2");
+        List<Comment> list1=taskService.getTaskComments(taskid,"3");
+        list.addAll(list1);
         if(list==null||list.size()==0){
             return null;
         }
