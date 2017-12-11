@@ -1041,8 +1041,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 }
             }
         }
-        SysUser user = new SysUser();//用户临时存储对象
-        EntityWrapper<SysUser> wrapper = new EntityWrapper<SysUser>(user);
+
         List<HistoryTaskVo> taskList = new ArrayList<HistoryTaskVo>();
         ProcessInstance pi = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         int isFinished = (pi == null)?1:0;
@@ -1052,10 +1051,8 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
             ht.setTaskId(hti.getId());
             //审核人
-            user.setId(hti.getAssignee());
-            wrapper.isNotNull("id");
-            user = sysUserService.selectOne(wrapper);
-            ht.setOperator(user.getLoginName());
+
+            ht.setOperator(hti.getAssignee());
             ht.setIsLastApprove(isFinished);
             if(1==isFinished){
                 isFinished = 0;
