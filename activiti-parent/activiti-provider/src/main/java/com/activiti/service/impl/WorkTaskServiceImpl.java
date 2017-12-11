@@ -1102,7 +1102,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         if(StringUtils.isBlank(appKey)){
             return null;
         }
-        String sql = "SELECT arm.* FROM `act_re_model` AS arm,`t_app_model` AS tam,`t_app` AS ta WHERE ta.KEY='"+appKey+"' AND ta.KEY=tam.APP_KEY AND arm.KEY_=tam.MODEL_KEY ";
+        String sql = "SELECT arm.* FROM `ACT_RE_MODEL` AS arm,`t_app_model` AS tam,`t_app` AS ta WHERE ta.KEY='"+appKey+"' AND ta.KEY=tam.APP_KEY AND arm.KEY_=tam.MODEL_KEY ";
         return repositoryService.createNativeModelQuery().sql(sql).list();
     }
 
