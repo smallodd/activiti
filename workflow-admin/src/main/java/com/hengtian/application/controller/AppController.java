@@ -162,6 +162,7 @@ public class AppController extends BaseController {
             return renderError("ID为空，删除失败！");
         }
         String sql = "SELECT COUNT(*) FROM `ACT_RE_MODEL` AS arm,`t_app_model` AS tam,`t_app` AS ta WHERE ta.ID='"+id+"' AND ta.KEY=tam.APP_KEY AND arm.KEY_=tam.MODEL_KEY ";
+        sql = "SELECT COUNT(*) FROM `t_app` AS ta,`t_app_model` AS tam WHERE ta.ID='"+id+"' AND ta.KEY=tam.APP_KEY ";
         long count = repositoryService.createNativeModelQuery().sql(sql).count();
 
         if(count == 0){
