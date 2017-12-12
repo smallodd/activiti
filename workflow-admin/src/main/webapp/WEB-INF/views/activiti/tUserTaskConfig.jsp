@@ -91,7 +91,9 @@
     
     //配置人员
     function configUser(datas){
-    	var taskType = $("#"+datas).val();
+
+    	var taskType = $(document.getElementById(datas)).val();
+
     	if(taskType==="assignee"){
     	    $("#taskAssigneeDialog").dialog({
     	        title : '选择受理人',
