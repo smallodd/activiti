@@ -189,6 +189,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 		try{
 
 			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+
 			String processInstanceId = task.getProcessInstanceId();
 			ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 			//添加意见
@@ -223,12 +224,11 @@ public class ActivitiServiceImpl implements ActivitiService{
 			Map map=taskService.getVariables(taskId);
 			//完成正常办理任务
 			taskService.complete(task.getId(), variables);
-			ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(map.get("proDefinedKey").toString()).singleResult();
-
+			int version= (int) map.get("version");
 			List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
 			for(Task task1:tasks) {
 				EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-				wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString()).andNew("version_={0}",processDefinition.getVersion());
+				wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString()).andNew("version_={0}",version);
 				TUserTask tUser=tUserTaskService.selectOne(wrapper);
 				if ("candidateGroup".equals(tUser.getTaskType())) {
 					taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
