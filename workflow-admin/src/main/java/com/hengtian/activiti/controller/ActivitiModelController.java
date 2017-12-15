@@ -21,6 +21,8 @@ import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/activiti/model")
@@ -128,7 +127,8 @@ public class ActivitiModelController extends BaseController {
                     return result;
                 }
             }else{
-                key = uuidGenerator.getNextId().replace("-", "");
+
+                key = RandomStringUtils.randomAlphabetic(3)+new Date().getTime()+ RandomStringUtils.randomNumeric(5);
             }
             name = StringUtils.isBlank(name)?default_model_name:name.trim();
             ObjectMapper objectMapper = new ObjectMapper();
