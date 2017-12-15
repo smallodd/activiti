@@ -18,7 +18,8 @@ public class StringEscapeEditor extends PropertyEditorSupport {
         if (text == null) {
             setValue(null);
         } else {
-            setValue(HtmlUtils.htmlEscape(text));
+           //setValue(HtmlUtils.htmlEscape(text));
+            setValue(text);
         }
     }
 
