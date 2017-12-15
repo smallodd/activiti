@@ -128,7 +128,7 @@ public class ActivitiModelController extends BaseController {
                     return result;
                 }
             }else{
-                key = uuidGenerator.getNextId();
+                key = uuidGenerator.getNextId().replace("-", "");
             }
             name = StringUtils.isBlank(name)?default_model_name:name.trim();
             ObjectMapper objectMapper = new ObjectMapper();
