@@ -137,7 +137,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			taskQuery.taskAssigneeLike("%"+taskVo.getTaskAssign()+"%");
 		}
 		if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
-			taskQuery.processVariableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
+			taskQuery.processVariableValueLike("applyUserName","%"+taskVo.getProcessOwner()+"%");
 		}
 		pageInfo.setTotal(taskQuery.list().size());
 		List<Task> taskList = taskQuery.orderByTaskCreateTime().desc()
