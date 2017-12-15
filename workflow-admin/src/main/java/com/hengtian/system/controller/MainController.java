@@ -68,6 +68,9 @@ public class MainController extends BaseController {
         if (StringUtils.isBlank(loginPwd)) {
         	return renderError("密码不能为空");
         }
+        if (SecurityUtils.getSubject().isAuthenticated()) {
+            return renderError("浏览器已登录请退出后再登陆！");
+        }
         Subject user = SecurityUtils.getSubject();
         UsernamePasswordToken token = new UsernamePasswordToken(loginName, DigestUtils.md5Hex(loginPwd).toUpperCase());
         try {
