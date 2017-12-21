@@ -81,6 +81,8 @@ public class ActivitiModelController extends BaseController {
     public PageInfo dataGrid(Integer page, Integer rows, String sort, String order,String name) {
         name = StringUtils.isBlank(name)?null:name.trim();
         PageInfo pageInfo = new PageInfo(page, rows);
+        pageInfo.setOrder(order);
+        pageInfo.setSort(sort);
         activitiModelService.selectActivitiModelDataGrid(pageInfo,name);
         return pageInfo;
     }

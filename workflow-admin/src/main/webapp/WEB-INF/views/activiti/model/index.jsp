@@ -50,8 +50,8 @@
         columns : [ [ {
             width : '200',
             title : '流程模型ID',
-            field : 'id',
-            sortable : true
+            field : 'id'
+
         }, {
             width : '200',
             title : '流程模型名称',
@@ -64,6 +64,14 @@
             width : '140',
             title : '流程模型版本',
             field : 'version'
+        },{
+                width : '140',
+                title : '创建时间',
+                field : 'createTime',
+                formatter:function(value,row,index){
+                    var unixTimestamp = new Date(value);
+                    return unixTimestamp.toLocaleString();
+                }
         },{
             width : '140',
             title : '部署id',

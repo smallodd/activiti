@@ -26,10 +26,18 @@ public class TaskQueryEntity implements Serializable {
 
     }
 
+    /**
+     *
+     * @return  业务系统key
+     */
     public  String getBussinessType() {
         return bussinessType;
     }
 
+    /**
+     *
+     * @return 模型key
+     */
     public  String getModelKey() {
         return modelKey;
     }

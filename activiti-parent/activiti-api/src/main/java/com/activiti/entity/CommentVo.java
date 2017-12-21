@@ -35,7 +35,10 @@ public class CommentVo implements Serializable{
 	 */
 	private String commentTime;
 
-	
+	/**
+	 *
+	 * @return  审批人
+	 */
 	public String getCommentUser() {
 		return commentUser;
 	}
@@ -44,6 +47,10 @@ public class CommentVo implements Serializable{
 		this.commentUser = commentUser;
 	}
 
+	/**
+	 *
+	 * @return 审批意见
+	 */
 	public String getCommentContent() {
 		return commentContent;
 	}
@@ -52,6 +59,10 @@ public class CommentVo implements Serializable{
 		this.commentContent = commentContent;
 	}
 
+	/**
+	 *
+	 * @return  审批时间
+	 */
 	public String getCommentTime() {
 		return commentTime;
 	}
@@ -59,7 +70,13 @@ public class CommentVo implements Serializable{
 	public void setCommentTime(String commentTime) {
 		this.commentTime = commentTime;
 	}
-	
+
+	/**
+	 *
+	 * @return  审批结果
+	 *              2：通过
+	 *              3：拒绝
+	 */
 	public String getCommentResult() {
 		return commentResult;
 	}
@@ -68,6 +85,10 @@ public class CommentVo implements Serializable{
 		this.commentResult = commentResult;
 	}
 
+	/**
+	 *
+	 * @return  任务节点
+	 */
 	public String getCommentTask() {
 		return commentTask;
 	}

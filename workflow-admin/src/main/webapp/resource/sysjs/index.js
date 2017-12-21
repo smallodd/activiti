@@ -196,11 +196,18 @@ function refreshTab() {
 
 function logout(){
     $.messager.confirm('提示','确定要退出?',function(r){
+
+        if(!sessionStorage.getItem("isLogin")){
+            window.location.href=basePath+'/';
+            return;
+        }
         if (r){
             progressLoad();
             $.post(basePath+'/logout?'+new Date().getTime(), function(result) {
+
                 if(result.success){
                     progressClose();
+                    sessionStorage.setItem("isLogin",false);
                     window.location.href=basePath+'/';
                 }
             }, 'json');

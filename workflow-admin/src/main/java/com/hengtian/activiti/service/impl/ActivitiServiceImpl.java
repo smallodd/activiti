@@ -108,6 +108,12 @@ public class ActivitiServiceImpl implements ActivitiService{
                 list.add(vo);
     		}
         }
+        Collections.sort(list, new Comparator<ProcessDefinitionVo>() {
+			@Override
+			public int compare(ProcessDefinitionVo o1, ProcessDefinitionVo o2) {
+				return o2.getDeployTime().compareTo(o1.getDeployTime());
+			}
+		});
         pageInfo.setRows(list);
         //查询流程定义
         long count= repositoryService.createProcessDefinitionQuery().count();
@@ -166,6 +172,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			//vo.setProcessDefinitionKey(processDefinitionKey);
 			list.add(vo);
 		}
+
 		pageInfo.setRows(list);
 
 	}
@@ -331,7 +338,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 				taskQuery.processVariableValueLike("applyTitle","%"+taskVo.getBusinessName()+"%");
 			}
 			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
-				taskQuery.processVariableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
+				taskQuery.processVariableValueLike("applyUserName","%"+taskVo.getProcessOwner()+"%");
 			}
 			pageInfo.setTotal(taskQuery.list().size());
 			List<HistoricTaskInstance> list= taskQuery
@@ -342,7 +349,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 					continue;
 				}
 				TaskVo vo = new TaskVo();
-				vo.setTaskCreateTime(his.getCreateTime());
+				vo.setTaskCreateTime(his.getEndTime());
 				vo.setTaskName(his.getName());
 				List<HistoricVariableInstance> results=historyService.createHistoricVariableInstanceQuery().processInstanceId(his.getProcessInstanceId()).list();
 				Map<String,Object> map=new HashMap<>();
@@ -353,10 +360,16 @@ public class ActivitiServiceImpl implements ActivitiService{
 				vo.setBusinessName(commonVo.getApplyTitle());
 				vo.setProcessOwner(commonVo.getApplyUserName());
 				vo.setBusinessKey(commonVo.getBusinessKey());
-				vo.setTaskAssign(his.getAssignee());
+				HistoricTaskInstanceQuery historicTaskInstanceQuery=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getProcessInstanceId()).orderByTaskCreateTime().desc();
+
+
 				if("refuse".equals(his.getDeleteReason())) {
+					HistoricTaskInstance historicTaskInstance=historicTaskInstanceQuery.taskDeleteReason("refuse").list().get(0);
+					vo.setTaskAssign(historicTaskInstance.getAssignee());
 					vo.setTaskState("拒绝");
 				}else if("completed".equals(his.getDeleteReason())){
+					HistoricTaskInstance historicTaskInstance=historicTaskInstanceQuery.list().get(0);
+					vo.setTaskAssign(historicTaskInstance.getAssignee());
 					vo.setTaskState("通过");
 				}
 				tasks.add(vo);
@@ -374,7 +387,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			}
 
 			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
-				historicProcessInstanceQuery.variableValueLike("applyUserId","%"+taskVo.getProcessOwner()+"%");
+				historicProcessInstanceQuery.variableValueLike("applyUserName","%"+taskVo.getProcessOwner()+"%");
 			}
 			pageInfo.setTotal(historicProcessInstanceQuery.list().size());
 			List<HistoricProcessInstance> list=historicProcessInstanceQuery.listPage(pageInfo.getFrom(), pageInfo.getSize());

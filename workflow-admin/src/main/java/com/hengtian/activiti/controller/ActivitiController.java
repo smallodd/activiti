@@ -131,6 +131,8 @@ public class ActivitiController extends BaseController{
     @ResponseBody
     public PageInfo dataGrid(ProcessDefinitionVo processDefinitionVo, Integer page, Integer rows, String sort,String order,String key) {
     	PageInfo pageInfo = new PageInfo(page, rows);
+    	pageInfo.setSort(sort);
+    	pageInfo.setOrder(order);
     	Map<String,Object> params = new HashMap<String,Object>();
     	if(StringUtils.isNotBlank(key)){
     		params.put("key",key.trim());
@@ -187,6 +189,8 @@ public class ActivitiController extends BaseController{
     @ResponseBody
     public PageInfo taskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
     	PageInfo pageInfo = new PageInfo(page, rows);
+    	pageInfo.setOrder(order);
+    	pageInfo.setSort(sort);
     	activitiService.selectTaskDataGrid(pageInfo,false,taskVo);
         return pageInfo;
     }
@@ -220,6 +224,8 @@ public class ActivitiController extends BaseController{
     @ResponseBody
     public PageInfo hisTaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
     	PageInfo pageInfo = new PageInfo(page, rows);
+    	pageInfo.setSort(sort);
+    	pageInfo.setOrder(order);
     	activitiService.selectHisTaskDataGrid(pageInfo,false,taskVo);
         return pageInfo;
     }
@@ -236,6 +242,8 @@ public class ActivitiController extends BaseController{
 	@ResponseBody
 	public PageInfo allHisTaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
 		PageInfo pageInfo = new PageInfo(page, rows);
+		pageInfo.setOrder(order);
+		pageInfo.setSort(sort);
 		activitiService.selectHisTaskDataGrid(pageInfo,true,taskVo);
 		return pageInfo;
 	}
