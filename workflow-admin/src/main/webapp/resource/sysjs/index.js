@@ -197,7 +197,7 @@ function refreshTab() {
 function logout(){
     $.messager.confirm('提示','确定要退出?',function(r){
 
-        if(!sessionStorage.getItem("isLogin")){
+        if(!sessionStorage.getItem("isLogin")&&sessionStorage.getItem("isLogin")!=null){
             window.location.href=basePath+'/';
             return;
         }

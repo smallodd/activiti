@@ -380,7 +380,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			HistoricProcessInstanceQuery historicProcessInstanceQuery=historyService.createHistoricProcessInstanceQuery().orderByProcessInstanceStartTime().desc().finished();
 			if(StringUtils.isNotBlank(taskVo.getBusinessKey())){
 
-				historicProcessInstanceQuery.processInstanceBusinessKey(taskVo.getBusinessKey());
+				historicProcessInstanceQuery.variableValueLike("businessKey","%"+taskVo.getBusinessKey()+"%");
 			}
 			if(StringUtils.isNotBlank(taskVo.getBusinessName())){
 				historicProcessInstanceQuery.variableValueLike("applyTitle","%"+taskVo.getBusinessName()+"%");

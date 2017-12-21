@@ -73,11 +73,15 @@
             field : 'taskName'
         }, {
             width : '140',
+            title : '业务主键',
+            field : 'businessKey'
+        },{
+            width : '140',
             title : '办理时间',
             field : 'taskCreateTime',
             sortable : true
         }, {
-            width : '50',
+            width : '100',
             title : '最后审批人',
             field : 'taskAssign'
         }, {width : '50',

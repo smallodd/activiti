@@ -83,6 +83,10 @@
             title : '当前任务节点名称',
             field : 'taskName'
         },{
+            width : '140',
+            title : '业务主键',
+            field : 'businessKey'
+        },{
             width : '100',
             title : '当前审批人(主键)',
             field : 'taskAssign'
