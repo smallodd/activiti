@@ -7,14 +7,45 @@
 	<title>用户管理</title>
 </head>
 <body>
-<div class="easyui-layout" data-options="fit:true,border:false" style="overflow: auto;padding: 8px;">
-    <table id="taskCandidateUserGrid" class="easyui-datagrid" 
-		    data-options="fit:true,border:false,pagination : true,
-		    fitColumns:true,singleSelect : false,
-		    columns : [[{width : '150',title : '所属部门',field : 'departmentName'},
-            {width : '150', title : '姓名',field : 'userName'},
-            {width : '200',title : '工号',field : 'loginName'}]],url:'${ctx}/sysUser/selectDataGrid'"></table>
-            
-</div>
+	<div data-options="region:'north',border:false" style="height: 30px; overflow: hidden;background-color: #fff;" id="tb1">
+		<form id="candidateUserSearchForm">
+			<table>
+				<tr>
+					<th>姓名/工号:</th>
+					<td><input name="userName" placeholder="姓名/工号"/></td>
+					<td>
+						<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="userSearchFun();">查询</a>
+						<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="userCleanFun();">清空</a>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+	<div class="easyui-layout" data-options="fit:true,border:true" style="overflow: auto;padding: 8px;">
+		<table id="taskCandidateUserGrid" class="easyui-datagrid"
+				data-options="fit:true,border:true,pagination : true,
+				fitColumns:true,singleSelect : false,
+				columns : [[{width : '150',title : '所属部门',field : 'departmentName'},
+				{width : '150', title : '姓名',field : 'userName'},
+				{width : '200',title : '工号',field : 'loginName'}]],url:'${ctx}/sysUser/selectDataGrid',toolbar:'#tb1'">
+		</table>
+	</div>
+
+	<script>
+		/**
+		 * 清除
+		 */
+		function userCleanFun() {
+			$('#candidateUserSearchForm input').val('');
+			$("#taskCandidateUserGrid").datagrid('load', {});
+		}
+
+		/**
+		 * 搜索
+		 */
+		function userSearchFun() {
+			$("#taskCandidateUserGrid").datagrid('load', $.serializeObject($('#candidateUserSearchForm')));
+		}
+	</script>
 </body>
 </html>
