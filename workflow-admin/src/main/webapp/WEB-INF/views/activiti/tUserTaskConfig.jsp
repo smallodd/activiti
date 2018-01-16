@@ -12,13 +12,18 @@
         <form id="tUserTaskConfigForm" method="post">
         	<input id="taskJson" name="taskJson" type="hidden" value="${taskJson}"/>
             <table class="grid">
-            <tr><td><strong>任务名称</strong></td><td><strong>配置选项类型</strong></td><td><strong>人员或部门选项</strong></td></tr>
+            <tr>
+                <td><strong>任务名称</strong></td>
+                <td><strong>配置选项类型</strong></td>
+                <td><strong>人员或部门选项</strong></td>
+                <td><strong>通过人数</strong></td>
+            </tr>
             <c:forEach var="task" items="${tasks}">
 				<tr>
 					<td>[${task.taskName}]</td>
 					<td>
 						<input id="taskId${task.taskDefKey}" type="hidden" value="${task.id}"/>
-						<select id="${task.taskDefKey}" onchange="clearUser()" class="easyui-combobox" data-options="width:160,height:29,panelHeight:'auto'">
+						<select id="${task.taskDefKey}" onchange="clearUser()" class="easyui-combobox" data-options="width:100,height:29,panelHeight:'auto'">
                             <option value="assignee" selected="selected">受理人</option>
                             <option value="candidateUser">候选人</option>
                             <%--<option value="candidateGroup">候选组</option>--%>
@@ -26,7 +31,15 @@
                         </select>
                     </td>
                     <td><input id="taskUser${task.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:170;height:29" onclick="configUser('${task.taskDefKey}')"></input></td>
-				</tr>
+				    <td>
+                        <c:set var="index" value="${fn:length(task.candidateIds.split(','))}"></c:set>
+                        <select class="easyui-combobox" data-options="width:60,height:29,panelHeight:'auto'">
+                            <c:forEach var="i" begin="1" end="${index}">
+                                <option>${index+1-i}</option>
+                            </c:forEach>
+                        </select>
+                    </td>
+                </tr>
 			</c:forEach>
             </table>
         </form>
