@@ -59,9 +59,76 @@
                     field : 'loginName',
                     sortable : true
                 } ] ],
-                onLoadSuccess:function(data){
-                    var json= JSON.parse($("#taskJson").val());
+                onSelect: function (rowIndex, rowData) {
+                    var jsonStr = $("#taskJson").val();console.info(jsonStr);
                     var taskKey = $("#taskKey").val();
+
+                    if(jsonStr===""){
+                        var jsonArray = [];
+                        var jsonObj = {};
+
+                        jsonObj.id = $("#taskId"+taskKey).val();
+                        jsonObj.key = taskKey;
+                        jsonObj.type = $("#"+taskKey).val();
+                        jsonObj.name = rowData.userName;
+                        jsonObj.value = rowData.id;
+
+                        jsonArray.push(jsonObj);
+                        var taskStr = JSON.stringify(jsonArray);
+                        $("#taskJson").val(taskStr);
+					}else{
+                        var taskArray = JSON.parse(jsonStr);
+                        for(var i=0;i<taskArray.length;i++){
+                            if(taskArray[i].key == taskKey){
+                                var user = taskArray[i];
+                                if($.inArray(rowData.id, user.value.split(",")) < 0){
+                                    user.name = user.name + "," + rowData.userName;
+                                    user.value = user.value + "," + rowData.id;
+
+                                    taskArray[i] = user;
+
+                                    var taskStr = JSON.stringify(taskArray);
+                                    $("#taskJson").val(taskStr);
+                                    break;
+								}
+                            }
+                        }
+					}
+                },
+                onUnselect: function (rowIndex, rowData) {
+                    var jsonStr = $("#taskJson").val();
+                    var taskKey = $("#taskKey").val();
+                    var taskArray = JSON.parse(jsonStr);
+                    for(var i=0;i<taskArray.length;i++){
+                        if(taskArray[i].key == taskKey){
+                            var user  = taskArray[i];
+                            var name =  user.name;
+                            var value = user.value;
+
+                            var nameArray = name.split(",");
+                            var valueArray = value.split(",");
+
+                            nameArray.splice($.inArray(rowData.userName, nameArray), 1)
+                            valueArray.splice($.inArray(rowData.id, valueArray), 1)
+
+                            user.name = nameArray.join(",");
+                            user.value = valueArray.join(",");
+
+                            taskArray[i] = user;
+                            break;
+                        }
+                    }
+                    var taskStr = JSON.stringify(taskArray);
+                    $("#taskJson").val(taskStr);
+                },
+                onLoadSuccess:function(data){
+                    var jsonStr = $("#taskJson").val();
+                    if(jsonStr === ''){
+                        return;
+					}
+                    var json = JSON.parse(jsonStr);
+                    var taskKey = $("#taskKey").val();
+
                     $.each(json,function(i,o){
                         if(o.key == taskKey){
                             taskKey = o;

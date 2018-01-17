@@ -16,7 +16,7 @@
 	<dubbo:registry  address="zookeeper://172.16.163.51:2181" check="false" />
 
 
-	<dubbo:reference id="workTaskService" interface="com.activiti.service.WorkTaskService" version="1.2.0" timeout="20000" retries="0" />
+	<dubbo:reference id="workTaskService" interface="com.activiti.service.WorkTaskService" version="1.8.0" timeout="20000" retries="0" />
 
 	<!--&lt;!&ndash;客户管理系统服务&ndash;&gt;-->
 	<!--<dubbo:reference id="customerEmpService" interface="com.richgo.thrsys.service.customer.CustomerEmpService" version="1.0.0" timeout="20000" retries="0"/>-->

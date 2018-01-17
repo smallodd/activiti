@@ -33,7 +33,7 @@
                     <td><input id="taskUser${task.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:170;height:29" onclick="configUser('${task.taskDefKey}')"></input></td>
 				    <td>
                         <c:set var="index" value="${fn:length(task.candidateIds.split(','))}"></c:set>
-                        <select class="easyui-combobox" data-options="width:60,height:29,panelHeight:'auto'">
+                        <select class="easyui-combobox" data-options="width:60,height:29,panelHeight:'auto'" id="userCount${task.taskDefKey}">
                             <c:forEach var="i" begin="1" end="${index}">
                                 <option>${index+1-i}</option>
                             </c:forEach>
@@ -163,68 +163,27 @@
     	        buttons : [ {
     	            text : '确定',
     	            handler : function() {
-    	            	var rows = $("#taskCandidateUserGrid").datagrid("getSelections");
-    	            	var jsonStr= $("#taskJson").val();
-    	            	if(jsonStr===""){
-    	            		var jsonArray = [];
-    	            		var jsonObj = {};
-    	            		var names = "";
-    	            		var ids = "";
-    	            		jsonObj.id=$("#taskId"+datas).val();
-        	            	jsonObj.key=datas;
-        	            	jsonObj.type=$("#"+datas).val();
-    	            		for(var i=0;i<rows.length;i++){
-    	            			if(i===(rows.length-1)){
-    	            				names+=rows[i].userName;
-                	            	ids+=rows[i].id;
-    	            			}else{
-    	            				names+=rows[i].userName+",";
-                	            	ids+=rows[i].id+",";
-    	            			}
-    	            		}
-    	            		jsonObj.name=names;
-        	            	jsonObj.value=ids;
-    	            		jsonArray.push(jsonObj);
-        	            	var taskStr = JSON.stringify(jsonArray);
-        	            	$("#taskJson").val(taskStr);
-    	            	}else{
-    	            		var jsonObj = {};
-    	            		var names = "";
-    	            		var ids = "";
-    	            		jsonObj.id=$("#taskId"+datas).val();
-        	            	jsonObj.key=datas;
-        	            	jsonObj.type=$("#"+datas).val();
-    	            		for(var i=0;i<rows.length;i++){
-    	            			if(i===(rows.length-1)){
-    	            				names+=rows[i].userName;
-                	            	ids+=rows[i].id;
-    	            			}else{
-    	            				names+=rows[i].userName+",";
-                	            	ids+=rows[i].id+",";
-    	            			}
-    	            		}
-    	            		jsonObj.name=names;
-        	            	jsonObj.value=ids;
-
-        	            	//删除旧的数据
-        	            	var taskArray = JSON.parse(jsonStr);
-        	            	$.each(taskArray,function(i,obj){
-        	            	    if(obj.key == datas){
-                                    taskArray.splice(i,1);
-                                    return false;
-                                }
-                            })
-        	            	taskArray.push(jsonObj);
-        	            	var taskStr = JSON.stringify(taskArray);
-        	            	$("#taskJson").val(taskStr);
-    	            	}
+    	                var userCount = 0;
     	            	//给输入框赋人员名称的值
     	            	var taskJsonVal = JSON.parse($("#taskJson").val());
     	            	for(var i=0;i<taskJsonVal.length;i++){
     	            		if(taskJsonVal[i].key===datas){
+                                userCount = taskJsonVal[i].value.split(",").length;
     	            			$("#taskUser"+datas).val(taskJsonVal[i].name);
     	            		}
     	            	}
+
+
+                        var dataList = [];
+                        for(var i=1;i<userCount+1;i++){
+                            dataList.push({"value": i,"text":i});
+                        }
+
+                        if(dataList.length > 0){
+                            $("#userCount"+datas).combobox("loadData",dataList);
+                            $("#userCount"+datas).combobox("select",dataList.length);
+                        }
+
     	            	$("#taskCandidateUserDialog").dialog('close');
     	            }
     	        } ]

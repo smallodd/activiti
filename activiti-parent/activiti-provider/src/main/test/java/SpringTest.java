@@ -2,6 +2,7 @@ import com.activiti.common.EmailUtil;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
+import com.activiti.expection.WorkFlowException;
 import com.activiti.service.WorkTaskService;
 import com.github.pagehelper.PageInfo;
 import org.activiti.engine.repository.Model;
@@ -49,13 +50,22 @@ public class SpringTest {
         commonVo.setModelKey("ceshi");
         Map map=new HashMap();
         map.put("param",10000);
-        String processId=workTaskService.startTask(commonVo,map);
+        String processId= null;
+        try {
+            processId = workTaskService.startTask(commonVo,map);
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
         System.out.println("返回结果为："+processId);
     }
     //审批任务
     @Test
     public void  testComplete(){
-        workTaskService.completeTask("22520", "6414f0ca9eaf4ba596736eb7db0ad157","我不同意这个审批","3");
+        try {
+            workTaskService.completeTask("22520", "6414f0ca9eaf4ba596736eb7db0ad157","我不同意这个审批","3");
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -91,7 +101,7 @@ public class SpringTest {
      */
     @Test
     public void testQueryHistoryTask(){
-        String processInstanceId = "2513";
+        String processInstanceId = "33395";
         List<String> variableNames = new ArrayList<String>();
         variableNames.add("applyUserName");
         variableNames.add("isPass");

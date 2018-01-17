@@ -15,5 +15,5 @@
 	<!--<dubbo:protocol name="${dubbo.protocol.name}" port="${dubbo.protocol.port}" />-->
 
 <bean id="workTaskServiceImpl" class="com.activiti.service.impl.WorkTaskServiceImpl"></bean>
-	<dubbo:service interface="com.activiti.service.WorkTaskService" ref="workTaskServiceImpl" version="1.2.0" timeout="20000"></dubbo:service>
+	<dubbo:service interface="com.activiti.service.WorkTaskService" ref="workTaskServiceImpl" version="1.8.0" timeout="20000"></dubbo:service>
 </beans>
