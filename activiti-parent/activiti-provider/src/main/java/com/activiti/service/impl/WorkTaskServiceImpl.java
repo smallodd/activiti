@@ -460,6 +460,13 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         for(HistoricVariableInstance historicVariableInstance:list){
             map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
         }
+        List<Task> tasks=taskService.createTaskQuery().processInstanceId(processId).list();
+        if(tasks!=null&&tasks.size()>0){
+            map.put("lastApprover",tasks.get(0).getAssignee());
+        }else{
+            HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().list().get(0);
+            map.put("lastApprover",historicTaskInstance.getAssignee());
+        }
         return map;
     }
 /*

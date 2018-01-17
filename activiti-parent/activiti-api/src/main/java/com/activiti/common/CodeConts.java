@@ -54,4 +54,10 @@ public class CodeConts {
      * 审批失败，任务已完成或非法请求
      */
     public final static String WORK_FLOW_ERROR_TASK="W1006";
+    /**
+     * 提交失败，任务已提交
+     */
+    public final static String WORK_FLOW_PUBLISH_ERROR="W1007";
+
+
 }
