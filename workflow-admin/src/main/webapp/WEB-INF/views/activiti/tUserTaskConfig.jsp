@@ -116,7 +116,7 @@
     	        buttons : [ {
     	            text : '确定',
     	            handler : function() {
-    	            	var rows = $("#taskAssigneeGrid").datagrid("getSelections");;
+    	            	var rows = $("#taskAssigneeGrid").datagrid("getSelections");
     	            	var jsonStr= $("#taskJson").val();
     	            	if(jsonStr===""){
     	            		var jsonArray = [];
