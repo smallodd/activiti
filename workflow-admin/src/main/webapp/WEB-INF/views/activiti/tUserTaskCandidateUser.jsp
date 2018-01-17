@@ -61,7 +61,6 @@
                 } ] ],
                 onLoadSuccess:function(data){
                     var json= JSON.parse($("#taskJson").val());
-                    console.info(json);
                     var taskKey = $("#taskKey").val();
                     $.each(json,function(i,o){
                         if(o.key == taskKey){
