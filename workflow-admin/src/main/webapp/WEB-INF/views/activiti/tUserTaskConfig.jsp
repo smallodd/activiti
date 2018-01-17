@@ -48,6 +48,7 @@
 <div id="taskAssigneeDialog"></div>
 <div id="taskCandidateUserDialog"></div>
 <div id="taskCandidateGroupDialog"></div>
+<input type="hidden" id="taskKey"/>
 <script type="text/javascript">
     $(function() {
     	//给各个任务的人员名称和ID赋值
@@ -104,6 +105,7 @@
     
     //配置人员
     function configUser(datas){
+        $("#taskKey").val(datas);
 
     	var taskType = $(document.getElementById(datas)).val();
 
@@ -203,7 +205,15 @@
     	            		}
     	            		jsonObj.name=names;
         	            	jsonObj.value=ids;
+
+        	            	//删除旧的数据
         	            	var taskArray = JSON.parse(jsonStr);
+        	            	$.each(taskArray,function(i,obj){
+        	            	    if(obj.key == datas){
+                                    taskArray.splice(i,1);
+                                    return false;
+                                }
+                            })
         	            	taskArray.push(jsonObj);
         	            	var taskStr = JSON.stringify(taskArray);
         	            	$("#taskJson").val(taskStr);
