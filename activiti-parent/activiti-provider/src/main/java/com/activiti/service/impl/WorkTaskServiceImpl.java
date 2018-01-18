@@ -464,8 +464,12 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         if(tasks!=null&&tasks.size()>0){
             map.put("lastApprover",tasks.get(0).getAssignee());
         }else{
-            HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().list().get(0);
-            map.put("lastApprover",historicTaskInstance.getAssignee());
+            List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().list();
+            if(historicTaskInstances!=null&&historicTaskInstances.size()>0) {
+                map.put("lastApprover", historicTaskInstances.get(0).getAssignee());
+            }else{
+                map.put("lastApprover","老数据，无法兼容");
+            }
         }
         return map;
     }
