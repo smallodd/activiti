@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/mvc 
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<mvc:default-servlet-handler/>
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="com.hengtian.common.utils.Utf8StringHttpMessageConverter" />
+        </mvc:message-converters>
+
+    </mvc:annotation-driven>
+    <context:component-scan base-package="com.hengtian"/>
+    <!-- 配置结果页面 前缀和后缀 -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="order" value="10"></property>
+        <property name="prefix" value="/WEB-INF/views/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+    <!-- 配置哪些是静态资源，缺省Servlet 直接返回 -->
+    <mvc:resources mapping="/resource/**" location="/resource/" cache-period="31556926"/>
+
+    <!-- 文件上传的配置 -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">     
+       <!-- 指定所上传文件的总大小不能超过200KB。注意maxUploadSize属性的限制不是针对单个文件，而是所有文件的容量之和 -->     
+       <property name="maxUploadSize" value="2000000"/>     
+    </bean>
+    <!-- 该异常是SpringMVC在检查上传的文件信息时抛出来的，而且此时还没有进入到Controller方法中 -->     
+    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">     
+       <property name="exceptionMappings">     
+           <props>    
+               <!-- 遇到MaxUploadSizeExceededException异常时，自动跳转到WebContent目录下的error.jsp页面 -->     
+               <prop key="org.springframework.web.multipart.MaxUploadSizeExceededException">error</prop>     
+           </props>
+       </property>     
+    </bean>
+
+   <!-- 启动对@AspectJ注解的支持 -->
+   <aop:aspectj-autoproxy proxy-target-class="true"/>
+   <!-- 日志注解 -->
+   <bean id="sysOperLogAspect" class="com.hengtian.common.operlog.SysOperLogAspect"/>
+   <!-- 异常捕获aop -->
+   <bean id="exceptionHandler" class="com.hengtian.common.operlog.ExceptionHandler" />
+   <aop:config>
+		<aop:aspect ref="exceptionHandler">
+			<aop:pointcut id="exceptionService" expression="execution(* com.hengtian.*.service.*.*.*(..))" />
+			<aop:after-throwing pointcut-ref="exceptionService" method="afterThrowing" throwing="e"/>
+		</aop:aspect>
+   </aop:config>
+   
+</beans>
