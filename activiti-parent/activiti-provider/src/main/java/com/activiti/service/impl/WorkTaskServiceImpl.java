@@ -107,9 +107,9 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         if(isInFlow){
             throw  new WorkFlowException(CodeConts.WORK_FLOW_BUSSINESS_IN_FLOW,"系统【"+commonVo.getBusinessType()+"】在模型【"+commonVo.getModelKey()+"】中的业务主键【"+commonVo.getBusinessKey()+"】还在流程中，请勿重复提交");
         }
-       String prodefinKey= getProdefineKey(commonVo.getModelKey());
+        String prodefinKey= getProdefineKey(commonVo.getModelKey());
         ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().processDefinitionKey(prodefinKey).latestVersion().singleResult();
-     int version=  processDefinition .getVersion();
+        int version=  processDefinition .getVersion();
         //commonVo.setApplyTitle(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey());
         Map<String,Object> resutl=new HashMap<>();
         Map<String,Object> variables=new HashMap<String,Object>();
@@ -148,46 +148,46 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         if(tUserTasks==null||tasks.size()==0){
             throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
         }
-            for(Task task:tasks){
-                if(StringUtils.isNotBlank(task.getAssignee())){
-                    continue;
+        for(Task task:tasks){
+            if(StringUtils.isNotBlank(task.getAssignee())){
+                continue;
+            }
+            for(TUserTask tUserTask:tUserTasks){
+                if(StringUtils.isBlank(tUserTask.getCandidateIds())){
+                    throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
                 }
-                for(TUserTask tUserTask:tUserTasks){
-                    if(StringUtils.isBlank(tUserTask.getCandidateIds())){
-                        throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
-                    }
-                    if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
-                        if ("candidateGroup".equals(tUserTask.getTaskType())) {
-                            taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
-                        } else if ("candidateUser".equals(tUserTask.getTaskType())) {
-                            taskService.addCandidateUser(task.getId(), tUserTask.getCandidateIds());
-                        } else {
+                if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
+                    if ("candidateGroup".equals(tUserTask.getTaskType())) {
+                        taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
+                    } else if ("candidateUser".equals(tUserTask.getTaskType())) {
+                        taskService.addCandidateUser(task.getId(), tUserTask.getCandidateIds());
+                    } else {
 
-                            taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
-                        }
+                        taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
                     }
-                    Boolean flag=Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
-                    if(flag) {
-                        String[] strs = tUserTask.getCandidateIds().split(",");
-                        for (String str : strs) {
-                            SysUser sysUser = sysUserService.selectById(str);
-                            if (StringUtils.isNotBlank(sysUser.getUserEmail())) {
-                                EmailUtil emailUtil = EmailUtil.getEmailUtil();
-                                try {
-                                    emailUtil.sendEmail(
-                                            ConfigUtil.getValue("email.send.account"),
-                                            "System emmail",
-                                            sysUser.getUserEmail(),
-                                            "您有一个待审批邮件待处理",
-                                            commonVo.getApplyUserName() + "填写一个审批申请，标题为：" + commonVo.getApplyTitle() + ",请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
-                                } catch (Exception e) {
-                                    throw new WorkFlowException(CodeConts.WORK_FLOW_SEND_FAIL,"邮件发送失败");
-                                }
+                }
+                Boolean flag=Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
+                if(flag) {
+                    String[] strs = tUserTask.getCandidateIds().split(",");
+                    for (String str : strs) {
+                        SysUser sysUser = sysUserService.selectById(str);
+                        if (StringUtils.isNotBlank(sysUser.getUserEmail())) {
+                            EmailUtil emailUtil = EmailUtil.getEmailUtil();
+                            try {
+                                emailUtil.sendEmail(
+                                        ConfigUtil.getValue("email.send.account"),
+                                        "System emmail",
+                                        sysUser.getUserEmail(),
+                                        "您有一个待审批邮件待处理",
+                                        commonVo.getApplyUserName() + "填写一个审批申请，标题为：" + commonVo.getApplyTitle() + ",请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
+                            } catch (Exception e) {
+                                throw new WorkFlowException(CodeConts.WORK_FLOW_SEND_FAIL,"邮件发送失败");
                             }
                         }
                     }
                 }
             }
+        }
 
         return processInstance.getProcessInstanceId();
     }
