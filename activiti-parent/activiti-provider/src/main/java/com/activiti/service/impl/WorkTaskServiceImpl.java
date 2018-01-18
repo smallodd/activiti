@@ -133,21 +133,31 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         resutl.put("proDefinedKey",prodefinKey);
         resutl.put("version",version);
         //设置当前申请人
-        identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
+
         //查询自定义任务列表当前流程定义下的审批人
         EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
         wrapper.where("proc_def_key= {0}",prodefinKey).andNew("version_={0}",version);
 
         List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
-        //启动一个流程
-        ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),resutl);
+        if(tUserTasks==null||tUserTasks.size()==0){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
+        }
+        ProcessInstance processInstance=null;
+        try {
+            //启动一个流程
+             processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),resutl);
+        }catch (Exception e){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PUBLISH_ERROR,"操作失败，任务创建失败");
+        }
+
 
         //为任务设置审批人
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
 
-        if(tUserTasks==null||tasks.size()==0){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
+        if(tasks==null||tasks.size()==0){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PUBLISH_ERROR,"操作失败，任务创建失败");
         }
+        identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
             for(Task task:tasks){
                 if(StringUtils.isNotBlank(task.getAssignee())){
                     continue;
@@ -252,7 +262,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
             } else if ("candidateUser".equals(tUser.getTaskType())) {
                 taskService.addCandidateUser(task1.getId(), tUser.getCandidateIds());
-            } {
+            } else {
 
                 taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
             }
