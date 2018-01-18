@@ -185,6 +185,8 @@ public class TUserTaskController extends BaseController{
     		tUserTask.setTaskType(obj.get("type").toString());
     		tUserTask.setCandidateIds(obj.get("value").toString());
     		tUserTask.setCandidateName(obj.get("name").toString());
+			tUserTask.setUserCountTotal(obj.get("name").toString().split(",").length);
+    		tUserTask.setUserCountNeed(obj.getInteger("userCountNeed"));
     		boolean b = tUserTaskService.updateById(tUserTask);
     		if(!b){
     			return renderError("配置失败！");

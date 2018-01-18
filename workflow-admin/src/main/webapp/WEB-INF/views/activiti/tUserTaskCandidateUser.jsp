@@ -60,7 +60,7 @@
                     sortable : true
                 } ] ],
                 onSelect: function (rowIndex, rowData) {
-                    var jsonStr = $("#taskJson").val();console.info(jsonStr);
+                    var jsonStr = $("#taskJson").val();
                     var taskKey = $("#taskKey").val();
 
                     if(jsonStr===""){

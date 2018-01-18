@@ -63,8 +63,21 @@ public class TUserTask implements Serializable {
      */
     @TableField(value="order_num")
     private int orderNum;
+    /**
+     * 版本号
+     */
     @TableField(value = "version_")
     private int version;
+    /**
+     * 版本号
+     */
+    @TableField(value = "user_count_total")
+    private int userCountTotal;
+    /**
+     * 版本号
+     */
+    @TableField(value = "user_count_need")
+    private int userCountNeed;
 
 
     public String getId() {
@@ -145,5 +158,21 @@ public class TUserTask implements Serializable {
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+    public int getUserCountTotal() {
+        return userCountTotal;
+    }
+
+    public void setUserCountTotal(int userCountTotal) {
+        this.userCountTotal = userCountTotal;
+    }
+
+    public int getUserCountNeed() {
+        return userCountNeed;
+    }
+
+    public void setUserCountNeed(int userCountNeed) {
+        this.userCountNeed = userCountNeed;
     }
 }

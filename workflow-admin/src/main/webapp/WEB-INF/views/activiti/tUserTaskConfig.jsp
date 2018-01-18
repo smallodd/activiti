@@ -35,7 +35,10 @@
                         <c:set var="index" value="${fn:length(task.candidateIds.split(','))}"></c:set>
                         <select class="easyui-combobox" data-options="width:60,height:29,panelHeight:'auto'" id="userCount${task.taskDefKey}">
                             <c:forEach var="i" begin="1" end="${index}">
-                                <option>${index+1-i}</option>
+                                <c:choose>
+                                    <c:when test="${(index+1-i)==task.userCountNeed}"><option value="${index+1-i}" selected="selected">${index+1-i}</option></c:when>
+                                    <c:otherwise><option value="${index+1-i}">${index+1-i}</option></c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
                     </td>
@@ -80,6 +83,9 @@
 	            	jsonObj.type=$("#"+taskJsonVal[i].key).val();
 	            	jsonObj.name=taskJsonVal[i].name;
 	            	jsonObj.value=taskJsonVal[i].value;
+
+	            	var userCountNeed = $("#userCount"+jsonObj.key).val();
+                    jsonObj.userCountNeed = userCountNeed;
 	            	jsonArray.push(jsonObj);
             	}
             	var taskStr = JSON.stringify(jsonArray);
@@ -256,10 +262,7 @@
     	        } ]
     	    });
     	}
-    	
     }
-   
-    
 </script>
 </body>
 </html>
