@@ -1,6 +1,6 @@
 package com.activiti.main;
 
-import com.chtwm.conf.InitFileFromDisconf;
+
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
