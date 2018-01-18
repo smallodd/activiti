@@ -1174,11 +1174,19 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     public String getLastApprover(String processId) {
         Task task = taskService.createTaskQuery().processInstanceId(processId).singleResult();
         if (task == null){
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().finished().list().get(0);
-            return taskInstance.getAssignee();
+            List<HistoricTaskInstance> taskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().finished().list();
+            if(taskInstances!=null&&taskInstances.size()>0) {
+                return taskInstances.get(0).getAssignee();
+            }else{
+                return "老数据兼容性数据丢失";
+            }
         }else{
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().unfinished().list().get(0);
-            return taskInstance.getAssignee();
+           List<HistoricTaskInstance> taskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().unfinished().list();
+           if(taskInstances!=null&&taskInstances.size()>0) {
+               return taskInstances.get(0).getAssignee();
+           }else{
+               return  "老数据兼容性数据丢失";
+           }
         }
     }
 
