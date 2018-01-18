@@ -82,8 +82,8 @@
                             if(taskArray[i].key == taskKey){
                                 var user = taskArray[i];
                                 if($.inArray(rowData.id, user.value.split(",")) < 0){
-                                    user.name = user.name + "," + rowData.userName;
-                                    user.value = user.value + "," + rowData.id;
+                                    user.name = (user.name==""?"":(user.name + ",")) + rowData.userName;
+                                    user.value = (user.value==""?"":(user.value + ",")) + rowData.id;
 
                                     taskArray[i] = user;
 
