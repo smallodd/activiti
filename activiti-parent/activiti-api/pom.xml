@@ -17,7 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<activiti.version>5.22.0</activiti.version>
+		<activiti.version>5.18.0</activiti.version>
 	</properties>
 	<dependencies>
 		<dependency>
