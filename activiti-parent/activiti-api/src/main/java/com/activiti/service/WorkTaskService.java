@@ -120,7 +120,7 @@ public interface WorkTaskService {
      * @param bussinessKey 业务主键
      * @return   返回true or false
      */
-    boolean checekBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussinessKey);
+    boolean checkBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussinessKey);
 
 
 

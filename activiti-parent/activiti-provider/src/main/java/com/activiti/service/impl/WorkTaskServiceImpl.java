@@ -103,7 +103,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         TaskQueryEntity taskQueryEntity=new TaskQueryEntity();
         taskQueryEntity.setModelKey(commonVo.getModelKey());
         taskQueryEntity.setBussinessType(commonVo.getBusinessType());
-        boolean isInFlow=checekBunessKeyIsInFlow(taskQueryEntity,commonVo.getBusinessKey());
+        boolean isInFlow=checkBunessKeyIsInFlow(taskQueryEntity,commonVo.getBusinessKey());
         if(isInFlow){
             throw  new WorkFlowException(CodeConts.WORK_FLOW_BUSSINESS_IN_FLOW,"系统【"+commonVo.getBusinessType()+"】在模型【"+commonVo.getModelKey()+"】中的业务主键【"+commonVo.getBusinessKey()+"】还在流程中，请勿重复提交");
         }
@@ -111,7 +111,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().processDefinitionKey(prodefinKey).latestVersion().singleResult();
         int version=  processDefinition .getVersion();
         //commonVo.setApplyTitle(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey());
-        Map<String,Object> resutl=new HashMap<>();
+        Map<String,Object> result=new HashMap<>();
         Map<String,Object> variables=new HashMap<String,Object>();
         try {
             variables= com.activiti.common.BeanUtils.toMap(commonVo);
@@ -122,7 +122,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，请检查参数是否正确,"+commonVo.toString());
             }
         }
-        resutl.putAll(variables);
+        result.putAll(variables);
 
         //把审核人信息放入属性表，多个审核人（会签/候选）多条记录
         EntityWrapper<TUserTask> wrapper_ =new EntityWrapper<TUserTask>();
@@ -133,23 +133,23 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             for(TUserTask ut : userTasks){
                 String candidateIds = ut.getCandidateIds();
                 for(String candidateId : candidateIds.split(",")){
-                    resutl.put(ut.getTaskDefKey()+":"+candidateId,"0:unfinished");
+                    result.put(ut.getTaskDefKey()+":"+candidateId,"0:unfinished");
                 }
-                resutl.put(ut.getTaskDefKey()+":"+"userCountTotal",ut.getUserCountTotal());
-                resutl.put(ut.getTaskDefKey()+":"+"userCountNeed",ut.getUserCountNeed());
-                resutl.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
+                result.put(ut.getTaskDefKey()+":"+"userCountTotal",ut.getUserCountTotal());
+                result.put(ut.getTaskDefKey()+":"+"userCountNeed",ut.getUserCountNeed());
+                result.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
             }
         }
 
         Set<String> set=paramMap.keySet();
         for(String key: set){
-            if(resutl.containsKey(key)){
+            if(result.containsKey(key)){
                 throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_REPART,"请不要设置重复的属性和commonVo中有的属性");
             }
         }
-        resutl.putAll(paramMap);
-        resutl.put("proDefinedKey",prodefinKey);
-        resutl.put("version",version);
+        result.putAll(paramMap);
+        result.put("proDefinedKey",prodefinKey);
+        result.put("version",version);
         //设置当前申请人
         identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
         //查询自定义任务列表当前流程定义下的审批人
@@ -158,7 +158,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
         List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
         //启动一个流程
-        ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),resutl);
+        ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),result);
 
         //为任务设置审批人
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
@@ -348,6 +348,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      *
      * @return
      */
+    @Override
     public List<HistoricProcessInstance> getApplyTasks(String userid,int startPage,int pageSzie,int status,TaskQueryEntity taskQueryEntity){
 
         logger.info("--------------------获取申请人提交的任务开始----------------");
@@ -388,6 +389,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      *
      * @return
      */
+    @Override
     public List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie,TaskQueryEntity taskQueryEntity){
         logger.info("---------------------获取参与审批用户的审批历史信息开始--------------");
 
@@ -443,7 +445,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     //TODO
 
     @Override
-    public boolean checekBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussineeKey) {
+    public boolean checkBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussineeKey) {
         if((StringUtils.isBlank(taskQueryEntity.getBussinessType())||StringUtils.isBlank(taskQueryEntity.getModelKey()))&&!"maket".equals(taskQueryEntity.getBussinessType())){
             throw new RuntimeException("参数不合法,业务系统key和modekey 必须都传:"+taskQueryEntity.toString());
         }
