@@ -103,6 +103,12 @@
                     str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-reset" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="modelResetKey(\'{0}\');" >重置key</a>', row.id);
                 }
                 </shiro:hasPermission>
+
+                <shiro:hasPermission name="/activiti/model/delete">
+
+                    str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-delete" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="deleteModel(\'{0}\');" >删除</a>', row.id);
+
+                </shiro:hasPermission>
                 return str;
             }
         } ] ],
@@ -112,6 +118,7 @@
             $('.model-easyui-linkbutton-active').linkbutton({text:'详情'});
             $('.model-easyui-linkbutton-copy').linkbutton({text:'复制'});
             $('.model-easyui-linkbutton-reset').linkbutton({text:'重置key'});
+            $('.model-easyui-linkbutton-delete').linkbutton({text:'删除'});
         },
         toolbar : '#modelToolbar'
     });
@@ -218,6 +225,34 @@ function modelEdit(modelId) {
           <%--}--%>
       <%--});--%>
   }
+    /**
+     * 流程部署
+     * @param url
+     */
+    function deleteModel(id) {
+        if (id == undefined) {//点击右键菜单才会触发这个
+            var rows = modelDataGrid.datagrid('getSelections');
+            id = rows[0].id;
+        } else {//点击操作里面的删除图标会触发这个
+            modelDataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+        }
+        parent.$.messager.confirm('询问', '确定删除该模型？如果部署过删除后会有不可预知的错误，确定删除吗？', function(b) {
+            if (b) {
+                progressLoad();
+                $.post('${ctx}/activiti/model/deleteModel', {
+                    id : id
+                }, function(result) {
+                    if (result.success) {
+                        parent.$.messager.alert('提示', result.msg, 'info');
+                        modelDataGrid.datagrid('reload');
+                    } else {
+                        parent.$.messager.alert('错误', result.msg, 'error');
+                    }
+                    progressClose();
+                }, 'JSON');
+            }
+        });
+    }
 /**
  * 流程部署
  * @param url
