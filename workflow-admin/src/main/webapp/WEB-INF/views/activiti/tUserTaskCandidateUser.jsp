@@ -60,11 +60,12 @@
                     sortable : true
                 } ] ],
                 onSelect: function (rowIndex, rowData) {
+                    debugger;
                     var jsonStr = $("#taskJson").val();
                     var taskKey = $("#taskKey").val();
 
                     if(jsonStr===""){
-                        var jsonArray = [];
+                        var taskArray = [];
                         var jsonObj = {};
 
                         jsonObj.id = $("#taskId"+taskKey).val();
@@ -73,11 +74,12 @@
                         jsonObj.name = rowData.userName;
                         jsonObj.value = rowData.id;
 
-                        jsonArray.push(jsonObj);
-                        var taskStr = JSON.stringify(jsonArray);
+                        taskArray.push(jsonObj);
+                        var taskStr = JSON.stringify(taskArray);
                         $("#taskJson").val(taskStr);
 					}else{
                         var taskArray = JSON.parse(jsonStr);
+                        var b = false;
                         for(var i=0;i<taskArray.length;i++){
                             if(taskArray[i].key == taskKey){
                                 var user = taskArray[i];
@@ -89,10 +91,24 @@
 
                                     var taskStr = JSON.stringify(taskArray);
                                     $("#taskJson").val(taskStr);
+                                    b = true;
                                     break;
 								}
                             }
                         }
+                        if(!b){
+                            var jsonObj = {};
+
+                            jsonObj.id = $("#taskId"+taskKey).val();
+                            jsonObj.key = taskKey;
+                            jsonObj.type = $("#"+taskKey).val();
+                            jsonObj.name = rowData.userName;
+                            jsonObj.value = rowData.id;
+
+                            taskArray.push(jsonObj);
+                            var taskStr = JSON.stringify(taskArray);
+                            $("#taskJson").val(taskStr);
+						}
 					}
                 },
                 onUnselect: function (rowIndex, rowData) {
@@ -129,18 +145,20 @@
                     var json = JSON.parse(jsonStr);
                     var taskKey = $("#taskKey").val();
 
+                    var checkedUser;
                     $.each(json,function(i,o){
                         if(o.key == taskKey){
-                            taskKey = o;
+                            checkedUser = o;
                             return false;
                         }
                     })
-					var checkedUser = taskKey.value.split(",");
-                    $.each(data.rows,function(i,obj){
-                        if($.inArray(obj.id, checkedUser) >= 0){
-                            $('#taskCandidateUserGrid').datagrid('selectRow',i);
-						}
-					})
+					if(checkedUser != undefined && checkedUser.value != undefined){
+                        $.each(data.rows,function(i,obj){
+                            if($.inArray(obj.id, checkedUser.value.split(",")) >= 0){
+                                $('#taskCandidateUserGrid').datagrid('selectRow',i);
+                            }
+                        })
+					}
                 },
                 toolbar : '#tb1'
             });

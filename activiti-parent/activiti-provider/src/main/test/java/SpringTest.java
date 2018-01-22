@@ -44,10 +44,10 @@ public class SpringTest {
         CommonVo commonVo=new CommonVo();
         commonVo.setApplyTitle("测试转办任务");
         commonVo.setApplyUserId("H000000");
-        commonVo.setApplyUserName("测试人");
-        commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("sys1");
-        commonVo.setModelKey("ceshi");
+        commonVo.setApplyUserName("hour");
+        commonVo.setBusinessKey("hour-key");
+        commonVo.setBusinessType("activity");
+        commonVo.setModelKey("hour");
         Map map=new HashMap();
         map.put("param",10000);
         String processId= null;

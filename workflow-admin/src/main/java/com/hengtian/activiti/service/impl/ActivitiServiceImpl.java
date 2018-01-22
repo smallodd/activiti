@@ -1,6 +1,7 @@
 package com.hengtian.activiti.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.collect.Lists;
 import com.hengtian.activiti.model.TUserTask;
 import com.hengtian.activiti.service.ActivitiService;
 import com.hengtian.activiti.service.TUserTaskService;
@@ -124,12 +125,13 @@ public class ActivitiServiceImpl implements ActivitiService{
 	public void selectTaskDataGrid(PageInfo pageInfo,boolean isAll,TaskVo taskVo ) {
 		List<TaskVo> list = new ArrayList<TaskVo>();
 		//获取Shiro中的用户信息
-
     	
     	TaskQuery taskQuery;
     	if(!isAll){
 			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 			taskQuery=taskService.createTaskQuery().taskAssigneeLike("%"+shiroUser.getId()+"%");
+			taskQuery.taskVariableValueEquals("0:unfinished");
+			//taskQuery.processVariableValueEquals("0:unfinished");
 		}else{
 			taskQuery=taskService.createTaskQuery();
 		}
@@ -194,13 +196,48 @@ public class ActivitiServiceImpl implements ActivitiService{
 	public Result complateTask(String taskId,String commentContent,Integer commentResult){
 		Result result = new Result();
 		try{
-
+			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-
+			if(task == null){
+				result.setSuccess(true);
+				result.setMsg("任务不存在或已办理！");
+				return result;
+			}
 			String processInstanceId = task.getProcessInstanceId();
 			ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+			Map map = taskService.getVariables(taskId);
+			int version = (int) map.get("version");
+			//会签处理
+			int userCountCurrent = 0;
+			if(map != null){
+				if("counterSign".equals(map.get(task.getTaskDefinitionKey()+":"+"taskType"))){
+					//会签人
+					EntityWrapper<TUserTask> wrapper_ =new EntityWrapper<TUserTask>();
+					wrapper_.where("proc_def_key = {0}", processInstance.getProcessDefinitionKey()).andNew("version_={0}",version).andNew("task_def_key={0}",task.getTaskDefinitionKey());
+					TUserTask tUserTask = tUserTaskService.selectOne(wrapper_);
+					String[] tUserTaskArray = tUserTask.getCandidateIds().split(",");
+					//int userCountTotal = (int)map.get(task.getTaskDefinitionKey()+":"+"userCountTotal");
+					int userCountNeed = (int)map.get(task.getTaskDefinitionKey()+":"+"userCountNeed");
+					for(String candidateId: tUserTaskArray){
+						if("1:finished".equals((String)map.get(task.getTaskDefinitionKey()+":"+candidateId))){
+							userCountCurrent++;
+						}
+					}
+					taskService.setVariable(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),"1:finished");
+					if(userCountCurrent + 1 <= userCountNeed){
+						result.setSuccess(true);
+						result.setMsg("办理成功！");
+						return result;
+					}
+				}else if("candidateUser".equals(map.get(task.getTaskDefinitionKey()+":"+"taskType"))){
+					//候选人
+					taskService.setVariable(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),"1:finished");
+				}
+
+			}
+
 			//添加意见
-			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 			identityService.setAuthenticatedUserId(shiroUser.getId());
 			taskService.addComment(task.getId(), processInstance.getId(),String.valueOf(commentResult), commentContent);
 			//完成任务
@@ -228,10 +265,10 @@ public class ActivitiServiceImpl implements ActivitiService{
 				result.setMsg("办理委派任务成功！");
 				return result;
 			}
-			Map map=taskService.getVariables(taskId);
+
 			//完成正常办理任务
 			taskService.complete(task.getId(), variables);
-			int version= (int) map.get("version");
+
 			List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
 			for(Task task1:tasks) {
 				EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();

@@ -58,7 +58,16 @@ public class TUserTask implements Serializable {
      */
     @TableField(value="candidate_ids")
     private String candidateIds;
-
+    /**
+     * 版本号
+     */
+    @TableField(value = "user_count_total")
+    private int userCountTotal;
+    /**
+     * 版本号
+     */
+    @TableField(value = "user_count_need")
+    private int userCountNeed;
 
     public String getId() {
         return id;
@@ -122,5 +131,21 @@ public class TUserTask implements Serializable {
 
     public void setCandidateIds(String candidateIds) {
         this.candidateIds = candidateIds;
+    }
+
+    public int getUserCountTotal() {
+        return userCountTotal;
+    }
+
+    public void setUserCountTotal(int userCountTotal) {
+        this.userCountTotal = userCountTotal;
+    }
+
+    public int getUserCountNeed() {
+        return userCountNeed;
+    }
+
+    public void setUserCountNeed(int userCountNeed) {
+        this.userCountNeed = userCountNeed;
     }
 }

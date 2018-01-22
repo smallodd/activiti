@@ -123,6 +123,24 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             }
         }
         resutl.putAll(variables);
+
+        //把审核人信息放入属性表，多个审核人（会签/候选）多条记录
+        EntityWrapper<TUserTask> wrapper_ =new EntityWrapper<TUserTask>();
+        wrapper_.where("proc_def_key = {0}", processDefinition.getKey()).andNew("version_={0}",processDefinition.getVersion());
+        wrapper_.orderBy("order_num",true);
+        List<TUserTask> userTasks= tUserTaskService.selectList(wrapper_);
+        if(CollectionUtils.isNotEmpty(userTasks)){
+            for(TUserTask ut : userTasks){
+                String candidateIds = ut.getCandidateIds();
+                for(String candidateId : candidateIds.split(",")){
+                    resutl.put(ut.getTaskDefKey()+":"+candidateId,"0:unfinished");
+                }
+                resutl.put(ut.getTaskDefKey()+":"+"userCountTotal",ut.getUserCountTotal());
+                resutl.put(ut.getTaskDefKey()+":"+"userCountNeed",ut.getUserCountNeed());
+                resutl.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
+            }
+        }
+
         Set<String> set=paramMap.keySet();
         for(String key: set){
             if(resutl.containsKey(key)){
@@ -391,6 +409,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return  query.involvedUser(userid).listPage((startPage-1)*pageSzie,pageSzie);
     }
 
+    @Override
     public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity){
 
         logger.info("-----------------------查询用户历史审批过的任务开始----------------");
@@ -450,6 +469,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return taskService.getProcessInstanceComments(processInstanceId);
 
     }
+    @Override
     public HistoricTaskInstance selectHistoryTask(String taskHistoryId){
         return historyService.createHistoricTaskInstanceQuery().taskId(taskHistoryId).singleResult();
     }
