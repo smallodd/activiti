@@ -124,23 +124,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         result.putAll(variables);
 
-        //把审核人信息放入属性表，多个审核人（会签/候选）多条记录
-        EntityWrapper<TUserTask> wrapper_ =new EntityWrapper<TUserTask>();
-        wrapper_.where("proc_def_key = {0}", processDefinition.getKey()).andNew("version_={0}",processDefinition.getVersion());
-        wrapper_.orderBy("order_num",true);
-        List<TUserTask> userTasks= tUserTaskService.selectList(wrapper_);
-        if(CollectionUtils.isNotEmpty(userTasks)){
-            for(TUserTask ut : userTasks){
-                String candidateIds = ut.getCandidateIds();
-                for(String candidateId : candidateIds.split(",")){
-                    result.put(ut.getTaskDefKey()+":"+candidateId,"0:unfinished");
-                }
-                result.put(ut.getTaskDefKey()+":"+"userCountTotal",ut.getUserCountTotal());
-                result.put(ut.getTaskDefKey()+":"+"userCountNeed",ut.getUserCountNeed());
-                result.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
-            }
-        }
-
         Set<String> set=paramMap.keySet();
         for(String key: set){
             if(result.containsKey(key)){
@@ -207,6 +190,28 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             }
         }
 
+        /**
+         * 为当前任务设置属性值
+         * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
+         */
+        Task activeTask = taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).active().singleResult();
+        result.clear();
+        EntityWrapper<TUserTask> wrapper_ =new EntityWrapper<TUserTask>();
+        wrapper_.where("proc_def_key = {0}", processDefinition.getKey()).andNew("version_={0}",processDefinition.getVersion()).andNew("task_def_key={0}",activeTask.getTaskDefinitionKey());
+        wrapper_.orderBy("order_num",true);
+        TUserTask ut = tUserTaskService.selectOne(wrapper_);
+        if(ut != null){
+            String candidateIds = ut.getCandidateIds();
+            for(String candidateId : candidateIds.split(",")){
+                result.put(ut.getTaskDefKey()+":"+candidateId,"0:unfinished");
+            }
+            result.put(ut.getTaskDefKey()+":"+"userCountTotal",ut.getUserCountTotal());
+            result.put(ut.getTaskDefKey()+":"+"userCountNeed",ut.getUserCountNeed());
+            result.put(ut.getTaskDefKey()+":"+"userCountNow",0);
+            result.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
+
+            taskService.setVariablesLocal(activeTask.getId(),result);
+        }
         return processInstance.getProcessInstanceId();
     }
 
