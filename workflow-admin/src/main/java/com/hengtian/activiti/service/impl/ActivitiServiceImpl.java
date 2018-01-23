@@ -231,7 +231,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 						result.setMsg("办理成功！");
 						return result;
 					}
-				}else if(TaskType.CANDIDATEUSER.value.equals(map.get(task.getTaskDefinitionKey()+":taskType"))){
+				}else {
 					//候选人
 					taskService.setVariable(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),"1:finished");
 				}
@@ -390,7 +390,10 @@ public class ActivitiServiceImpl implements ActivitiService{
 		if(!flag){
 			HistoricTaskInstanceQuery taskQuery= historyService.createHistoricTaskInstanceQuery();
 			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
-			taskQuery.taskAssignee(shiroUser.getId());
+			//taskQuery.taskAssignee(shiroUser.getId());
+			taskQuery.taskAssigneeLike("%"+shiroUser.getId()+"%");
+			taskQuery.taskVariableValueEquals("1:finished");
+
 			if(StringUtils.isNotBlank(taskVo.getBusinessKey())){
 				taskQuery.processInstanceBusinessKeyLike("%"+taskVo.getBusinessKey()+"%");
 			}
