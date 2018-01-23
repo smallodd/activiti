@@ -76,7 +76,7 @@ INSERT INTO `sys_resource` VALUES ('216feb54e7334de087097b900dc23fdf', '/activit
 INSERT INTO `sys_resource` VALUES ('2275d7959c0b40d5897981f059c75200', '/sysUser/edit', '009', '编辑', '1', '', 'ajax', 'eeea90fb6bf346888592bd5ccbe5e475', 3, '2017-8-12 11:19:23');
 INSERT INTO `sys_resource` VALUES ('287c36805ee34a5e965919198c547509', '/activiti/model/create', 'NO201711070002', '添加', '1', '', NULL, 'f84a8562694e4b8ebd67f5ec39f2e4b3', 0, '2017-11-7 11:18:33');
 INSERT INTO `sys_resource` VALUES ('3', '/sysResource/add', '003', '添加', '1', '', 'ajax', '2', 1, NULL);
-INSERT INTO `sys_resource` VALUES ('30159bb15c28446788d46e7f808f730d', '/activiti/adminDelegateTask', 'NO201711060003', '委派', '1', '', NULL, 'deee316b106e43668da06e3e11756b1a', 0, '2017-11-6 09:35:37');
+/*INSERT INTO `sys_resource` VALUES ('30159bb15c28446788d46e7f808f730d', '/activiti/adminDelegateTask', 'NO201711060003', '委派', '1', '', NULL, 'deee316b106e43668da06e3e11756b1a', 0, '2017-11-6 09:35:37');*/
 INSERT INTO `sys_resource` VALUES ('3323b161301747fe8892f6338924a53f', '/sysOperLog/manager', '036', '操作日志', '0', 'fi-database', NULL, '8a1a2f49ad8b431e8155ca5fbcc65ed5', 1, '2017-8-28 00:03:36');
 INSERT INTO `sys_resource` VALUES ('397c47b362f84ddcb5c7679201366333', '/sysUser/delete', '008', '删除', '1', '', 'ajax', 'eeea90fb6bf346888592bd5ccbe5e475', 2, '2017-8-12 11:17:01');
 INSERT INTO `sys_resource` VALUES ('3a0e79e02205402a956a78ea95f9c752', '/activiti/transferTask', '032', '转办', '1', '', 'ajax', '7595d0149dc049d68c2b89ab999ad882', 4, '2017-8-20 22:27:43');
