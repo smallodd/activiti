@@ -209,6 +209,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             result.put(ut.getTaskDefKey()+":"+"userCountNeed",ut.getUserCountNeed());
             result.put(ut.getTaskDefKey()+":"+"userCountNow",0);
             result.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
+            result.put(ut.getTaskDefKey()+":"+"counterSign",candidateIds);
 
             taskService.setVariablesLocal(activeTask.getId(),result);
         }

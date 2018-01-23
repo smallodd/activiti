@@ -10,6 +10,7 @@ import com.hengtian.activiti.vo.ProcessDefinitionVo;
 import com.hengtian.activiti.vo.TaskVo;
 import com.hengtian.application.model.App;
 import com.hengtian.application.service.AppService;
+import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.*;
@@ -209,10 +210,11 @@ public class ActivitiServiceImpl implements ActivitiService{
 			int version = (int) map.get("version");
 			//会签处理
 			int userCountNow = 0;
-			String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":taskType") + "";
-			String candidateIds = map.get("counterSign") + "";
+
 			if(map != null){
-				if("counterSign".equals(taskTypeCurrent)){
+				String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":taskType") + "";
+				if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
+					String candidateIds = map.get(task.getTaskDefinitionKey()+":counterSign") + "";
 					//会签人
 					userCountNow = (int)map.get(task.getTaskDefinitionKey()+":userCountNow");
 					int userCountNeed = (int)map.get(task.getTaskDefinitionKey()+":userCountNeed");
@@ -229,7 +231,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 						result.setMsg("办理成功！");
 						return result;
 					}
-				}else if("candidateUser".equals(map.get(task.getTaskDefinitionKey()+":taskType"))){
+				}else if(TaskType.CANDIDATEUSER.value.equals(map.get(task.getTaskDefinitionKey()+":taskType"))){
 					//候选人
 					taskService.setVariable(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),"1:finished");
 				}
@@ -278,36 +280,34 @@ public class ActivitiServiceImpl implements ActivitiService{
 					taskService.addCandidateUser(task1.getId(), tUser.getCandidateIds());
 				} else {
 					if("counterSign".equals(tUser.getTaskType())){
+						/**
+						 * 为当前任务设置属性值
+						 * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
+						 */
+						Map<String,Object> variables_ = new HashMap<String,Object>();
+						EntityWrapper<TUserTask> wrapper_ =new EntityWrapper<TUserTask>();
+						wrapper_.where("proc_def_key = {0}", processInstance.getProcessDefinitionKey()).andNew("version_={0}",version).andNew("task_def_key={0}",task1.getTaskDefinitionKey());
+						wrapper_.orderBy("order_num",true);
+						TUserTask ut = tUserTaskService.selectOne(wrapper_);
+						if(ut != null){
+							String candidateIds_ = ut.getCandidateIds();
+							for(String candidateId : candidateIds_.split(",")){
+								variables_.put(ut.getTaskDefKey()+":"+candidateId,"0:unfinished");
+							}
+							variables_.put(ut.getTaskDefKey()+":userCountTotal",ut.getUserCountTotal());
+							variables_.put(ut.getTaskDefKey()+":userCountNeed",ut.getUserCountNeed());
+							variables_.put(ut.getTaskDefKey()+":"+"userCountNow",userCountNow);
+							variables_.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
+							variables_.put(ut.getTaskDefKey()+":"+"counterSign",candidateIds_);
+
+							taskService.setVariablesLocal(task1.getId(),variables_);
+						}
+
 						taskService.setVariable(task1.getId(),"counterSign",tUser.getCandidateIds());
 					}
 					taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
 				}
 
-			}
-
-			/**
-			 * 为当前任务设置属性值
-			 * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
-			 */
-			Task activeTask = taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).active().singleResult();
-			if(activeTask != null){
-				Map<String,Object> variables_ = new HashMap<String,Object>();
-				EntityWrapper<TUserTask> wrapper_ =new EntityWrapper<TUserTask>();
-				wrapper_.where("proc_def_key = {0}", processInstance.getProcessDefinitionKey()).andNew("version_={0}",version).andNew("task_def_key={0}",activeTask.getTaskDefinitionKey());
-				wrapper_.orderBy("order_num",true);
-				TUserTask ut = tUserTaskService.selectOne(wrapper_);
-				if(ut != null){
-					String candidateIds_ = ut.getCandidateIds();
-					for(String candidateId : candidateIds_.split(",")){
-						variables_.put(ut.getTaskDefKey()+":"+candidateId,"0:unfinished");
-					}
-					variables_.put(ut.getTaskDefKey()+":userCountTotal",ut.getUserCountTotal());
-					variables_.put(ut.getTaskDefKey()+":userCountNeed",ut.getUserCountNeed());
-					variables_.put(ut.getTaskDefKey()+":"+"userCountNow",userCountNow);
-					variables_.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
-
-					taskService.setVariablesLocal(activeTask.getId(),variables_);
-				}
 			}
 
 			result.setSuccess(true);

@@ -1,6 +1,7 @@
 package com.hengtian.activiti.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.collect.Maps;
 import com.hengtian.activiti.model.TMailLog;
 import com.hengtian.activiti.model.TUserTask;
 import com.hengtian.activiti.service.ActivitiService;
@@ -10,6 +11,8 @@ import com.hengtian.activiti.vo.CommentVo;
 import com.hengtian.activiti.vo.ProcessDefinitionVo;
 import com.hengtian.activiti.vo.TaskVo;
 import com.hengtian.common.base.BaseController;
+import com.hengtian.common.enums.TaskStatus;
+import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.ConstantUtils;
@@ -323,7 +326,8 @@ public class ActivitiController extends BaseController{
      * 委派页面(与转办共用一个页面) 
      */
     @GetMapping("/taskDelegate")
-    public String taskAssignee() {
+    public String taskAssignee(Model model,String taskId) {
+		model.addAttribute("taskId",taskId);
         return "activiti/taskDelegate";
     }
     
@@ -356,17 +360,74 @@ public class ActivitiController extends BaseController{
     @SysLog(value="转办任务")
     @RequestMapping("/transferTask")
     @ResponseBody
-    public Object transferTask(String taskId , String userId){
+    public Object transferTask(String taskId, String userId, String transferUserId){
     	try {
-			activitiService.transferTask(userId, taskId);
-			return renderSuccess("转办任务成功！");
+			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+    		if(task == null){
+				return renderError("此任务不存在！转办任务失败！");
+			}
+			ShiroUser user = getShiroUser();
+    		if(ConstantUtils.ADMIN_ID.equals(user.getId()) || user.getId().equals(userId)){
+				String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey() + ":taskType")+"";
+				if(TaskType.COUNTERSIGN.value.equals(taskType)){
+					//会签
+					//修改会签人
+					taskService.setAssignee(task.getId(),task.getAssignee().replace(userId,transferUserId));
+					//修改会签人相关属性值
+					Map<String,Object> variable = Maps.newHashMap();
+					variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
+					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, TaskStatus.UNFINISHED.value);
+
+					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":counterSign")+"";
+					variable.put(task.getTaskDefinitionKey() + ":counterSign", candidateIds.replace(userId,transferUserId));
+					taskService.setVariablesLocal(taskId, variable);
+				}else{
+					activitiService.transferTask(userId, taskId);
+				}
+				return renderSuccess("转办任务成功！");
+			}else{
+				return renderError("您所在的用户组没有权限进行该操作！");
+			}
 		} catch (ActivitiObjectNotFoundException e){
 			return renderError("此任务不存在！转办任务失败！");
 		} catch (Exception e) {
 			return renderError("委派任务失败，系统错误！");
 		}
     }
-    
+
+	/**
+	 * 任务转办前-获取任务审核人员
+	 * @param taskId
+	 * @return
+	 */
+	@SysLog(value="任务跳转")
+	@RequestMapping("/getTaskUser")
+	@ResponseBody
+	public Object getTaskUser(String taskId){
+		try {
+			if(StringUtils.isBlank(taskId)){
+				return renderError("任务ID为空！");
+			}
+			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+			if(task != null){
+				String candidateIds = taskService.getVariable(taskId, task.getTaskDefinitionKey() + ":counterSign")+"";
+				if(StringUtils.isNotBlank(candidateIds)){
+					EntityWrapper<SysUser> wrapper =new EntityWrapper<SysUser>();
+					wrapper.in("id",candidateIds.split(","));
+					List<SysUser> sysUsers = sysUserService.selectList(wrapper);
+
+					return sysUsers;
+				}
+			}else{
+				return renderError("任务不存在！");
+			}
+		} catch (Exception e) {
+			logger.info("获取任务审批人失败！",e);
+			return renderError("获取任务审批人失败！");
+		}
+
+		return renderError("未找到任务对应的审核人员！");
+	}
     
     /**
      * 任务跳转页面 

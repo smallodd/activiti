@@ -228,13 +228,14 @@
  	        width : 500,
  	        height : 450,
             modal : true,
- 	        href :  '${ctx}/activiti/taskDelegate',
+ 	        href :  '${ctx}/activiti/taskDelegate?taskId='+id,
  	        buttons : [ {
  	            text : '确定',
  	            handler : function() {
                     parent.$.modalDialog.openner_dataGrid = taskDataGrid;
                     var f = parent.$.modalDialog.handler.find('#taskTransferForm');
                     f.find("#taskId_").val(id);
+                    f.find("#userId_").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
                     f.submit();
  	            }
  	        }]
