@@ -84,8 +84,7 @@
 	            	jsonObj.name=taskJsonVal[i].name;
 	            	jsonObj.value=taskJsonVal[i].value;
 
-	            	var userCountNeed = $("#userCount"+jsonObj.key).val();
-                    jsonObj.userCountNeed = userCountNeed;
+                    jsonObj.userCountNeed = $("#userCount"+jsonObj.key).combobox("getValue");;
 	            	jsonArray.push(jsonObj);
             	}
             	var taskStr = JSON.stringify(jsonArray);
