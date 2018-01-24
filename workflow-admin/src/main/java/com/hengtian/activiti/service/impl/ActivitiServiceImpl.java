@@ -14,6 +14,7 @@ import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.*;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
+import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
 import org.activiti.engine.impl.RepositoryServiceImpl;
@@ -27,6 +28,7 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
+import org.activiti.image.ProcessDiagramGenerator;
 import org.apache.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +60,8 @@ public class ActivitiServiceImpl implements ActivitiService{
 	private TUserTaskService tUserTaskService;
 	@Autowired
 	private AppService appService;
-
+	@Autowired
+	ProcessEngineConfiguration processEngineConfiguration;
 	Logger logger = Logger.getLogger(ActivitiServiceImpl.class);
 	
 	@Override
@@ -269,7 +272,14 @@ public class ActivitiServiceImpl implements ActivitiService{
                 .singleResult();
         String resourceName = "";
         if (resourceType.equals("image")) {
-            resourceName = pd.getDiagramResourceName();
+        	BpmnModel bpmnModel=repositoryService.getBpmnModel(processDefinitionId);
+			ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
+			InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", new ArrayList<>(), new ArrayList<>(),
+					processEngineConfiguration.getLabelFontName(),
+					processEngineConfiguration.getActivityFontName(),
+					processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
+			return imageStream;
+
         } else if (resourceType.equals("xml")) {
             resourceName = pd.getResourceName();
         }

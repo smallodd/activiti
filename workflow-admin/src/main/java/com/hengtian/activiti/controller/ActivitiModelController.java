@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -350,7 +351,7 @@ public class ActivitiModelController extends BaseController {
         try {
             byte[] modelEditorSourceExtra = repositoryService.getModelEditorSourceExtra(modelId);
             if(modelEditorSourceExtra != null && modelEditorSourceExtra.length > 0){
-                InputStream in = new ByteArrayInputStream(modelEditorSourceExtra);
+                InputStream in = new ByteArrayInputStream(Base64Utils.decode(modelEditorSourceExtra));
                 byte[] b = new byte[1024];
                 int len = -1;
                 while ((len = in.read(b, 0, 1024)) != -1) {
