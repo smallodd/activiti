@@ -1,6 +1,7 @@
 package com.hengtian.activiti.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.activiti.model.TMailLog;
 import com.hengtian.activiti.model.TUserTask;
@@ -13,6 +14,7 @@ import com.hengtian.activiti.vo.TaskVo;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.ConstantUtils;
@@ -295,11 +297,12 @@ public class ActivitiController extends BaseController{
     @RequestMapping("/complateTask")
     @ResponseBody
     public Object complateTask( @RequestParam("taskId") String taskId,
+								@RequestParam("userId") String userId,
 					    		@RequestParam("commentContent") String commentContent,
 					    		@RequestParam("commentResult") Integer commentResult){
-		return activitiService.complateTask(taskId,commentContent,commentResult);
+		return activitiService.complateTask(taskId,userId,commentContent,commentResult);
     }
-    
+
     /**
      * 签收任务
      * @param id
@@ -400,7 +403,7 @@ public class ActivitiController extends BaseController{
 	 * @param taskId
 	 * @return
 	 */
-	@SysLog(value="任务跳转")
+	@SysLog(value="获取任务审核人员")
 	@RequestMapping("/getTaskUser")
 	@ResponseBody
 	public Object getTaskUser(String taskId){
@@ -410,10 +413,57 @@ public class ActivitiController extends BaseController{
 			}
 			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
 			if(task != null){
-				String candidateIds = taskService.getVariable(taskId, task.getTaskDefinitionKey() + ":counterSign")+"";
+				String candidateIds = taskService.getVariable(taskId, task.getTaskDefinitionKey() + ":" + TaskVariable.TASKUSER.value)+"";
 				if(StringUtils.isNotBlank(candidateIds)){
 					EntityWrapper<SysUser> wrapper =new EntityWrapper<SysUser>();
 					wrapper.in("id",candidateIds.split(","));
+					List<SysUser> sysUsers = sysUserService.selectList(wrapper);
+
+					return sysUsers;
+				}
+			}else{
+				return renderError("任务不存在！");
+			}
+		} catch (Exception e) {
+			logger.info("获取任务审批人失败！",e);
+			return renderError("获取任务审批人失败！");
+		}
+
+		return renderError("未找到任务对应的审核人员！");
+	}
+
+	/**
+	 * 获取任务节点未完成任务审核人员
+	 * @param taskId
+	 * @return
+	 */
+	@SysLog(value="获取任务节点未完成任务审核人员")
+	@RequestMapping("/getTaskUserWithEnd")
+	@ResponseBody
+	public Object getTaskUserWithEnd(String taskId){
+		try {
+			if(StringUtils.isBlank(taskId)){
+				return renderError("任务ID为空！");
+			}
+			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+			if(task != null){
+				ShiroUser user = getShiroUser();
+				if(!ConstantUtils.ADMIN_ID.equals(user.getId())){
+					SysUser sysUser = sysUserService.selectById(user.getId());
+					return Lists.newArrayList(sysUser);
+				}
+				Map<String, Object> variablesLocal = taskService.getVariablesLocal(taskId);
+				Iterator<String> iterator = variablesLocal.keySet().iterator();
+				List<String> candidateIdList = Lists.newArrayList();
+				while(iterator.hasNext()){
+					String key = iterator.next();
+					if(StringUtils.contains(variablesLocal.get(key)+"",TaskStatus.UNFINISHED.value)){
+						candidateIdList.add(key.replace(task.getTaskDefinitionKey()+":",""));
+					}
+				}
+				if(CollectionUtils.isNotEmpty(candidateIdList)){
+					EntityWrapper<SysUser> wrapper =new EntityWrapper<SysUser>();
+					wrapper.in("id",candidateIdList);
 					List<SysUser> sysUsers = sysUserService.selectList(wrapper);
 
 					return sysUsers;

@@ -203,13 +203,13 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         if(ut != null){
             String candidateIds = ut.getCandidateIds();
             for(String candidateId : candidateIds.split(",")){
-                result.put(ut.getTaskDefKey()+":"+candidateId,"0:unfinished");
+                result.put(ut.getTaskDefKey()+":"+candidateId,candidateId+":unfinished");
             }
-            result.put(ut.getTaskDefKey()+":"+"userCountTotal",ut.getUserCountTotal());
-            result.put(ut.getTaskDefKey()+":"+"userCountNeed",ut.getUserCountNeed());
-            result.put(ut.getTaskDefKey()+":"+"userCountNow",0);
-            result.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
-            result.put(ut.getTaskDefKey()+":"+"counterSign",candidateIds);
+            result.put(ut.getTaskDefKey()+":userCountTotal",ut.getUserCountTotal());
+            result.put(ut.getTaskDefKey()+":userCountNeed",ut.getUserCountNeed());
+            result.put(ut.getTaskDefKey()+":userCountNow",0);
+            result.put(ut.getTaskDefKey()+":taskType",ut.getTaskType());
+            result.put(ut.getTaskDefKey()+":taskUser",candidateIds);
 
             taskService.setVariablesLocal(activeTask.getId(),result);
         }

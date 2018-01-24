@@ -3,9 +3,9 @@ package com.hengtian.common.enums;
 public enum TaskStatus {
 
     //未完成
-    UNFINISHED("0:unfinished"),
+    UNFINISHED("unfinished"),
     //完成
-    FINISHED("1:finished"),
+    FINISHED("finished"),
     //转办
     TRANSFER("transferTask");
 

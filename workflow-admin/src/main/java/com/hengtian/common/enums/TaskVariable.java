@@ -9,7 +9,9 @@ public enum TaskVariable {
     //任务节点需要审核人数
     USERCOUNTNEED("userCountNeed"),
     //任务节点已审核人数
-    USERCOUNTNOW("userCountNow");
+    USERCOUNTNOW("userCountNow"),
+    //任务节点所有审核人
+    TASKUSER("taskUser");
 
     public String value;
 

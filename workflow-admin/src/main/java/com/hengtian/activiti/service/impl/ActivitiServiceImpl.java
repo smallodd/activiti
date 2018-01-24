@@ -1,7 +1,6 @@
 package com.hengtian.activiti.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.google.common.collect.Lists;
 import com.hengtian.activiti.model.TUserTask;
 import com.hengtian.activiti.service.ActivitiService;
 import com.hengtian.activiti.service.TUserTaskService;
@@ -10,10 +9,15 @@ import com.hengtian.activiti.vo.ProcessDefinitionVo;
 import com.hengtian.activiti.vo.TaskVo;
 import com.hengtian.application.model.App;
 import com.hengtian.application.service.AppService;
+import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
-import com.hengtian.common.utils.*;
+import com.hengtian.common.utils.BeanUtils;
+import com.hengtian.common.utils.ConstantUtils;
+import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.utils.StringUtils;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import org.activiti.engine.*;
@@ -131,8 +135,7 @@ public class ActivitiServiceImpl implements ActivitiService{
     	if(!isAll){
 			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 			taskQuery=taskService.createTaskQuery().taskAssigneeLike("%"+shiroUser.getId()+"%");
-			taskQuery.taskVariableValueEquals("0:unfinished");
-			//taskQuery.processVariableValueEquals("0:unfinished");
+			taskQuery.taskVariableValueEquals(shiroUser.getId() + ":" + TaskStatus.UNFINISHED.value);
 		}else{
 			taskQuery=taskService.createTaskQuery();
 		}
@@ -189,15 +192,29 @@ public class ActivitiServiceImpl implements ActivitiService{
 	/**
 	 * 办理任务
 	 * @param taskId
+	 * @param userId 任务审核人，管理员待审时不为空
 	 * @param commentContent
 	 * @param commentResult
 	 */
 	@Override
 	@Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
-	public Result complateTask(String taskId,String commentContent,Integer commentResult){
+	public Result complateTask(String taskId,String userId,String commentContent,Integer commentResult){
 		Result result = new Result();
+		ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
+
+		if(ConstantUtils.ADMIN_ID.equals(shiroUser.getId())){
+			//用户ID为1是管理员
+			if(StringUtils.isBlank(userId)){
+				logger.error("办理失败：管理员办理，未选择代办人");
+				result.setSuccess(false);
+				result.setMsg("办理失败：管理员办理，未选择代办人");
+				return result;
+			}
+			commentContent = commentContent + "【管理员代办】";
+		}else{
+			userId = shiroUser.getId();
+		}
 		try{
-			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
 			if(task == null){
 				result.setSuccess(true);
@@ -212,20 +229,24 @@ public class ActivitiServiceImpl implements ActivitiService{
 			int userCountNow = 0;
 
 			if(map != null){
-				String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":taskType") + "";
+				String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value) + "";
 				if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
-					String candidateIds = map.get(task.getTaskDefinitionKey()+":counterSign") + "";
+					String candidateIds = map.get(task.getTaskDefinitionKey()+":"+TaskStatus.TRANSFER.value) + "";
 					//会签人
-					userCountNow = (int)map.get(task.getTaskDefinitionKey()+":userCountNow");
-					int userCountNeed = (int)map.get(task.getTaskDefinitionKey()+":userCountNeed");
-					taskService.setVariable(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),"1:finished");
-					taskService.setVariable(taskId,task.getTaskDefinitionKey()+":userCountNow",++userCountNow);
+					userCountNow = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value);
+					int userCountNeed = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNEED.value);
+					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+userId,userId+":"+TaskStatus.FINISHED.value);
+					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value,++userCountNow);
 					if(userCountNow < userCountNeed){
-						List<Object> tempList = Arrays.asList(candidateIds.split(","));
+						/*List<Object> tempList = Arrays.asList(candidateIds.split(","));
 						List assigneeList = new ArrayList(tempList);
 						assigneeList.remove(shiroUser.getId());
 						String str = StringUtils.join(assigneeList, ",");
-						taskService.setAssignee(taskId, str);
+						taskService.setAssignee(taskId, str);*/
+
+						//添加意见
+						identityService.setAuthenticatedUserId(userId);
+						taskService.addComment(task.getId(), processInstance.getId(),String.valueOf(commentResult), commentContent);
 
 						result.setSuccess(true);
 						result.setMsg("办理成功！");
@@ -233,7 +254,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 					}
 				}else {
 					//候选人
-					taskService.setVariable(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),"1:finished");
+					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),userId+":"+TaskStatus.FINISHED.value);
 				}
 			}
 
@@ -292,18 +313,18 @@ public class ActivitiServiceImpl implements ActivitiService{
 						if(ut != null){
 							String candidateIds_ = ut.getCandidateIds();
 							for(String candidateId : candidateIds_.split(",")){
-								variables_.put(ut.getTaskDefKey()+":"+candidateId,"0:unfinished");
+								variables_.put(ut.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
 							}
-							variables_.put(ut.getTaskDefKey()+":userCountTotal",ut.getUserCountTotal());
-							variables_.put(ut.getTaskDefKey()+":userCountNeed",ut.getUserCountNeed());
-							variables_.put(ut.getTaskDefKey()+":"+"userCountNow",userCountNow);
-							variables_.put(ut.getTaskDefKey()+":"+"taskType",ut.getTaskType());
-							variables_.put(ut.getTaskDefKey()+":"+"counterSign",candidateIds_);
+							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,ut.getUserCountTotal());
+							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,ut.getUserCountNeed());
+							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,userCountNow);
+							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,ut.getTaskType());
+							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds_);
 
 							taskService.setVariablesLocal(task1.getId(),variables_);
 						}
 
-						taskService.setVariable(task1.getId(),"counterSign",tUser.getCandidateIds());
+						//taskService.setVariableLocal(task1.getId(),"counterSign",tUser.getCandidateIds());
 					}
 					taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
 				}

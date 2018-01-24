@@ -38,7 +38,7 @@ public interface ActivitiService {
 	 * @param commentContent
 	 * @param commentResult
 	 */
-	Result complateTask(String taskId, String commentContent, Integer commentResult);
+	Result complateTask(String taskId, String userId, String commentContent, Integer commentResult);
 
 	/**
 	 * 获取流程资源文件

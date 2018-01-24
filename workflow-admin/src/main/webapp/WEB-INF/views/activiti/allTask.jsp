@@ -164,6 +164,7 @@
             handler : function() {
                 parent.$.modalDialog.openner_dataGrid = taskDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
                 var f = parent.$.modalDialog.handler.find('#complateTaskForm');
+                f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
                 f.submit();
             }
         } ]
