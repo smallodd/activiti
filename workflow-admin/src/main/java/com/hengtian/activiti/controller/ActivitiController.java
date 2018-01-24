@@ -371,7 +371,7 @@ public class ActivitiController extends BaseController{
 			}
 			ShiroUser user = getShiroUser();
     		if(ConstantUtils.ADMIN_ID.equals(user.getId()) || user.getId().equals(userId)){
-				String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey() + ":taskType")+"";
+				String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value)+"";
 				if(TaskType.COUNTERSIGN.value.equals(taskType)){
 					//会签
 					//修改会签人
@@ -379,13 +379,18 @@ public class ActivitiController extends BaseController{
 					//修改会签人相关属性值
 					Map<String,Object> variable = Maps.newHashMap();
 					variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
-					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, TaskStatus.UNFINISHED.value);
+					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
 
-					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":counterSign")+"";
-					variable.put(task.getTaskDefinitionKey() + ":counterSign", candidateIds.replace(userId,transferUserId));
+					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value)+"";
+					variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, candidateIds.replace(userId,transferUserId));
 					taskService.setVariablesLocal(taskId, variable);
 				}else{
-					activitiService.transferTask(userId, taskId);
+					Map<String,Object> variable = Maps.newHashMap();
+					variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
+					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
+					variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, transferUserId);
+					taskService.setVariablesLocal(taskId, variable);
+					activitiService.transferTask(transferUserId, taskId);
 				}
 				return renderSuccess("转办任务成功！");
 			}else{
