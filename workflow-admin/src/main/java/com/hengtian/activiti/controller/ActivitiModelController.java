@@ -1,9 +1,12 @@
 package com.hengtian.activiti.controller;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.hengtian.activiti.model.TUserTask;
 import com.hengtian.activiti.service.ActivitiModelService;
+import com.hengtian.activiti.service.TUserTaskService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.result.Result;
@@ -19,6 +22,7 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
@@ -27,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +40,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.sql.Wrapper;
 import java.util.*;
 
 @Controller
@@ -55,6 +61,9 @@ public class ActivitiModelController extends BaseController {
 
     @Autowired
     StrongUuidGenerator uuidGenerator;
+
+    @Autowired
+    TUserTaskService tUserTaskService;
 
     /**
      * 流程模型管理页
@@ -342,7 +351,7 @@ public class ActivitiModelController extends BaseController {
         try {
             byte[] modelEditorSourceExtra = repositoryService.getModelEditorSourceExtra(modelId);
             if(modelEditorSourceExtra != null && modelEditorSourceExtra.length > 0){
-                InputStream in = new ByteArrayInputStream(modelEditorSourceExtra);
+                InputStream in = new ByteArrayInputStream(Base64Utils.decode(modelEditorSourceExtra));
                 byte[] b = new byte[1024];
                 int len = -1;
                 while ((len = in.read(b, 0, 1024)) != -1) {
@@ -411,5 +420,21 @@ public class ActivitiModelController extends BaseController {
         }
 
         return trees;
+    }
+    @ResponseBody
+    @RequestMapping(value = "/deleteModel")
+    public Object deleteModel(String id){
+        Model model=repositoryService.getModel(id);
+        if(StringUtils.isNotBlank(model.getDeploymentId())){
+            EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
+            ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().deploymentId(model.getDeploymentId()).singleResult();
+            wrapper.where("proc_def_key={0}",processDefinition.getKey());
+            tUserTaskService.delete(wrapper);
+            repositoryService.deleteDeployment(model.getDeploymentId(),true);
+
+        }
+        repositoryService.deleteModel(id);
+
+        return renderSuccess("删除成功！");
     }
 }
