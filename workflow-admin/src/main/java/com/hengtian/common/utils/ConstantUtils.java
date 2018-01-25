@@ -32,7 +32,7 @@ public class ConstantUtils {
 	/**
 	 * 管理员ID
 	 */
-	public final static String ADMIN_ID = "1";
+	public final static String ADMIN_ID = "admin";
 	
 	/**
 	 * @author liujunyang

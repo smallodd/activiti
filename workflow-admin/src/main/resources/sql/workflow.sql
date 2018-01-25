@@ -244,7 +244,7 @@ CREATE TABLE `sys_user` (
 
 /*Data for the table `sys_user` */
 
-insert  into `sys_user`(`id`,`login_name`,`login_pwd`,`user_name`,`user_phone`,`user_email`,`user_type`,`user_sex`,`register_time`,`department_id`) values ('1','admin','E10ADC3949BA59ABBE56E057F20F883E','管理员','123456','13601094934@163.com','0','0','2014-02-19 01:00:00','1');
+insert  into `sys_user`(`id`,`login_name`,`login_pwd`,`user_name`,`user_phone`,`user_email`,`user_type`,`user_sex`,`register_time`,`department_id`) values ('admin','admin','E10ADC3949BA59ABBE56E057F20F883E','管理员','123456','13601094934@163.com','0','0','2014-02-19 01:00:00','1');
 
 /*Table structure for table `sys_user_role` */
 
@@ -259,7 +259,7 @@ CREATE TABLE `sys_user_role` (
 
 /*Data for the table `sys_user_role` */
 
-insert  into `sys_user_role`(`id`,`user_id`,`role_id`) values ('b0aa7180c2f1400dba95ab43b5d4d59e','1','1');
+insert  into `sys_user_role`(`id`,`user_id`,`role_id`) values ('b0aa7180c2f1400dba95ab43b5d4d59e','admin','1');
 
 /*Table structure for table `t_mail_log` */
 
