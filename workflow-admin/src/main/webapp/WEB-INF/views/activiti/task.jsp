@@ -87,7 +87,7 @@
             title : '业务主键',
             field : 'businessKey'
         },{
-            width : '100',
+            width : '250',
             title : '当前审批人(主键)',
             field : 'taskAssign'
         }, {
