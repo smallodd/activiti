@@ -10,6 +10,8 @@ public enum TaskVariable {
     USERCOUNTNEED("userCountNeed"),
     //任务节点已审核人数
     USERCOUNTNOW("userCountNow"),
+    //任务节点已审核人数(拒绝)
+    USERCOUNTREFUSE("userCountRefuse"),
     //任务节点所有审核人
     TASKUSER("taskUser");
 

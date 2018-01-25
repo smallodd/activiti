@@ -270,24 +270,38 @@ public class ActivitiServiceImpl implements ActivitiService{
 				if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
 					String candidateIds = map.get(task.getTaskDefinitionKey()+":"+TaskStatus.TRANSFER.value) + "";
 					//会签人
+
 					userCountNow = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value);
+					int userCountTotal = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTTOTAL.value);
 					int userCountNeed = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNEED.value);
-					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+userId,userId+":"+TaskStatus.FINISHED.value);
+					int userCountRefuse = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTREFUSE.value);
+					String taskResult = "agree";
+					if(ConstantUtils.vacationStatus.NOT_PASSED.getValue()==commentResult){
+						taskResult = "refuse";
+						userCountRefuse++;
+					}
+					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+userId,userId+":"+TaskStatus.FINISHED.value+":"+taskResult);
 					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value,++userCountNow);
-					if(userCountNow < userCountNeed){
-						/*List<Object> tempList = Arrays.asList(candidateIds.split(","));
-						List assigneeList = new ArrayList(tempList);
-						assigneeList.remove(shiroUser.getId());
-						String str = StringUtils.join(assigneeList, ",");
-						taskService.setAssignee(taskId, str);*/
+					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTREFUSE.value,userCountRefuse);
 
-						//添加意见
-						identityService.setAuthenticatedUserId(userId);
-						taskService.addComment(task.getId(), processInstance.getId(),String.valueOf(commentResult), commentContent);
+					int userCountAgree = userCountNow - userCountRefuse;
+					if(userCountAgree >= userCountNeed){
+						//------------任务完成-通过------------
+						commentResult = 2;
+					}else{
+						if(userCountTotal - userCountNow + userCountAgree < userCountNeed){
+							//------------任务完成-未通过------------
+							commentResult = 3;
+						}else{
+							//------------任务继续------------
+							//添加意见
+							identityService.setAuthenticatedUserId(userId);
+							taskService.addComment(task.getId(), processInstance.getId(),String.valueOf(commentResult), commentContent);
 
-						result.setSuccess(true);
-						result.setMsg("办理成功！");
-						return result;
+							result.setSuccess(true);
+							result.setMsg("办理成功！");
+							return result;
+						}
 					}
 				}else {
 					//候选人
@@ -355,6 +369,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,ut.getUserCountTotal());
 							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,ut.getUserCountNeed());
 							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,userCountNow);
+							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
 							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,ut.getTaskType());
 							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds_);
 
