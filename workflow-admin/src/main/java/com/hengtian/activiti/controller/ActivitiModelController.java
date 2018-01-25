@@ -236,6 +236,7 @@ public class ActivitiModelController extends BaseController {
 
 
             repositoryService.addModelEditorSource(model.getId(), modelNode.toString().getBytes("utf-8"));
+            repositoryService.addModelEditorSourceExtra(model.getId(),repositoryService.getModelEditorSourceExtra(modelData.getId()));
 
 
             logger.info("复制成功");
