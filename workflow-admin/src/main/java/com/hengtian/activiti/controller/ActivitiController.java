@@ -1,5 +1,6 @@
 package com.hengtian.activiti.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.activiti.model.TMailLog;
 import com.hengtian.activiti.model.TUserTask;
@@ -11,6 +12,7 @@ import com.hengtian.activiti.vo.ProcessDefinitionVo;
 import com.hengtian.activiti.vo.TaskVo;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
+import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.DateUtils;
@@ -45,6 +47,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -294,7 +298,8 @@ public class ActivitiController extends BaseController{
     public Object complateTask( @RequestParam("taskId") String taskId,
 					    		@RequestParam("commentContent") String commentContent,
 					    		@RequestParam("commentResult") Integer commentResult){
-		return activitiService.complateTask(taskId,commentContent,commentResult);
+		Result result= activitiService.complateTask(taskId,commentContent,commentResult);
+		return JSONObject.toJSONString(result);
     }
     
     /**
@@ -413,8 +418,21 @@ public class ActivitiController extends BaseController{
     public void getProcessResource(
     		@RequestParam("type") String resourceType,
     		@RequestParam("pdid") String processDefinitionId, 
-    		HttpServletResponse response){
+    		HttpServletResponse response,HttpServletRequest request){
     	try {
+    		if(resourceType.equals("image")){
+    			ProcessDefinition processDefinition=repositoryService.getProcessDefinition(processDefinitionId);
+    			org.activiti.engine.repository.Model model=repositoryService.createModelQuery().deploymentId(processDefinition.getDeploymentId()).deployed().singleResult();
+				String contextPath = request.getSession().getServletContext().getRealPath("image");
+				FileInputStream fileInputStream=new FileInputStream(contextPath+ File.separator+model.getId()+".png");
+				byte[] b = new byte[1024];
+				int len = -1;
+				while ((len = fileInputStream.read(b, 0, 1024)) != -1) {
+					response.getOutputStream().write(b, 0, len);
+				}
+				fileInputStream.close();
+				return;
+			}
 			InputStream in = activitiService.getProcessResource(resourceType, processDefinitionId);
 			byte[] b = new byte[1024];
 			int len = -1;
