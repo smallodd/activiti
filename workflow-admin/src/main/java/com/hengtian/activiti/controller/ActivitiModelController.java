@@ -15,7 +15,10 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import net.sf.json.JSONObject;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
-import org.activiti.bpmn.model.*;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.EndEvent;
+import org.activiti.bpmn.model.FlowElement;
+import org.activiti.bpmn.model.StartEvent;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.RepositoryService;
@@ -25,23 +28,20 @@ import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.sql.Wrapper;
-import java.util.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 @Controller
 @RequestMapping("/activiti/model")
@@ -348,17 +348,18 @@ public class ActivitiModelController extends BaseController {
      * 查看流程图
      */
     @GetMapping("/image/{modelId}")
-    public void modelImage(@PathVariable String modelId,HttpServletResponse response){
+    public void modelImage(@PathVariable String modelId,HttpServletResponse response,HttpServletRequest request){
         try {
-            byte[] modelEditorSourceExtra = repositoryService.getModelEditorSourceExtra(modelId);
-            if(modelEditorSourceExtra != null && modelEditorSourceExtra.length > 0){
-                InputStream in = new ByteArrayInputStream(Base64Utils.decode(modelEditorSourceExtra));
+            String contextPath = request.getSession().getServletContext().getRealPath("image");
+            FileInputStream fileInputStream=new FileInputStream(contextPath+File.separator+modelId+".png");
+
+
                 byte[] b = new byte[1024];
                 int len = -1;
-                while ((len = in.read(b, 0, 1024)) != -1) {
+                while ((len = fileInputStream.read(b, 0, 1024)) != -1) {
                     response.getOutputStream().write(b, 0, len);
                 }
-            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
