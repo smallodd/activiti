@@ -60,6 +60,7 @@
                     sortable : true
                 } ] ],
                 onSelect: function (rowIndex, rowData) {
+                    debugger;
                     var jsonStr = $("#taskJson").val();
                     var taskKey = $("#taskKey").val();
 
@@ -81,6 +82,7 @@
                         var b = false;
                         for(var i=0;i<taskArray.length;i++){
                             if(taskArray[i].key == taskKey){
+                                b = true;
                                 var user = taskArray[i];
                                 if($.inArray(rowData.id, user.value.split(",")) < 0){
                                     user.name = (user.name==""?"":(user.name + ",")) + rowData.userName;
@@ -90,7 +92,6 @@
 
                                     var taskStr = JSON.stringify(taskArray);
                                     $("#taskJson").val(taskStr);
-                                    b = true;
                                     break;
 								}
                             }

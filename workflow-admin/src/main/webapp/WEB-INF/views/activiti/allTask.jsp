@@ -85,7 +85,7 @@
             title : '当前任务节点名称',
             field : 'taskName'
         },{
-            width : '100',
+            width : '200',
             title : '当前审批人',
             field : 'taskAssign'
         }, {
