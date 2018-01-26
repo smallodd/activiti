@@ -6,9 +6,7 @@ MySQL - 5.7.18-log : Database - workflow
 
 CREATE DATABASE /*!32312 IF NOT EXISTS*/`workflow` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
-DROP TABLE IF EXISTS `act_evt_log`;
 
-DROP TABLE IF EXISTS `sys_department`;
 
 CREATE TABLE `sys_department` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -28,7 +26,7 @@ insert  into `sys_department`(`id`,`department_code`,`department_name`,`departme
 
 /*Table structure for table `sys_oper_log` */
 
-DROP TABLE IF EXISTS `sys_oper_log`;
+
 
 CREATE TABLE `sys_oper_log` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -48,7 +46,7 @@ CREATE TABLE `sys_oper_log` (
 
 /*Table structure for table `sys_resource` */
 
-DROP TABLE IF EXISTS `sys_resource`;
+
 
 CREATE TABLE `sys_resource` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -124,7 +122,7 @@ INSERT INTO `sys_resource` VALUES ('fbb959e2f8e04e92bf60305994ec6e48', '/activit
 
 /*Table structure for table `sys_role` */
 
-DROP TABLE IF EXISTS `sys_role`;
+
 
 CREATE TABLE `sys_role` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -141,7 +139,7 @@ insert  into `sys_role`(`id`,`role_code`,`create_time`,`description`,`role_name`
 
 /*Table structure for table `sys_role_resource` */
 
-DROP TABLE IF EXISTS `sys_role_resource`;
+
 
 CREATE TABLE `sys_role_resource` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -226,7 +224,7 @@ INSERT INTO `sys_role_resource` VALUES ('fc2966a0d5b34901815fc62f5bef5c6a', 'a6c
 
 /*Table structure for table `sys_user` */
 
-DROP TABLE IF EXISTS `sys_user`;
+
 
 CREATE TABLE `sys_user` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -248,7 +246,7 @@ insert  into `sys_user`(`id`,`login_name`,`login_pwd`,`user_name`,`user_phone`,`
 
 /*Table structure for table `sys_user_role` */
 
-DROP TABLE IF EXISTS `sys_user_role`;
+
 
 CREATE TABLE `sys_user_role` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -263,7 +261,6 @@ insert  into `sys_user_role`(`id`,`user_id`,`role_id`) values ('b0aa7180c2f1400d
 
 /*Table structure for table `t_mail_log` */
 
-DROP TABLE IF EXISTS `t_mail_log`;
 
 CREATE TABLE `t_mail_log` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -278,7 +275,7 @@ CREATE TABLE `t_mail_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='邮件发送日志';
 
 
-DROP TABLE IF EXISTS `t_user_task`;
+
 
 CREATE TABLE `t_user_task` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -295,7 +292,7 @@ CREATE TABLE `t_user_task` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='用户任务表';
 
 
-DROP TABLE IF EXISTS `t_vacation`;
+
 
 CREATE TABLE `t_vacation` (
   `id` varchar(32) NOT NULL COMMENT '主键',
@@ -312,7 +309,7 @@ CREATE TABLE `t_vacation` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='请假表';
 
-DROP TABLE IF EXISTS `t_app`;
+
 CREATE TABLE `t_app` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(64) NOT NULL COMMENT '应用名称',
@@ -326,7 +323,7 @@ CREATE TABLE `t_app` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='应用表';
 
-DROP TABLE IF EXISTS `t_app_model`;
+
 CREATE TABLE `t_app_model` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `app_key` varchar(64) DEFAULT NULL COMMENT '关联t_app key',
