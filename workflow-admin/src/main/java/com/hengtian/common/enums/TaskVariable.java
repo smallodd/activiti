@@ -13,7 +13,9 @@ public enum TaskVariable {
     //任务节点已审核人数(拒绝)
     USERCOUNTREFUSE("userCountRefuse"),
     //任务节点所有审核人
-    TASKUSER("taskUser");
+    TASKUSER("taskUser"),
+    //任务流程最后审核人
+    LASTTASKUSER("lastTaskUser");
 
     public String value;
 

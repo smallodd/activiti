@@ -240,7 +240,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 		ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 
 		if(ConstantUtils.ADMIN_ID.equals(shiroUser.getId())){
-			//用户ID为1是管理员
+			//用户ID为admin是管理员
 			if(StringUtils.isBlank(userId)){
 				logger.error("办理失败：管理员办理，未选择代办人");
 				result.setSuccess(false);
@@ -265,6 +265,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			//会签处理
 			int userCountNow = 0;
 
+			runtimeService.setVariable(processInstanceId,processInstanceId+":"+TaskVariable.LASTTASKUSER.value,userId);
 			if(map != null){
 				String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value) + "";
 				if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
@@ -275,12 +276,12 @@ public class ActivitiServiceImpl implements ActivitiService{
 					int userCountTotal = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTTOTAL.value);
 					int userCountNeed = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNEED.value);
 					int userCountRefuse = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTREFUSE.value);
-					String taskResult = "agree";
-					if(ConstantUtils.vacationStatus.NOT_PASSED.getValue()==commentResult){
-						taskResult = "refuse";
+					String taskResult = TaskStatus.FINISHEDPASS.value;
+					if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
+						taskResult = TaskStatus.FINISHEDREFUSE.value;
 						userCountRefuse++;
 					}
-					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+userId,userId+":"+TaskStatus.FINISHED.value+":"+taskResult);
+					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+userId,userId+":"+taskResult);
 					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value,++userCountNow);
 					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTREFUSE.value,userCountRefuse);
 
@@ -305,7 +306,11 @@ public class ActivitiServiceImpl implements ActivitiService{
 					}
 				}else {
 					//候选人
-					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),userId+":"+TaskStatus.FINISHED.value);
+					String taskResult = TaskStatus.FINISHEDPASS.value;
+					if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
+						taskResult = TaskStatus.FINISHEDREFUSE.value;
+					}
+					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),userId+":"+taskResult);
 				}
 			}
 
@@ -456,35 +461,55 @@ public class ActivitiServiceImpl implements ActivitiService{
 		}
 	}
 
+	/**
+	 * 查询历史任务
+	 * @param isAll true：全部历史任务；false：我的历史任务
+	 * @return
+	 * @author houjinrong@chtwm.com
+	 * date 2018/1/26 9:27
+	 */
 	@Override
-	public void selectHisTaskDataGrid(PageInfo pageInfo,boolean flag,TaskVo taskVo) {
+	public void selectHisTaskDataGrid(PageInfo pageInfo,boolean isAll,TaskVo taskVo) {
 
 		List<TaskVo> tasks = new ArrayList<TaskVo>();
-		if(!flag){
+		if(!isAll){
 			//我的任务
-			HistoricTaskInstanceQuery taskQuery= historyService.createHistoricTaskInstanceQuery();
 			ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
-			//taskQuery.taskAssignee(shiroUser.getId());
-			taskQuery.taskAssigneeLike("%"+shiroUser.getId()+"%");
-			taskQuery.taskVariableValueEquals(shiroUser.getId()+":"+TaskStatus.FINISHED.value);
-
+			NativeHistoricTaskInstanceQuery nativeTaskQuery = historyService.createNativeHistoricTaskInstanceQuery();
+			StringBuffer sb = new StringBuffer();
+			sb.append("SELECT DISTINCT RES.* FROM");
+			String table = " ACT_HI_TASKINST RES INNER JOIN ACT_HI_VARINST A0 ON RES.ID_ = A0.TASK_ID_ ";
+			String where = " WHERE ((RES.ASSIGNEE_ = #{userId} AND RES.END_TIME_ IS NOT NULL) OR ((RES.ASSIGNEE_ LIKE #{userIdLike} AND A0.NAME_ IS NOT NULL AND A0.VAR_TYPE_ = 'string' AND A0.TEXT_ = #{taskStatus} AND RES.DELETE_REASON_ IS NULL) OR (RES.DELETE_REASON_ IS NOT NULL AND A0.NAME_ IS NOT NULL AND A0.VAR_TYPE_ = 'string' AND A0.TEXT_ LIKE #{userId_}))) ";
+			//业务主键
 			if(StringUtils.isNotBlank(taskVo.getBusinessKey())){
-				taskQuery.processInstanceBusinessKeyLike("%"+taskVo.getBusinessKey()+"%");
+				table = table + " INNER JOIN ACT_HI_PROCINST HPI ON RES.PROC_INST_ID_ = HPI.ID_ ";
+				where = where + " AND HPI.BUSINESS_KEY_ LIKE #{businessKey} ";
 			}
+			//标题
 			if(StringUtils.isNotBlank(taskVo.getBusinessName())){
-				taskQuery.processVariableValueLike("applyTitle","%"+taskVo.getBusinessName()+"%");
+				table = table + " JOIN ACT_HI_VARINST A1 ON RES.PROC_INST_ID_ = A1.PROC_INST_ID_ ";
+				where = where + " AND A1.TASK_ID_ IS NULL AND A1.NAME_ = 'applyTitle' AND A1.VAR_TYPE_ = 'string' AND A1.TEXT_ LIKE #{applyTitle} ";
 			}
+			//申请人
 			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
-				taskQuery.processVariableValueLike("applyUserName","%"+taskVo.getProcessOwner()+"%");
+				table = table + " INNER JOIN ACT_HI_VARINST A2 ON RES.PROC_INST_ID_ = A2.PROC_INST_ID_ ";
+				where = where + " AND A2.TASK_ID_ IS NULL AND A2.NAME_ = 'applyUserName' AND A2.VAR_TYPE_ = 'string' AND A2.TEXT_ LIKE #{applyUserName} ";
 			}
-			pageInfo.setTotal(taskQuery.list().size());
-			List<HistoricTaskInstance> list= taskQuery
-					.orderByTaskCreateTime().desc()
+			sb.append(table);
+			sb.append(where);
+			sb.append(" ORDER BY RES.ID_ DESC ");
+			List<HistoricTaskInstance> historicTaskInstances = nativeTaskQuery.sql(sb.toString())
+					.parameter("userIdLike", "%" + shiroUser.getId() + "%")
+					.parameter("userId", shiroUser.getId())
+					.parameter("userId_", "%" + shiroUser.getId() + ":%")
+					.parameter("taskStatus", shiroUser.getId() + ":finished")
+					.parameter("businessKey", "%" + taskVo.getBusinessKey() + "%")
+					.parameter("applyTitle", "%" + taskVo.getBusinessName() + "%")
+					.parameter("applyUserName", taskVo.getProcessOwner())
 					.listPage(pageInfo.getFrom(), pageInfo.getSize());
-			for(HistoricTaskInstance his : list){
-				if(his.getEndTime() == null){
-					continue;
-				}
+			pageInfo.setTotal(nativeTaskQuery.list().size());
+
+			for(HistoricTaskInstance his : historicTaskInstances){
 				TaskVo vo = new TaskVo();
 				vo.setTaskCreateTime(his.getEndTime());
 				vo.setTaskName(his.getName());
@@ -497,18 +522,32 @@ public class ActivitiServiceImpl implements ActivitiService{
 				vo.setBusinessName(commonVo.getApplyTitle());
 				vo.setProcessOwner(commonVo.getApplyUserName());
 				vo.setBusinessKey(commonVo.getBusinessKey());
-				HistoricTaskInstanceQuery historicTaskInstanceQuery=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getProcessInstanceId()).orderByTaskCreateTime().desc();
 
+				if(map.containsKey(his.getTaskDefinitionKey()+":"+shiroUser.getId())){
+					String taskStatus = map.get(his.getTaskDefinitionKey()+":"+shiroUser.getId()) + "";
+					if(TaskStatus.UNFINISHED.value.equals(taskStatus)){
+						vo.setTaskState("未审核");
+					}else if(TaskStatus.FINISHEDPASS.value.equals(taskStatus)){
+						vo.setTaskState("通过");
+					}else if(TaskStatus.FINISHEDREFUSE.value.equals(taskStatus)){
+						vo.setTaskState("拒绝");
+					}
+					vo.setTaskAssign(map.get(his.getProcessInstanceId()+":"+TaskVariable.LASTTASKUSER.value)+"");
+				}else{
+					//兼容旧数据
+					HistoricTaskInstanceQuery historicTaskInstanceQuery=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getProcessInstanceId()).orderByTaskCreateTime().desc();
 
-				if("refuse".equals(his.getDeleteReason())) {
-					HistoricTaskInstance historicTaskInstance=historicTaskInstanceQuery.taskDeleteReason("refuse").list().get(0);
-					vo.setTaskAssign(historicTaskInstance.getAssignee());
-					vo.setTaskState("拒绝");
-				}else if("completed".equals(his.getDeleteReason())){
-					HistoricTaskInstance historicTaskInstance=historicTaskInstanceQuery.list().get(0);
-					vo.setTaskAssign(historicTaskInstance.getAssignee());
-					vo.setTaskState("通过");
+					if("refuse".equals(his.getDeleteReason())) {
+						HistoricTaskInstance historicTaskInstance=historicTaskInstanceQuery.taskDeleteReason("refuse").list().get(0);
+						vo.setTaskAssign(historicTaskInstance.getAssignee());
+						vo.setTaskState("拒绝");
+					}else if("completed".equals(his.getDeleteReason())){
+						HistoricTaskInstance historicTaskInstance=historicTaskInstanceQuery.list().get(0);
+						vo.setTaskAssign(historicTaskInstance.getAssignee());
+						vo.setTaskState("通过");
+					}
 				}
+
 				tasks.add(vo);
 			}
 			pageInfo.setRows(tasks);
@@ -551,8 +590,13 @@ public class ActivitiServiceImpl implements ActivitiService{
 				App app=appService.selectOne(wrapper);
 				vo.setAppName(app==null?"":app.getName());
 				vo.setBusinessKey(commonVo.getBusinessKey());
-				HistoricTaskInstance taskInstance=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getId()).orderByHistoricTaskInstanceEndTime().desc().finished().list().get(0);
-				vo.setTaskAssign(taskInstance.getAssignee());
+				if(map.containsKey(his.getId()+":"+TaskVariable.LASTTASKUSER.value)){
+					HistoricTaskInstance taskInstance=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getId()).orderByHistoricTaskInstanceEndTime().desc().finished().list().get(0);
+					vo.setTaskAssign(taskInstance.getAssignee());
+				}else{
+					vo.setTaskAssign(map.get(his.getId()+":"+TaskVariable.LASTTASKUSER.value)+"");
+				}
+
 				if("refuse".equals(his.getDeleteReason())) {
 					vo.setTaskState("拒绝");
 				}else if(his.getEndTime()!=null){

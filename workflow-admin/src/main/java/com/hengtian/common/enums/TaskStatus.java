@@ -4,8 +4,10 @@ public enum TaskStatus {
 
     //未完成
     UNFINISHED("unfinished"),
-    //完成
-    FINISHED("finished"),
+    //审核完成-通过
+    FINISHEDPASS("finished_pass"),
+    //审核完成-未通过
+    FINISHEDREFUSE("finished_refuse"),
     //转办
     TRANSFER("transferTask");
 
@@ -15,7 +17,4 @@ public enum TaskStatus {
         this.value = value;
     }
 
-    public static void main(String[] args) {
-        System.out.println(TaskStatus.FINISHED.value);
-    }
 }
