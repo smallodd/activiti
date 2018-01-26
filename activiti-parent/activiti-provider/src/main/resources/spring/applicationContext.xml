@@ -124,21 +124,23 @@
 
 
 	<!-- mybatis-spring整合 -->
-	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	<bean id="sqlSessionFactory" class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
-		<property name="configLocation" value="classpath:mybatis-config.xml" />
-		<!-- 自动扫描entity目录, 省掉mybatis-config.xml里的手工配置 -->
-		<property name="mapperLocations">
-			<list>
-				<!-- mapper接口对应的xml路径 如果mapper接口的保内有和接口名一致的xml 则不用配置这个 -->
-		<!--		<value>classpath:com/activiti/mapper/*Mapper.xml</value>-->
-			</list>
-		</property>
-	</bean>
+		<!-- 自动扫描Mapping.xml文件 -->
+		<property name="mapperLocations" value="classpath*:com/activiti/mapper/*.xml"></property>
+		<!-- <property name="configLocation" value="classpath:mybatis-config.xml"></property> -->
+		<property name="typeAliasesPackage" value="com.activiti.model"/>
 
+		<property name="globalConfig" ref="globalConfig" />
+	</bean>
+	<!-- 定义 MP 全局策略 -->
+	<bean id="globalConfig" class="com.baomidou.mybatisplus.entity.GlobalConfiguration">
+		<!-- 全局ID类型： 0, "数据库ID自增 IdType.AUTO"， 1, "用户输入ID IdType.INPUT", 2, "全局唯一ID IdType.ID_WORKER", 3, "全局唯一ID IdType.UUID"-->
+		<property name="idType" value="3" />
+	</bean>
 	<!-- 自动扫描mybatis映射 -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="com.activiti.mapper" />
+		<property name="basePackage" value="com.activiti.dao" />
 	</bean>
 
 	<!-- 事务 -->
@@ -177,7 +179,7 @@
 			order="2" />
 
 	</aop:config>
-	<bean class="com.activiti.listener.InstantiationTracingBeanPostProcessor"></bean>
+	<!--<bean class="com.activiti.listener.InstantiationTracingBeanPostProcessor"></bean>-->
 	<import resource="activiti.cfg.xml"></import>
 	<import resource="spring-activiti-provider.xml" />
 
