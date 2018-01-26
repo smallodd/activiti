@@ -11,6 +11,7 @@ import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.Tree;
+import com.hengtian.common.utils.FileUtil;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import net.sf.json.JSONObject;
@@ -200,7 +201,7 @@ public class ActivitiModelController extends BaseController {
     @SysLog(value="复制流程")
     @ResponseBody
     @RequestMapping(value = "/copy")
-    public Object copy( String id,String name,String key) {
+    public Object copy( String id,String name,String key,HttpServletRequest request) {
 
         JSONObject result = new JSONObject();
         if(StringUtils.isNotBlank(key)){
@@ -237,7 +238,10 @@ public class ActivitiModelController extends BaseController {
 
             repositoryService.addModelEditorSource(model.getId(), modelNode.toString().getBytes("utf-8"));
             repositoryService.addModelEditorSourceExtra(model.getId(),repositoryService.getModelEditorSourceExtra(modelData.getId()));
-
+            String contextPath = request.getSession().getServletContext().getRealPath("image");
+            File srcFile=new File(contextPath+File.separator+modelData.getId()+".png");
+            File destFile=new File(contextPath+File.separator+model.getId()+".png");
+            FileUtil.copyFile(srcFile,destFile);
 
             logger.info("复制成功");
             return renderSuccess("复制成功！");
