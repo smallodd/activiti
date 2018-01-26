@@ -375,13 +375,16 @@ public class ActivitiController extends BaseController{
 				if(TaskType.COUNTERSIGN.value.equals(taskType)){
 					//会签
 					//修改会签人
+					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value)+"";
+					if(StringUtils.contains(candidateIds, transferUserId)){
+						return renderError("【"+transferUserId+"】已在当前任务中<br/>（同一任务节点同一个人最多可办理一次）");
+					}
+
 					taskService.setAssignee(task.getId(),task.getAssignee().replace(userId,transferUserId));
 					//修改会签人相关属性值
 					Map<String,Object> variable = Maps.newHashMap();
 					variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
 					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
-
-					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value)+"";
 					variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, candidateIds.replace(userId,transferUserId));
 					taskService.setVariablesLocal(taskId, variable);
 				}else{
