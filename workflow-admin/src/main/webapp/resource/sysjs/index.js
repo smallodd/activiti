@@ -196,21 +196,36 @@ function refreshTab() {
 
 function logout(){
     $.messager.confirm('提示','确定要退出?',function(r){
-
         if(!sessionStorage.getItem("isLogin")&&sessionStorage.getItem("isLogin")!=null){
             window.location.href=basePath+'/';
             return;
         }
+
         if (r){
+            $.ajax({
+                type: 'POST',
+                url: basePath+'/logout?'+new Date().getTime(),
+                dataType: 'json',
+                success: function(result){
+                    if(result.success){
+                        progressClose();
+                        sessionStorage.setItem("isLogin",false);
+                        window.location.href=basePath+'/';
+                    }
+                },
+                error: function(){
+                    window.location.href=basePath+'/';
+                }
+            })
             progressLoad();
-            $.post(basePath+'/logout?'+new Date().getTime(), function(result) {
+            /*$.post(basePath+'/logout?'+new Date().getTime(), function(result) {
 
                 if(result.success){
                     progressClose();
                     sessionStorage.setItem("isLogin",false);
                     window.location.href=basePath+'/';
                 }
-            }, 'json');
+            }, 'json').error(function() {window.location.href=basePath+'/';});*/
         }
     });
 }
