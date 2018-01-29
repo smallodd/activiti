@@ -595,10 +595,10 @@ public class ActivitiServiceImpl implements ActivitiService{
 				vo.setAppName(app==null?"":app.getName());
 				vo.setBusinessKey(commonVo.getBusinessKey());
 				if(map.containsKey(his.getId()+":"+TaskVariable.LASTTASKUSER.value)){
+					vo.setTaskAssign(map.get(his.getId()+":"+TaskVariable.LASTTASKUSER.value)+"");
+				}else{
 					HistoricTaskInstance taskInstance=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getId()).orderByHistoricTaskInstanceEndTime().desc().finished().list().get(0);
 					vo.setTaskAssign(taskInstance.getAssignee());
-				}else{
-					vo.setTaskAssign(map.get(his.getId()+":"+TaskVariable.LASTTASKUSER.value)+"");
 				}
 
 				if("refuse".equals(his.getDeleteReason())) {
