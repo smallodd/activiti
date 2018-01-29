@@ -529,11 +529,11 @@ public class ActivitiServiceImpl implements ActivitiService{
 				if(map.containsKey(his.getTaskDefinitionKey()+":"+shiroUser.getId())){
 					String taskStatus = map.get(his.getTaskDefinitionKey()+":"+shiroUser.getId()) + "";
 					vo.setTaskCreateTime(dateMap.get(his.getTaskDefinitionKey()+":"+shiroUser.getId()));
-					if(TaskStatus.UNFINISHED.value.equals(taskStatus)){
+					if((shiroUser.getId()+":"+TaskStatus.UNFINISHED.value).equals(taskStatus)){
 						vo.setTaskState("未审核");
-					}else if(TaskStatus.FINISHEDPASS.value.equals(taskStatus)){
+					}else if((shiroUser.getId()+":"+TaskStatus.FINISHEDPASS.value).equals(taskStatus)){
 						vo.setTaskState("通过");
-					}else if(TaskStatus.FINISHEDREFUSE.value.equals(taskStatus)){
+					}else if((shiroUser.getId()+":"+TaskStatus.FINISHEDREFUSE.value).equals(taskStatus)){
 						vo.setTaskState("拒绝");
 					}
 					vo.setTaskAssign(map.get(his.getProcessInstanceId()+":"+TaskVariable.LASTTASKUSER.value)+"");
