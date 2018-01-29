@@ -2,6 +2,7 @@ package com.hengtian.activiti.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.hengtian.activiti.model.TUserTask;
 import com.hengtian.activiti.service.ActivitiService;
 import com.hengtian.activiti.service.TUserTaskService;
@@ -479,7 +480,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			StringBuffer sb = new StringBuffer();
 			sb.append("SELECT DISTINCT RES.* FROM");
 			String table = " ACT_HI_TASKINST RES INNER JOIN ACT_HI_VARINST A0 ON RES.ID_ = A0.TASK_ID_ ";
-			String where = " WHERE ((RES.ASSIGNEE_ = #{userId} AND RES.END_TIME_ IS NOT NULL) OR ((RES.ASSIGNEE_ LIKE #{userIdLike} AND A0.NAME_ IS NOT NULL AND A0.VAR_TYPE_ = 'string' AND A0.TEXT_ = #{taskStatus} AND RES.DELETE_REASON_ IS NULL) OR (RES.DELETE_REASON_ IS NOT NULL AND A0.NAME_ IS NOT NULL AND A0.VAR_TYPE_ = 'string' AND A0.TEXT_ LIKE #{userId_}))) ";
+			String where = " WHERE ((RES.ASSIGNEE_ = #{userId} AND RES.END_TIME_ IS NOT NULL) OR ((RES.ASSIGNEE_ LIKE #{userIdLike} AND A0.NAME_ IS NOT NULL AND A0.VAR_TYPE_ = 'string' AND A0.TEXT_ LIKE #{taskStatus} AND RES.DELETE_REASON_ IS NULL) OR (RES.DELETE_REASON_ IS NOT NULL AND A0.NAME_ IS NOT NULL AND A0.VAR_TYPE_ = 'string' AND A0.TEXT_ LIKE #{userId_}))) ";
 			//业务主键
 			if(StringUtils.isNotBlank(taskVo.getBusinessKey())){
 				table = table + " INNER JOIN ACT_HI_PROCINST HPI ON RES.PROC_INST_ID_ = HPI.ID_ ";
@@ -502,7 +503,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 					.parameter("userIdLike", "%" + shiroUser.getId() + "%")
 					.parameter("userId", shiroUser.getId())
 					.parameter("userId_", "%" + shiroUser.getId() + ":%")
-					.parameter("taskStatus", shiroUser.getId() + ":finished")
+					.parameter("taskStatus", "%"+shiroUser.getId() + ":finished%")
 					.parameter("businessKey", "%" + taskVo.getBusinessKey() + "%")
 					.parameter("applyTitle", "%" + taskVo.getBusinessName() + "%")
 					.parameter("applyUserName", taskVo.getProcessOwner())
@@ -514,8 +515,10 @@ public class ActivitiServiceImpl implements ActivitiService{
 				vo.setTaskCreateTime(his.getEndTime());
 				vo.setTaskName(his.getName());
 				List<HistoricVariableInstance> results=historyService.createHistoricVariableInstanceQuery().processInstanceId(his.getProcessInstanceId()).list();
-				Map<String,Object> map=new HashMap<>();
+				Map<String,Object> map = Maps.newHashMap();
+				Map<String,Date> dateMap = Maps.newHashMap();
 				for(HistoricVariableInstance historicVariableInstance:results){
+					dateMap.put(historicVariableInstance.getVariableName(),historicVariableInstance.getLastUpdatedTime());
 					map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
 				}
 				CommonVo commonVo=BeanUtils.toBean(map,CommonVo.class);
@@ -525,6 +528,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 
 				if(map.containsKey(his.getTaskDefinitionKey()+":"+shiroUser.getId())){
 					String taskStatus = map.get(his.getTaskDefinitionKey()+":"+shiroUser.getId()) + "";
+					vo.setTaskCreateTime(dateMap.get(his.getTaskDefinitionKey()+":"+shiroUser.getId()));
 					if(TaskStatus.UNFINISHED.value.equals(taskStatus)){
 						vo.setTaskState("未审核");
 					}else if(TaskStatus.FINISHEDPASS.value.equals(taskStatus)){
