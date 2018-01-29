@@ -311,7 +311,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 					if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
 						taskResult = TaskStatus.FINISHEDREFUSE.value;
 					}
-					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+shiroUser.getId(),userId+":"+taskResult);
+					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+userId,userId+":"+taskResult);
 				}
 			}
 

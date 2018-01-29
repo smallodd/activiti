@@ -277,7 +277,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
             } else if ("candidateUser".equals(tUser.getTaskType())) {
                 taskService.addCandidateUser(task1.getId(), tUser.getCandidateIds());
-            } {
+            } else {
 
                 taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
             }
