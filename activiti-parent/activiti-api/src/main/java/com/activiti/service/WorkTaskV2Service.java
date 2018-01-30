@@ -1,5 +1,6 @@
 package com.activiti.service;
 
+import com.activiti.entity.ApproveVo;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
@@ -39,6 +40,14 @@ public interface WorkTaskV2Service {
     String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException;
 
     /**
+     * 设置审批人
+     * @param processId  流程id
+     * @param userCodes  用户工号，用逗号隔开
+     * @return
+     */
+    public boolean setApprove(String processId,String userCodes) throws WorkFlowException;
+
+    /**
      * 通过用户相关信息查询待审批任务
      * @param userId  用户信息 一般是id
      * @param  startPage  起始页数
@@ -61,7 +70,7 @@ public interface WorkTaskV2Service {
      * @return   返回 processId
      * @exception  WorkFlowException 返回审批异常
      */
-    String  completeTask(String processId,String currentUser ,String commentContent, String commentResult) throws WorkFlowException;
+    String  completeTask(String processId, String currentUser , String commentContent, String commentResult, ApproveVo approveVo) throws WorkFlowException;
 
     /**
      * 获取申请人提交的任务

@@ -2,10 +2,7 @@ package com.activiti.service.impl;
 
 import com.activiti.common.CodeConts;
 import com.activiti.common.EmailUtil;
-import com.activiti.entity.CommonVo;
-import com.activiti.entity.HistoryTaskVo;
-import com.activiti.entity.HistoryTasksVo;
-import com.activiti.entity.TaskQueryEntity;
+import com.activiti.entity.*;
 import com.activiti.enums.TaskStatus;
 import com.activiti.enums.TaskType;
 import com.activiti.enums.TaskVariable;
@@ -129,23 +126,50 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         //设置当前申请人
         identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
         //查询自定义任务列表当前流程定义下的审批人
-        EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-        wrapper.where("proc_def_key= {0}",prodefinKey).andNew("version_={0}",version);
-        List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
+
         //启动一个流程
         ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),result);
+        if(commonVo.isDynamic()){
 
+            return processInstance.getProcessInstanceId();
+        }
+        if(commonVo.isSuperior()){
+            //TODO 获取上级审批人预留
+        }
+        setApprove(processDefinition,commonVo,processInstance);
+
+        return processInstance.getProcessInstanceId();
+    }
+
+    @Override
+    public boolean setApprove(String processId,String userCodes) throws WorkFlowException{
+        Task task=taskService.createTaskQuery().processInstanceId(processId).singleResult();
+        if(task==null){
+            throw  new WorkFlowException(CodeConts.WORK_FLOW_TASK_IS_NULL,"任务为空设置失败!");
+        }
+        taskService.setAssignee(task.getId(),userCodes);
+        return true;
+    }
+
+
+    private void setApprove(ProcessDefinition processDefinition,CommonVo commonVo,ProcessInstance processInstance ) throws WorkFlowException{
+        EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
+        wrapper.where("proc_def_key= {0}",processDefinition.getKey()).andNew("version_={0}",processDefinition.getVersion());
+        List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
         //为任务设置审批人
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
 
         if(tUserTasks==null||tasks.size()==0){
             throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
         }
+
         for(Task task:tasks){
+
             if(StringUtils.isNotBlank(task.getAssignee())){
                 continue;
             }
             for(TUserTask tUserTask:tUserTasks){
+                Map result=new HashMap();
                 if(StringUtils.isBlank(tUserTask.getCandidateIds())){
                     throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
                 }
@@ -155,7 +179,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
                     } else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
                         //候选人
-                        taskService.addCandidateUser(task.getId(), tUserTask.getCandidateIds());
+                        taskService.setAssignee(task.getId(),tUserTask.getCandidateIds());
                     } else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
                         /**
                          * 为当前任务设置属性值
@@ -199,13 +223,11 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                 }
             }
         }
-        return processInstance.getProcessInstanceId();
     }
-
     @Override
-    public String completeTask(String processInstanceId,String currentUser, String commentContent,String commentResult) throws WorkFlowException{
+    public String completeTask(String processInstanceId, String currentUser, String commentContent, String commentResult, ApproveVo approveVo) throws WorkFlowException{
 
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssignee(currentUser).singleResult();
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssigneeLike("%"+currentUser+"%").singleResult();
         if(task==null){
             throw new WorkFlowException(CodeConts.WORK_FLOW_ERROR_TASK,"当前用户没有该任务，此任务可能已完成或非法请求");
         }
@@ -215,10 +237,28 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         identityService.setAuthenticatedUserId(currentUser);
         taskService.addComment(task.getId(), processInstance.getId(),commentResult, commentContent);
 
+
         Map<String, Object> variables = new HashMap<String, Object>();
 
         Map map=taskService.getVariables(taskId);
+        //动态处理审批
+        if(approveVo.isDynamic()){
+            taskService.setVariable(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
+            String taskResult = TaskStatus.FINISHEDPASS.value;
 
+
+            if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
+
+                taskService.complete(taskId,map);
+
+            }else if(ConstantUtils.vacationStatus.PASSED.getValue().equals(commentResult)){
+                taskResult = TaskStatus.FINISHEDREFUSE.value;
+                runtimeService.deleteProcessInstance(processInstanceId,"refused");
+
+            }
+            taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+currentUser,currentUser+":"+taskResult);
+            return processInstanceId;
+        }
 
         Object object = map.get("version");
         int version = 0;

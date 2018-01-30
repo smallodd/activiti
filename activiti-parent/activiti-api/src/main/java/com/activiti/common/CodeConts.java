@@ -58,6 +58,10 @@ public class CodeConts {
      * 提交失败，任务已提交
      */
     public final static String WORK_FLOW_PUBLISH_ERROR="W1007";
+    /**
+     * 任务为空
+     */
+    public final  static  String WORK_FLOW_TASK_IS_NULL="W1008";
 
 
 }
