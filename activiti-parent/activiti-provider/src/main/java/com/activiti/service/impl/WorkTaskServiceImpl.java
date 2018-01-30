@@ -337,6 +337,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @param pageSzie    每页显示数
      * @param status      0 :审批中的任务
      *                    1 ：审批完成的任务
+     *                    -1：全部任务
      *
      * @return
      */
@@ -360,7 +361,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         if(status==0){
             query.unfinished();
-        }else {
+        }else if(status==1) {
             query.finished();
         }
         query.orderByProcessInstanceStartTime().desc();
