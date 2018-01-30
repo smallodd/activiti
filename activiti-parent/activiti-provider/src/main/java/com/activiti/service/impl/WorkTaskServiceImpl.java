@@ -134,35 +134,43 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         result.put("proDefinedKey",prodefinKey);
         result.put("version",version);
         //设置当前申请人
-        identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
+
         //查询自定义任务列表当前流程定义下的审批人
         EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
         wrapper.where("proc_def_key= {0}",prodefinKey).andNew("version_={0}",version);
 
         List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
-        //启动一个流程
-        ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),result);
+        if(tUserTasks==null||tUserTasks.size()==0){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
+        }
+        ProcessInstance processInstance=null;
+        try {
+            //启动一个流程
+             processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),result);
+        }catch (Exception e){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PUBLISH_ERROR,"操作失败，任务创建失败");
+        }
 
         //为任务设置审批人
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
 
-        if(tUserTasks==null||tasks.size()==0){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
+        if(tasks==null||tasks.size()==0){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PUBLISH_ERROR,"操作失败，任务创建失败");
         }
-        for(Task task:tasks){
-            if(StringUtils.isNotBlank(task.getAssignee())){
-                continue;
-            }
-            for(TUserTask tUserTask:tUserTasks){
-                if(StringUtils.isBlank(tUserTask.getCandidateIds())){
-                    throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
+            identityService.setAuthenticatedUserId(commonVo.getApplyUserId());for(Task task:tasks){
+                if(StringUtils.isNotBlank(task.getAssignee())){
+                    continue;
                 }
-                if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
-                    if ("candidateGroup".equals(tUserTask.getTaskType())) {
-                        taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
-                    } else if ("candidateUser".equals(tUserTask.getTaskType())) {
-                        taskService.addCandidateUser(task.getId(), tUserTask.getCandidateIds());
-                    } else {
+                for(TUserTask tUserTask:tUserTasks){
+                    if(StringUtils.isBlank(tUserTask.getCandidateIds())){
+                        throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
+                    }
+                    if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
+                        if ("candidateGroup".equals(tUserTask.getTaskType())) {
+                            taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
+                        } else if ("candidateUser".equals(tUserTask.getTaskType())) {
+                            taskService.addCandidateUser(task.getId(), tUserTask.getCandidateIds());
+                        } else {
 
                         taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
                     }
@@ -352,6 +360,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      * @param pageSzie    每页显示数
      * @param status      0 :审批中的任务
      *                    1 ：审批完成的任务
+     *                    -1：全部任务
      *
      * @return
      */
@@ -376,7 +385,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         }
         if(status==0){
             query.unfinished();
-        }else {
+        }else if(status==1) {
             query.finished();
         }
         query.orderByProcessInstanceStartTime().desc();
@@ -488,6 +497,17 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         Map<String,Object> map=new HashMap<>();
         for(HistoricVariableInstance historicVariableInstance:list){
             map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
+        }
+        List<Task> tasks=taskService.createTaskQuery().processInstanceId(processId).list();
+        if(tasks!=null&&tasks.size()>0){
+            map.put("lastApprover",tasks.get(0).getAssignee());
+        }else{
+            List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().list();
+            if(historicTaskInstances!=null&&historicTaskInstances.size()>0) {
+                map.put("lastApprover", historicTaskInstances.get(0).getAssignee());
+            }else{
+                map.put("lastApprover","老数据，无法兼容");
+            }
         }
         return map;
     }
@@ -1182,11 +1202,19 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     public String getLastApprover(String processId) {
         Task task = taskService.createTaskQuery().processInstanceId(processId).singleResult();
         if (task == null){
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().finished().list().get(0);
-            return taskInstance.getAssignee();
+            List<HistoricTaskInstance> taskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().finished().list();
+            if(taskInstances!=null&&taskInstances.size()>0) {
+                return taskInstances.get(0).getAssignee();
+            }else{
+                return "老数据兼容性数据丢失";
+            }
         }else{
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().unfinished().list().get(0);
-            return taskInstance.getAssignee();
+           List<HistoricTaskInstance> taskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().unfinished().list();
+           if(taskInstances!=null&&taskInstances.size()>0) {
+               return taskInstances.get(0).getAssignee();
+           }else{
+               return  "老数据兼容性数据丢失";
+           }
         }
     }
 

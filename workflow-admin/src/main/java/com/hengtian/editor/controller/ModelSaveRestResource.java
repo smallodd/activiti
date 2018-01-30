@@ -3,14 +3,10 @@
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Model;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
@@ -19,13 +15,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@RestController
+import javax.servlet.http.HttpServletRequest;
+import java.io.*;
+
+ @RestController
 public class ModelSaveRestResource
   implements ModelDataJsonConstants
 {
@@ -39,7 +34,7 @@ public class ModelSaveRestResource
 
   @RequestMapping(value={"/service/model/{modelId}/save"})
   @ResponseStatus(HttpStatus.OK)
-  public void saveModel(@PathVariable String modelId, @RequestBody MultiValueMap<String, String> values) {
+  public void saveModel(@PathVariable String modelId, @RequestBody MultiValueMap<String, String> values, HttpServletRequest request) {
       try {
           Model model = this.repositoryService.getModel(modelId);
           System.out.println("ModelSaveRestResource.saveModel----------");
@@ -67,7 +62,21 @@ public class ModelSaveRestResource
 
           transcoder.transcode(input, output);
           byte[] result = outStream.toByteArray();
+
           this.repositoryService.addModelEditorSourceExtra(model.getId(), result);
+          String contextPath = request.getSession().getServletContext().getRealPath("image");
+          File file=new File(contextPath);
+          if(!file.exists()){
+              file.mkdir();
+          }
+          File file1=new File(contextPath+File.separator+modelId+".png");
+          if(file1.exists()){
+              file1.delete();
+          }
+          FileOutputStream fileOutputStream=new FileOutputStream(contextPath+ File.separator+modelId+".png");
+          fileOutputStream.write(result);
+          fileOutputStream.close();
+
           outStream.close();
 
       } catch (Exception e)
