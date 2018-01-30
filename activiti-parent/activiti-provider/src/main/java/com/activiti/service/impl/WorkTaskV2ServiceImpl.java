@@ -19,32 +19,22 @@ import com.activiti.service.*;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.common.util.ConfigUtil;
 import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
-import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
-import org.activiti.engine.impl.javax.el.ExpressionFactory;
-import org.activiti.engine.impl.javax.el.ValueExpression;
-import org.activiti.engine.impl.juel.ExpressionFactoryImpl;
-import org.activiti.engine.impl.juel.SimpleContext;
-import org.activiti.engine.impl.persistence.StrongUuidGenerator;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
-import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
-import org.activiti.engine.impl.pvm.delegate.ActivityBehavior;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.*;
+import org.activiti.engine.task.Comment;
+import org.activiti.engine.task.DelegationState;
+import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
@@ -147,7 +137,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         //为任务设置审批人
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
-
 
         if(tUserTasks==null||tasks.size()==0){
             throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
@@ -374,7 +363,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
 
-
     /**
      * 获取申请人提交的任务
      * @param userid  申请人信息
@@ -411,7 +399,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         return list;
     }
-
 
 
     @Override
@@ -458,7 +445,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
 
-
     @Override
     public  List<Comment> selectListComment(String processInstanceId){
         return taskService.getProcessInstanceComments(processInstanceId);
@@ -473,16 +459,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
         return map;
     }
-
-
-
-
-
-
-
-
-
-
 
     @Override
     public void transferAssignee(String taskId, String userCode) {
@@ -529,6 +505,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         return query;
 
     }
+
     /**
      * 通过业务系统类型获取业务系统下的所有流程定义key
      * @param bussnessType
@@ -582,10 +559,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
         return task;
     }
-
-
-
-
 
     /**
      * 流程任务跟踪标识
