@@ -37,6 +37,7 @@ public interface WorkTaskV2Service {
      * @return  返回部署的任务id
      */
     String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException;
+
     /**
      * 通过用户相关信息查询待审批任务
      * @param userId  用户信息 一般是id
@@ -46,9 +47,6 @@ public interface WorkTaskV2Service {
      * @return  返回任务列表
      */
     PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize, TaskQueryEntity taskQueryEntity) throws WorkFlowException;
-
-
-
 
 
     /**
@@ -65,9 +63,6 @@ public interface WorkTaskV2Service {
      */
     String  completeTask(String processId,String currentUser ,String commentContent, String commentResult) throws WorkFlowException;
 
-
-
-
     /**
      * 获取申请人提交的任务
      * @param userid  申请人信息
@@ -79,7 +74,6 @@ public interface WorkTaskV2Service {
      * @return    返回申请人提交的任务
      */
     List<HistoricProcessInstance> getApplyTasks(String userid, int startPage, int pageSzie, int status,TaskQueryEntity taskQueryEntity);
-
 
     /**
      * 通过用户主键查询历史审批过的任务
@@ -102,8 +96,6 @@ public interface WorkTaskV2Service {
      */
     PageInfo<HistoricTaskInstance> selectMyRefuse(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity);
 
-
-
     /**
      * 获取任务审批意见列表
      * @param processInstanceId   流程任务中的processId
@@ -111,19 +103,12 @@ public interface WorkTaskV2Service {
      */
     List<Comment> selectListComment(String processInstanceId);
 
-
     /**
      * 通过流程定义id获取定义变量
      * @param processId  流程定义id
      * @return  返回自定义变量map
      */
     Map<String, Object> getVariables(String processId);
-
-
-
-
-
-
 
     /**
      * 转办流程
