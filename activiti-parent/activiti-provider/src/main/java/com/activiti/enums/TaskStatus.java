@@ -9,7 +9,9 @@ public enum TaskStatus {
     //审核完成-未通过
     FINISHEDREFUSE("finished_refuse"),
     //转办
-    TRANSFER("transferTask");
+    TRANSFER("transferTask"),
+    //完成的任务
+    FINISHED("finished");
 
     public String value;
 

@@ -7,7 +7,7 @@ import java.io.Serializable;
  */
 public class TaskQueryEntity implements Serializable {
     /**
-     * 业务系统类型
+     * 业务系统类型(appKey)
      */
     private  String bussinessType;
     /**

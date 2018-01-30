@@ -22,5 +22,5 @@ import java.util.Map;
  * date 2018/1/29 15:15
  */
 public interface WorkTaskV2Service extends WorkTaskService {
-
+    public boolean checkBusinessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String businessKey) ;
 }
