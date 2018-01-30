@@ -60,7 +60,7 @@ import java.util.*;
 /**
  * Created by ma on 2017/7/18.
  */
-public class WorkTaskV2ServiceImpl extends WorkTaskServiceImpl implements WorkTaskV2Service {
+public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
     private Logger logger=Logger.getLogger(WorkTaskV2ServiceImpl.class);
     @Resource
