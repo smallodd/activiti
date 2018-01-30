@@ -116,7 +116,8 @@ public class ActivitiServiceImpl implements ActivitiService{
                 vo.setVersion(pd.getVersion());
                 vo.setImageName(pd.getDiagramResourceName());
                 vo.setResourceName(pd.getResourceName());
-                vo.setSuspended(pd.isSuspended()==true?"2":"1");//挂起状态(1.未挂起 2.已挂起)
+				//挂起状态(1.未挂起 2.已挂起)
+                vo.setSuspended(pd.isSuspended()==true?"2":"1");
                 list.add(vo);
     		}
         }
