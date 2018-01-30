@@ -34,7 +34,7 @@ public interface WorkTaskService {
      * @param  taskQueryEntity  查询任务query
      * @return  返回任务列表
      */
-    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize, TaskQueryEntity taskQueryEntity);
+    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize, TaskQueryEntity taskQueryEntity) throws WorkFlowException;
 
 
 

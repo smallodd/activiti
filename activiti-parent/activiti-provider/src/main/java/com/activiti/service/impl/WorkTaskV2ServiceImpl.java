@@ -49,7 +49,6 @@ import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
@@ -61,9 +60,9 @@ import java.util.*;
 /**
  * Created by ma on 2017/7/18.
  */
-public class WorkTaskServiceNewImpl implements WorkTaskNewService {
+public class WorkTaskV2ServiceImpl extends WorkTaskServiceImpl implements WorkTaskV2Service {
 
-    private Logger logger=Logger.getLogger(WorkTaskServiceNewImpl.class);
+    private Logger logger=Logger.getLogger(WorkTaskV2ServiceImpl.class);
     @Resource
     TaskService taskService;
     @Resource
