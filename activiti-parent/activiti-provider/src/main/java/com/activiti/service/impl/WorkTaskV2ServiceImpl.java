@@ -235,13 +235,17 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String completeTask(String processInstanceId, String currentUser, String commentContent, String commentResult, ApproveVo approveVo) throws WorkFlowException{
+    public String completeTask(String processInstanceId, String currentUser, String commentContent, String commentResult, ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException{
 
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssigneeLike("%"+currentUser+"%").singleResult();
         if(task==null){
             throw new WorkFlowException(CodeConts.WORK_FLOW_ERROR_TASK,"当前用户没有该任务，此任务可能已完成或非法请求");
         }
         String taskId = task.getId();
+        if(paramMap!=null){
+            taskService.setVariablesLocal(taskId,paramMap);
+        }
+
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         //添加审批意见
         identityService.setAuthenticatedUserId(currentUser);
@@ -403,7 +407,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         long count = 0;
 
         if(StringUtils.isNotBlank(userId)){
-            List<Task> taskList =createTaskQuqery(taskQueryEntity).includeTaskLocalVariables().taskVariableValueEquals(userId+":"+TaskStatus.UNFINISHED.value).taskAssigneeLike("%"+userId+"%").listPage((startPage-1)*pageSize,pageSize);
+            List<Task> taskList =createTaskQuqery(taskQueryEntity).taskVariableValueEquals(userId+":"+TaskStatus.UNFINISHED.value).taskAssigneeLike("%"+userId+"%").listPage((startPage-1)*pageSize,pageSize);
             pageInfo.setList(taskList);
             pageInfo.setTotal(count);
         }else{
