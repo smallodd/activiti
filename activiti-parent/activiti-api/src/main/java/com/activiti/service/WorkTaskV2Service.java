@@ -67,11 +67,12 @@ public interface WorkTaskV2Service {
      *                     2  审批通过
      *                     3 审批拒绝
      * @param commentContent    审批意见
+     *  @param  paramMap   自定义参数键值对
      * @return   注意：通过工作流平台设置审批人，此方法每次都会返回processId,流程实例的id
      *                  如是动态设置审批人，在审批后如任务还未完成继续返回processId,如任务已结束将返回null
      * @exception  WorkFlowException 返回审批异常
      */
-    String  completeTask(String processId, String currentUser , String commentContent, String commentResult, ApproveVo approveVo) throws WorkFlowException;
+    String  completeTask(String processId, String currentUser , String commentContent, String commentResult, ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException;
 
     /**
      * 获取申请人提交的任务
