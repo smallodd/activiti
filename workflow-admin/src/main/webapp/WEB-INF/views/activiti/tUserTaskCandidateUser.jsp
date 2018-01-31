@@ -23,7 +23,7 @@
 	</div>
 
 	<div class="easyui-layout" data-options="fit:true,border:false" style="overflow: auto;padding: 8px;">
-		<table id="taskCandidateUserGrid" class="easyui-datagrid" data-options="fit:true"style="width:400px;"></table>
+		<table id="taskCandidateUserGrid" style="width:470px;height:360px;"></table>
 	</div>
 	<script>
         var dataGrid;
@@ -152,8 +152,9 @@
                         }
                     })
 					if(checkedUser != undefined && checkedUser.value != undefined){
+                        var checkedUserArray = checkedUser.value.split(",");
                         $.each(data.rows,function(i,obj){
-                            if($.inArray(obj.id, checkedUser.value.split(",")) >= 0){
+                            if($.inArray(obj.id, checkedUserArray) >= 0){
                                 $('#taskCandidateUserGrid').datagrid('selectRow',i);
                             }
                         })
