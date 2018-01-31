@@ -438,7 +438,9 @@ public class ActivitiServiceImpl implements ActivitiService{
 		if(task != null){
 			String assign = task.getAssignee();
 			taskService.setAssignee(taskId, userId);
-			taskService.setOwner(taskId, assign);
+			if(StringUtils.isNotBlank(assign)) {
+				taskService.setOwner(taskId, assign);
+			}
 		}else{
 			throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
 		}
