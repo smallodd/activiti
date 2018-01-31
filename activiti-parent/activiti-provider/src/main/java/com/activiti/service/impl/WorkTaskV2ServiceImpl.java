@@ -37,6 +37,7 @@ import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.ByteArrayOutputStream;
@@ -74,6 +75,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     SysUserService sysUserService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException {
 
         logger.info("startTask开启任务开始，参数"+commonVo.toString());
@@ -232,6 +234,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
     }
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String completeTask(String processInstanceId, String currentUser, String commentContent, String commentResult, ApproveVo approveVo) throws WorkFlowException{
 
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssigneeLike("%"+currentUser+"%").singleResult();
@@ -242,7 +245,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         //添加审批意见
         identityService.setAuthenticatedUserId(currentUser);
-        taskService.addComment(task.getId(), processInstance.getId(),commentResult, commentContent);
+        taskService.addComment(task.getId(), processInstance.getProcessInstanceId(),commentResult, commentContent);
 
 
         Map<String, Object> variables = new HashMap<String, Object>();
@@ -250,21 +253,22 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         Map map=taskService.getVariables(taskId);
         //动态处理审批
         if(approveVo.isDynamic()){
+            runtimeService.setVariable(processInstanceId,processInstanceId+":"+ TaskVariable.LASTTASKUSER.value,currentUser);
             taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
-            String taskResult = TaskStatus.FINISHEDPASS.value;
 
 
-            if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
 
+            if(ConstantUtils.vacationStatus.PASSED.getValue().equals(commentResult)){
+                taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+currentUser,currentUser+":"+TaskStatus.FINISHEDPASS.value);
                 taskService.complete(taskId,map);
 
-            }else if(ConstantUtils.vacationStatus.PASSED.getValue().equals(commentResult)){
-                taskResult = TaskStatus.FINISHEDREFUSE.value;
+            }else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
+                taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+currentUser,currentUser+":"+TaskStatus.FINISHEDREFUSE.value);
                 runtimeService.deleteProcessInstance(processInstanceId,"refused");
 
             }
-            taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+currentUser,currentUser+":"+taskResult);
-            return processInstanceId;
+            ProcessInstance result = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+            return result==null?null:processInstanceId;
         }
 
         Object object = map.get("version");
