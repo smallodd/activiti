@@ -2,10 +2,7 @@ package com.activiti.service.impl;
 
 import com.activiti.common.CodeConts;
 import com.activiti.common.EmailUtil;
-import com.activiti.entity.CommonVo;
-import com.activiti.entity.HistoryTaskVo;
-import com.activiti.entity.HistoryTasksVo;
-import com.activiti.entity.TaskQueryEntity;
+import com.activiti.entity.*;
 import com.activiti.enums.TaskStatus;
 import com.activiti.enums.TaskType;
 import com.activiti.enums.TaskVariable;
@@ -40,6 +37,7 @@ import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.ByteArrayOutputStream;
@@ -77,6 +75,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     SysUserService sysUserService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException {
 
         logger.info("startTask开启任务开始，参数"+commonVo.toString());
@@ -129,23 +128,57 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         //设置当前申请人
         identityService.setAuthenticatedUserId(commonVo.getApplyUserId());
         //查询自定义任务列表当前流程定义下的审批人
-        EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-        wrapper.where("proc_def_key= {0}",prodefinKey).andNew("version_={0}",version);
-        List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
+
         //启动一个流程
         ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),result);
+        if(commonVo.isDynamic()){
 
+            return processInstance.getProcessInstanceId();
+        }
+        if(commonVo.isSuperior()){
+            //TODO 获取上级审批人预留
+        }
+        setApprove(processDefinition,commonVo,processInstance);
+
+        return processInstance.getProcessInstanceId();
+    }
+
+    @Override
+    public boolean setApprove(String processId,String userCodes) throws WorkFlowException{
+        Task task=taskService.createTaskQuery().processInstanceId(processId).singleResult();
+        if(task==null){
+            throw  new WorkFlowException(CodeConts.WORK_FLOW_TASK_IS_NULL,"任务为空设置失败!");
+        }
+        taskService.setAssignee(task.getId(),userCodes);
+        Map result=new HashMap();
+        for(String candidateId : userCodes.split(",")){
+            result.put(task.getTaskDefinitionKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+        }
+        result.put(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value,TaskType.CANDIDATEUSER.value);
+        result.put(task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value,userCodes);
+        taskService.setVariablesLocal(task.getId(),result);
+        return true;
+    }
+
+
+    private void setApprove(ProcessDefinition processDefinition,CommonVo commonVo,ProcessInstance processInstance ) throws WorkFlowException{
+        EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
+        wrapper.where("proc_def_key= {0}",processDefinition.getKey()).andNew("version_={0}",processDefinition.getVersion());
+        List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
         //为任务设置审批人
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
 
         if(tUserTasks==null||tasks.size()==0){
             throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
         }
+
         for(Task task:tasks){
+
             if(StringUtils.isNotBlank(task.getAssignee())){
                 continue;
             }
             for(TUserTask tUserTask:tUserTasks){
+                Map result=new HashMap();
                 if(StringUtils.isBlank(tUserTask.getCandidateIds())){
                     throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
                 }
@@ -155,7 +188,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
                     } else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
                         //候选人
-                        taskService.addCandidateUser(task.getId(), tUserTask.getCandidateIds());
+                        taskService.setAssignee(task.getId(),tUserTask.getCandidateIds());
                     } else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
                         /**
                          * 为当前任务设置属性值
@@ -199,13 +232,12 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                 }
             }
         }
-        return processInstance.getProcessInstanceId();
     }
-
     @Override
-    public String completeTask(String processInstanceId,String currentUser, String commentContent,String commentResult) throws WorkFlowException{
+    @Transactional(rollbackFor = Exception.class)
+    public String completeTask(String processInstanceId, String currentUser, String commentContent, String commentResult, ApproveVo approveVo) throws WorkFlowException{
 
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssignee(currentUser).singleResult();
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssigneeLike("%"+currentUser+"%").singleResult();
         if(task==null){
             throw new WorkFlowException(CodeConts.WORK_FLOW_ERROR_TASK,"当前用户没有该任务，此任务可能已完成或非法请求");
         }
@@ -213,12 +245,31 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         //添加审批意见
         identityService.setAuthenticatedUserId(currentUser);
-        taskService.addComment(task.getId(), processInstance.getId(),commentResult, commentContent);
+        taskService.addComment(task.getId(), processInstance.getProcessInstanceId(),commentResult, commentContent);
+
 
         Map<String, Object> variables = new HashMap<String, Object>();
 
         Map map=taskService.getVariables(taskId);
+        //动态处理审批
+        if(approveVo.isDynamic()){
+            runtimeService.setVariable(processInstanceId,processInstanceId+":"+ TaskVariable.LASTTASKUSER.value,currentUser);
+            taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
 
+
+
+            if(ConstantUtils.vacationStatus.PASSED.getValue().equals(commentResult)){
+                taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+currentUser,currentUser+":"+TaskStatus.FINISHEDPASS.value);
+                taskService.complete(taskId,map);
+
+            }else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
+                taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+currentUser,currentUser+":"+TaskStatus.FINISHEDREFUSE.value);
+                runtimeService.deleteProcessInstance(processInstanceId,"refused");
+
+            }
+            ProcessInstance result = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+            return result==null?null:processInstanceId;
+        }
 
         Object object = map.get("version");
         int version = 0;
@@ -232,7 +283,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         if(map != null){
             String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value) + "";
             if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
-                String candidateIds = map.get(task.getTaskDefinitionKey()+":"+ TaskStatus.TRANSFER.value) + "";
+
                 //会签人
 
                 userCountNow = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value);
@@ -259,7 +310,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         commentResult = "3";
                     }else{
                         //------------任务继续------------
-                        taskService.setVariable(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
+                        taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
 
                         return processInstanceId;
                     }
@@ -807,7 +858,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             if(task != null){
                 String assign = task.getAssignee();
                 taskService.setAssignee(taskId, userId);
-                taskService.setOwner(taskId, assign);
+                if(StringUtils.isNotBlank(assign)) {
+                    taskService.setOwner(taskId, assign);
+                }
             }else{
                 throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
             }
@@ -820,14 +873,12 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
     @Override
     public String getLastApprover(String processId) {
-        Task task = taskService.createTaskQuery().processInstanceId(processId).singleResult();
-        if (task == null){
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().finished().list().get(0);
-            return taskInstance.getAssignee();
-        }else{
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().unfinished().list().get(0);
-            return taskInstance.getAssignee();
-        }
+       Object lastApprover= runtimeService.getVariable(processId,processId+":"+ TaskVariable.LASTTASKUSER.value);
+       if(lastApprover==null){
+           return  null;
+       }else {
+           return String.valueOf(lastApprover);
+       }
     }
 
     @Override

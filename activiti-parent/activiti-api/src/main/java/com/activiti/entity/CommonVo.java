@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author liu.junyang
  *
  */
-public class CommonVo implements Serializable{
+public class CommonVo extends ApproveVo implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	/**

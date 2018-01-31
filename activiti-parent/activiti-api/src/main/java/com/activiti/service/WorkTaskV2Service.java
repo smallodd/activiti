@@ -1,5 +1,6 @@
 package com.activiti.service;
 
+import com.activiti.entity.ApproveVo;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
@@ -23,7 +24,7 @@ import java.util.Map;
  */
 public interface WorkTaskV2Service {
     /**
-     * 查询业务主键是否再流程钟
+     * 查询业务主键是否再流程中
      * @param taskQueryEntity  任务查询query
      * @param businessKey 业务主键
      * @return   返回true or false
@@ -37,6 +38,14 @@ public interface WorkTaskV2Service {
      * @return  返回部署的任务id
      */
     String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException;
+
+    /**
+     * 设置审批人
+     * @param processId  流程id
+     * @param userCodes  用户工号，用逗号隔开
+     * @return
+     */
+    public boolean setApprove(String processId,String userCodes) throws WorkFlowException;
 
     /**
      * 通过用户相关信息查询待审批任务
@@ -58,10 +67,11 @@ public interface WorkTaskV2Service {
      *                     2  审批通过
      *                     3 审批拒绝
      * @param commentContent    审批意见
-     * @return   返回 processId
+     * @return   注意：通过工作流平台设置审批人，此方法每次都会返回processId,流程实例的id
+     *                  如是动态设置审批人，在审批后如任务还未完成继续返回processId,如任务已结束将返回null
      * @exception  WorkFlowException 返回审批异常
      */
-    String  completeTask(String processId,String currentUser ,String commentContent, String commentResult) throws WorkFlowException;
+    String  completeTask(String processId, String currentUser , String commentContent, String commentResult, ApproveVo approveVo) throws WorkFlowException;
 
     /**
      * 获取申请人提交的任务

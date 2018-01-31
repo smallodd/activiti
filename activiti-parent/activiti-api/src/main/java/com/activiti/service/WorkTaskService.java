@@ -17,7 +17,11 @@ import java.util.Map;
 
 /**
  * Created by ma on 2017/7/18.
+ * 此接口中所有方法不在建议使用；
+ * 请使用WorkTaskV2Service接口中的方法
+ *
  */
+@Deprecated
 public interface WorkTaskService {
     /**
      * 开启任务
