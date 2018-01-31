@@ -240,7 +240,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 	 */
 	@Override
 	@Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
-	public Result complateTask(String taskId,String userId,String commentContent,Integer commentResult){
+	public Result completeTask(String taskId,String userId,String commentContent,Integer commentResult){
 		Result result = new Result();
 		ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 
