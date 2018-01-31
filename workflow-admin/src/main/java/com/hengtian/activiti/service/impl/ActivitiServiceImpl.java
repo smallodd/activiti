@@ -350,14 +350,13 @@ public class ActivitiServiceImpl implements ActivitiService{
 			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
 				taskQuery.processVariableValueLike("applyUserName","%"+taskVo.getProcessOwner()+"%");
 			}
+			taskQuery.finished();
 			pageInfo.setTotal(taskQuery.list().size());
 			List<HistoricTaskInstance> list= taskQuery
 					.orderByTaskCreateTime().desc()
 					.listPage(pageInfo.getFrom(), pageInfo.getSize());
 			for(HistoricTaskInstance his : list){
-				if(his.getEndTime() == null){
-					continue;
-				}
+
 				TaskVo vo = new TaskVo();
 				vo.setTaskCreateTime(his.getEndTime());
 				vo.setTaskName(his.getName());
@@ -399,12 +398,11 @@ public class ActivitiServiceImpl implements ActivitiService{
 			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
 				historicProcessInstanceQuery.variableValueLike("applyUserName","%"+taskVo.getProcessOwner()+"%");
 			}
+			historicProcessInstanceQuery.finished();
 			pageInfo.setTotal(historicProcessInstanceQuery.list().size());
 			List<HistoricProcessInstance> list=historicProcessInstanceQuery.listPage(pageInfo.getFrom(), pageInfo.getSize());
 			for(HistoricProcessInstance his : list){
-				if(his.getEndTime() == null){
-					continue;
-				}
+
 				TaskVo vo = new TaskVo();
 				vo.setTaskCreateTime(his.getStartTime());
 				vo.setTaskEndTime(his.getEndTime());
