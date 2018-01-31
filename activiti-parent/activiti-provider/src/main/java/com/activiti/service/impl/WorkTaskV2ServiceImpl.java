@@ -183,6 +183,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                     throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
                 }
                 if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
+                    String candidateIds = tUserTask.getCandidateIds();
                     if (TaskType.CANDIDATEGROUP.value.equals(tUserTask.getTaskType())) {
                         //组
                         taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
@@ -195,7 +196,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                          * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
                          */
                         result.clear();
-                        String candidateIds = tUserTask.getCandidateIds();
                         for(String candidateId : candidateIds.split(",")){
                             result.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
                         }
@@ -207,6 +207,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
                         taskService.setVariablesLocal(task.getId(),result);
                     }else{
+                        taskService.setVariableLocal(task.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
                         taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
                     }
                 }

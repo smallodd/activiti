@@ -240,7 +240,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 	 */
 	@Override
 	@Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
-	public Result complateTask(String taskId,String userId,String commentContent,Integer commentResult){
+	public Result completeTask(String taskId,String userId,String commentContent,Integer commentResult){
 		Result result = new Result();
 		ShiroUser shiroUser= (ShiroUser)SecurityUtils.getSubject().getPrincipal();
 
@@ -274,7 +274,6 @@ public class ActivitiServiceImpl implements ActivitiService{
 			if(map != null){
 				String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value) + "";
 				if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
-					String candidateIds = map.get(task.getTaskDefinitionKey()+":"+TaskStatus.TRANSFER.value) + "";
 					//会签人
 
 					userCountNow = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value);
@@ -352,43 +351,48 @@ public class ActivitiServiceImpl implements ActivitiService{
 			taskService.complete(task.getId(), variables);
 
 			List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
-			for(Task task1:tasks) {
+			for(Task t:tasks) {
 				EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-				wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("proc_def_key={0}", map.get("proDefinedKey").toString()).andNew("version_={0}",version);
-				TUserTask tUser=tUserTaskService.selectOne(wrapper);
-				if ("candidateGroup".equals(tUser.getTaskType())) {
-					taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
-				} else if ("candidateUser".equals(tUser.getTaskType())) {
-					taskService.addCandidateUser(task1.getId(), tUser.getCandidateIds());
-				} else {
-					if("counterSign".equals(tUser.getTaskType())){
-						/**
-						 * 为当前任务设置属性值
-						 * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
-						 */
-						Map<String,Object> variables_ = new HashMap<String,Object>();
-						EntityWrapper<TUserTask> wrapper_ =new EntityWrapper<TUserTask>();
-						wrapper_.where("proc_def_key = {0}", processInstance.getProcessDefinitionKey()).andNew("version_={0}",version).andNew("task_def_key={0}",task1.getTaskDefinitionKey());
-						wrapper_.orderBy("order_num",true);
-						TUserTask ut = tUserTaskService.selectOne(wrapper_);
-						if(ut != null){
-							String candidateIds_ = ut.getCandidateIds();
-							for(String candidateId : candidateIds_.split(",")){
-								variables_.put(ut.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
-							}
-							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,ut.getUserCountTotal());
-							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,ut.getUserCountNeed());
-							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,userCountNow);
-							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
-							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,ut.getTaskType());
-							variables_.put(ut.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds_);
+				wrapper.where("task_def_key={0}", t.getTaskDefinitionKey()).andNew("proc_def_key={0}", processInstance.getProcessDefinitionKey()).andNew("version_={0}",version);
+				TUserTask tUserTask=tUserTaskService.selectOne(wrapper);
 
-							taskService.setVariablesLocal(task1.getId(),variables_);
-						}
+				String candidateIds = tUserTask.getCandidateIds();
+				if (TaskType.CANDIDATEGROUP.value.equals(tUserTask.getTaskType())) {
+					taskService.addCandidateGroup(t.getId(), tUserTask.getCandidateIds());
+				} else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
+					taskService.setAssignee(t.getId(), tUserTask.getCandidateIds());
 
-						//taskService.setVariableLocal(task1.getId(),"counterSign",tUser.getCandidateIds());
+					Map<String,Object> variables_ = new HashMap<String,Object>();
+
+					for(String candidateId : candidateIds.split(",")){
+						variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
 					}
-					taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
+
+					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+
+					taskService.setVariablesLocal(t.getId(),variables_);
+				}else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
+					/**
+					 * 为当前任务设置属性值
+					 * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
+					 */
+					Map<String,Object> variables_ = new HashMap<String,Object>();
+
+					for(String candidateId : candidateIds.split(",")){
+						variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+					}
+					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
+					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
+					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,0);
+					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
+					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+
+					taskService.setVariablesLocal(t.getId(),variables_);
+				}else{
+					taskService.setVariableLocal(t.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
+					taskService.setAssignee(t.getId(), tUserTask.getCandidateIds());
 				}
 
 			}

@@ -304,7 +304,7 @@ public class ActivitiController extends BaseController{
 								@RequestParam("userId") String userId,
 					    		@RequestParam("commentContent") String commentContent,
 					    		@RequestParam("commentResult") Integer commentResult){
-		Result result= activitiService.complateTask(taskId,userId,commentContent,commentResult);
+		Result result= activitiService.completeTask(taskId,userId,commentContent,commentResult);
 		return JSONObject.toJSONString(result);
     }
 
