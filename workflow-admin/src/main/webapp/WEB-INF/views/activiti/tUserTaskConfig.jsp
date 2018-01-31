@@ -23,7 +23,7 @@
 					<td>[${task.taskName}]</td>
 					<td>
 						<input id="taskId${task.taskDefKey}" type="hidden" value="${task.id}"/>
-						<select id="${task.taskDefKey}" onchange="clearUser()" class="easyui-combobox" data-options="width:100,height:29,panelHeight:'auto'">
+						<select id="${task.taskDefKey}" class="easyui-combobox selectAssessmentType" data-options="width:100,height:29,panelHeight:'auto'">
                             <option value="assignee" selected="selected">受理人</option>
                             <option value="candidateUser">候选人</option>
                             <%--<option value="candidateGroup">候选组</option>--%>
@@ -102,11 +102,34 @@
                 }
             }
         });
-     });
-    
-    /* function clearUser(){
-    	alert("");
-    } */
+
+        $(".selectAssessmentType").combobox({
+            onChange: function (n,o) {
+                var taskKey = $(this).attr("id");
+                $("#taskUser"+taskKey).val("");
+                $("#userCount"+taskKey).combobox("clear");
+                $("#userCount"+taskKey).combobox("loadData",[]);
+                clearUser(taskKey);
+            }
+        });
+    });
+
+    function clearUser(taskKey){
+        var taskJsonStr = $("#taskJson").val();
+        if(taskJsonStr != ""){
+            var taskJsonVal = JSON.parse(taskJsonStr);
+            $.each(taskJsonVal,function(i,o){
+                if(taskKey == o.key){
+                    o.value = "";
+                    o.name = "";
+
+                    return false;
+                }
+            })
+
+            $("#taskJson").val(JSON.stringify(taskJsonVal));
+        }
+    }
     
     //配置人员
     function configUser(datas){
@@ -155,6 +178,14 @@
     	            			$("#taskUser"+datas).val(taskJsonVal[i].name);
     	            		}
     	            	}
+
+                        var dataList = [];
+                        dataList.push({"value": 1,"text":1});
+
+                        if(dataList.length > 0){
+                            $("#userCount"+datas).combobox("loadData",dataList);
+                            $("#userCount"+datas).combobox("select",dataList.length);
+                        }
     	            	$("#taskAssigneeDialog").dialog('close');
     	            }
     	        } ]
@@ -178,10 +209,13 @@
     	            		}
     	            	}
 
-
                         var dataList = [];
-                        for(var i=1;i<userCount+1;i++){
-                            dataList.push({"value": i,"text":i});
+                        if(taskType==="counterSign"){
+                            for(var i=1;i<userCount+1;i++){
+                                dataList.push({"value": i,"text":i});
+                            }
+                        }else{
+                            dataList.push({"value": 1,"text":1});
                         }
 
                         if(dataList.length > 0){
