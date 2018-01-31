@@ -148,6 +148,13 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             throw  new WorkFlowException(CodeConts.WORK_FLOW_TASK_IS_NULL,"任务为空设置失败!");
         }
         taskService.setAssignee(task.getId(),userCodes);
+        Map result=new HashMap();
+        for(String candidateId : userCodes.split(",")){
+            result.put(task.getTaskDefinitionKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+        }
+        result.put(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value,TaskType.CANDIDATEUSER.value);
+        result.put(task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value,userCodes);
+        taskService.setVariablesLocal(task.getId(),result);
         return true;
     }
 
@@ -243,7 +250,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         Map map=taskService.getVariables(taskId);
         //动态处理审批
         if(approveVo.isDynamic()){
-            taskService.setVariable(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
+            taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
             String taskResult = TaskStatus.FINISHEDPASS.value;
 
 
@@ -272,7 +279,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         if(map != null){
             String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value) + "";
             if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
-                String candidateIds = map.get(task.getTaskDefinitionKey()+":"+ TaskStatus.TRANSFER.value) + "";
+
                 //会签人
 
                 userCountNow = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value);
@@ -299,7 +306,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         commentResult = "3";
                     }else{
                         //------------任务继续------------
-                        taskService.setVariable(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
+                        taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
 
                         return processInstanceId;
                     }
