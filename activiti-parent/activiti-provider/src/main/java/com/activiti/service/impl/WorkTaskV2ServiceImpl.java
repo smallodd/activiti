@@ -858,7 +858,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             if(task != null){
                 String assign = task.getAssignee();
                 taskService.setAssignee(taskId, userId);
-                taskService.setOwner(taskId, assign);
+                if(StringUtils.isNotBlank(assign)) {
+                    taskService.setOwner(taskId, assign);
+                }
             }else{
                 throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
             }
@@ -871,14 +873,12 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
     @Override
     public String getLastApprover(String processId) {
-        Task task = taskService.createTaskQuery().processInstanceId(processId).singleResult();
-        if (task == null){
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().finished().list().get(0);
-            return taskInstance.getAssignee();
-        }else{
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processId).orderByTaskCreateTime().desc().unfinished().list().get(0);
-            return taskInstance.getAssignee();
-        }
+       Object lastApprover= runtimeService.getVariable(processId,processId+":"+ TaskVariable.LASTTASKUSER.value);
+       if(lastApprover==null){
+           return  null;
+       }else {
+           return String.valueOf(lastApprover);
+       }
     }
 
     @Override

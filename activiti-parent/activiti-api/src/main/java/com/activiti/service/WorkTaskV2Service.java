@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public interface WorkTaskV2Service {
     /**
-     * 查询业务主键是否再流程钟
+     * 查询业务主键是否再流程中
      * @param taskQueryEntity  任务查询query
      * @param businessKey 业务主键
      * @return   返回true or false
