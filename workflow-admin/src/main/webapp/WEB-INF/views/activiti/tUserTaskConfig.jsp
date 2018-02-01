@@ -33,7 +33,11 @@
                     </td>
                     <td><input id="taskUser${task.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:170;height:29" onclick="configUser('${task.taskDefKey}')"></input></td>
 				    <td>
-                        <c:set var="index" value="${fn:length(task.candidateIds.split(','))}"></c:set>
+                        <c:choose>
+                            <c:when test="${task.taskType == 'counterSign'}"><c:set var="index" value="${fn:length(task.candidateIds.split(','))}"></c:set></c:when>
+                            <c:otherwise><c:set var="index" value="1"></c:set></c:otherwise>
+                        </c:choose>
+
                         <select class="easyui-combobox" data-options="width:60,height:29,panelHeight:'auto'" id="userCount${task.taskDefKey}">
                             <c:forEach var="i" begin="1" end="${index}">
                                 <c:choose>
@@ -199,7 +203,12 @@
     	            handler : function() {
     	                var userCount = 0;
     	            	//给输入框赋人员名称的值
-    	            	var taskJsonVal = JSON.parse($("#taskJsonSelect").val());
+                        var taskJsonStr = $("#taskJsonSelect").val();
+                        if(taskJsonStr == undefined || taskJsonStr == ""){
+                            $("#taskCandidateUserDialog").dialog('close');
+                            return;
+                        }
+    	            	var taskJsonVal = JSON.parse(taskJsonStr);
     	            	for(var i=0;i<taskJsonVal.length;i++){
     	            		if(taskJsonVal[i].key===datas){
     	            		    if(taskJsonVal[i].value != undefined){
