@@ -30,12 +30,16 @@
         </div>
 
         <div>
-            <a href="javascript:$('#updatePasswordForm').submit()" class="easyui-linkbutton" iconCls="icon-ok" style="width:100%;height:32px">确认修改</a>
+            <a href="javascript:updatePasswordFormSubmit()" class="easyui-linkbutton" iconCls="icon-ok" style="width:100%;height:32px">确认修改</a>
         </div>
     </form>
 </div>
 
 <script type="text/javascript">
+    function updatePasswordFormSubmit(){
+        $('#updatePasswordForm').submit();
+    }
+
     function fixTextPlaceholder() {
         $(".easyui-textbox").each(function (i) {
             var span = $(this).siblings("span")[0];
