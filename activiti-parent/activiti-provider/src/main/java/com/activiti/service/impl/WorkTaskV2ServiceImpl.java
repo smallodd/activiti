@@ -13,6 +13,7 @@ import com.activiti.model.AppModel;
 import com.activiti.model.SysUser;
 import com.activiti.model.TUserTask;
 import com.activiti.service.*;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.common.util.ConfigUtil;
 import com.github.pagehelper.PageInfo;
@@ -149,6 +150,10 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         if(task==null){
             throw  new WorkFlowException(CodeConts.WORK_FLOW_TASK_IS_NULL,"任务为空设置失败!");
         }
+        if(StringUtils.isNotBlank(task.getAssignee())){
+            logger.info("任务："+processId+"已经设置过审批人，请不要重复设置，当前审批人为："+task.getAssignee());
+            return false;
+        }
         taskService.setAssignee(task.getId(),userCodes);
         Map result=new HashMap();
         for(String candidateId : userCodes.split(",")){
@@ -236,8 +241,15 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String completeTask(String processInstanceId, String currentUser, String commentContent, String commentResult, ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException{
+    public String completeTask( ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException{
 
+        if(approveVo==null||StringUtils.isBlank(approveVo.getCommentContent())||StringUtils.isBlank(approveVo.getCommentResult())||StringUtils.isBlank(approveVo.getCurrentUser())||StringUtils.isBlank(approveVo.getProcessInstanceId())){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"非法参数，当前参数为："+ JSONObject.toJSONString(approveVo)+";请查看dubbo接口说明");
+        }
+        String processInstanceId=approveVo.getProcessInstanceId();
+        String currentUser=approveVo.getCurrentUser();
+        String commentResult=approveVo.getCommentResult();
+        String commentContent=approveVo.getCommentContent();
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssigneeLike("%"+currentUser+"%").singleResult();
         if(task==null){
             throw new WorkFlowException(CodeConts.WORK_FLOW_ERROR_TASK,"当前用户没有该任务，此任务可能已完成或非法请求");
@@ -271,6 +283,8 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                 taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+currentUser,currentUser+":"+TaskStatus.FINISHEDREFUSE.value);
                 runtimeService.deleteProcessInstance(processInstanceId,"refused");
 
+            }else{
+                throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"非法参数,commentResult字段请传字符串2或3");
             }
             ProcessInstance result = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
             return result==null?null:processInstanceId;

@@ -32,7 +32,8 @@ public interface WorkTaskV2Service {
     public boolean checkBusinessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String businessKey) ;
 
     /**
-     * 开启任务
+     * 开启任务；
+     * 注：如是动态自己设置审批人，任务启动后要调用setApprove方法设置审批人，无法重复设置审批人
      * @param commonVo
      * @param paramMap   流程定义中线上的参数，键是线上的键
      * @return  返回部署的任务id
@@ -60,19 +61,14 @@ public interface WorkTaskV2Service {
 
     /**
      * 审批接口
-     *
-     * @param processId  proc_inst_id值
-     * @param currentUser  当前审批人信息
-     * @param commentResult 审批类型
-     *                     2  审批通过
-     *                     3 审批拒绝
-     * @param commentContent    审批意见
+     * 注：如是动态自己设置审批人，任务审批后要调用setApprove方法设置审批人，无法重复设置审批人
+     *  @param  approveVo  审批信息封装类，具体请看ApproveVo类说明
      *  @param  paramMap   自定义参数键值对
      * @return   注意：通过工作流平台设置审批人，此方法每次都会返回processId,流程实例的id
      *                  如是动态设置审批人，在审批后如任务还未完成继续返回processId,如任务已结束将返回null
      * @exception  WorkFlowException 返回审批异常
      */
-    String  completeTask(String processId, String currentUser , String commentContent, String commentResult, ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException;
+    String  completeTask(ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException;
 
     /**
      * 获取申请人提交的任务

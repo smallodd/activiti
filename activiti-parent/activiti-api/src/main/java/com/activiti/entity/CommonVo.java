@@ -7,9 +7,21 @@ import java.io.Serializable;
  * @author liu.junyang
  *
  */
-public class CommonVo extends ApproveVo implements Serializable{
+public class CommonVo extends ApproveInterface implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
+
+
+	public CommonVo(){}
+	public CommonVo(String applyUserId,String applyTitle,String applyUserName,String businessKey,String businessType,String modelKey){
+		setApplyTitle(applyTitle);
+		setBusinessType(businessType);
+		setApplyUserName(applyUserName);
+		setApplyUserId(applyUserId);
+		setModelKey(modelKey);
+		setBusinessKey(businessKey);
+	}
+
 	/**
 	 * 申请人ID
 	 */
@@ -27,7 +39,7 @@ public class CommonVo extends ApproveVo implements Serializable{
 	 */
 	private String businessType;
 	/**
-	 * 对应业务的KEY
+	 * 业务主键（业务系统方定义）
 	 */
 	private String businessKey;
 
