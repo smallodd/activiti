@@ -377,7 +377,7 @@ public class ActivitiController extends BaseController{
 			ShiroUser user = getShiroUser();
     		if(ConstantUtils.ADMIN_ID.equals(user.getId()) || user.getId().equals(userId)){
 				String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value)+"";
-				if(TaskType.COUNTERSIGN.value.equals(taskType)){
+				if(TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)){
 					//会签
 					//修改会签人
 					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value)+"";

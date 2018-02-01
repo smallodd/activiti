@@ -5,8 +5,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>添加资源</title>
+    <meta charset="UTF-8">
+    <title>添加资源</title>
 </head>
 <body>
 <div style="margin:20px 0;"></div>

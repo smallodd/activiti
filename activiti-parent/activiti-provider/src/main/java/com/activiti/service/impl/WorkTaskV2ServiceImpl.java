@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.common.util.ConfigUtil;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Maps;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
@@ -194,7 +195,18 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
                     } else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
                         //候选人
-                        taskService.setAssignee(task.getId(),tUserTask.getCandidateIds());
+                        taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
+
+                        Map<String,Object> variables_ = new HashMap<String,Object>();
+
+                        for(String candidateId : candidateIds.split(",")){
+                            variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+                        }
+
+                        variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+                        variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+
+                        taskService.setVariablesLocal(task.getId(),variables_);
                     } else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
                         /**
                          * 为当前任务设置属性值
@@ -215,6 +227,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         taskService.setVariableLocal(task.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
                         taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
                     }
+                    break;
                 }
                 Boolean flag=Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
                 if(flag) {
@@ -872,19 +885,47 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      */
     @Override
     public boolean transferTask(String userId, String taskId){
-        try{
+        try {
             Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-            if(task != null){
+            if(task == null){
+                throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
+            }
+
+            String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value)+"";
+            if(TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)){
+                //会签
+                //修改会签人
+                String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value)+"";
+                if(StringUtils.contains(candidateIds, userId)){
+                    throw new ActivitiObjectNotFoundException("【"+userId+"】已在当前任务中（同一任务节点同一个人最多可办理一次）", this.getClass());
+                }
+
+                taskService.setAssignee(task.getId(),task.getAssignee().replace(userId,userId));
+                //修改会签人相关属性值
+                Map<String,Object> variable = Maps.newHashMap();
+                variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
+                variable.put(task.getTaskDefinitionKey() + ":" + userId, userId+":"+TaskStatus.UNFINISHED.value);
+                variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, candidateIds.replace(userId,userId));
+                taskService.setVariablesLocal(taskId, variable);
+            }else{
+                Map<String,Object> variable = Maps.newHashMap();
+                variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
+                variable.put(task.getTaskDefinitionKey() + ":" + userId, userId+":"+TaskStatus.UNFINISHED.value);
+                variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, userId);
+                taskService.setVariablesLocal(taskId, variable);
+
                 String assign = task.getAssignee();
                 taskService.setAssignee(taskId, userId);
                 if(StringUtils.isNotBlank(assign)) {
                     taskService.setOwner(taskId, assign);
                 }
-            }else{
-                throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
             }
-        } catch (Exception e){
-            logger.error("转办任务失败",e);
+
+        } catch (ActivitiObjectNotFoundException e){
+            logger.error("转办任务失败，此任务不存在！",e);
+            return false;
+        } catch (Exception e) {
+            logger.error("委派任务失败，系统错误！",e);
             return false;
         }
         return true;

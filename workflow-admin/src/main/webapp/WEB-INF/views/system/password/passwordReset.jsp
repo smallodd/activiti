@@ -31,7 +31,7 @@
         </div>
 
         <div>
-            <a href="javascript:$('#updatePasswordForm').submit()" class="easyui-linkbutton" iconCls="icon-ok" style="width:100%;height:32px">确认修改</a>
+            <a href="javascript:resetSubmit()" class="easyui-linkbutton" iconCls="icon-ok" style="width:100%;height:32px">确认修改</a>
         </div>
     </form>
     </c:if>
@@ -44,6 +44,9 @@
 </div>
 </div>
 <script type="text/javascript">
+    function resetSubmit(){
+        $("#updatePasswordForm").submit();
+    }
     function fixTextPlaceholder() {
         $(".easyui-textbox").each(function (i) {
             var span = $(this).siblings("span")[0];
