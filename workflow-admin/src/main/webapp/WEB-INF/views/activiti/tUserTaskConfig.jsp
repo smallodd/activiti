@@ -11,6 +11,7 @@
     <div data-options="region:'center',border:false" title="" style="overflow: auto;padding: 8px;">
         <form id="tUserTaskConfigForm" method="post">
         	<input id="taskJson" name="taskJson" type="hidden" value="${taskJson}"/>
+            <input id="taskJsonSelect" type="hidden" value="${taskJson}"/>
             <table class="grid">
             <tr>
                 <td><strong>任务名称</strong></td>
@@ -134,7 +135,7 @@
     //配置人员
     function configUser(datas){
         $("#taskKey").val(datas);
-
+        $("#taskJsonSelect").val("");
     	var taskType = $(document.getElementById(datas)).val();
 
     	if(taskType==="assignee"){
@@ -201,7 +202,7 @@
     	            handler : function() {
     	                var userCount = 0;
     	            	//给输入框赋人员名称的值
-    	            	var taskJsonVal = JSON.parse($("#taskJson").val());
+    	            	var taskJsonVal = JSON.parse($("#taskJsonSelect").val());
     	            	for(var i=0;i<taskJsonVal.length;i++){
     	            		if(taskJsonVal[i].key===datas){
                                 userCount = taskJsonVal[i].value.split(",").length;
@@ -222,7 +223,8 @@
                             $("#userCount"+datas).combobox("loadData",dataList);
                             $("#userCount"+datas).combobox("select",dataList.length);
                         }
-
+                        $("#taskJson").val($("#taskJsonSelect").val());
+                        $("#taskJsonSelect").val("");
     	            	$("#taskCandidateUserDialog").dialog('close');
     	            }
     	        } ]
