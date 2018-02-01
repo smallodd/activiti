@@ -5,8 +5,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>添加资源</title>
+    <meta charset="UTF-8">
+    <title>添加资源</title>
 </head>
 <body>
 <div style="margin:20px 0;"></div>
@@ -30,16 +30,12 @@
         </div>
 
         <div>
-            <a href="javascript:updatePasswordFormSubmit()" class="easyui-linkbutton" iconCls="icon-ok" style="width:100%;height:32px">确认修改</a>
+            <a href="javascript:$('#updatePasswordForm').submit()" class="easyui-linkbutton" iconCls="icon-ok" style="width:100%;height:32px">确认修改</a>
         </div>
     </form>
 </div>
 
 <script type="text/javascript">
-    function updatePasswordFormSubmit(){
-        $('#updatePasswordForm').submit();
-    }
-
     function fixTextPlaceholder() {
         $(".easyui-textbox").each(function (i) {
             var span = $(this).siblings("span")[0];
