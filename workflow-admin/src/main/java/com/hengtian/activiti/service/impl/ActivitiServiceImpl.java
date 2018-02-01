@@ -587,12 +587,11 @@ public class ActivitiServiceImpl implements ActivitiService{
 			if(StringUtils.isNotBlank(taskVo.getProcessOwner())){
 				historicProcessInstanceQuery.variableValueLike("applyUserName","%"+taskVo.getProcessOwner()+"%");
 			}
+			historicProcessInstanceQuery.finished();
 			pageInfo.setTotal(historicProcessInstanceQuery.list().size());
 			List<HistoricProcessInstance> list=historicProcessInstanceQuery.listPage(pageInfo.getFrom(), pageInfo.getSize());
 			for(HistoricProcessInstance his : list){
-				if(his.getEndTime() == null){
-					continue;
-				}
+
 				TaskVo vo = new TaskVo();
 				vo.setTaskCreateTime(his.getStartTime());
 				vo.setTaskEndTime(his.getEndTime());
