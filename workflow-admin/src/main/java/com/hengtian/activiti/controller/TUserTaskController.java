@@ -158,11 +158,7 @@ public class TUserTaskController extends BaseController{
 				array.add(obj);
 			}
 			String taskJson=array.toJSONString().replaceAll("\"", "&quot;");
-			if(StringUtils.isNotBlank(tasks.get(0).getCandidateIds())){
-				model.addAttribute("taskJson", taskJson);
-			}else{
-				model.addAttribute("taskJson", "");
-			}
+			model.addAttribute("taskJson", taskJson);
 			model.addAttribute("tasks", tasks);
 		}
         return "activiti/tUserTaskConfig";
