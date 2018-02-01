@@ -19,7 +19,7 @@
 <div style="margin:20px 0;"></div>
 <div id="validateMail">
 <div class="easyui-panel" title="忘记密码" style="width:400px;padding:30px 60px;">
-    <form id="updatePasswordForm" method="get">
+    <form id="updatePasswordForm" method="post">
         <div style="margin-bottom:12px">
             <input type="text" id="loginName" name="loginName" class="easyui-textbox" data-options="required:true,missingMessage:'登录名称不能为空',iconCls:'icon-man',iconWidth:38" placeholder="请输入登录名称/工号" style="width:100%;height:40px;">
         </div>
@@ -28,7 +28,7 @@
             <input type="text" name="code" class="easyui-textbox" data-options="required:true,missingMessage:'验证码不能为空'" placeholder="请输入验证码" style="width:180px;height:40px;float:left;vertical-align: middle;">
         </div>
         <div>
-            <a href="javascript:$('#updatePasswordForm').submit()" class="easyui-linkbutton" style="width:100%;height:32px">发送</a>
+            <a href="javascript:formSubmit();" class="easyui-linkbutton" style="width:100%;height:32px">发送</a>
         </div>
     </form>
     <span style="width:100%;height:32px;margin-bottom:8px;color:steelblue;font-size:5px;">提示：请填写正确的信息，点击邮箱中地址修改</span>
@@ -43,6 +43,9 @@
 </div>
 </div>
 <script type="text/javascript">
+    function formSubmit() {
+        $('#updatePasswordForm').submit();
+    }
     function fixTextPlaceholder() {
         $(".easyui-textbox").each(function (i) {
             var span = $(this).siblings("span")[0];
