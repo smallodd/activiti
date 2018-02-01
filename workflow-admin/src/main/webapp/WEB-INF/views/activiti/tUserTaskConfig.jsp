@@ -75,20 +75,14 @@
                 if (!isValid) {
                     progressClose();
                 }
-                var jsonArray = [];
+
             	var taskJsonVal = JSON.parse($("#taskJson").val());
             	for(var i=0;i<taskJsonVal.length;i++){
-            		var jsonObj = {};
-            		jsonObj.id=taskJsonVal[i].id;
-	            	jsonObj.key=taskJsonVal[i].key;
-	            	jsonObj.type=$("#"+taskJsonVal[i].key).val();
-	            	jsonObj.name=taskJsonVal[i].name;
-	            	jsonObj.value=taskJsonVal[i].value;
+                    taskJsonVal[i].type=$("#"+taskJsonVal[i].key).val();
 
-                    jsonObj.userCountNeed = $("#userCount"+jsonObj.key).combobox("getValue");
-	            	jsonArray.push(jsonObj);
+                    taskJsonVal[i].userCountNeed = $("#userCount"+taskJsonVal[i].key).combobox("getValue");
             	}
-            	var taskStr = JSON.stringify(jsonArray);
+            	var taskStr = JSON.stringify(taskJsonVal);
             	$("#taskJson").val(taskStr);
                 return isValid;
             },
@@ -135,7 +129,7 @@
     //配置人员
     function configUser(datas){
         $("#taskKey").val(datas);
-        $("#taskJsonSelect").val("");
+
     	var taskType = $(document.getElementById(datas)).val();
 
     	if(taskType==="assignee"){
