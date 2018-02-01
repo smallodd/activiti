@@ -60,7 +60,7 @@
                     sortable : true
                 } ] ],
                 onSelect: function (rowIndex, rowData) {
-                    var jsonStr = $("#taskJson").val();
+                    var jsonStr = $("#taskJsonSelect").val();
                     var taskKey = $("#taskKey").val();
 
                     if(jsonStr===""){
@@ -75,7 +75,7 @@
 
                         taskArray.push(jsonObj);
                         var taskStr = JSON.stringify(taskArray);
-                        $("#taskJson").val(taskStr);
+                        $("#taskJsonSelect").val(taskStr);
 					}else{
                         var taskArray = JSON.parse(jsonStr);
                         var b = false;
@@ -90,7 +90,7 @@
                                     taskArray[i] = user;
 
                                     var taskStr = JSON.stringify(taskArray);
-                                    $("#taskJson").val(taskStr);
+                                    $("#taskJsonSelect").val(taskStr);
                                     break;
 								}
                             }
@@ -106,12 +106,12 @@
 
                             taskArray.push(jsonObj);
                             var taskStr = JSON.stringify(taskArray);
-                            $("#taskJson").val(taskStr);
-						}
+                            $("#taskJsonSelect").val(taskStr);
+                        }
 					}
                 },
                 onUnselect: function (rowIndex, rowData) {
-                    var jsonStr = $("#taskJson").val();
+                    var jsonStr = $("#taskJsonSelect").val();
                     var taskKey = $("#taskKey").val();
                     var taskArray = JSON.parse(jsonStr);
                     for(var i=0;i<taskArray.length;i++){
@@ -134,7 +134,7 @@
                         }
                     }
                     var taskStr = JSON.stringify(taskArray);
-                    $("#taskJson").val(taskStr);
+                    $("#taskJsonSelect").val(taskStr);
                 },
                 onLoadSuccess:function(data){
                     var jsonStr = $("#taskJson").val();
