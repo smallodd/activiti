@@ -60,8 +60,12 @@
                     sortable : true
                 } ] ],
                 onSelect: function (rowIndex, rowData) {
+                    debugger;
                     var jsonStr = $("#taskJsonSelect").val();
                     var taskKey = $("#taskKey").val();
+                    if(jsonStr == ""){
+                        jsonStr = $("#taskJson").val();
+                    }
 
                     if(jsonStr===""){
                         var taskArray = [];
@@ -83,8 +87,19 @@
                             if(taskArray[i].key == taskKey){
                                 b = true;
                                 var user = taskArray[i];
-                                if($.inArray(rowData.id, user.value.split(",")) < 0){
-                                    user.name = (user.name==""?"":(user.name + ",")) + rowData.userName;
+                                if(user.value){
+                                    if($.inArray(rowData.id, user.value.split(",")) < 0){
+                                        user.name = ((user.name=="")?"":(user.name + ",")) + rowData.userName;
+                                        user.value = (user.value==""?"":(user.value + ",")) + rowData.id;
+
+                                        taskArray[i] = user;
+
+                                        var taskStr = JSON.stringify(taskArray);
+                                        $("#taskJsonSelect").val(taskStr);
+                                        break;
+									}
+								}else{
+                                    user.name = ((user.name=="")?"":(user.name + ",")) + rowData.userName;
                                     user.value = (user.value==""?"":(user.value + ",")) + rowData.id;
 
                                     taskArray[i] = user;
@@ -113,6 +128,9 @@
                 onUnselect: function (rowIndex, rowData) {
                     var jsonStr = $("#taskJsonSelect").val();
                     var taskKey = $("#taskKey").val();
+                    if(jsonStr == ""){
+                        jsonStr = $("#taskJson").val();
+					}
                     var taskArray = JSON.parse(jsonStr);
                     for(var i=0;i<taskArray.length;i++){
                         if(taskArray[i].key == taskKey){

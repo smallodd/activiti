@@ -100,6 +100,8 @@
 
         $(".selectAssessmentType").combobox({
             onChange: function (n,o) {
+                $("#taskJsonSelect").val("");
+
                 var taskKey = $(this).attr("id");
                 $("#taskUser"+taskKey).val("");
                 $("#userCount"+taskKey).combobox("clear");
@@ -178,6 +180,7 @@
                         dataList.push({"value": 1,"text":1});
 
                         if(dataList.length > 0){
+                            $("#userCount"+datas).combobox("clear");
                             $("#userCount"+datas).combobox("loadData",dataList);
                             $("#userCount"+datas).combobox("select",dataList.length);
                         }
@@ -199,8 +202,10 @@
     	            	var taskJsonVal = JSON.parse($("#taskJsonSelect").val());
     	            	for(var i=0;i<taskJsonVal.length;i++){
     	            		if(taskJsonVal[i].key===datas){
-                                userCount = taskJsonVal[i].value.split(",").length;
-    	            			$("#taskUser"+datas).val(taskJsonVal[i].name);
+    	            		    if(taskJsonVal[i].value != undefined){
+                                    userCount = taskJsonVal[i].value.split(",").length;
+                                    $("#taskUser"+datas).val(taskJsonVal[i].name);
+                                }
     	            		}
     	            	}
 
