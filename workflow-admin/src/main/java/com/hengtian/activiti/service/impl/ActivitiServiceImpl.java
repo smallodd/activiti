@@ -350,52 +350,8 @@ public class ActivitiServiceImpl implements ActivitiService{
 			//完成正常办理任务
 			taskService.complete(task.getId(), variables);
 
-			List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
-			for(Task t:tasks) {
-				EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-				wrapper.where("task_def_key={0}", t.getTaskDefinitionKey()).andNew("proc_def_key={0}", processInstance.getProcessDefinitionKey()).andNew("version_={0}",version);
-				TUserTask tUserTask=tUserTaskService.selectOne(wrapper);
-
-				String candidateIds = tUserTask.getCandidateIds();
-				if (TaskType.CANDIDATEGROUP.value.equals(tUserTask.getTaskType())) {
-					taskService.addCandidateGroup(t.getId(), tUserTask.getCandidateIds());
-				} else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
-					taskService.setAssignee(t.getId(), tUserTask.getCandidateIds());
-
-					Map<String,Object> variables_ = new HashMap<String,Object>();
-
-					for(String candidateId : candidateIds.split(",")){
-						variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
-					}
-
-					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
-					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
-
-					taskService.setVariablesLocal(t.getId(),variables_);
-				}else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
-					/**
-					 * 为当前任务设置属性值
-					 * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
-					 */
-					Map<String,Object> variables_ = new HashMap<String,Object>();
-
-					for(String candidateId : candidateIds.split(",")){
-						variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
-					}
-					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
-					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
-					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,0);
-					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
-					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
-					variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
-
-					taskService.setVariablesLocal(t.getId(),variables_);
-				}else{
-					taskService.setVariableLocal(t.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
-					taskService.setAssignee(t.getId(), tUserTask.getCandidateIds());
-				}
-
-			}
+			//开启下一节点任务
+			initTask(processInstanceId,processInstance.getProcessDefinitionKey(),version);
 
 			result.setSuccess(true);
 			result.setMsg("办理成功！");
@@ -465,14 +421,14 @@ public class ActivitiServiceImpl implements ActivitiService{
 			managementService.executeCommand(deleteCmd);
 			managementService.executeCommand(StartCmd);
 			ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(pde.getKey()).singleResult();
-			//给跳转节点添加审批人
-			EntityWrapper<TUserTask> wrapper = new EntityWrapper<TUserTask>();
-			wrapper.where("proc_def_key={0}",pde.getKey()).andNew("task_def_key={0}",taskDefinitionKey).andNew("version_={0}",processDefinition.getVersion());
-			//wrapper.where("task_def_key",taskDefinitionKey);
+
 			Task task = taskService.createTaskQuery().processInstanceId(currentTaskEntity.getProcessInstanceId()).singleResult();
-			TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
+
 			String assign = currentTaskEntity.getAssignee();
-			taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
+
+			int version = (int)runtimeService.getVariable(task.getProcessInstanceId(),"version");
+			initTask(task.getProcessInstanceId(),processDefinition.getKey(),version);
+
 			taskService.setOwner(task.getId(), assign);
 		}else{
 			throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
@@ -635,4 +591,51 @@ public class ActivitiServiceImpl implements ActivitiService{
 		runtimeService.startProcessInstanceByKey(ConstantUtils.MAILKEY, params);
 	}
 
+	private void initTask(String processInstanceId,String processDefinitionKey,int version){
+		List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+		for(Task t:tasks) {
+			EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+			wrapper.where("task_def_key={0}", t.getTaskDefinitionKey()).andNew("proc_def_key={0}", processDefinitionKey).andNew("version_={0}",version);
+			TUserTask tUserTask=tUserTaskService.selectOne(wrapper);
+
+			String candidateIds = tUserTask.getCandidateIds();
+			if (TaskType.CANDIDATEGROUP.value.equals(tUserTask.getTaskType())) {
+				taskService.addCandidateGroup(t.getId(), tUserTask.getCandidateIds());
+			} else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
+				taskService.setAssignee(t.getId(), tUserTask.getCandidateIds());
+
+				Map<String,Object> variables_ = new HashMap<String,Object>();
+
+				for(String candidateId : candidateIds.split(",")){
+					variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+				}
+
+				variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+				variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+
+				taskService.setVariablesLocal(t.getId(),variables_);
+			}else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
+				/**
+				 * 为当前任务设置属性值
+				 * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
+				 */
+				Map<String,Object> variables_ = new HashMap<String,Object>();
+
+				for(String candidateId : candidateIds.split(",")){
+					variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+				}
+				variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
+				variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
+				variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,0);
+				variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
+				variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+				variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+
+				taskService.setVariablesLocal(t.getId(),variables_);
+			}else{
+				taskService.setVariableLocal(t.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
+				taskService.setAssignee(t.getId(), tUserTask.getCandidateIds());
+			}
+		}
+	}
 }
