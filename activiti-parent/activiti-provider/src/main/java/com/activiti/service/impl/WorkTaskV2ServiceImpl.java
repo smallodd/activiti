@@ -178,7 +178,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         Map<String,String> mailParam = Maps.newHashMap();
         mailParam.put("applyUserName",commonVo.getApplyUserName());
         mailParam.put("applyTitle",commonVo.getApplyTitle());
-        initTask(processInstance.getProcessInstanceId(),processDefinition.getKey(),processDefinition.getVersion(),mailParam);
+        initTaskVariable(processInstance.getProcessInstanceId(),processDefinition.getKey(),processDefinition.getVersion(),mailParam);
     }
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -304,7 +304,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
         //完成任务
         taskService.complete(task.getId(), variables);
-        initTask(task.getProcessInstanceId(),processInstance.getProcessDefinitionKey(),version,map);
+        initTaskVariable(task.getProcessInstanceId(),processInstance.getProcessDefinitionKey(),version,map);
         return processInstanceId;
     }
 
@@ -871,7 +871,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             String assign = currentTaskEntity.getAssignee();
 
             int version = (int)runtimeService.getVariable(task.getProcessInstanceId(),"version");
-            initTask(task.getProcessInstanceId(),processDefinition.getKey(),version,null);
+            initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,null);
 
             taskService.setOwner(task.getId(), assign);
 
@@ -881,7 +881,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
     }
 
-    private void initTask(String processInstanceId,String processDefinitionKey,int version,Map<String,String> mailParam) throws WorkFlowException{
+    private void initTaskVariable(String processInstanceId, String processDefinitionKey, int version, Map<String,String> mailParam) throws WorkFlowException{
         EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
         wrapper.where("proc_def_key= {0}",processDefinitionKey).andNew("version_={0}",version);
         List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);

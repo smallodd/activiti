@@ -351,7 +351,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			taskService.complete(task.getId(), variables);
 
 			//开启下一节点任务
-			initTask(processInstanceId,processInstance.getProcessDefinitionKey(),version);
+			initTaskVariable(processInstanceId,processInstance.getProcessDefinitionKey(),version);
 
 			result.setSuccess(true);
 			result.setMsg("办理成功！");
@@ -427,7 +427,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			String assign = currentTaskEntity.getAssignee();
 
 			int version = (int)runtimeService.getVariable(task.getProcessInstanceId(),"version");
-			initTask(task.getProcessInstanceId(),processDefinition.getKey(),version);
+			initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version);
 
 			taskService.setOwner(task.getId(), assign);
 		}else{
@@ -591,7 +591,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 		runtimeService.startProcessInstanceByKey(ConstantUtils.MAILKEY, params);
 	}
 
-	private void initTask(String processInstanceId,String processDefinitionKey,int version){
+	private void initTaskVariable(String processInstanceId, String processDefinitionKey, int version){
 		List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
 		for(Task t:tasks) {
 			EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
