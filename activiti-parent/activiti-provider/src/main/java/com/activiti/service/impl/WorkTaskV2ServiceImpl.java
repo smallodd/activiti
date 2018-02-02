@@ -878,8 +878,16 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
     }
 
+    /**
+     * 初始化任务属性值
+     * @param processInstanceId 流程实例ID
+     * @param processDefinitionKey 流程定义KEY
+     * @param version 版本号
+     * @param mailParam
+     * @throws WorkFlowException
+     */
     private void initTaskVariable(String processInstanceId, String processDefinitionKey, int version, Map<String,String> mailParam) throws WorkFlowException{
-        EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
+        EntityWrapper<TUserTask> wrapper =new EntityWrapper<>();
         wrapper.where("proc_def_key= {0}",processDefinitionKey).andNew("version_={0}",version);
         List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
         //为任务设置审批人
@@ -894,7 +902,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                 continue;
             }
             for(TUserTask tUserTask:tUserTasks){
-                Map result=new HashMap();
+                Map<String,Object> variable = Maps.newHashMap();
                 if(StringUtils.isBlank(tUserTask.getCandidateIds())){
                     throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
                 }
@@ -907,32 +915,30 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         //候选人
                         taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
 
-                        Map<String,Object> variables_ = new HashMap<String,Object>();
 
                         for(String candidateId : candidateIds.split(",")){
-                            variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+                            variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
                         }
 
-                        variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
-                        variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+                        variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+                        variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
 
-                        taskService.setVariablesLocal(task.getId(),variables_);
+                        taskService.setVariablesLocal(task.getId(),variable);
                     } else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
                         /**
                          * 为当前任务设置属性值
                          * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
                          */
-                        result.clear();
                         for(String candidateId : candidateIds.split(",")){
-                            result.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+                            variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
                         }
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,0);
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
-                        taskService.setVariablesLocal(task.getId(),result);
+                        variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
+                        variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
+                        variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,0);
+                        variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
+                        variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+                        variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+                        taskService.setVariablesLocal(task.getId(),variable);
                     }else{
                         taskService.setVariableLocal(task.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
                         taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
@@ -946,6 +952,13 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             }
         }
     }
+
+    /**
+     * 任务设置审核人侯发送邮件通知
+     * @param assignee 审核人，多个用逗号隔开
+     * @param applyUserName 应用用户名
+     * @param title 标题
+     */
     private void sendEmail(String assignee,Object applyUserName,Object title){
         String[] strs = assignee.split(",");
         for (String str : strs) {
@@ -958,7 +971,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                             "System emmail",
                             sysUser.getUserEmail(),
                             "您有一个待审批邮件待处理",
-                            applyUserName + "填写一个审批申请，标题为：" + title + ",请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
+                            applyUserName + "提交了一个标题为【"+title+"】审批申请，请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
                 } catch (Exception e) {
                     e.printStackTrace();
                     continue;
