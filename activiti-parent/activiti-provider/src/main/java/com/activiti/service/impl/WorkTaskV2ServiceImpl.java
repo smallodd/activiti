@@ -868,7 +868,11 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             String assign = currentTaskEntity.getAssignee();
 
             int version = (int)runtimeService.getVariable(task.getProcessInstanceId(),"version");
-            initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,null);
+
+            Map<String,String> mailParam = Maps.newHashMap();
+            mailParam.put("",taskService.getVariable(task.getId(),"applyUserName")+"");
+            mailParam.put("",taskService.getVariable(task.getId(),"ApplyTitle")+"");
+            initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,mailParam);
 
             taskService.setOwner(task.getId(), assign);
 
