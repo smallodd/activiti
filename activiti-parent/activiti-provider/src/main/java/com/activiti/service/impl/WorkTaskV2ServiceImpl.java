@@ -943,29 +943,29 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                     break;
                 }
                 Boolean needMail = Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
-                sendEmail(needMail,tUserTask.getCandidateIds(),mailParam.get("applyUserName"),mailParam.get("applyTitle"));
+                if(needMail){
+                    sendEmail(tUserTask.getCandidateIds(),mailParam.get("applyUserName"),mailParam.get("applyTitle"));
+                }
             }
         }
     }
-    private void sendEmail(boolean needMail,String assignee,Object applyUserName,Object title){
-        if(needMail) {
-            String[] strs = assignee.split(",");
-            for (String str : strs) {
-                SysUser sysUser = sysUserService.selectById(str);
-                if (StringUtils.isNotBlank(sysUser.getUserEmail())) {
-                    EmailUtil emailUtil = EmailUtil.getEmailUtil();
-                    try {
-                        emailUtil.sendEmail(
-                                ConfigUtil.getValue("email.send.account"),
-                                "System emmail",
-                                sysUser.getUserEmail(),
-                                "您有一个待审批邮件待处理",
-                                applyUserName + "填写一个审批申请，标题为：" + title + ",请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        continue;
+    private void sendEmail(String assignee,Object applyUserName,Object title){
+        String[] strs = assignee.split(",");
+        for (String str : strs) {
+            SysUser sysUser = sysUserService.selectById(str);
+            if (StringUtils.isNotBlank(sysUser.getUserEmail())) {
+                EmailUtil emailUtil = EmailUtil.getEmailUtil();
+                try {
+                    emailUtil.sendEmail(
+                            ConfigUtil.getValue("email.send.account"),
+                            "System emmail",
+                            sysUser.getUserEmail(),
+                            "您有一个待审批邮件待处理",
+                            applyUserName + "填写一个审批申请，标题为：" + title + ",请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    continue;
 
-                    }
                 }
             }
         }
