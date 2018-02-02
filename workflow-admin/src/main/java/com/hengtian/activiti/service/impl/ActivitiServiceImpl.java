@@ -1,6 +1,8 @@
 package com.hengtian.activiti.service.impl;
 
+import com.activiti.common.EmailUtil;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.common.util.ConfigUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.activiti.model.TUserTask;
@@ -22,6 +24,8 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
+import com.hengtian.system.model.SysUser;
+import com.hengtian.system.service.SysUserService;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
@@ -71,6 +75,8 @@ public class ActivitiServiceImpl implements ActivitiService{
 	private AppService appService;
 	@Autowired
 	ProcessEngineConfiguration processEngineConfiguration;
+	@Autowired
+	private SysUserService sysUserService;
 	Logger logger = Logger.getLogger(ActivitiServiceImpl.class);
 	
 	@Override
@@ -591,6 +597,13 @@ public class ActivitiServiceImpl implements ActivitiService{
 		runtimeService.startProcessInstanceByKey(ConstantUtils.MAILKEY, params);
 	}
 
+	/**
+	 * 初始化任务属性值
+	 * @param processInstanceId 流程实例ID
+	 * @param processDefinitionKey 流程定义KEY
+	 * @param version 版本号
+	 * @param mailParam
+	 */
 	private void initTaskVariable(String processInstanceId, String processDefinitionKey, int version){
 		List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
 		for(Task t:tasks) {
@@ -604,7 +617,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			} else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
 				taskService.setAssignee(t.getId(), tUserTask.getCandidateIds());
 
-				Map<String,Object> variables_ = new HashMap<String,Object>();
+				Map<String,Object> variables_ = Maps.newHashMap();
 
 				for(String candidateId : candidateIds.split(",")){
 					variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
@@ -635,6 +648,34 @@ public class ActivitiServiceImpl implements ActivitiService{
 			}else{
 				taskService.setVariableLocal(t.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
 				taskService.setAssignee(t.getId(), tUserTask.getCandidateIds());
+			}
+		}
+	}
+
+	/**
+	 * 任务设置审核人侯发送邮件通知
+	 * @param assignee 审核人，多个用逗号隔开
+	 * @param applyUserName 应用用户名
+	 * @param title 标题
+	 */
+	private void sendEmail(String assignee,Object applyUserName,Object title){
+		String[] strs = assignee.split(",");
+		for (String str : strs) {
+			SysUser sysUser = sysUserService.selectById(str);
+			if (org.apache.commons.lang3.StringUtils.isNotBlank(sysUser.getUserEmail())) {
+				EmailUtil emailUtil = EmailUtil.getEmailUtil();
+				try {
+					emailUtil.sendEmail(
+							ConfigUtil.getValue("email.send.account"),
+							"System emmail",
+							sysUser.getUserEmail(),
+							"您有一个待审批邮件待处理",
+							applyUserName + "提交了一个标题为【"+title+"】审批申请，请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
+
+				}
 			}
 		}
 	}
