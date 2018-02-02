@@ -865,8 +865,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
             Task task = taskService.createTaskQuery().processInstanceId(currentTaskEntity.getProcessInstanceId()).singleResult();
 
-            String assign = currentTaskEntity.getAssignee();
-
             int version = (int)runtimeService.getVariable(task.getProcessInstanceId(),"version");
 
             Map<String,String> mailParam = Maps.newHashMap();
@@ -874,7 +872,10 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             mailParam.put("",taskService.getVariable(task.getId(),"ApplyTitle")+"");
             initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,mailParam);
 
-            taskService.setOwner(task.getId(), assign);
+            String assign = currentTaskEntity.getAssignee();
+            if(StringUtils.isNotBlank(assign)){
+                taskService.setOwner(task.getId(), assign);
+            }
 
             return task.getId();
         }else{
@@ -921,9 +922,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
                     } else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
                         //候选人
-                        taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
-
-
                         for(String candidateId : candidateIds.split(",")){
                             variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
                         }
@@ -935,7 +933,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                          * 为当前任务设置属性值
                          * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
                          */
-
                         for(String candidateId : candidateIds.split(",")){
                             variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
                         }
@@ -945,9 +942,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
                     }else{
                         variable.put(tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
-                        taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
                     }
                     taskService.setVariablesLocal(task.getId(),variable);
+                    taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
                     break;
                 }
                 Boolean needMail = Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
