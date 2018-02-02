@@ -147,7 +147,11 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         if(commonVo.isSuperior()){
             //TODO 获取上级审批人预留
         }
-        setApprove(processDefinition,commonVo,processInstance);
+
+        Map<String,String> mailParam = Maps.newHashMap();
+        mailParam.put("applyUserName",commonVo.getApplyUserName());
+        mailParam.put("applyTitle",commonVo.getApplyTitle());
+        initTaskVariable(processInstance.getProcessInstanceId(),processDefinition.getKey(),processDefinition.getVersion(),mailParam);
 
         return processInstance.getProcessInstanceId();
     }
@@ -173,13 +177,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         return true;
     }
 
-
-    private void setApprove(ProcessDefinition processDefinition,CommonVo commonVo,ProcessInstance processInstance ) throws WorkFlowException{
-        Map<String,String> mailParam = Maps.newHashMap();
-        mailParam.put("applyUserName",commonVo.getApplyUserName());
-        mailParam.put("applyTitle",commonVo.getApplyTitle());
-        initTaskVariable(processInstance.getProcessInstanceId(),processDefinition.getKey(),processDefinition.getVersion(),mailParam);
-    }
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String completeTask( ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException{
