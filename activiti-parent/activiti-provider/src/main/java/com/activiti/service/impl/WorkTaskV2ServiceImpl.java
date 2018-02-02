@@ -982,4 +982,22 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             }
         }
     }
+
+    /**
+     * 删除一个流程实例
+     * @param processInstanceId 流程实例ID
+     * @param description 删除原因
+     * @author houjinrong@chtwm.com
+     * @return
+     */
+    @Override
+    public boolean deleteProcessInstance(String processInstanceId, String description){
+        try {
+            runtimeService.deleteProcessInstance(processInstanceId,description);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

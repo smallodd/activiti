@@ -199,4 +199,13 @@ public interface WorkTaskV2Service {
      * date 2018/2/1 20:32
      */
     String taskJump(String taskId, String taskDefinitionKey) throws WorkFlowException;
+
+    /**
+     * 删除一个流程实例
+     * @param processInstanceId 流程实例ID
+     * @param description 删除原因
+     * @author houjinrong@chtwm.com
+     * @return
+     */
+    boolean deleteProcessInstance(String processInstanceId, String description);
 }
