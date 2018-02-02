@@ -897,7 +897,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         //为任务设置审批人
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
 
-        if(tUserTasks==null||tasks.size()==0){
+        if(tUserTasks==null){
             throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
         }
 
