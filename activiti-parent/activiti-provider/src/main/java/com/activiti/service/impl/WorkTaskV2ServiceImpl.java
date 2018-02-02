@@ -1,5 +1,7 @@
 package com.activiti.service.impl;
 
+import com.activiti.cmd.DeleteActiveTaskCmd;
+import com.activiti.cmd.StartActivityCmd;
 import com.activiti.common.CodeConts;
 import com.activiti.common.EmailUtil;
 import com.activiti.entity.*;
@@ -21,8 +23,10 @@ import com.google.common.collect.Maps;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
+import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
+import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.PvmTransition;
@@ -39,6 +43,7 @@ import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -75,6 +80,8 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     ProcessEngineFactoryBean processEngine;
     @Autowired
     SysUserService sysUserService;
+    @Autowired
+    private ManagementService managementService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -168,89 +175,10 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
 
     private void setApprove(ProcessDefinition processDefinition,CommonVo commonVo,ProcessInstance processInstance ) throws WorkFlowException{
-        EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-        wrapper.where("proc_def_key= {0}",processDefinition.getKey()).andNew("version_={0}",processDefinition.getVersion());
-        List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
-        //为任务设置审批人
-        List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
-
-        if(tUserTasks==null||tasks.size()==0){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
-        }
-
-        for(Task task:tasks){
-
-            if(StringUtils.isNotBlank(task.getAssignee())){
-                continue;
-            }
-            for(TUserTask tUserTask:tUserTasks){
-                Map result=new HashMap();
-                if(StringUtils.isBlank(tUserTask.getCandidateIds())){
-                    throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
-                }
-                if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
-                    String candidateIds = tUserTask.getCandidateIds();
-                    if (TaskType.CANDIDATEGROUP.value.equals(tUserTask.getTaskType())) {
-                        //组
-                        taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
-                    } else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
-                        //候选人
-                        taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
-
-                        Map<String,Object> variables_ = new HashMap<String,Object>();
-
-                        for(String candidateId : candidateIds.split(",")){
-                            variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
-                        }
-
-                        variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
-                        variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
-
-                        taskService.setVariablesLocal(task.getId(),variables_);
-                    } else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
-                        /**
-                         * 为当前任务设置属性值
-                         * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
-                         */
-                        result.clear();
-                        for(String candidateId : candidateIds.split(",")){
-                            result.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
-                        }
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,0);
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
-                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
-                        taskService.setVariablesLocal(task.getId(),result);
-                    }else{
-                        taskService.setVariableLocal(task.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
-                        taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
-                    }
-                    break;
-                }
-                Boolean flag=Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
-                if(flag) {
-                    String[] strs = tUserTask.getCandidateIds().split(",");
-                    for (String str : strs) {
-                        SysUser sysUser = sysUserService.selectById(str);
-                        if (StringUtils.isNotBlank(sysUser.getUserEmail())) {
-                            EmailUtil emailUtil = EmailUtil.getEmailUtil();
-                            try {
-                                emailUtil.sendEmail(
-                                        ConfigUtil.getValue("email.send.account"),
-                                        "System emmail",
-                                        sysUser.getUserEmail(),
-                                        "您有一个待审批邮件待处理",
-                                        commonVo.getApplyUserName() + "填写一个审批申请，标题为：" + commonVo.getApplyTitle() + ",请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
-                            } catch (Exception e) {
-                                throw new WorkFlowException(CodeConts.WORK_FLOW_SEND_FAIL,"邮件发送失败");
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        Map<String,String> mailParam = Maps.newHashMap();
+        mailParam.put("applyUserName",commonVo.getApplyUserName());
+        mailParam.put("applyTitle",commonVo.getApplyTitle());
+        initTask(processInstance.getProcessInstanceId(),processDefinition.getKey(),processDefinition.getVersion(),mailParam);
     }
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -376,54 +304,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
         //完成任务
         taskService.complete(task.getId(), variables);
-        List<Task> tasks=taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
-        for(Task task1:tasks) {
-            EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-            wrapper.where("task_def_key={0}", task1.getTaskDefinitionKey());
-            if(map.get("proDefinedKey")!=null){
-                wrapper.andNew("proc_def_key={0}", map.get("proDefinedKey").toString());
-            }else{
-                wrapper.andNew("proc_def_key={0}",processInstance.getProcessDefinitionKey());
-            }
-            if(version!=0){
-                wrapper.andNew("version_={0}",version);
-            }
-            TUserTask tUser=tUserTaskService.selectOne(wrapper);
-            if (TaskType.CANDIDATEGROUP.value.equals(tUser.getTaskType())) {
-                taskService.addCandidateGroup(task1.getId(), tUser.getCandidateIds());
-            } else if (TaskType.CANDIDATEUSER.value.equals(tUser.getTaskType())) {
-                taskService.addCandidateUser(task1.getId(), tUser.getCandidateIds());
-            } else {
-                if(TaskType.COUNTERSIGN.value.equals(tUser.getTaskType())){
-                    /**
-                     * 为当前任务设置属性值
-                     * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
-                     */
-                    Map<String,Object> variables_ = new HashMap<String,Object>();
-
-                    if(tUser != null){
-                        String candidateIds_ = tUser.getCandidateIds();
-                        for(String candidateId : candidateIds_.split(",")){
-                            variables_.put(tUser.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
-                        }
-                        variables_.put(tUser.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,tUser.getUserCountTotal());
-                        variables_.put(tUser.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUser.getUserCountNeed());
-                        variables_.put(tUser.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,userCountNow);
-                        variables_.put(tUser.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
-                        variables_.put(tUser.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUser.getTaskType());
-                        variables_.put(tUser.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds_);
-
-                        taskService.setVariablesLocal(task1.getId(),variables_);
-                    }
-
-                    //taskService.setVariableLocal(task1.getId(),"counterSign",tUser.getCandidateIds());
-                }
-                taskService.setAssignee(task1.getId(), tUser.getCandidateIds());
-            }
-            //发送邮件
-            Boolean flag=Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
-            sendEmail(flag,task.getAssignee(),map.get("applyUserName"),map.get("applyTitle"));
-        }
+        initTask(task.getProcessInstanceId(),processInstance.getProcessDefinitionKey(),version,map);
         return processInstanceId;
     }
 
@@ -957,6 +838,115 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         return null;
     }
 
+    /**
+     * 任务跳转
+     * @param taskId 当前任务ID
+     * @param taskDefinitionKey 跳转到的任务节点KEY
+     * @return 任务ID
+     * @author houjinrong@chtwm.com
+     * date 2018/2/1 20:32
+     */
+    @Override
+    @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
+    public String taskJump(String taskId, String taskDefinitionKey) throws WorkFlowException{
+        if(StringUtils.isBlank(taskId) || StringUtils.isBlank(taskDefinitionKey)){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"非法的参数，未传入必须的参数");
+        }
+
+        TaskEntity currentTaskEntity = (TaskEntity) this.taskService.createTaskQuery().taskId(taskId).singleResult();
+
+        if(currentTaskEntity != null){
+            ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl)this.repositoryService)
+                    .getDeployedProcessDefinition(currentTaskEntity.getProcessDefinitionId());
+            ActivityImpl activity = (ActivityImpl) pde.findActivity(taskDefinitionKey);
+
+            Command<Void> deleteCmd = new DeleteActiveTaskCmd(currentTaskEntity, "jump", true);
+            Command<Void> StartCmd = new StartActivityCmd(currentTaskEntity.getExecutionId(), activity);
+            managementService.executeCommand(deleteCmd);
+            managementService.executeCommand(StartCmd);
+            ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(pde.getKey()).singleResult();
+
+            Task task = taskService.createTaskQuery().processInstanceId(currentTaskEntity.getProcessInstanceId()).singleResult();
+
+            String assign = currentTaskEntity.getAssignee();
+
+            int version = (int)runtimeService.getVariable(task.getProcessInstanceId(),"version");
+            initTask(task.getProcessInstanceId(),processDefinition.getKey(),version,null);
+
+            taskService.setOwner(task.getId(), assign);
+
+            return task.getId();
+        }else{
+            throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
+        }
+    }
+
+    private void initTask(String processInstanceId,String processDefinitionKey,int version,Map<String,String> mailParam) throws WorkFlowException{
+        EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
+        wrapper.where("proc_def_key= {0}",processDefinitionKey).andNew("version_={0}",version);
+        List<TUserTask> tUserTasks=tUserTaskService.selectList(wrapper);
+        //为任务设置审批人
+        List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+
+        if(tUserTasks==null||tasks.size()==0){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
+        }
+
+        for(Task task:tasks){
+            if(StringUtils.isNotBlank(task.getAssignee())){
+                continue;
+            }
+            for(TUserTask tUserTask:tUserTasks){
+                Map result=new HashMap();
+                if(StringUtils.isBlank(tUserTask.getCandidateIds())){
+                    throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
+                }
+                if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
+                    String candidateIds = tUserTask.getCandidateIds();
+                    if (TaskType.CANDIDATEGROUP.value.equals(tUserTask.getTaskType())) {
+                        //组
+                        taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
+                    } else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
+                        //候选人
+                        taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
+
+                        Map<String,Object> variables_ = new HashMap<String,Object>();
+
+                        for(String candidateId : candidateIds.split(",")){
+                            variables_.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+                        }
+
+                        variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+                        variables_.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+
+                        taskService.setVariablesLocal(task.getId(),variables_);
+                    } else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
+                        /**
+                         * 为当前任务设置属性值
+                         * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
+                         */
+                        result.clear();
+                        for(String candidateId : candidateIds.split(",")){
+                            result.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+                        }
+                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
+                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
+                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,0);
+                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
+                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+                        result.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+                        taskService.setVariablesLocal(task.getId(),result);
+                    }else{
+                        taskService.setVariableLocal(task.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
+                        taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
+                    }
+                    break;
+                }
+                Boolean needMail = Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
+                sendEmail(needMail,tUserTask.getCandidateIds(),mailParam.get("applyUserName"),mailParam.get("applyTitle"));
+            }
+        }
+    }
     private void sendEmail(boolean needMail,String assignee,Object applyUserName,Object title){
         if(needMail) {
             String[] strs = assignee.split(",");

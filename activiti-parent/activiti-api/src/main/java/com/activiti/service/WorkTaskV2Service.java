@@ -129,7 +129,7 @@ public interface WorkTaskV2Service {
 
     /**
      * 流程任务跟踪标识
-     * @author houjinrong
+     * @author houjinrong@chtwm.com
      * @param processInstanceId
      * @return
      */
@@ -152,7 +152,7 @@ public interface WorkTaskV2Service {
 
     /**
      * 根据应用key获取应用所属的模型列表
-     * @author houjinrong
+     * @author houjinrong@chtwm.com
      * @param appKey
      * @return
      */
@@ -160,7 +160,7 @@ public interface WorkTaskV2Service {
 
     /**
      * 委派任务
-     * @author houjinrong
+     * @author houjinrong@chtwm.com
      * @param userId 当前任务节点ID
      * @param taskId 被委派人工号
      * @return
@@ -169,7 +169,7 @@ public interface WorkTaskV2Service {
 
     /**
      * 转办任务
-     * @author houjinrong
+     * @author houjinrong@chtwm.com
      * @param userId 当前任务节点ID
      * @param taskId 被转办人工号
      * @return
@@ -189,4 +189,14 @@ public interface WorkTaskV2Service {
      * @return
      */
     Comment selectComment(String taskid,String userName);
+    
+    /**
+     * 任务跳转
+     * @param taskId 当前任务ID
+     * @param taskDefinitionKey 跳转到的任务节点KEY
+     * @return 任务ID
+     * @author houjinrong@chtwm.com
+     * date 2018/2/1 20:32
+     */
+    String taskJump(String taskId, String taskDefinitionKey) throws WorkFlowException;
 }
