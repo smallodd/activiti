@@ -902,7 +902,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                 continue;
             }
             for(TUserTask tUserTask:tUserTasks){
-                Map<String,Object> variable = Maps.newHashMap();
                 if(StringUtils.isBlank(tUserTask.getCandidateIds())){
                     throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
                 }
@@ -915,7 +914,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                         //候选人
                         taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
 
-
+                        Map<String,Object> variable = Maps.newHashMap();
                         for(String candidateId : candidateIds.split(",")){
                             variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
                         }
@@ -929,6 +928,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                          * 为当前任务设置属性值
                          * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
                          */
+                        Map<String,Object> variable = Maps.newHashMap();
                         for(String candidateId : candidateIds.split(",")){
                             variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
                         }
