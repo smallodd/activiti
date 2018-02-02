@@ -631,6 +631,11 @@ public class ActivitiServiceImpl implements ActivitiService{
 				}
 				if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
 					String candidateIds = tUserTask.getCandidateIds();
+
+					Map<String,Object> variable = Maps.newHashMap();
+					variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
+					variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+
 					if (TaskType.CANDIDATEGROUP.value.equals(tUserTask.getTaskType())) {
 						//组
 						taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
@@ -638,21 +643,19 @@ public class ActivitiServiceImpl implements ActivitiService{
 						//候选人
 						taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
 
-						Map<String,Object> variable = Maps.newHashMap();
+
 						for(String candidateId : candidateIds.split(",")){
 							variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
 						}
 
 						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
 						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
-
-						taskService.setVariablesLocal(task.getId(),variable);
 					} else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
 						/**
 						 * 为当前任务设置属性值
 						 * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
 						 */
-						Map<String,Object> variable = Maps.newHashMap();
+
 						for(String candidateId : candidateIds.split(",")){
 							variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
 						}
@@ -660,13 +663,11 @@ public class ActivitiServiceImpl implements ActivitiService{
 						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
 						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,0);
 						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
-						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
-						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
-						taskService.setVariablesLocal(task.getId(),variable);
 					}else{
-						taskService.setVariableLocal(task.getId(),tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
+						variable.put(tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
 						taskService.setAssignee(task.getId(), tUserTask.getCandidateIds());
 					}
+					taskService.setVariablesLocal(task.getId(),variable);
 					break;
 				}
 				Boolean needMail = Boolean.valueOf(ConfigUtil.getValue("isSendMail"));
