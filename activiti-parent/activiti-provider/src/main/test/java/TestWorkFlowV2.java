@@ -4,7 +4,6 @@ import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
 import com.activiti.expection.WorkFlowException;
-import com.activiti.service.WorkTaskService;
 import com.activiti.service.WorkTaskV2Service;
 import com.github.pagehelper.PageInfo;
 import org.activiti.engine.repository.Model;
@@ -24,41 +23,40 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by ma on 2017/11/6.
+ *
+ * @author houjinrong@chtwm.com
+ * date 2018/2/5 16:49
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"classpath:dubbo-server-consumer.xml"})
-public class SpringTest {
+public class TestWorkFlowV2 {
     ApplicationContext act;
-    WorkTaskService workTaskService;
     WorkTaskV2Service workTaskV2Service;
 
     @Before
     public void testBefore(){
         act=new ClassPathXmlApplicationContext("dubbo-server-consumer.xml");
-         workTaskService= (WorkTaskService) act.getBean("workTaskService");
          workTaskV2Service= (WorkTaskV2Service) act.getBean("workTaskV2Service");
-
     }
+
     //开启任务
     @Test
     public void testStart() {
-
 
         CommonVo commonVo=new CommonVo();
         commonVo.setApplyTitle("测试动态任务");
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("mayl");
         commonVo.setBusinessKey("0006");
-        commonVo.setBusinessType("maket");
-        commonVo.setModelKey("dyceshi");
-        commonVo.setDynamic(true);
+        commonVo.setBusinessType("activity");
+        commonVo.setModelKey("hour");
+        commonVo.setDynamic(false);
         Map map=new HashMap();
         map.put("param",10000);
         String processId= null;
         try {
             processId = workTaskV2Service.startTask(commonVo,map);
-            workTaskV2Service.setApprove(processId,"H017830,H017831");
+            //workTaskV2Service.setApprove(processId,null);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -70,8 +68,12 @@ public class SpringTest {
     public void  testComplete(){
         try {
             ApproveVo approveVo=new ApproveVo();
-            approveVo.setDynamic(true);
-            workTaskV2Service.completeTask(null,null);
+            approveVo.setDynamic(false);
+            approveVo.setProcessInstanceId("10001");
+            approveVo.setCurrentUser("H000013");
+            approveVo.setCommentResult("2");
+            approveVo.setCommentContent("【同意】");
+            workTaskV2Service.completeTask(approveVo,null);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -81,12 +83,12 @@ public class SpringTest {
      * 查询待审批列表
      */
     @Test
-     public void queryList() throws WorkFlowException {
+     public void queryByAssign() throws WorkFlowException {
         TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
-        taskQueryEntity.setBussinessType("maket");
-        taskQueryEntity.setModelKey("ceshi");
-      PageInfo<Task> pageInfo= workTaskService.queryByAssign("c28fb2ff582d484ea77692279ae56fff",1,10,taskQueryEntity);
-      System.out.print(pageInfo.getTotal());
+        taskQueryEntity.setBussinessType("activity");
+        taskQueryEntity.setModelKey("hour");
+        PageInfo<Task> pageInfo= workTaskV2Service.queryByAssign("H000016",1,10,taskQueryEntity);
+        System.out.print(pageInfo.getTotal());
      }
     /**
      * 查询完成的列表
@@ -94,14 +96,14 @@ public class SpringTest {
     @Test
     public void queryCompleteList(){
         TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
-        taskQueryEntity.setBussinessType("maket");
-        taskQueryEntity.setModelKey("ceshi");
-        PageInfo pageInfo= workTaskService.selectMyComplete("c28fb2ff582d484ea77692279ae56fff",1,10,taskQueryEntity);
+        taskQueryEntity.setBussinessType("activity");
+        taskQueryEntity.setModelKey("hour");
+        PageInfo pageInfo= workTaskV2Service.selectMyComplete("H000013",1,10,taskQueryEntity);
         System.out.print(pageInfo.getTotal());
     }
     @Test
     public void queryComments(){
-        List<Comment> list=workTaskService.selectListComment("111");
+        List<Comment> list=workTaskV2Service.selectListComment("111");
         System.out.print(list.size());
     }
 
@@ -110,11 +112,11 @@ public class SpringTest {
      */
     @Test
     public void testQueryHistoryTask(){
-        String processInstanceId = "33395";
+        String processInstanceId = "5001";
         List<String> variableNames = new ArrayList<String>();
         variableNames.add("applyUserName");
         variableNames.add("isPass");
-        HistoryTasksVo taskHistory = workTaskService.getTaskHistoryByProcessInstanceId(processInstanceId, variableNames);
+        HistoryTasksVo taskHistory = workTaskV2Service.getTaskHistoryByProcessInstanceId(processInstanceId, variableNames);
         System.out.print(taskHistory);
     }
     @Test
@@ -134,7 +136,7 @@ public class SpringTest {
      */
     @Test
     public void testGetModelListByAppKey(){
-        List<Model> lgb = workTaskService.getModelListByAppKey("lgb");
+        List<Model> lgb = workTaskV2Service.getModelListByAppKey("lgb");
         System.out.print(lgb.size());
     }
 
@@ -143,14 +145,26 @@ public class SpringTest {
      */
     @Test
     public void testDelegateTask(){
-        workTaskService.delegateTask("H019233","5003");
+        workTaskV2Service.delegateTask("H019233","5003");
     }
 
     /**
      * 测试转办任务
      */
     @Test
-    public void testTransferTaskTask(){
-        workTaskService.transferTask("H019236","5003");
+    public void testTransferTask(){
+        workTaskV2Service.transferTask("H019236","5003");
+    }
+
+    /**
+     * 测试跳转任务
+     */
+    @Test
+    public void testJumpTask(){
+        try {
+            workTaskV2Service.taskJump("","");
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
     }
 }
