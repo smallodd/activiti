@@ -202,16 +202,12 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         identityService.setAuthenticatedUserId(currentUser);
         taskService.addComment(task.getId(), processInstance.getProcessInstanceId(),commentResult, commentContent);
 
-
-        Map<String, Object> variables = new HashMap<String, Object>();
-
+        Map<String, Object> variables = Maps.newHashMap();
         Map map=taskService.getVariables(taskId);
         //动态处理审批
         if(approveVo.isDynamic()){
             runtimeService.setVariable(processInstanceId,processInstanceId+":"+ TaskVariable.LASTTASKUSER.value,currentUser);
             taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
-
-
 
             if(ConstantUtils.vacationStatus.PASSED.getValue().equals(commentResult)){
                 taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+currentUser,currentUser+":"+TaskStatus.FINISHEDPASS.value);
@@ -282,12 +278,10 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
             }
         }
-        taskService.setVariable(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
+        taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
         if("2".equals(commentResult)){
 
         }else if("3".equals(commentResult)){
-
-
             runtimeService.deleteProcessInstance(processInstanceId,"refuse");
             return processInstanceId;
         }else{
@@ -368,8 +362,8 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         HistoricTaskInstanceQuery query= createHistoricTaskInstanceQuery(taskQueryEntity);
-        List<HistoricTaskInstance> list= query.taskAssigneeLike("%"+userId+"%").taskVariableValueEquals(TaskStatus.FINISHED.value+":"+userId,TaskStatus.FINISHED).orderByHistoricTaskInstanceEndTime().desc().listPage((startPage-1)*pageSize,pageSize);
-        long count=query.taskAssigneeLike("%"+userId+"%").taskVariableValueEquals(TaskStatus.FINISHED.value+":"+userId,TaskStatus.FINISHED).count();
+        List<HistoricTaskInstance> list= query.taskAssigneeLike("%"+userId+"%").taskVariableValueEquals(TaskStatus.FINISHED.value+":"+userId,TaskStatus.FINISHED.value).orderByHistoricTaskInstanceEndTime().desc().listPage((startPage-1)*pageSize,pageSize);
+        long count=query.taskAssigneeLike("%"+userId+"%").taskVariableValueEquals(TaskStatus.FINISHED.value+":"+userId,TaskStatus.FINISHED.value).count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         logger.info("-----------------------查询用户历史审批过的任务结束----------------");
