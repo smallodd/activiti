@@ -376,8 +376,8 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         HistoricTaskInstanceQuery query=createHistoricTaskInstanceQuery(taskQueryEntity);
-        List<HistoricTaskInstance> list= query.taskAssignee(userId).taskVariableValueEquals(TaskStatus.FINISHEDREFUSE.value+":"+userId).listPage((startPage-1)*pageSize,pageSize);
-        long count=query.taskAssignee(userId).taskVariableValueEquals(TaskStatus.FINISHEDREFUSE.value+":"+userId).count();
+        List<HistoricTaskInstance> list= query.taskAssigneeLike("%"+userId+"%").taskVariableValueEquals(userId+":"+TaskStatus.FINISHEDREFUSE.value).listPage((startPage-1)*pageSize,pageSize);
+        long count=query.taskAssignee(userId).taskVariableValueEquals(userId+":"+TaskStatus.FINISHEDREFUSE.value).count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
         logger.info("----------------------查询用户审批拒绝的信息列表结束----------------");
@@ -423,7 +423,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
     private HistoricTaskInstanceQuery createHistoricTaskInstanceQuery(TaskQueryEntity taskQueryEntity){
         HistoricTaskInstanceQuery  historicTaskInstanceQuery= historyService.createHistoricTaskInstanceQuery();
-        if(StringUtils.isBlank(taskQueryEntity.getBussinessType())){
+        if(taskQueryEntity == null || StringUtils.isBlank(taskQueryEntity.getBussinessType())){
             throw new RuntimeException("参数不合法，业务系统key必须传值");
         }
 
@@ -452,7 +452,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
             Model model = repositoryService.createModelQuery().modelKey(taskQueryEntity.getModelKey()).singleResult();
-            query .deploymentId(model.getDeploymentId());
+            query.deploymentId(model.getDeploymentId());
         }else if(StringUtils.isNotBlank(taskQueryEntity.getBussinessType())){
             List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
             query.processDefinitionKeyIn(keys);
