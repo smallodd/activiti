@@ -154,7 +154,7 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testTransferTask(){
-        workTaskV2Service.transferTask("57538","H000014", "H019236");
+        workTaskV2Service.transferTask("62502","H019236", "H019236");
     }
 
     /**
@@ -163,7 +163,7 @@ public class TestWorkFlowV2 {
     @Test
     public void testJumpTask(){
         try {
-            workTaskV2Service.taskJump("57524","p1");
+            workTaskV2Service.taskJump("57538","p2");
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
