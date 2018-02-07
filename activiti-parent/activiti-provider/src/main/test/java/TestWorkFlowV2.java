@@ -6,6 +6,7 @@ import com.activiti.entity.TaskQueryEntity;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.service.WorkTaskV2Service;
 import com.github.pagehelper.PageInfo;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
@@ -69,7 +70,7 @@ public class TestWorkFlowV2 {
         try {
             ApproveVo approveVo=new ApproveVo();
             approveVo.setDynamic(false);
-            approveVo.setProcessInstanceId("10001");
+            approveVo.setProcessInstanceId("15001");
             approveVo.setCurrentUser("H000013");
             approveVo.setCommentResult("2");
             approveVo.setCommentContent("【同意】");
@@ -167,4 +168,16 @@ public class TestWorkFlowV2 {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 测试-查询我拒绝的任务
+     */
+    @Test
+    public void testSelectMyRefuse(){
+        TaskQueryEntity taskQueryEntity = new TaskQueryEntity();
+        taskQueryEntity.setBussinessType("activity");
+        PageInfo<HistoricTaskInstance> historicTaskInstanceList = workTaskV2Service.selectMyRefuse("H000006", 1, 10, taskQueryEntity);
+        System.out.println(historicTaskInstanceList);
+    }
+
 }
