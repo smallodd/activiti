@@ -174,7 +174,7 @@ public interface WorkTaskV2Service {
      * @param taskId 被转办人工号
      * @return
      */
-    boolean transferTask(String userId, String taskId);
+    boolean transferTask(String taskId, String userId, String transferUserId);
 
     /**
      * 通过流程实例id查询最后审批人

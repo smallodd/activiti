@@ -104,7 +104,7 @@ public class TestWorkFlowV2 {
     }
     @Test
     public void queryComments(){
-        List<Comment> list=workTaskV2Service.selectListComment("111");
+        List<Comment> list=workTaskV2Service.selectListComment("52501");
         System.out.print(list.size());
     }
 
@@ -154,7 +154,7 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testTransferTask(){
-        workTaskV2Service.transferTask("H019236","5003");
+        workTaskV2Service.transferTask("57538","H000014", "H019236");
     }
 
     /**
@@ -163,7 +163,7 @@ public class TestWorkFlowV2 {
     @Test
     public void testJumpTask(){
         try {
-            workTaskV2Service.taskJump("","");
+            workTaskV2Service.taskJump("57524","p1");
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
