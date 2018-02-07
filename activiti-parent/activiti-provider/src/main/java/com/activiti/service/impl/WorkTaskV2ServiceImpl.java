@@ -767,17 +767,17 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             if(TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)){
                 //会签
                 //修改会签人
-                String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value)+"";
+                String candidateIds = task.getAssignee();
                 if(StringUtils.contains(candidateIds, transferUserId)){
                     throw new ActivitiObjectNotFoundException("【"+transferUserId+"】已在当前任务中（同一任务节点同一个人最多可办理一次）", this.getClass());
                 }
-
-                taskService.setAssignee(task.getId(),task.getAssignee().replace(userId,transferUserId));
+                candidateIds = candidateIds.replace(userId,transferUserId);
+                taskService.setAssignee(task.getId(),candidateIds);
                 //修改会签人相关属性值
                 Map<String,Object> variable = Maps.newHashMap();
                 variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
                 variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
-                variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, candidateIds.replace(userId,transferUserId));
+                variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, candidateIds);
                 taskService.setVariablesLocal(taskId, variable);
             }else{
                 Map<String,Object> variable = Maps.newHashMap();
