@@ -970,7 +970,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
 
         //激活挂起的流程实例
-        //runtimeService.activateProcessInstanceById(processInstanceId);
+        runtimeService.activateProcessInstanceById(processInstanceId);
 
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         if(task == null){
