@@ -5,6 +5,7 @@ import com.activiti.cmd.StartActivityCmd;
 import com.activiti.common.CodeConts;
 import com.activiti.common.EmailUtil;
 import com.activiti.entity.*;
+import com.activiti.enums.ProcessVariable;
 import com.activiti.enums.TaskStatus;
 import com.activiti.enums.TaskType;
 import com.activiti.enums.TaskVariable;
@@ -20,7 +21,10 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.common.util.ConfigUtil;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.FlowElement;
+import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
 import org.activiti.engine.impl.RepositoryServiceImpl;
@@ -50,6 +54,7 @@ import javax.annotation.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -125,12 +130,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
         result.putAll(variables);
 
-        Set<String> set=paramMap.keySet();
-        for(String key: set){
-            if(result.containsKey(key)){
-                throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_REPART,"请不要设置重复的属性和commonVo中有的属性");
-            }
-        }
+        //校验属性是否跟系统属性重复
+        validateVariables(paramMap);
+
         result.putAll(paramMap);
         result.put("proDefinedKey",prodefinKey);
         result.put("version",version);
@@ -140,8 +142,11 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         //启动一个流程
         ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),result);
-        if(commonVo.isDynamic()){
 
+        //把流程节点ID用逗号隔开存入属性表
+        runtimeService.setVariable(processInstance.getProcessInstanceId(),processInstance.getProcessInstanceId(), ProcessVariable.PROCESSNODE.value+getProcessDefinitionNodeIds(processInstance.getProcessDefinitionId()));
+
+        if(commonVo.isDynamic()){
             return processInstance.getProcessInstanceId();
         }
         if(commonVo.isSuperior()){
@@ -180,10 +185,13 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String completeTask( ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException{
-
         if(approveVo==null||StringUtils.isBlank(approveVo.getCommentContent())||StringUtils.isBlank(approveVo.getCommentResult())||StringUtils.isBlank(approveVo.getCurrentUser())||StringUtils.isBlank(approveVo.getProcessInstanceId())){
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"非法参数，当前参数为："+ JSONObject.toJSONString(approveVo)+";请查看dubbo接口说明");
         }
+
+        //校验属性是否跟系统属性重复
+        validateVariables(paramMap);
+
         String processInstanceId=approveVo.getProcessInstanceId();
         String currentUser=approveVo.getCurrentUser();
         String commentResult=approveVo.getCommentResult();
@@ -307,7 +315,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         long count = 0;
 
         if(StringUtils.isNotBlank(userId)){
-            List<Task> taskList =createTaskQuqery(taskQueryEntity).taskVariableValueEquals(userId+":"+TaskStatus.UNFINISHED.value).taskAssigneeLike("%"+userId+"%").listPage((startPage-1)*pageSize,pageSize);
+            List<Task> taskList =createTaskQuqery(taskQueryEntity).taskVariableValueEquals(userId+":"+TaskStatus.UNFINISHED.value).taskAssigneeLike("%"+userId+"%").active().listPage((startPage-1)*pageSize,pageSize);
             pageInfo.setList(taskList);
             pageInfo.setTotal(count);
         }else{
@@ -459,60 +467,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
         return query;
 
-    }
-
-    /**
-     * 通过业务系统类型获取业务系统下的所有流程定义key
-     * @param bussnessType
-     * @return
-     */
-    private  List<String> getProcessKeyByBussnessType(String bussnessType){
-        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
-        wrapper.where("app_key={0}",bussnessType);
-        List<AppModel> listAppModel=appModelService.selectList(wrapper);
-        List<String> keys=new ArrayList<>();
-        for(AppModel appModel:listAppModel){
-            //通过model key查询model
-
-            keys.add(getProdefineKey(appModel.getModelKey()));
-        }
-        return keys;
-    }
-
-    /**
-     * 通过模型key获取流程定义key
-     * @param modelKey
-     * @return
-     */
-    private String getProdefineKey(String modelKey){
-        try {
-
-            //通过部署id查询流程定义
-            ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().processDefinitionKey(modelKey).latestVersion().singleResult();
-
-            String prodefinKey= processDefinition.getKey();
-            return  prodefinKey;
-        }catch (Exception e){
-            logger.info("获取流程定义key失败，模型键是："+modelKey);
-            return "";
-        }
-
-    }
-    /**
-     * 根据任务ID获得任务实例
-     *
-     * @param taskId
-     *            任务ID
-     * @return
-     * @throws Exception
-     */
-    private TaskEntity findTaskById(String taskId) throws Exception {
-        TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(
-                taskId).singleResult();
-        if (task == null) {
-            throw new Exception("任务实例未找到!");
-        }
-        return task;
     }
 
     /**
@@ -950,6 +904,145 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     /**
+     * 删除一个流程实例
+     * @param processInstanceId 流程实例ID
+     * @param description 删除原因
+     * @author houjinrong@chtwm.com
+     * @return
+     */
+    @Override
+    public boolean deleteProcessInstance(String processInstanceId, String description){
+        try {
+            runtimeService.deleteProcessInstance(processInstanceId,description);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 流程驳回
+     * @param processInstanceId 流程实例ID
+     * @return true：成功；false：失败
+     * @author houjinrong@chtwm.com
+     * date 2018/2/7 15:35
+     */
+    @Override
+    public boolean rollBackWorkFlow(String processInstanceId){
+        try {
+            runtimeService.suspendProcessInstanceById(processInstanceId);
+            getImmutableField(CommonVo.class);
+        } catch (Exception e) {
+            logger.info("任务驳回失败",e);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 恢复驳回的流程
+     * @param processInstanceId 流程实例ID
+     * @param resumeType 0：恢复到开始任务节点；1：恢复到驳回前到达的任务节点
+     * @return 任务ID
+     * @author houjinrong@chtwm.com
+     * date 2018/2/7 15:36
+     */
+    @Override
+    @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
+    public String resumeWorkFlow(String processInstanceId, int resumeType, Map<String,Object> variables, String userCodes) throws WorkFlowException{
+        if(StringUtils.isBlank(processInstanceId)){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"流程实例ID不能为空");
+        }
+
+        //校验属性是否跟系统属性重复
+        validateVariables(variables);
+
+        //激活挂起的流程实例
+        runtimeService.activateProcessInstanceById(processInstanceId);
+
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).active().singleResult();
+        if(task == null){
+            throw new WorkFlowException(CodeConts.PROCESS_NOEXISTS,"任务流程异常，找不到被驳回的任务节点");
+        }
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        if(resumeType == 0){
+            Object taskDefinitionKeys = runtimeService.getVariable(processInstanceId, ProcessVariable.PROCESSNODE.value + processInstanceId);
+            if(taskDefinitionKeys == null){
+                throw new WorkFlowException(CodeConts.PROCESS_ERROR,"流程定义ID【"+processInstanceId+"】对应的节点不存在");
+            }
+            taskDefinitionKey = taskDefinitionKeys.toString().split(",")[0];
+        }else if(resumeType == 1){
+            //do nothing
+        }else{
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，有效参数只能为0或1");
+        }
+        String taskId = taskJump(task.getId(), taskDefinitionKey);
+        if(variables != null && variables.size() > 0){
+            runtimeService.setVariables(processInstanceId,variables);
+        }
+        if(StringUtils.isNotBlank(userCodes)){
+            setApprove(processInstanceId, userCodes);
+        }
+        return taskId;
+    }
+
+    /**
+     * 通过业务系统类型获取业务系统下的所有流程定义key
+     * @param bussnessType
+     * @return
+     */
+    private  List<String> getProcessKeyByBussnessType(String bussnessType){
+        EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
+        wrapper.where("app_key={0}",bussnessType);
+        List<AppModel> listAppModel=appModelService.selectList(wrapper);
+        List<String> keys=new ArrayList<>();
+        for(AppModel appModel:listAppModel){
+            //通过model key查询model
+
+            keys.add(getProdefineKey(appModel.getModelKey()));
+        }
+        return keys;
+    }
+
+    /**
+     * 通过模型key获取流程定义key
+     * @param modelKey
+     * @return
+     */
+    private String getProdefineKey(String modelKey){
+        try {
+
+            //通过部署id查询流程定义
+            ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().processDefinitionKey(modelKey).latestVersion().singleResult();
+
+            String prodefinKey= processDefinition.getKey();
+            return  prodefinKey;
+        }catch (Exception e){
+            logger.info("获取流程定义key失败，模型键是："+modelKey);
+            return "";
+        }
+
+    }
+    /**
+     * 根据任务ID获得任务实例
+     *
+     * @param taskId
+     *            任务ID
+     * @return
+     * @throws Exception
+     */
+    private TaskEntity findTaskById(String taskId) throws Exception {
+        TaskEntity task = (TaskEntity) taskService.createTaskQuery().taskId(
+                taskId).singleResult();
+        if (task == null) {
+            throw new Exception("任务实例未找到!");
+        }
+        return task;
+    }
+
+    /**
      * 任务设置审核人侯发送邮件通知
      * @param assignee 审核人，多个用逗号隔开
      * @param applyUserName 应用用户名
@@ -978,20 +1071,58 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     /**
-     * 删除一个流程实例
-     * @param processInstanceId 流程实例ID
-     * @param description 删除原因
-     * @author houjinrong@chtwm.com
+     * 通过流程定义ID获取流程节点ID，多个逗号隔开
+     * @param processDefinitionId 流程定义ID
      * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/2/7 16:59
      */
-    @Override
-    public boolean deleteProcessInstance(String processInstanceId, String description){
-        try {
-            runtimeService.deleteProcessInstance(processInstanceId,description);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+    private String getProcessDefinitionNodeIds(String processDefinitionId){
+        String processDefinitionKeys = "";
+        BpmnModel model = repositoryService.getBpmnModel(processDefinitionId);
+        if(model != null) {
+            Collection<FlowElement> flowElements = model.getMainProcess().getFlowElements();
+            for(FlowElement fe : flowElements) {
+                if(fe instanceof UserTask){
+                    processDefinitionKeys = "".equals(processDefinitionKeys)?fe.getId():processDefinitionKeys+","+fe.getId();
+                }
+            }
         }
+
+        return processDefinitionKeys;
+    }
+
+    /**
+     * 校验属性值
+     * @param variables 属性值
+     * @author houjinrong@chtwm.com
+     * date 2018/2/8 13:49
+     */
+    private void validateVariables(Map<String,Object> variables) throws WorkFlowException{
+        Set<String> fieldSet = getImmutableField(CommonVo.class);
+        String repeatField = null;
+        for(String field : fieldSet){
+            if(variables.containsKey(field)){
+                repeatField = repeatField == null?field:repeatField+","+field;
+            }
+        }
+        if(repeatField != null){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_REPART,"不可覆盖系统属性【"+repeatField+"】");
+        }
+    }
+
+    /**
+     * 获取勒种所有属性
+     * @param clazz 类名
+     * @return 属性名用逗号隔开
+     * @author houjinrong@chtwm.com
+     * date 2018/2/8 13:49
+     */
+    private <E> Set<String> getImmutableField(Class<E> clazz){
+        Set<String> fieldSet = Sets.newHashSet();
+        for (Field field : clazz.getDeclaredFields()) {
+            fieldSet.add(field.getName());
+        }
+        return fieldSet;
     }
 }

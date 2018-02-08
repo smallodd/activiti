@@ -48,7 +48,7 @@ public class TestWorkFlowV2 {
         commonVo.setApplyTitle("测试动态任务");
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("mayl");
-        commonVo.setBusinessKey("0006");
+        commonVo.setBusinessKey("0001");
         commonVo.setBusinessType("activity");
         commonVo.setModelKey("hour");
         commonVo.setDynamic(false);
@@ -128,7 +128,7 @@ public class TestWorkFlowV2 {
                 "sender name",
                 "577415138@qq.com",
                 "mail subject: how are you?",
-                "<font color='red'>can you see?ол╣Щ</font>");
+                "<font color='red'>can you see bug</font>");
         System.out.println("send out successfully");
     }
 
@@ -180,4 +180,23 @@ public class TestWorkFlowV2 {
         System.out.println(historicTaskInstanceList);
     }
 
+    /**
+     * 测试-驳回
+     */
+    @Test
+    public void testRollBackWorkFlow(){
+        workTaskV2Service.rollBackWorkFlow("57501");
+    }
+
+    /**
+     * 测试-恢复驳回任务
+     */
+    @Test
+    public void testResumeWorkFlow(){
+        try {
+            workTaskV2Service.resumeWorkFlow("57501",1,null,null);
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
+    }
 }
