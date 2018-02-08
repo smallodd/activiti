@@ -131,7 +131,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         result.putAll(variables);
 
         //校验属性是否跟系统属性重复
-        validateVariables(paramMap);
+        if(variables != null){
+            validateVariables(paramMap);
+        }
 
         result.putAll(paramMap);
         result.put("proDefinedKey",prodefinKey);
@@ -144,7 +146,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         ProcessInstance processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),result);
 
         //把流程节点ID用逗号隔开存入属性表
-        runtimeService.setVariable(processInstance.getProcessInstanceId(),processInstance.getProcessInstanceId(), ProcessVariable.PROCESSNODE.value+getProcessDefinitionNodeIds(processInstance.getProcessDefinitionId()));
+        runtimeService.setVariable(processInstance.getProcessInstanceId(),ProcessVariable.PROCESSNODE.value+processInstance.getProcessInstanceId(), getProcessDefinitionNodeIds(processInstance.getProcessDefinitionId()));
 
         if(commonVo.isDynamic()){
             return processInstance.getProcessInstanceId();
@@ -190,7 +192,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
 
         //校验属性是否跟系统属性重复
-        validateVariables(paramMap);
+        if(paramMap != null){
+            validateVariables(paramMap);
+        }
 
         String processInstanceId=approveVo.getProcessInstanceId();
         String currentUser=approveVo.getCurrentUser();
@@ -793,7 +797,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      */
     @Override
     @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
-    public String taskJump(String taskId, String taskDefinitionKey) throws WorkFlowException{
+    public String taskJump(String taskId, String taskDefinitionKey, String userCodes) throws WorkFlowException{
         if(StringUtils.isBlank(taskId) || StringUtils.isBlank(taskDefinitionKey)){
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"非法的参数，未传入必须的参数");
         }
@@ -825,6 +829,10 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                 taskService.setOwner(task.getId(), assign);
             }
 
+            //动态审批设置审批人
+            if(StringUtils.isNotBlank(userCodes)){
+                setApprove(currentTaskEntity.getProcessInstanceId(), userCodes);
+            }
             return task.getId();
         }else{
             throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
@@ -957,12 +965,14 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
 
         //校验属性是否跟系统属性重复
-        validateVariables(variables);
+        if(variables != null){
+            validateVariables(variables);
+        }
 
         //激活挂起的流程实例
-        runtimeService.activateProcessInstanceById(processInstanceId);
+        //runtimeService.activateProcessInstanceById(processInstanceId);
 
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).active().singleResult();
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         if(task == null){
             throw new WorkFlowException(CodeConts.PROCESS_NOEXISTS,"任务流程异常，找不到被驳回的任务节点");
         }
@@ -978,13 +988,11 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }else{
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，有效参数只能为0或1");
         }
-        String taskId = taskJump(task.getId(), taskDefinitionKey);
+        String taskId = taskJump(task.getId(), taskDefinitionKey, userCodes);
         if(variables != null && variables.size() > 0){
             runtimeService.setVariables(processInstanceId,variables);
         }
-        if(StringUtils.isNotBlank(userCodes)){
-            setApprove(processInstanceId, userCodes);
-        }
+
         return taskId;
     }
 

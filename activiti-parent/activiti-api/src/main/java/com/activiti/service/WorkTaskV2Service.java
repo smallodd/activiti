@@ -198,7 +198,7 @@ public interface WorkTaskV2Service {
      * @author houjinrong@chtwm.com
      * date 2018/2/1 20:32
      */
-    String taskJump(String taskId, String taskDefinitionKey) throws WorkFlowException;
+    String taskJump(String taskId, String taskDefinitionKey, String userCodes) throws WorkFlowException;
 
     /**
      * 删除一个流程实例

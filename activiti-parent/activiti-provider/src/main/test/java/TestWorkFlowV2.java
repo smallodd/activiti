@@ -163,7 +163,7 @@ public class TestWorkFlowV2 {
     @Test
     public void testJumpTask(){
         try {
-            workTaskV2Service.taskJump("57538","p2");
+            workTaskV2Service.taskJump("57538","p2",null);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -185,7 +185,7 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testRollBackWorkFlow(){
-        workTaskV2Service.rollBackWorkFlow("57501");
+        workTaskV2Service.rollBackWorkFlow("2501");
     }
 
     /**
@@ -194,7 +194,7 @@ public class TestWorkFlowV2 {
     @Test
     public void testResumeWorkFlow(){
         try {
-            workTaskV2Service.resumeWorkFlow("57501",1,null,null);
+            workTaskV2Service.resumeWorkFlow("2501",0,null,null);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
