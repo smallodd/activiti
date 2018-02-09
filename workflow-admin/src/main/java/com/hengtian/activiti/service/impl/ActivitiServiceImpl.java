@@ -3,6 +3,7 @@ package com.hengtian.activiti.service.impl;
 import com.activiti.common.CodeConts;
 import com.activiti.common.EmailUtil;
 import com.activiti.expection.WorkFlowException;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.common.util.ConfigUtil;
 import com.google.common.collect.Lists;
@@ -283,28 +284,39 @@ public class ActivitiServiceImpl implements ActivitiService{
 				String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value) + "";
 				if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
 					//会签人
+					String userCount = (String)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNT.value);
+					if(StringUtils.isBlank(userCount)){
+						logger.error("会签任务【"+taskId+"】数据不完整，缺少属性"+TaskVariable.USERCOUNT.value);
+						result.setSuccess(false);
+						result.setMsg("会签任务【"+taskId+"】数据不完整，缺少属性"+TaskVariable.USERCOUNT.value);
+						return result;
+					}
+					JSONObject userCountJson = JSONObject.parseObject(userCount);
+					userCountNow = userCountJson.getInteger(TaskVariable.USERCOUNTNOW.value);
+					int userCountTotal = userCountJson.getInteger(TaskVariable.USERCOUNTTOTAL.value);
+					int userCountNeed = userCountJson.getInteger(TaskVariable.USERCOUNTNEED.value);
+					int userCountRefuse = userCountJson.getInteger(TaskVariable.USERCOUNTREFUSE.value);
 
-					userCountNow = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value);
-					int userCountTotal = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTTOTAL.value);
-					int userCountNeed = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNEED.value);
-					int userCountRefuse = (int)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTREFUSE.value);
 					String taskResult = TaskStatus.FINISHEDPASS.value;
 					if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
 						taskResult = TaskStatus.FINISHEDREFUSE.value;
 						userCountRefuse++;
 					}
-					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+userId,userId+":"+taskResult);
-					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTNOW.value,++userCountNow);
-					taskService.setVariableLocal(taskId,task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNTREFUSE.value,userCountRefuse);
+					Map<String,Object> variables = Maps.newHashMap();
+					variables.put(task.getTaskDefinitionKey()+":"+userId,userId+":"+taskResult);
+					userCountJson.put(TaskVariable.USERCOUNTNOW.value,++userCountNow);
+					userCountJson.put(TaskVariable.USERCOUNTREFUSE.value,userCountRefuse);
+					variables.put(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNT.value,userCountJson.toJSONString());
+					taskService.setVariablesLocal(taskId,variables);
 
 					int userCountAgree = userCountNow - userCountRefuse;
 					if(userCountAgree >= userCountNeed){
 						//------------任务完成-通过------------
-						commentResult = 2;
+						commentResult = ConstantUtils.vacationStatus.PASSED.getValue();
 					}else{
 						if(userCountTotal - userCountNow + userCountAgree < userCountNeed){
 							//------------任务完成-未通过------------
-							commentResult = 3;
+							commentResult = ConstantUtils.vacationStatus.NOT_PASSED.getValue();
 						}else{
 							//------------任务继续------------
 							//添加意见
@@ -330,15 +342,10 @@ public class ActivitiServiceImpl implements ActivitiService{
 			identityService.setAuthenticatedUserId(shiroUser.getId());
 			taskService.addComment(task.getId(), processInstance.getId(),String.valueOf(commentResult), commentContent);
 			//完成任务
-			Map<String, Object> variables = new HashMap<String, Object>();
-			if(ConstantUtils.vacationStatus.PASSED.getValue()==commentResult){
-				variables.put("isPass", true);
+			if(ConstantUtils.vacationStatus.PASSED.getValue().equals(commentResult)){
+				//do nothing
+			}else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
 				//存请假结果的变量
-				runtimeService.setVariable(processInstanceId, "vacationResult", "pass");
-			}else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue()==commentResult){
-				variables.put("isPass", false);
-				//存请假结果的变量
-				runtimeService.setVariable(processInstanceId, "vacationResult", "notPass");
 				runtimeService.deleteProcessInstance(processInstanceId,"refuse");
 
 				result.setSuccess(true);
@@ -348,7 +355,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 
 			// 完成委派任务
 			if(DelegationState.PENDING == task.getDelegationState()){
-				this.taskService.resolveTask(taskId, variables);
+				this.taskService.resolveTask(taskId);
 
 				result.setSuccess(true);
 				result.setMsg("办理委派任务成功！");
@@ -356,7 +363,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			}
 
 			//完成正常办理任务
-			taskService.complete(task.getId(), variables);
+			taskService.complete(task.getId());
 
 			//开启下一节点任务
 			initTaskVariable(processInstanceId,processInstance.getProcessDefinitionKey(),version,map);
@@ -656,10 +663,13 @@ public class ActivitiServiceImpl implements ActivitiService{
 						for(String candidateId : candidateIds.split(",")){
 							variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
 						}
-						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
-						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
-						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTNOW.value,0);
-						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNTREFUSE.value,0);
+
+						JSONObject json = new JSONObject();
+						json.put(TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
+						json.put(TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
+						json.put(TaskVariable.USERCOUNTNOW.value,0);
+						json.put(TaskVariable.USERCOUNTREFUSE.value,0);
+						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNT.value,json.toJSONString());
 					}else{
 						variable.put(tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
 					}

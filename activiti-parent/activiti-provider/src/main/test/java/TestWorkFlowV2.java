@@ -113,13 +113,14 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testQueryHistoryTask(){
-        String processInstanceId = "5001";
+        String processInstanceId = "2501";
         List<String> variableNames = new ArrayList<String>();
         variableNames.add("applyUserName");
         variableNames.add("isPass");
         HistoryTasksVo taskHistory = workTaskV2Service.getTaskHistoryByProcessInstanceId(processInstanceId, variableNames);
         System.out.print(taskHistory);
     }
+
     @Test
     public void testMailSend() throws Exception {
         EmailUtil emailUtil=EmailUtil.getEmailUtil();
