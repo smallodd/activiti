@@ -330,7 +330,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             pageInfo.setList(taskList);
             pageInfo.setTotal(count);
         }else{
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"查询我的任务失败");
         }
         logger.info("------------------------通过用户相关信息查询待审批任务结束------------------------");
         return pageInfo;
