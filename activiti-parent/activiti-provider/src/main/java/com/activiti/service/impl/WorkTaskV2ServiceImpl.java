@@ -514,10 +514,10 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                     processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
             //中文显示的是口口口，设置字体就好了
             //5.22.0
-            // InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
+            //InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
             //单独返回流程图，不高亮显示
             //InputStream imageStream = diagramGenerator.generatePngDiagram(bpmnModel);
-            // 输出资源内容到相应对象
+            //输出资源内容到相应对象
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int len = -1;
