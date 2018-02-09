@@ -863,11 +863,11 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
 
         for(Task task:tasks){
-            if(org.apache.commons.lang3.StringUtils.isNotBlank(task.getAssignee())){
+            if(StringUtils.isNotBlank(task.getAssignee())){
                 continue;
             }
             for(TUserTask tUserTask:tUserTasks){
-                if(org.apache.commons.lang3.StringUtils.isBlank(tUserTask.getCandidateIds())){
+                if(StringUtils.isBlank(tUserTask.getCandidateIds())){
                     throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
                 }
                 if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
