@@ -388,7 +388,7 @@ public class ActivitiController extends BaseController{
 					taskService.setAssignee(task.getId(),task.getAssignee().replace(userId,transferUserId));
 					//修改会签人相关属性值
 					Map<String,Object> variable = Maps.newHashMap();
-					variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
+					variable.put(task.getTaskDefinitionKey() + ":" + userId, userId+":"+TaskStatus.TRANSFER.value);
 					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
 					variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, candidateIds.replace(userId,transferUserId));
 					taskService.setVariablesLocal(taskId, variable);
