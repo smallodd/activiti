@@ -497,11 +497,8 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
             List<HistoricActivityInstance> highLightedActivitList =  historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
 
-
             //高亮环节id集合
             List<String> highLightedActivitis = new ArrayList<String>();
-
-
 
             //高亮线路id集合
             List<String> highLightedFlows = getHighLightedFlows(definitionEntity,highLightedActivitList);
@@ -510,14 +507,14 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                 String activityId = tempActivity.getActivityId();
                 highLightedActivitis.add(activityId);
             }
-//生成流图片  5.18.0
+            //生成流图片  5.18.0
             InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
                     processEngineConfiguration.getLabelFontName(),
                     processEngineConfiguration.getActivityFontName(),
                     processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
             //中文显示的是口口口，设置字体就好了
             //5.22.0
-           // InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
+            // InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
             //单独返回流程图，不高亮显示
             //InputStream imageStream = diagramGenerator.generatePngDiagram(bpmnModel);
             // 输出资源内容到相应对象
@@ -1035,10 +1032,8 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
     /**
      * 根据任务ID获得任务实例
-     *
-     * @param taskId
-     *            任务ID
-     * @return
+     * @param taskId 任务ID
+     * @return 任务实例
      * @throws Exception
      */
     private TaskEntity findTaskById(String taskId) throws Exception {
