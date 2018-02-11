@@ -5,6 +5,7 @@ import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.service.WorkTaskV2Service;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.repository.Model;
@@ -70,8 +71,8 @@ public class TestWorkFlowV2 {
         try {
             ApproveVo approveVo=new ApproveVo();
             approveVo.setDynamic(false);
-            approveVo.setProcessInstanceId("15001");
-            approveVo.setCurrentUser("H000013");
+            approveVo.setProcessInstanceId("2501");
+            approveVo.setCurrentUser("H000033");
             approveVo.setCommentResult("2");
             approveVo.setCommentContent("【同意】");
             workTaskV2Service.completeTask(approveVo,null);
@@ -88,7 +89,7 @@ public class TestWorkFlowV2 {
         TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
         taskQueryEntity.setBussinessType("activity");
         taskQueryEntity.setModelKey("hour");
-        PageInfo<Task> pageInfo= workTaskV2Service.queryByAssign("H000016",1,10,taskQueryEntity);
+        PageInfo<Task> pageInfo= workTaskV2Service.queryTaskByAssign("H000016",1,10,taskQueryEntity);
         System.out.print(pageInfo.getTotal());
      }
     /**
@@ -99,12 +100,12 @@ public class TestWorkFlowV2 {
         TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
         taskQueryEntity.setBussinessType("activity");
         taskQueryEntity.setModelKey("hour");
-        PageInfo pageInfo= workTaskV2Service.selectMyComplete("H000013",1,10,taskQueryEntity);
+        PageInfo pageInfo= workTaskV2Service.selectMyComplete("H000016",1,10,taskQueryEntity);
         System.out.print(pageInfo.getTotal());
     }
     @Test
     public void queryComments(){
-        List<Comment> list=workTaskV2Service.selectListComment("52501");
+        List<Comment> list=workTaskV2Service.selectCommentList("52501");
         System.out.print(list.size());
     }
 
@@ -199,5 +200,19 @@ public class TestWorkFlowV2 {
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 测试-查询某一任务节点评论
+     */
+    @Test
+    public void testSelectComment(){
+        Comment comment = null;
+        try {
+            comment = workTaskV2Service.selectComment("5005", "H000013");
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
+        System.out.println(JSONObject.toJSONString(comment));
     }
 }

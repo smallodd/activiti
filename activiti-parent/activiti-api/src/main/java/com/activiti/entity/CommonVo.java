@@ -122,11 +122,6 @@ public class CommonVo extends ApproveInterface implements Serializable{
 		this.modelKey = modelKey;
 	}
 
-
-
-
-
-
 	@Override
 	public String toString() {
 		return "CommonVo{" +
