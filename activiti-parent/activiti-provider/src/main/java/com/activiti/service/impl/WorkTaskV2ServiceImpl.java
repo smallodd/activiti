@@ -45,7 +45,8 @@ import org.activiti.engine.task.TaskQuery;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,11 +59,13 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 /**
- * Created by ma on 2017/7/18.
+ * @author houjinrong@chtwm.com
+ * 2018/2/11 15:08
  */
 public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
-    private Logger logger=Logger.getLogger(WorkTaskV2ServiceImpl.class);
+    private Logger logger = LoggerFactory.getLogger(WorkTaskV2Service.class);
+
     @Resource
     TaskService taskService;
     @Resource
@@ -91,8 +94,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException {
+        logger.info("开启任务{}", "startTask");
+        logger.info("入参 commonVo：{}paramMap：{}",commonVo.toString(),JSONObject.toJSONString(paramMap));
 
-        logger.info("startTask开启任务开始，参数"+commonVo.toString());
         if(StringUtils.isBlank(commonVo.getApplyTitle())||StringUtils.isBlank(commonVo.getApplyUserId())||StringUtils.isBlank(commonVo.getApplyUserName())||StringUtils.isBlank(commonVo.getBusinessKey())||StringUtils.isBlank(commonVo.getBusinessType())||StringUtils.isBlank(commonVo.getModelKey())){
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，请检查参数是否正确,"+commonVo.toString());
         }
@@ -180,6 +184,8 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
         result.put(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value,TaskType.CANDIDATEUSER.value);
         result.put(task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value,userCodes);
+
+        logger.info("返回值：{}", true);
         taskService.setVariablesLocal(task.getId(),result);
         return true;
     }
@@ -187,6 +193,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String completeTask( ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException{
+        logger.info("办理任务{}", "completeTask");
+        logger.info("入参 approveVo：{}paramMap：{}",approveVo,paramMap);
+
         if(approveVo==null||StringUtils.isBlank(approveVo.getCommentContent())||StringUtils.isBlank(approveVo.getCommentResult())||StringUtils.isBlank(approveVo.getCurrentUser())||StringUtils.isBlank(approveVo.getProcessInstanceId())){
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"非法参数，当前参数为："+ JSONObject.toJSONString(approveVo)+";请查看dubbo接口说明");
         }
@@ -315,13 +324,15 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         //完成任务
         taskService.complete(task.getId());
         initTaskVariable(task.getProcessInstanceId(),processInstance.getProcessDefinitionKey(),version,map);
+
+        logger.info("返回值：任务实例ID{}", processInstanceId);
         return processInstanceId;
     }
 
     @Override
-    public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity) throws WorkFlowException {
-        logger.info("------------------------通过用户相关信息查询待审批任务开始------------------------");
-
+    public PageInfo<Task> queryTaskByAssign(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity) throws WorkFlowException {
+        logger.info("----------------通过用户相关信息查询待审批任务开始----------------");
+        logger.info("入参 userId：{}，startPage：{}，pageSize：{}，taskQueryEntity：{}", "queryByAssign：{}",userId,startPage,pageSize,JSONObject.toJSONString(taskQueryEntity));
         PageInfo<Task> pageInfo = new PageInfo<>();
         long count = 0;
 
@@ -332,23 +343,23 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }else{
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"查询我的任务失败");
         }
-        logger.info("------------------------通过用户相关信息查询待审批任务结束------------------------");
+        logger.info("----------------通过用户相关信息查询待审批任务结束,返回值{}----------------",JSONObject.toJSONString(pageInfo));
         return pageInfo;
     }
 
 
     /**
      * 获取申请人提交的任务
-     * @param userid  申请人信息
+     * @param userId  申请人信息
      * @param startPage  起始页数
-     * @param pageSzie    每页显示数
+     * @param pageSize    每页显示数
      * @param status      0 :审批中的任务
      *                    1 :审批完成的任务
      * @return
      */
     @Override
-    public List<HistoricProcessInstance> getApplyTasks(String userid,int startPage,int pageSzie,int status,TaskQueryEntity taskQueryEntity){
-        logger.info("--------------------获取申请人提交的任务开始----------------");
+    public List<HistoricProcessInstance> getApplyTasks(String userId,int startPage,int pageSize,int status,TaskQueryEntity taskQueryEntity){
+        logger.info("--------------------获取申请人提交的任务开始,入参 userId：{}，pageSzie：{}，status：{}，taskQueryEntity：{}----------------",userId,startPage,pageSize,status,JSONObject.toJSONString(taskQueryEntity));
 
         HistoricProcessInstanceQuery query=historyService.createHistoricProcessInstanceQuery();
         if(StringUtils.isBlank(taskQueryEntity.getBussinessType())){
@@ -368,16 +379,15 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             query.finished();
         }
         query.orderByProcessInstanceStartTime().desc();
-        List<HistoricProcessInstance> list= query.startedBy(userid).listPage((startPage-1)*pageSzie,pageSzie);
-        logger.info("--------------------获取申请人提交的任务结束----------------");
+        List<HistoricProcessInstance> list= query.startedBy(userId).listPage((startPage-1)*pageSize,pageSize);
+        logger.info("----------------获取申请人提交的任务结束,返回值{}----------------",JSONObject.toJSONString(list));
 
         return list;
     }
 
-
     @Override
     public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity){
-        logger.info("-----------------------查询用户历史审批过的任务开始----------------");
+        logger.info("----------------查询用户历史审批过的任务开始,入参 userId：{}，startPage：{}，pageSize：{}，taskQueryEntity：{}----------------",userId,startPage,pageSize,JSONObject.toJSONString(taskQueryEntity));
 
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         HistoricTaskInstanceQuery query= createHistoricTaskInstanceQuery(taskQueryEntity);
@@ -385,13 +395,13 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         long count=query.taskAssigneeLike("%"+userId+"%").taskVariableValueEquals(TaskStatus.FINISHED.value+":"+userId,TaskStatus.FINISHED.value).count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
-        logger.info("-----------------------查询用户历史审批过的任务结束----------------");
+        logger.info("----------------查询用户历史审批过的任务结束，返回值：{}----------------",JSONObject.toJSONString(pageInfo));
         return pageInfo;
     }
 
     @Override
     public PageInfo<HistoricTaskInstance> selectMyRefuse(String userId, int startPage, int pageSize,TaskQueryEntity taskQueryEntity) {
-        logger.info("----------------------查询用户审批拒绝的信息列表开始----------------");
+        logger.info("----------------查询用户审批拒绝的信息列表开始,入参 userId：{}，startPage：{}，pageSize：{}，taskQueryEntity：{}----------------",userId,startPage,pageSize,JSONObject.toJSONString(taskQueryEntity));
 
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         HistoricTaskInstanceQuery query=createHistoricTaskInstanceQuery(taskQueryEntity);
@@ -399,14 +409,14 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         long count=query.taskAssignee(userId).taskVariableValueEquals(userId+":"+TaskStatus.FINISHEDREFUSE.value).count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
-        logger.info("----------------------查询用户审批拒绝的信息列表结束----------------");
+        logger.info("----------------查询用户审批拒绝的信息列表结束，返回值：{}----------------",JSONObject.toJSONString(pageInfo));
         return pageInfo;
     }
 
-    //TODO
 
     @Override
     public boolean checkBusinessKeyIsInFlow(TaskQueryEntity taskQueryEntity, String businessKey) {
+        logger.info("----------------查询业务主键是否再流程中开始,入参 taskQueryEntity：{}，businessKey：{}----------------",JSONObject.toJSONString(taskQueryEntity),businessKey);
         if((StringUtils.isBlank(taskQueryEntity.getBussinessType())||StringUtils.isBlank(taskQueryEntity.getModelKey()))){
             throw new RuntimeException("参数不合法,业务系统key和modekey 必须都传:"+taskQueryEntity.toString());
         }
@@ -415,69 +425,30 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         if(tasks!=null&&tasks.size()>0&&tasks.get(0)!=null){
             return  true;
         }
+
+        logger.info("----------------查询业务主键是否再流程中结束----------------");
         return false;
     }
 
 
     @Override
-    public  List<Comment> selectListComment(String processInstanceId){
-        return taskService.getProcessInstanceComments(processInstanceId);
+    public  List<Comment> selectCommentList(String processInstanceId){
+        logger.info("----------------查询审批意见列表开始,入参 processInstanceId：{}----------------",processInstanceId);
+        List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
+        logger.info("----------------查询审批意见列表结束,返回值：{}----------------",JSONObject.toJSONString(commentList));
+        return commentList;
     }
 
     @Override
-    public Map<String, Object> getVariables(String processId) {
-        List<HistoricVariableInstance> list=historyService.createHistoricVariableInstanceQuery().processInstanceId(processId).list();
+    public Map<String, Object> getVariables(String processInstanceId) {
+        logger.info("----------------通过流程实例ID获取属性值开始,入参 processInstanceId：{}----------------",processInstanceId);
+        List<HistoricVariableInstance> list=historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
         Map<String,Object> map=new HashMap<>();
         for(HistoricVariableInstance historicVariableInstance:list){
             map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
         }
+        logger.info("----------------通过流程实例ID获取属性值结束,返回值：{}----------------",JSONObject.toJSONString(map));
         return map;
-    }
-
-    @Override
-    public void transferAssignee(String taskId, String userCode) {
-        taskService.setAssignee(taskId, userCode);
-    }
-
-
-    private HistoricTaskInstanceQuery createHistoricTaskInstanceQuery(TaskQueryEntity taskQueryEntity){
-        HistoricTaskInstanceQuery  historicTaskInstanceQuery= historyService.createHistoricTaskInstanceQuery();
-        if(taskQueryEntity == null || StringUtils.isBlank(taskQueryEntity.getBussinessType())){
-            throw new RuntimeException("参数不合法，业务系统key必须传值");
-        }
-
-        historicTaskInstanceQuery.processVariableValueEquals("businessType", taskQueryEntity.getBussinessType());
-
-        if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
-
-            historicTaskInstanceQuery.processDefinitionKey(taskQueryEntity.getModelKey());
-        }else if((StringUtils.isNotBlank(taskQueryEntity.getBussinessType()))){
-            List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
-            historicTaskInstanceQuery.processDefinitionKeyIn(keys);
-        }
-        return historicTaskInstanceQuery;
-    }
-    /**
-     * 创建任务查询query
-     * @param taskQueryEntity
-     * @return
-     */
-    private TaskQuery createTaskQuqery(TaskQueryEntity taskQueryEntity){
-        TaskQuery  query= taskService.createTaskQuery();
-        if(StringUtils.isBlank(taskQueryEntity.getBussinessType())){
-            throw new RuntimeException("参数不合法，业务系统key必须传值");
-        }
-        query.processVariableValueEquals("businessType", taskQueryEntity.getBussinessType());
-
-        if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
-            Model model = repositoryService.createModelQuery().modelKey(taskQueryEntity.getModelKey()).singleResult();
-            query.deploymentId(model.getDeploymentId());
-        }else if(StringUtils.isNotBlank(taskQueryEntity.getBussinessType())){
-            List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
-            query.processDefinitionKeyIn(keys);
-        }
-        return query;
-
     }
 
     /**
@@ -487,6 +458,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      */
     @Override
     public byte[] getTaskSchedule(String processInstanceId){
+        logger.info("----------------获取流程跟踪图开始,入参 processInstanceId：{}----------------",processInstanceId);
         if(StringUtils.isBlank(processInstanceId)){
             return null;
         }
@@ -537,7 +509,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         } catch(IOException e){
             logger.error("获取流程任务跟踪标识图失败",e);
         }
-
+        logger.info("----------------获取流程跟踪图开始结束----------------",processInstanceId);
         return null;
     }
 
@@ -601,6 +573,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      */
     @Override
     public HistoryTasksVo getTaskHistoryByProcessInstanceId(String processInstanceId, List<String> variableNames){
+        logger.info("----------------获取历史任务开始,入参 processInstanceId：{}，variableNames：{}----------------",processInstanceId,variableNames);
         if(StringUtils.isBlank(processInstanceId)){
             return null;
         }
@@ -664,6 +637,8 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
 
         hisTask.setVariables(variableMap);
+
+        logger.info("----------------获取历史任务结束,返回值{}----------------",JSONObject.toJSONString(hisTask));
         return hisTask;
     }
 
@@ -673,9 +648,12 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      */
     @Override
     public List<App> getAppList(){
+        logger.info("----------------获取应用列表开始----------------");
         EntityWrapper<App> wrapper = new EntityWrapper<App>();
         wrapper.where("status",1);
-        return appService.selectList(wrapper);
+        List<App> appList = appService.selectList(wrapper);
+        logger.info("----------------获取应用列表结束,返回值{}----------------",JSONObject.toJSONString(appList));
+        return appList;
     }
 
     /**
@@ -685,11 +663,14 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      */
     @Override
     public List<Model> getModelListByAppKey(String appKey){
+        logger.info("----------------通过appKey获取模型列表开始，入参 appKey：{}----------------",appKey);
         if(StringUtils.isBlank(appKey)){
             return null;
         }
         String sql = "SELECT arm.* FROM `ACT_RE_MODEL` AS arm,`t_app_model` AS tam,`t_app` AS ta WHERE ta.KEY='"+appKey+"' AND ta.KEY=tam.APP_KEY AND arm.KEY_=tam.MODEL_KEY ";
-        return repositoryService.createNativeModelQuery().sql(sql).list();
+        List<Model> modelList = repositoryService.createNativeModelQuery().sql(sql).list();
+        logger.info("----------------通过appKey获取模型列表结束，返回值{}----------------",JSONObject.toJSONString(modelList));
+        return modelList;
     }
 
     /**
@@ -710,21 +691,17 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         return true;
     }
 
-    /**
-     * 转办任务
-     * @author houjinrong
-     * @param userId 当前任务节点ID
-     * @param taskId 被转办人工号
-     * @return
-     */
     @Override
-    public boolean transferTask(String taskId, String userId, String transferUserId){
+    public boolean transferTask(String processInstanceId, String userId, String transferUserId){
+        logger.info("----------------任务转办开始，入参 taskId：{}，userId：{}，transferUserId：{}----------------",processInstanceId,userId,transferUserId);
+        boolean result = true;
         try {
-            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).active().singleResult();
             if(task == null){
                 throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
             }
 
+            String taskId = task.getId();
             String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value)+"";
             if(TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)){
                 //会签
@@ -757,56 +734,71 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         } catch (ActivitiObjectNotFoundException e){
             logger.error("转办任务失败，此任务不存在！",e);
-            return false;
+            result = false;
         } catch (Exception e) {
             logger.error("委派任务失败，系统错误！",e);
-            return false;
+            result = false;
         }
-        return true;
+        logger.info("----------------任务转办结束,返回值{}----------------",result);
+        return result;
     }
 
     @Override
-    public String getLastApprover(String processId) {
-       Object lastApprover= runtimeService.getVariable(processId,processId+":"+ TaskVariable.LASTTASKUSER.value);
-       if(lastApprover==null){
-           return  null;
-       }else {
-           return String.valueOf(lastApprover);
-       }
+    public String getLastApprover(String processInstanceId) {
+        logger.info("----------------获取最后审批人开始,入参 processInstanceId：{}----------------",processInstanceId);
+        String result = null;
+        Object lastApprover= runtimeService.getVariable(processInstanceId,processInstanceId+":"+ TaskVariable.LASTTASKUSER.value);
+        if(lastApprover==null){
+            result = null;
+        }else {
+            result = String.valueOf(lastApprover);
+        }
+        logger.info("----------------获取最后审批人结束,返回值{}----------------",result);
+        return result;
     }
 
     @Override
-    public Comment selectComment(String taskid, String userName) {
-        List<Comment> list= taskService.getTaskComments(taskid,"2");
-        List<Comment> list1=taskService.getTaskComments(taskid,"3");
-        list.addAll(list1);
-        if(list==null||list.size()==0){
+    public Comment selectComment(String processInstanceId, String userId) throws WorkFlowException{
+        logger.info("----------------获取某一任务节点某人的审批意见开始,返回值{}----------------",processInstanceId,userId);
+        if(StringUtils.isBlank(processInstanceId) || StringUtils.isBlank(userId)){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"未传入必要的参数");
+        }
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).active().singleResult();
+        if(task == null){
+            throw new WorkFlowException("流程实例ID{}当前没有可执行的任务",processInstanceId);
+        }
+        List<Comment> commentListAgree = taskService.getTaskComments(task.getId(),"2");
+        List<Comment> commentListRefuse = taskService.getTaskComments(task.getId(),"3");
+        commentListAgree.addAll(commentListRefuse);
+        if(commentListAgree==null || commentListAgree.size()==0){
             return null;
         }
-        for(Comment comment:list){
-            if(comment.getUserId().equals(userName)){
+        for(Comment comment : commentListAgree){
+            if(comment.getUserId().equals(userId)){
                 return comment;
             }
         }
+        logger.info("----------------获取某一任务节点某人的审批意见结束----------------");
         return null;
     }
 
     /**
      * 任务跳转
-     * @param taskId 当前任务ID
+     * @param processInstanceId 流程实例ID
      * @param taskDefinitionKey 跳转到的任务节点KEY
-     * @return 任务ID
+     * @return 流程实例ID
      * @author houjinrong@chtwm.com
      * date 2018/2/1 20:32
      */
     @Override
     @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
-    public String taskJump(String taskId, String taskDefinitionKey, String userCodes) throws WorkFlowException{
-        if(StringUtils.isBlank(taskId) || StringUtils.isBlank(taskDefinitionKey)){
+    public String taskJump(String processInstanceId, String taskDefinitionKey, String userCodes) throws WorkFlowException{
+        logger.info("----------------任务跳转开始,入参 taskId：{}，taskDefinitionKey：{}，userCodes：{}----------------",processInstanceId,taskDefinitionKey,userCodes);
+        if(StringUtils.isBlank(processInstanceId) || StringUtils.isBlank(taskDefinitionKey)){
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"非法的参数，未传入必须的参数");
         }
 
-        TaskEntity currentTaskEntity = (TaskEntity) this.taskService.createTaskQuery().taskId(taskId).singleResult();
+        TaskEntity currentTaskEntity = (TaskEntity) this.taskService.createTaskQuery().processInstanceId(processInstanceId).active().singleResult();
 
         if(currentTaskEntity != null){
             ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl)this.repositoryService)
@@ -837,10 +829,51 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             if(StringUtils.isNotBlank(userCodes)){
                 setApprove(currentTaskEntity.getProcessInstanceId(), userCodes);
             }
+            logger.info("----------------任务跳转结束，返回值：{}----------------",task.getProcessInstanceId());
             return task.getProcessInstanceId();
         }else{
             throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
         }
+    }
+
+    private HistoricTaskInstanceQuery createHistoricTaskInstanceQuery(TaskQueryEntity taskQueryEntity){
+        HistoricTaskInstanceQuery  historicTaskInstanceQuery= historyService.createHistoricTaskInstanceQuery();
+        if(taskQueryEntity == null || StringUtils.isBlank(taskQueryEntity.getBussinessType())){
+            throw new RuntimeException("参数不合法，业务系统key必须传值");
+        }
+
+        historicTaskInstanceQuery.processVariableValueEquals("businessType", taskQueryEntity.getBussinessType());
+
+        if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
+
+            historicTaskInstanceQuery.processDefinitionKey(taskQueryEntity.getModelKey());
+        }else if((StringUtils.isNotBlank(taskQueryEntity.getBussinessType()))){
+            List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
+            historicTaskInstanceQuery.processDefinitionKeyIn(keys);
+        }
+        return historicTaskInstanceQuery;
+    }
+    /**
+     * 创建任务查询query
+     * @param taskQueryEntity
+     * @return
+     */
+    private TaskQuery createTaskQuqery(TaskQueryEntity taskQueryEntity){
+        TaskQuery  query= taskService.createTaskQuery();
+        if(StringUtils.isBlank(taskQueryEntity.getBussinessType())){
+            throw new RuntimeException("参数不合法，业务系统key必须传值");
+        }
+        query.processVariableValueEquals("businessType", taskQueryEntity.getBussinessType());
+
+        if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
+            Model model = repositoryService.createModelQuery().modelKey(taskQueryEntity.getModelKey()).singleResult();
+            query.deploymentId(model.getDeploymentId());
+        }else if(StringUtils.isNotBlank(taskQueryEntity.getBussinessType())){
+            List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
+            query.processDefinitionKeyIn(keys);
+        }
+        return query;
+
     }
 
     /**
@@ -995,12 +1028,12 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }else{
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，有效参数只能为0或1");
         }
-        String taskId = taskJump(task.getId(), taskDefinitionKey, userCodes);
+        taskJump(task.getId(), taskDefinitionKey, userCodes);
         if(variables != null && variables.size() > 0){
             runtimeService.setVariables(processInstanceId,variables);
         }
 
-        return taskId;
+        return processInstanceId;
     }
 
     /**

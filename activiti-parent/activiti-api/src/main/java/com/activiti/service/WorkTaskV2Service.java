@@ -25,112 +25,102 @@ import java.util.Map;
 public interface WorkTaskV2Service {
     /**
      * 查询业务主键是否再流程中
-     * @param taskQueryEntity  任务查询query
+     * @param taskQueryEntity 任务查询query
      * @param businessKey 业务主键
-     * @return   返回true or false
+     * @return 返回true or false
      */
     public boolean checkBusinessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String businessKey) ;
 
     /**
-     * 开启任务；
+     * 开启任务
      * 注：如是动态自己设置审批人，任务启动后要调用setApprove方法设置审批人，无法重复设置审批人
      * @param commonVo
-     * @param paramMap   流程定义中线上的参数，键是线上的键
-     * @return  返回部署的任务id,建议存储到业务系统
+     * @param paramMap 流程定义中线上的参数，键是线上的键
+     * @return 返回部署的任务id,建议存储到业务系统
      */
     String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException;
 
     /**
      * 设置审批人
-     * @param processId  流程id
-     * @param userCodes  用户工号，用逗号隔开
+     * @param processId 流程id
+     * @param userCodes 用户工号，用逗号隔开
      * @return
      */
     public boolean setApprove(String processId,String userCodes) throws WorkFlowException;
 
     /**
      * 通过用户相关信息查询待审批任务
-     * @param userId  用户信息 一般是id
-     * @param  startPage  起始页数
-     * @param  pageSize   每页显示数
-     * @param  taskQueryEntity  查询任务query
-     * @return  返回任务列表
+     * @param userId  用户信息，一般是id
+     * @param startPage 起始页数
+     * @param pageSize 每页显示数
+     * @param taskQueryEntity 查询任务query
+     * @return 返回任务列表
      */
-    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize, TaskQueryEntity taskQueryEntity) throws WorkFlowException;
+    PageInfo<Task> queryTaskByAssign(String userId, int startPage, int pageSize, TaskQueryEntity taskQueryEntity) throws WorkFlowException;
 
 
     /**
      * 审批接口
      * 注：如是动态自己设置审批人，任务审批后要调用setApprove方法设置审批人，无法重复设置审批人
-     *  @param  approveVo  审批信息封装类，具体请看ApproveVo类说明
-     *  @param  paramMap   自定义参数键值对
-     * @return   注意：通过工作流平台设置审批人，此方法每次都会返回processId,流程实例的id
-     *                  如是动态设置审批人，在审批后如任务还未完成继续返回processId,如任务已结束将返回null
-     * @exception  WorkFlowException 返回审批异常
+     * @param approveVo 审批信息封装类，具体请看ApproveVo类说明
+     * @param paramMap 自定义参数键值对
+     * @return 注意：通过工作流平台设置审批人，此方法每次都会返回processId,流程实例的id
+     *              如是动态设置审批人，在审批后如任务还未完成继续返回processId,如任务已结束将返回null
+     * @exception WorkFlowException 返回审批异常
      */
     String  completeTask(ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException;
 
     /**
      * 获取申请人提交的任务
-     * @param userid  申请人信息
-     * @param startPage  起始页数
-     * @param pageSzie    查询多少条数
-     * @param status      0 :审批中的任务
-     *                    1 ：审批完成的任务
-     *@param taskQueryEntity  任务查询query
-     * @return    返回申请人提交的任务
+     * @param userId 申请人信息
+     * @param startPage 起始页数
+     * @param pageSzie 查询多少条数
+     * @param status 0 :审批中的任务
+     *               1 ：审批完成的任务
+     * @param taskQueryEntity 任务查询query
+     * @return 返回申请人提交的任务
      */
-    List<HistoricProcessInstance> getApplyTasks(String userid, int startPage, int pageSzie, int status,TaskQueryEntity taskQueryEntity);
+    List<HistoricProcessInstance> getApplyTasks(String userId, int startPage, int pageSize, int status,TaskQueryEntity taskQueryEntity);
 
     /**
      * 通过用户主键查询历史审批过的任务
-     * @param userId   用户主键
-     * @param startPage   开始页数
-     * @param pagegSize   每页显示数
+     * @param userId 用户主键
+     * @param startPage 开始页数
+     * @param pagegSize 每页显示数
      * @param taskQueryEntity 查询任务query
      *
-     * @return            返回审批历史人物信息列表
+     * @return 返回审批历史人物信息列表
      */
     PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pagegSize,TaskQueryEntity taskQueryEntity);
 
     /**
      * 通过用户主键查询审批拒绝的信息
-     * @param userId   用户主键
+     * @param userId 用户主键
      * @param startPage 开始页数
-     * @param pageSize   结束页数
-     * @param taskQueryEntity  查询任务query
-     * @return            返回用户拒绝的信息
+     * @param pageSize 结束页数
+     * @param taskQueryEntity 查询任务query
+     * @return 返回用户拒绝的信息
      */
     PageInfo<HistoricTaskInstance> selectMyRefuse(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity);
 
     /**
      * 获取任务审批意见列表
-     * @param processInstanceId   流程任务中的processId
-     * @return   返回审批意见列表
+     * @param processInstanceId 流程实例ID
+     * @return 返回审批意见列表
      */
-    List<Comment> selectListComment(String processInstanceId);
+    List<Comment> selectCommentList(String processInstanceId);
 
     /**
      * 通过流程定义id获取定义变量
-     * @param processId  流程定义id
-     * @return  返回自定义变量map
+     * @param processInstanceId 流程实例ID
+     * @return 返回自定义变量map
      */
-    Map<String, Object> getVariables(String processId);
-
-    /**
-     * 转办流程
-     * @param taskId
-     *            当前任务节点ID
-     * @param userCode
-     *            被转办人Code
-     */
-    void transferAssignee(String taskId, String userCode);
-
+    Map<String, Object> getVariables(String processInstanceId);
 
     /**
      * 流程任务跟踪标识
      * @author houjinrong@chtwm.com
-     * @param processInstanceId   流程实例id
+     * @param processInstanceId 流程实例id
      * @return
      */
     byte[] getTaskSchedule(String processInstanceId);
@@ -138,9 +128,9 @@ public interface WorkTaskV2Service {
     /**
      * 根据流程实例ID查询历史任务信息
      * @author houjinrong
-     * @param processInstanceId  流程实例id
-     * @param variableNames   自定义的键集合
-     * @return  返回历史任务信息
+     * @param processInstanceId 流程实例id
+     * @param variableNames 自定义的键集合
+     * @return 返回历史任务信息
      */
     HistoryTasksVo getTaskHistoryByProcessInstanceId(String processInstanceId,List<String> variableNames);
 
@@ -153,8 +143,8 @@ public interface WorkTaskV2Service {
     /**
      * 根据应用key获取应用所属的模型列表
      * @author houjinrong@chtwm.com
-     * @param appKey  定义的appkey
-     * @return  返回app关联的模型
+     * @param appKey 定义的appkey
+     * @return 返回app关联的模型
      */
     List<Model> getModelListByAppKey(String appKey);
 
@@ -171,11 +161,12 @@ public interface WorkTaskV2Service {
     /**
      * 转办任务
      * @author houjinrong@chtwm.com
-     * @param userId 当前任务节点ID
-     * @param taskId 被转办人工号
+     * @param processInstanceId 流程实例ID
+     * @param userId 被转办人工号
+     * @param transferUserId 转办人工号
      * @return 返回转办成功或失败
      */
-    boolean transferTask(String taskId, String userId, String transferUserId);
+    boolean transferTask(String processInstanceId, String userId, String transferUserId);
 
     /**
      * 通过流程实例id查询最后审批人
@@ -186,20 +177,21 @@ public interface WorkTaskV2Service {
 
     /**
      * 通过任务id查询评论
-     * @param taskid
+     * @param processInstanceId 流程实例ID
+     * @param userId 用户ID
      * @return
      */
-    Comment selectComment(String taskid,String userName);
+    Comment selectComment(String processInstanceId,String userId) throws WorkFlowException;
     
     /**
      * 任务跳转
-     * @param taskId 当前任务ID
+     * @param processInstanceId 流程实例ID
      * @param taskDefinitionKey 跳转到的任务节点KEY
-     * @return 任务ID
+     * @return 流程实例ID
      * @author houjinrong@chtwm.com
      * date 2018/2/1 20:32
      */
-    String taskJump(String taskId, String taskDefinitionKey, String userCodes) throws WorkFlowException;
+    String taskJump(String processInstanceId, String taskDefinitionKey, String userCodes) throws WorkFlowException;
 
     /**
      * 删除一个流程实例
@@ -223,7 +215,7 @@ public interface WorkTaskV2Service {
      * 恢复驳回的流程
      * @param processInstanceId 流程实例ID
      * @param resumeType 0：恢复到开始任务节点；1：恢复到驳回前到达的任务节点
-     * @return 任务ID
+     * @return 流程实例ID
      * @author houjinrong@chtwm.com
      * date 2018/2/7 15:36
      */
