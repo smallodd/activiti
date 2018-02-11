@@ -207,7 +207,12 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testSelectComment(){
-        Comment comment = workTaskV2Service.selectComment("5005", "H000013");
+        Comment comment = null;
+        try {
+            comment = workTaskV2Service.selectComment("5005", "H000013");
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
         System.out.println(JSONObject.toJSONString(comment));
     }
 }
