@@ -84,7 +84,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     @Autowired
     SysUserService sysUserService;
 
-    @Override
+
     public String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException {
 
         logger.info("startTask开启任务开始，参数"+commonVo.toString());
@@ -103,7 +103,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         TaskQueryEntity taskQueryEntity=new TaskQueryEntity();
         taskQueryEntity.setModelKey(commonVo.getModelKey());
         taskQueryEntity.setBussinessType(commonVo.getBusinessType());
-        boolean isInFlow=checkBunessKeyIsInFlow(taskQueryEntity,commonVo.getBusinessKey());
+        boolean isInFlow=checekBunessKeyIsInFlow(taskQueryEntity,commonVo.getBusinessKey());
         if(isInFlow){
             throw  new WorkFlowException(CodeConts.WORK_FLOW_BUSSINESS_IN_FLOW,"系统【"+commonVo.getBusinessType()+"】在模型【"+commonVo.getModelKey()+"】中的业务主键【"+commonVo.getBusinessKey()+"】还在流程中，请勿重复提交");
         }
@@ -111,7 +111,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().processDefinitionKey(prodefinKey).latestVersion().singleResult();
         int version=  processDefinition .getVersion();
         //commonVo.setApplyTitle(commonVo.getApplyUserName()+"于 "+ com.activiti.common.DateUtils.formatDateToString(new Date())+" 的业务主键为:"+commonVo.getBusinessKey());
-        Map<String,Object> result=new HashMap<>();
+        Map<String,Object> resutl=new HashMap<>();
         Map<String,Object> variables=new HashMap<String,Object>();
         try {
             variables= com.activiti.common.BeanUtils.toMap(commonVo);
@@ -122,17 +122,16 @@ public class WorkTaskServiceImpl implements WorkTaskService {
                 throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，请检查参数是否正确,"+commonVo.toString());
             }
         }
-        result.putAll(variables);
-
+        resutl.putAll(variables);
         Set<String> set=paramMap.keySet();
         for(String key: set){
-            if(result.containsKey(key)){
+            if(resutl.containsKey(key)){
                 throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_REPART,"请不要设置重复的属性和commonVo中有的属性");
             }
         }
-        result.putAll(paramMap);
-        result.put("proDefinedKey",prodefinKey);
-        result.put("version",version);
+        resutl.putAll(paramMap);
+        resutl.put("proDefinedKey",prodefinKey);
+        resutl.put("version",version);
         //设置当前申请人
 
         //查询自定义任务列表当前流程定义下的审批人
@@ -146,10 +145,11 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         ProcessInstance processInstance=null;
         try {
             //启动一个流程
-            processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),result);
+            processInstance= runtimeService.startProcessInstanceByKey(prodefinKey,commonVo.getBusinessKey(),resutl);
         }catch (Exception e){
             throw new WorkFlowException(CodeConts.WORK_FLOW_PUBLISH_ERROR,"操作失败，任务创建失败");
         }
+
 
         //为任务设置审批人
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
@@ -199,30 +199,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
             }
         }
 
-        /**
-         * 为当前任务设置属性值
-         * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录
-         */
-        Task activeTask = taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).active().singleResult();
-        result.clear();
-        EntityWrapper<TUserTask> wrapper_ =new EntityWrapper<TUserTask>();
-        wrapper_.where("proc_def_key = {0}", processDefinition.getKey()).andNew("version_={0}",processDefinition.getVersion()).andNew("task_def_key={0}",activeTask.getTaskDefinitionKey());
-        wrapper_.orderBy("order_num",true);
-        TUserTask ut = tUserTaskService.selectOne(wrapper_);
-        if(ut != null){
-            String candidateIds = ut.getCandidateIds();
-            for(String candidateId : candidateIds.split(",")){
-                result.put(ut.getTaskDefKey()+":"+candidateId,candidateId+":unfinished");
-            }
-            result.put(ut.getTaskDefKey()+":userCountTotal",ut.getUserCountTotal());
-            result.put(ut.getTaskDefKey()+":userCountNeed",ut.getUserCountNeed());
-            result.put(ut.getTaskDefKey()+":userCountNow",0);
-            result.put(ut.getTaskDefKey()+":userCountRefuse",0);
-            result.put(ut.getTaskDefKey()+":taskType",ut.getTaskType());
-            result.put(ut.getTaskDefKey()+":taskUser",candidateIds);
-
-            taskService.setVariablesLocal(activeTask.getId(),result);
-        }
         return processInstance.getProcessInstanceId();
     }
 
@@ -321,7 +297,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
 
     @Override
-    public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity) throws WorkFlowException {
+    public PageInfo<Task> queryByAssign(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity) {
         logger.info("------------------------通过用户相关信息查询待审批任务开始------------------------");
         TaskQuery  query= createTaskQuqery(taskQueryEntity);
 
@@ -365,7 +341,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      *
      * @return
      */
-    @Override
     public List<HistoricProcessInstance> getApplyTasks(String userid,int startPage,int pageSzie,int status,TaskQueryEntity taskQueryEntity){
 
         logger.info("--------------------获取申请人提交的任务开始----------------");
@@ -406,7 +381,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
      *
      * @return
      */
-    @Override
     public List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie,TaskQueryEntity taskQueryEntity){
         logger.info("---------------------获取参与审批用户的审批历史信息开始--------------");
 
@@ -428,7 +402,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return  query.involvedUser(userid).listPage((startPage-1)*pageSzie,pageSzie);
     }
 
-    @Override
     public PageInfo<HistoricTaskInstance> selectMyComplete(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity){
 
         logger.info("-----------------------查询用户历史审批过的任务开始----------------");
@@ -436,7 +409,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         HistoricTaskInstanceQuery query= createHistoricTaskInstanceQuery(taskQueryEntity);
-        List<HistoricTaskInstance> list= query.taskAssignee(userId).finished().orderByHistoricTaskInstanceEndTime().desc().listPage((startPage-1)*pageSize,pageSize);
+        List<HistoricTaskInstance> list= query.taskAssigneeLike("%"+userId+"%").finished().orderByHistoricTaskInstanceEndTime().desc().listPage((startPage-1)*pageSize,pageSize);
         long count=query.taskAssigneeLike("%"+userId+"%").finished().count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
@@ -451,7 +424,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
 
         PageInfo<HistoricTaskInstance> pageInfo=new PageInfo<HistoricTaskInstance>();
         HistoricTaskInstanceQuery query=createHistoricTaskInstanceQuery(taskQueryEntity);
-        List<HistoricTaskInstance> list= query.taskAssignee(userId).taskDeleteReason("refuse").listPage((startPage-1)*pageSize,pageSize);
+        List<HistoricTaskInstance> list= query.taskAssigneeLike("%"+userId+"%").taskDeleteReason("refuse").listPage((startPage-1)*pageSize,pageSize);
         long count=query.taskAssigneeLike("%"+userId+"%").taskDeleteReason("refuse").count();
         pageInfo.setList(list);
         pageInfo.setTotal(count);
@@ -462,7 +435,7 @@ public class WorkTaskServiceImpl implements WorkTaskService {
     //TODO
 
     @Override
-    public boolean checkBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussineeKey) {
+    public boolean checekBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussineeKey) {
         if((StringUtils.isBlank(taskQueryEntity.getBussinessType())||StringUtils.isBlank(taskQueryEntity.getModelKey()))&&!"maket".equals(taskQueryEntity.getBussinessType())){
             throw new RuntimeException("参数不合法,业务系统key和modekey 必须都传:"+taskQueryEntity.toString());
         }
@@ -488,7 +461,6 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         return taskService.getProcessInstanceComments(processInstanceId);
 
     }
-    @Override
     public HistoricTaskInstance selectHistoryTask(String taskHistoryId){
         return historyService.createHistoricTaskInstanceQuery().taskId(taskHistoryId).singleResult();
     }

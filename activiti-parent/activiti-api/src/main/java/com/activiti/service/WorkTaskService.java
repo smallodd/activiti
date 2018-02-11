@@ -17,11 +17,7 @@ import java.util.Map;
 
 /**
  * Created by ma on 2017/7/18.
- * 此接口中所有方法不在建议使用；
- * 请使用WorkTaskV2Service接口中的方法
- *
  */
-@Deprecated
 public interface WorkTaskService {
     /**
      * 开启任务
@@ -38,7 +34,7 @@ public interface WorkTaskService {
      * @param  taskQueryEntity  查询任务query
      * @return  返回任务列表
      */
-    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize, TaskQueryEntity taskQueryEntity) throws WorkFlowException;
+    PageInfo<Task> queryByAssign(String userId, int startPage, int pageSize, TaskQueryEntity taskQueryEntity);
 
 
 
@@ -89,9 +85,9 @@ public interface WorkTaskService {
      * @param userid   审批人用户唯一标识
      * @param startPage   起始页数
      * @param pageSzie     查询多少条数
-        @param  taskQueryEntity  查询任务query
-     *
-     * @return    返回参与用户的审批历史信息
+     @param  taskQueryEntity  查询任务query
+      *
+      * @return    返回参与用户的审批历史信息
      */
     List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie,TaskQueryEntity taskQueryEntity);
 
@@ -118,13 +114,13 @@ public interface WorkTaskService {
     /**
 
 
-    /**
+     /**
      * 查询业务主键是否再流程钟
      * @param taskQueryEntity  任务查询query
      * @param bussinessKey 业务主键
      * @return   返回true or false
      */
-    boolean checkBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussinessKey);
+    boolean checekBunessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String bussinessKey);
 
 
 
