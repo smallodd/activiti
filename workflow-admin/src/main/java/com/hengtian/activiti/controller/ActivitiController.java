@@ -99,7 +99,7 @@ public class ActivitiController extends BaseController{
 	
 	/**
      * 流程部署(压缩包方式)
-     * @param 
+     * @param deployFile 文件部署时，文件压缩包
      * @return
      */
     @SysLog(value="流程部署")
@@ -107,7 +107,6 @@ public class ActivitiController extends BaseController{
     @ResponseBody
     public Object deployZipResource(@RequestParam(value = "file", required = false)MultipartFile deployFile) {
 		try {
-
 			repositoryService.createDeployment().name("请假流程")
 					.addZipInputStream(new ZipInputStream(deployFile.getInputStream())).deploy();
 			return renderSuccess("部署成功！");
@@ -128,11 +127,11 @@ public class ActivitiController extends BaseController{
     
     /**
      * 查询流程定义
-     * @param processDefinitionVo
-     * @param page
-     * @param rows
-     * @param sort
-     * @param order
+     * @param processDefinitionVo 流程定义
+     * @param page 页码
+     * @param rows 每页行数
+     * @param sort 排序
+     * @param order 排序字段
      * @return
      */
     @SysLog(value="查询流程定义")
@@ -260,6 +259,8 @@ public class ActivitiController extends BaseController{
     
     /**
      * 办理页面(请假业务)
+	 * @param model
+	 * @param id 任务ID
      * @return
      */
     @GetMapping("/complateTaskPage")
@@ -292,9 +293,9 @@ public class ActivitiController extends BaseController{
     
     /**
      * 办理任务(完成任务)
-     * @param taskId
-     * @param commentContent
-     * @param commentResult
+     * @param taskId 任务ID
+     * @param commentContent 审批意见
+     * @param commentResult 审批结果 2：同意；3：不同意
      * @return
      */
     @SysLog(value="办理任务")
@@ -310,7 +311,7 @@ public class ActivitiController extends BaseController{
 
     /**
      * 签收任务
-     * @param id
+     * @param id 任务ID
      * @return
      */
     @SysLog(value="签收任务")
@@ -331,7 +332,8 @@ public class ActivitiController extends BaseController{
     }
     
     /**
-     * 委派页面(与转办共用一个页面) 
+     * 委派页面(与转办共用一个页面)
+	 * @param taskId 任务ID
      */
     @GetMapping("/taskDelegate")
     public String taskAssignee(Model model,String taskId) {
@@ -341,8 +343,8 @@ public class ActivitiController extends BaseController{
     
     /**
      * 委派任务
-     * @param taskId
-     * @param userId
+     * @param taskId 任务ID
+     * @param userId 用户ID
      * @return
      */
     @SysLog(value="委派任务")
@@ -361,8 +363,9 @@ public class ActivitiController extends BaseController{
     
     /**
      * 转办任务
-     * @param taskId
-     * @param userId
+     * @param taskId 任务ID
+     * @param userId 任务原所属用户ID
+	 * @param transferUserId 任务要转办用户ID
      * @return
      */
     @SysLog(value="转办任务")
@@ -388,7 +391,7 @@ public class ActivitiController extends BaseController{
 					taskService.setAssignee(task.getId(),task.getAssignee().replace(userId,transferUserId));
 					//修改会签人相关属性值
 					Map<String,Object> variable = Maps.newHashMap();
-					variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
+					variable.put(task.getTaskDefinitionKey() + ":" + userId, userId+":"+TaskStatus.TRANSFER.value);
 					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
 					variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, candidateIds.replace(userId,transferUserId));
 					taskService.setVariablesLocal(taskId, variable);
@@ -413,7 +416,7 @@ public class ActivitiController extends BaseController{
 
 	/**
 	 * 任务转办前-获取任务审核人员
-	 * @param taskId
+	 * @param taskId 任务ID
 	 * @return
 	 */
 	@SysLog(value="获取任务审核人员")
@@ -447,7 +450,7 @@ public class ActivitiController extends BaseController{
 
 	/**
 	 * 获取任务节点未完成任务审核人员
-	 * @param taskId
+	 * @param taskId 任务ID
 	 * @return
 	 */
 	@SysLog(value="获取任务节点未完成任务审核人员")
@@ -493,7 +496,8 @@ public class ActivitiController extends BaseController{
 	}
     
     /**
-     * 任务跳转页面 
+     * 任务跳转页面
+	 * @param taskId 任务ID
      */
     @GetMapping("/taskJump")
     public String taskJump(Model model,@RequestParam("taskId") String taskId) {
@@ -513,8 +517,8 @@ public class ActivitiController extends BaseController{
     
     /**
      * 任务跳转
-     * @param taskId
-     * @param taskDefinitionKey
+     * @param taskId 任务ID
+     * @param taskDefinitionKey 任务key
      * @return
      */
     @SysLog(value="任务跳转")

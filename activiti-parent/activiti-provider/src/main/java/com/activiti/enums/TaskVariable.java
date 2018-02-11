@@ -4,6 +4,8 @@ public enum TaskVariable {
 
     //任务类型
     TASKTYPE("taskType"),
+    //任务节点审核人数详情 例：{"userCountTotal":3,"userCountNeed"2:,"userCountNow":1,"userCountRefuse":1}
+    USERCOUNT("userCount"),
     //任务节点审核人数
     USERCOUNTTOTAL("userCountTotal"),
     //任务节点需要审核人数

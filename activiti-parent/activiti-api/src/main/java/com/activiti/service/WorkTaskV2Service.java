@@ -174,7 +174,7 @@ public interface WorkTaskV2Service {
      * @param taskId 被转办人工号
      * @return
      */
-    boolean transferTask(String userId, String taskId);
+    boolean transferTask(String taskId, String userId, String transferUserId);
 
     /**
      * 通过流程实例id查询最后审批人
@@ -198,7 +198,7 @@ public interface WorkTaskV2Service {
      * @author houjinrong@chtwm.com
      * date 2018/2/1 20:32
      */
-    String taskJump(String taskId, String taskDefinitionKey) throws WorkFlowException;
+    String taskJump(String taskId, String taskDefinitionKey, String userCodes) throws WorkFlowException;
 
     /**
      * 删除一个流程实例
@@ -208,4 +208,23 @@ public interface WorkTaskV2Service {
      * @return
      */
     boolean deleteProcessInstance(String processInstanceId, String description);
+
+    /**
+     * 流程驳回
+     * @param processInstanceId 流程实例ID
+     * @return true：成功；false：失败
+     * @author houjinrong@chtwm.com
+     * date 2018/2/7 15:35
+     */
+    boolean rollBackWorkFlow(String processInstanceId);
+
+    /**
+     * 恢复驳回的流程
+     * @param processInstanceId 流程实例ID
+     * @param resumeType 0：恢复到开始任务节点；1：恢复到驳回前到达的任务节点
+     * @return 任务ID
+     * @author houjinrong@chtwm.com
+     * date 2018/2/7 15:36
+     */
+    String resumeWorkFlow(String processInstanceId, int resumeType, Map<String,Object> variables, String userCodes) throws WorkFlowException;
 }
