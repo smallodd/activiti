@@ -36,7 +36,7 @@ public interface WorkTaskV2Service {
      * 注：如是动态自己设置审批人，任务启动后要调用setApprove方法设置审批人，无法重复设置审批人
      * @param commonVo
      * @param paramMap   流程定义中线上的参数，键是线上的键
-     * @return  返回部署的任务id
+     * @return  返回部署的任务id,建议存储到业务系统
      */
     String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException;
 
@@ -130,7 +130,7 @@ public interface WorkTaskV2Service {
     /**
      * 流程任务跟踪标识
      * @author houjinrong@chtwm.com
-     * @param processInstanceId
+     * @param processInstanceId   流程实例id
      * @return
      */
     byte[] getTaskSchedule(String processInstanceId);
@@ -138,33 +138,34 @@ public interface WorkTaskV2Service {
     /**
      * 根据流程实例ID查询历史任务信息
      * @author houjinrong
-     * @param processInstanceId
-     * @param variableNames
-     * @return
+     * @param processInstanceId  流程实例id
+     * @param variableNames   自定义的键集合
+     * @return  返回历史任务信息
      */
     HistoryTasksVo getTaskHistoryByProcessInstanceId(String processInstanceId,List<String> variableNames);
 
     /**
      * 获取应用列表
-     * @return
+     * @return  返回app列表
      */
     List<App> getAppList();
 
     /**
      * 根据应用key获取应用所属的模型列表
      * @author houjinrong@chtwm.com
-     * @param appKey
-     * @return
+     * @param appKey  定义的appkey
+     * @return  返回app关联的模型
      */
     List<Model> getModelListByAppKey(String appKey);
 
     /**
-     * 委派任务
+     * 委派任务（不建议使用）
      * @author houjinrong@chtwm.com
      * @param userId 当前任务节点ID
      * @param taskId 被委派人工号
      * @return
      */
+    @Deprecated
     boolean delegateTask(String userId, String taskId);
 
     /**
@@ -172,16 +173,16 @@ public interface WorkTaskV2Service {
      * @author houjinrong@chtwm.com
      * @param userId 当前任务节点ID
      * @param taskId 被转办人工号
-     * @return
+     * @return 返回转办成功或失败
      */
     boolean transferTask(String taskId, String userId, String transferUserId);
 
     /**
      * 通过流程实例id查询最后审批人
-     * @param processId
-     * @return
+     * @param processInstanceId  流程实例id
+     * @return 返回当前任务的最后审批人
      */
-    String  getLastApprover(String processId);
+    String  getLastApprover(String processInstanceId);
 
     /**
      * 通过任务id查询评论

@@ -837,7 +837,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             if(StringUtils.isNotBlank(userCodes)){
                 setApprove(currentTaskEntity.getProcessInstanceId(), userCodes);
             }
-            return task.getId();
+            return task.getProcessInstanceId();
         }else{
             throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
         }

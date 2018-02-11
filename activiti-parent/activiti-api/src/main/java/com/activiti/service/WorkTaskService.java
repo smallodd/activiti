@@ -17,7 +17,9 @@ import java.util.Map;
 
 /**
  * Created by ma on 2017/7/18.
+ * 此方法不再提供维护，不再建议使用
  */
+@Deprecated
 public interface WorkTaskService {
     /**
      * 开启任务
