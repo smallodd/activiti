@@ -85,9 +85,9 @@ public interface WorkTaskService {
      * @param userid   审批人用户唯一标识
      * @param startPage   起始页数
      * @param pageSzie     查询多少条数
-        @param  taskQueryEntity  查询任务query
-     *
-     * @return    返回参与用户的审批历史信息
+     @param  taskQueryEntity  查询任务query
+      *
+      * @return    返回参与用户的审批历史信息
      */
     List<HistoricProcessInstance> getInvolvedUserCompleteTasks(String userid,int startPage,int pageSzie,TaskQueryEntity taskQueryEntity);
 
@@ -114,7 +114,7 @@ public interface WorkTaskService {
     /**
 
 
-    /**
+     /**
      * 查询业务主键是否再流程钟
      * @param taskQueryEntity  任务查询query
      * @param bussinessKey 业务主键

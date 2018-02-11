@@ -87,7 +87,7 @@
             title : '业务主键',
             field : 'businessKey'
         },{
-            width : '100',
+            width : '250',
             title : '当前审批人(主键)',
             field : 'taskAssign'
         }, {
@@ -109,10 +109,10 @@
                 	<shiro:hasPermission name="/activiti/complateTask">
                 		str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="complateTaskFun(\'{0}\');" >办理</a>', row.id);
             		</shiro:hasPermission>
-            		<shiro:hasPermission name="/activiti/delegateTask">
+            		<%--<shiro:hasPermission name="/activiti/delegateTask">
                     	str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                     	str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-delegateTask" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="delegateTaskFun(\'{0}\');" >委派</a>', row.id);
-                	</shiro:hasPermission>
+                	</shiro:hasPermission>--%>
                 	<shiro:hasPermission name="/activiti/transferTask">
                 		str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                 		str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-transferTask" data-options="plain:true,iconCls:\'fi-rewind-ten icon-red\'" onclick="transferTaskFun(\'{0}\');" >转办</a>', row.id);
@@ -132,7 +132,7 @@
         onLoadSuccess:function(data){
             $('.task-easyui-linkbutton-claimTask').linkbutton({text:'签收'});
             $('.task-easyui-linkbutton-complateTask').linkbutton({text:'办理'});
-            $('.task-easyui-linkbutton-delegateTask').linkbutton({text:'委派'});
+            //$('.task-easyui-linkbutton-delegateTask').linkbutton({text:'委派'});
             $('.task-easyui-linkbutton-transferTask').linkbutton({text:'转办'});
             $('.task-easyui-linkbutton-jumpTask').linkbutton({text:'跳转'});
             $('.task-easyui-linkbutton-taskProgress').linkbutton({text:'进度'});

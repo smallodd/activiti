@@ -357,12 +357,11 @@ public class ActivitiModelController extends BaseController {
             String contextPath = request.getSession().getServletContext().getRealPath("image");
             FileInputStream fileInputStream=new FileInputStream(contextPath+File.separator+modelId+".png");
 
-
-                byte[] b = new byte[1024];
-                int len = -1;
-                while ((len = fileInputStream.read(b, 0, 1024)) != -1) {
-                    response.getOutputStream().write(b, 0, len);
-                }
+            byte[] b = new byte[1024];
+            int len = -1;
+            while ((len = fileInputStream.read(b, 0, 1024)) != -1) {
+                response.getOutputStream().write(b, 0, len);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

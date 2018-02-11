@@ -36,7 +36,7 @@
 				result=eval("("+data+")");
 				if(result.success){
 				    sessionStorage.removeItem("isLogin");
-					window.location.href="${pageContext.request.contextPath}/";
+					top.location.href="${pageContext.request.contextPath}/";
 				}else{
 					$("#msg").text(result.msg);
 				}

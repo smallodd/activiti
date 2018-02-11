@@ -6,8 +6,9 @@ import java.io.Serializable;
  * Created by ma on 2017/11/16.
  */
 public class TaskQueryEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     /**
-     * 业务系统类型
+     * 业务系统类型(appKey)
      */
     private  String bussinessType;
     /**

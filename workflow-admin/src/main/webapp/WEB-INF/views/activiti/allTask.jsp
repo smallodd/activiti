@@ -85,7 +85,7 @@
             title : '当前任务节点名称',
             field : 'taskName'
         },{
-            width : '100',
+            width : '200',
             title : '当前审批人',
             field : 'taskAssign'
         }, {
@@ -112,10 +112,10 @@
                 	<shiro:hasPermission name="/activiti/adminComplateTask">
                 		str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="complateTaskFun(\'{0}\');" >办理</a>', row.id);
             		</shiro:hasPermission>
-            		<shiro:hasPermission name="/activiti/adminDelegateTask">
+            		<%--<shiro:hasPermission name="/activiti/adminDelegateTask">
                     	str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                     	str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-delegateTask" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="delegateTaskFun(\'{0}\');" >委派</a>', row.id);
-                	</shiro:hasPermission>
+                	</shiro:hasPermission>--%>
                 	<shiro:hasPermission name="/activiti/adminTransferTask">
                 		str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                 		str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-transferTask" data-options="plain:true,iconCls:\'fi-rewind-ten icon-red\'" onclick="transferTaskFun(\'{0}\');" >转办</a>', row.id);
@@ -134,7 +134,7 @@
         onLoadSuccess:function(data){
             $('.task-easyui-linkbutton-claimTask').linkbutton({text:'签收'});
             $('.task-easyui-linkbutton-complateTask').linkbutton({text:'办理'});
-            $('.task-easyui-linkbutton-delegateTask').linkbutton({text:'委派'});
+            //$('.task-easyui-linkbutton-delegateTask').linkbutton({text:'委派'});
             $('.task-easyui-linkbutton-transferTask').linkbutton({text:'转办'});
             $('.task-easyui-linkbutton-jumpTask').linkbutton({text:'跳转'});
             $('.task-easyui-linkbutton-taskProgress').linkbutton({text:'进度'});
@@ -164,6 +164,7 @@
             handler : function() {
                 parent.$.modalDialog.openner_dataGrid = taskDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
                 var f = parent.$.modalDialog.handler.find('#complateTaskForm');
+                f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
                 f.submit();
             }
         } ]
@@ -228,13 +229,14 @@
  	        width : 500,
  	        height : 450,
             modal : true,
- 	        href :  '${ctx}/activiti/taskDelegate',
+ 	        href :  '${ctx}/activiti/taskDelegate?taskId='+id,
  	        buttons : [ {
  	            text : '确定',
  	            handler : function() {
                     parent.$.modalDialog.openner_dataGrid = taskDataGrid;
                     var f = parent.$.modalDialog.handler.find('#taskTransferForm');
                     f.find("#taskId_").val(id);
+                    f.find("#userId_").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
                     f.submit();
  	            }
  	        }]

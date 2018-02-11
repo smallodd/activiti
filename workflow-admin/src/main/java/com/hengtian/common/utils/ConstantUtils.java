@@ -5,12 +5,34 @@ package com.hengtian.common.utils;
  * @author liu.junyang
  */
 public class ConstantUtils {
-	public static final int RESOURCE_MENU = 0; // 菜单
-	public final static String VACATION = "SVacation"; //业务类型为请假业务 TVacation,CounterSign,MailTest,WebserviceTest,SVacation
-	public final static String MODEL_KEY = "modelkey"; //获取业务实体的KEY
-	public final static double PERCENT = 0.6; //通过率
-	public final static String MAILKEY = "MailTest";//发送邮件流程的KEY值
-	public final static String MAIL_ADDRESS = "18092035350@163.com";//发送邮件的默认系统地址
+	/**
+	 * 菜单
+	 */
+	public static final int RESOURCE_MENU = 0;
+	/**
+	 * 业务类型为请假业务 TVacation,CounterSign,MailTest,WebserviceTest,SVacation
+	 */
+	public final static String VACATION = "SVacation";
+	/**
+	 * 获取业务实体的KEY
+	 */
+	public final static String MODEL_KEY = "modelkey";
+	/**
+	 * 通过率
+	 */
+	public final static double PERCENT = 0.6;
+	/**
+	 * 发送邮件流程的KEY值
+	 */
+	public final static String MAILKEY = "MailTest";
+	/**
+	 * 发送邮件的默认系统地址
+	 */
+	public final static String MAIL_ADDRESS = "18092035350@163.com";
+	/**
+	 * 管理员ID
+	 */
+	public final static String ADMIN_ID = "admin";
 	
 	/**
 	 * @author liujunyang
