@@ -74,7 +74,7 @@ public interface WorkTaskV2Service {
      * 获取申请人提交的任务
      * @param userId 申请人信息
      * @param startPage 起始页数
-     * @param pageSzie 查询多少条数
+     * @param pageSize 查询多少条数
      * @param status 0 :审批中的任务
      *               1 ：审批完成的任务
      * @param taskQueryEntity 任务查询query
