@@ -818,16 +818,19 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             Map<String,String> mailParam = Maps.newHashMap();
             mailParam.put("applyUserName",taskService.getVariable(task.getId(),"applyUserName")+"");
             mailParam.put("ApplyTitle",taskService.getVariable(task.getId(),"ApplyTitle")+"");
-            initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,mailParam);
 
             String assign = currentTaskEntity.getAssignee();
             if(StringUtils.isNotBlank(assign)){
                 taskService.setOwner(task.getId(), assign);
             }
 
-            //动态审批设置审批人
-            if(StringUtils.isNotBlank(userCodes)){
+            boolean dynamic = (boolean)runtimeService.getVariable(task.getProcessInstanceId(),"dynamic");
+            if(dynamic && StringUtils.isNotBlank(userCodes)){
+                //动态审批设置审批人
                 setApprove(currentTaskEntity.getProcessInstanceId(), userCodes);
+            }else{
+                //非动态审批
+                initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,mailParam);
             }
             logger.info("----------------任务跳转结束，返回值：{}----------------",task.getProcessInstanceId());
             return task.getProcessInstanceId();
@@ -892,7 +895,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
 
         if(tUserTasks==null){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后再创建任务");
         }
 
         for(Task task:tasks){
@@ -901,7 +904,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             }
             for(TUserTask tUserTask:tUserTasks){
                 if(StringUtils.isBlank(tUserTask.getCandidateIds())){
-                    throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
+                    throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后再创建任务");
                 }
                 if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
                     String candidateIds = tUserTask.getCandidateIds();

@@ -165,7 +165,7 @@ public class TestWorkFlowV2 {
     @Test
     public void testJumpTask(){
         try {
-            workTaskV2Service.taskJump("57538","p2",null);
+            workTaskV2Service.taskJump("12501","p2","H019235");
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }

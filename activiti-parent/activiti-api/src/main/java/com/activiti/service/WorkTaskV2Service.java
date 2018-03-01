@@ -187,6 +187,7 @@ public interface WorkTaskV2Service {
      * 任务跳转
      * @param processInstanceId 流程实例ID
      * @param taskDefinitionKey 跳转到的任务节点KEY
+     * @param userCodes 要设置的审批人，动态审批时不为空，多个用逗号隔开
      * @return 流程实例ID
      * @author houjinrong@chtwm.com
      * date 2018/2/1 20:32
@@ -215,6 +216,8 @@ public interface WorkTaskV2Service {
      * 恢复驳回的流程
      * @param processInstanceId 流程实例ID
      * @param resumeType 0：恢复到开始任务节点；1：恢复到驳回前到达的任务节点
+     * @param variables 属性值
+     * @param userCodes 要设置的审批人，动态审批时不为空，多个用逗号隔开
      * @return 流程实例ID
      * @author houjinrong@chtwm.com
      * date 2018/2/7 15:36
