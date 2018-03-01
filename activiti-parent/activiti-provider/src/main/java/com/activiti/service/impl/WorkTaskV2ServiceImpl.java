@@ -1161,7 +1161,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     /**
-     * 获取勒种所有属性
+     * 获取类中所有属性
      * @param clazz 类名
      * @return 属性名用逗号隔开
      * @author houjinrong@chtwm.com
