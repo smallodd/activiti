@@ -1031,7 +1031,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }else{
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，有效参数只能为0或1");
         }
-        taskJump(task.getId(), taskDefinitionKey, userCodes);
+        taskJump(task.getProcessInstanceId(), taskDefinitionKey, userCodes);
         if(variables != null && variables.size() > 0){
             runtimeService.setVariables(processInstanceId,variables);
         }
