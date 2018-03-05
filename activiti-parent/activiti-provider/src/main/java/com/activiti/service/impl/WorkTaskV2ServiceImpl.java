@@ -168,13 +168,16 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     @Override
-    public boolean setApprove(String processId,String userCodes) throws WorkFlowException{
-        Task task=taskService.createTaskQuery().processInstanceId(processId).singleResult();
+    public boolean setApprove(String processInstanceId,String userCodes) throws WorkFlowException{
+        if(StringUtils.isBlank(processInstanceId)){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"流程实例ID为空!");
+        }
+        Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         if(task==null){
-            throw  new WorkFlowException(CodeConts.WORK_FLOW_TASK_IS_NULL,"任务为空设置失败!");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_TASK_IS_NULL,"任务为空设置失败!");
         }
         if(StringUtils.isNotBlank(task.getAssignee())){
-            logger.info("任务："+processId+"已经设置过审批人，请不要重复设置，当前审批人为："+task.getAssignee());
+            logger.info("任务："+processInstanceId+"已经设置过审批人，请不要重复设置，当前审批人为："+task.getAssignee());
             return false;
         }
         taskService.setAssignee(task.getId(),userCodes);
@@ -342,7 +345,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             pageInfo.setList(taskList);
             pageInfo.setTotal(count);
         }else{
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"查询我的任务失败");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"userId为空");
         }
         logger.info("----------------通过用户相关信息查询待审批任务结束,返回值{}----------------",JSONObject.toJSONString(pageInfo));
         return pageInfo;
@@ -433,16 +436,22 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
 
     @Override
-    public  List<Comment> selectCommentList(String processInstanceId){
+    public List<Comment> selectCommentList(String processInstanceId){
         logger.info("----------------查询审批意见列表开始,入参 processInstanceId：{}----------------",processInstanceId);
+        if(StringUtils.isBlank(processInstanceId)){
+            return null;
+        }
         List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
         logger.info("----------------查询审批意见列表结束,返回值：{}----------------",JSONObject.toJSONString(commentList));
         return commentList;
     }
 
     @Override
-    public Map<String, Object> getVariables(String processInstanceId) {
+    public Map<String, Object> getVariables(String processInstanceId){
         logger.info("----------------通过流程实例ID获取属性值开始,入参 processInstanceId：{}----------------",processInstanceId);
+        if(StringUtils.isBlank(processInstanceId)){
+            return null;
+        }
         List<HistoricVariableInstance> list=historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
         Map<String,Object> map=new HashMap<>();
         for(HistoricVariableInstance historicVariableInstance:list){

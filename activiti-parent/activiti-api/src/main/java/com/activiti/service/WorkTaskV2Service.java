@@ -46,7 +46,7 @@ public interface WorkTaskV2Service {
      * @param userCodes 用户工号，用逗号隔开
      * @return
      */
-    public boolean setApprove(String processId,String userCodes) throws WorkFlowException;
+    public boolean setApprove(String processInstanceId,String userCodes) throws WorkFlowException;
 
     /**
      * 通过用户相关信息查询待审批任务
