@@ -224,8 +224,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         taskService.addComment(task.getId(), processInstance.getProcessInstanceId(),commentResult, commentContent);
 
         Map map=taskService.getVariables(taskId);
+        boolean dynamic = (boolean)map.get("dynamic");
         //动态处理审批
-        if(approveVo.isDynamic()){
+        if(dynamic){
             runtimeService.setVariable(processInstanceId,processInstanceId+":"+ TaskVariable.LASTTASKUSER.value,currentUser);
             taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
 
