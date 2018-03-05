@@ -1050,6 +1050,21 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     /**
+     *
+     * @param processInstanceId 流程实例ID
+     * @return 当前任务审批人，多个逗号隔开
+     * @author houjinrong@chtwm.com
+     * date 2018/3/5 17:25
+     */
+    @Override
+    public String getCurrentAssign(String processInstanceId){
+        if(StringUtils.isBlank(processInstanceId)){
+            return null;
+        }
+        return taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult().getAssignee();
+    }
+
+    /**
      * 通过业务系统类型获取业务系统下的所有流程定义key
      * @param bussnessType
      * @return

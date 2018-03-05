@@ -42,7 +42,7 @@ public interface WorkTaskV2Service {
 
     /**
      * 设置审批人
-     * @param processId 流程id
+     * @param processInstanceId 流程id
      * @param userCodes 用户工号，用逗号隔开
      * @return
      */
@@ -223,4 +223,13 @@ public interface WorkTaskV2Service {
      * date 2018/2/7 15:36
      */
     String resumeWorkFlow(String processInstanceId, int resumeType, Map<String,Object> variables, String userCodes) throws WorkFlowException;
+
+    /**
+     *
+     * @param processInstanceId 流程实例ID
+     * @return 当前任务审批人，多个逗号隔开
+     * @author houjinrong@chtwm.com
+     * date 2018/3/5 17:25
+     */
+    String getCurrentAssign(String processInstanceId);
 }
