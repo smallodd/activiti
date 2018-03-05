@@ -191,7 +191,7 @@
                         }
     	            	$("#taskAssigneeDialog").dialog('close');
     	            }
-    	        } ]
+    	        }]
     	    });
     	}else if(taskType==="candidateUser" || taskType==="counterSign"){
     		$("#taskCandidateUserDialog").dialog({
@@ -237,7 +237,7 @@
                         $("#taskJsonSelect").val("");
     	            	$("#taskCandidateUserDialog").dialog('close');
     	            }
-    	        } ]
+    	        }]
     	    });
     	}else if(taskType==="candidateGroup"){
     		$("#taskCandidateGroupDialog").dialog({
@@ -304,7 +304,7 @@
     	            	}
     	            	$("#taskCandidateGroupDialog").dialog('close');
     	            }
-    	        } ]
+    	        }]
     	    });
     	}
     }
