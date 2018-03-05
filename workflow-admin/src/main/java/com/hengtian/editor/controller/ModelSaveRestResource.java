@@ -3,6 +3,7 @@
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.hengtian.common.utils.ConstantUtils;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
@@ -64,7 +65,8 @@ public class ModelSaveRestResource
           byte[] result = outStream.toByteArray();
 
           this.repositoryService.addModelEditorSourceExtra(model.getId(), result);
-          String contextPath = request.getSession().getServletContext().getRealPath("image");
+          String contextPath = request.getSession().getServletContext().getRealPath("/");
+          contextPath = new File(contextPath).getParent() + ConstantUtils.WORKFLOW_IMAGE_DIR;
           File file=new File(contextPath);
           if(!file.exists()){
               file.mkdir();

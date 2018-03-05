@@ -11,6 +11,7 @@ import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.Tree;
+import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.FileUtil;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
@@ -139,8 +140,7 @@ public class ActivitiModelController extends BaseController {
                     return result;
                 }
             }else{
-
-                key = RandomStringUtils.randomAlphabetic(3)+new Date().getTime()+ RandomStringUtils.randomNumeric(5);
+                key = RandomStringUtils.randomAlphabetic(3)+System.currentTimeMillis()+ RandomStringUtils.randomNumeric(5);
             }
             name = StringUtils.isBlank(name)?default_model_name:name.trim();
             ObjectMapper objectMapper = new ObjectMapper();
@@ -238,7 +238,12 @@ public class ActivitiModelController extends BaseController {
 
             repositoryService.addModelEditorSource(model.getId(), modelNode.toString().getBytes("utf-8"));
             repositoryService.addModelEditorSourceExtra(model.getId(),repositoryService.getModelEditorSourceExtra(modelData.getId()));
-            String contextPath = request.getSession().getServletContext().getRealPath("image");
+            String contextPath = request.getSession().getServletContext().getRealPath("/");
+            contextPath = new File(contextPath).getParent() + ConstantUtils.WORKFLOW_IMAGE_DIR;
+            File workflowImageDir = new File(contextPath);
+            if(!workflowImageDir.exists()){
+                workflowImageDir.mkdir();
+            }
             File srcFile=new File(contextPath+File.separator+modelData.getId()+".png");
             File destFile=new File(contextPath+File.separator+model.getId()+".png");
             FileUtil.copyFile(srcFile,destFile);
@@ -354,7 +359,8 @@ public class ActivitiModelController extends BaseController {
     @GetMapping("/image/{modelId}")
     public void modelImage(@PathVariable String modelId,HttpServletResponse response,HttpServletRequest request){
         try {
-            String contextPath = request.getSession().getServletContext().getRealPath("image");
+            String contextPath = request.getSession().getServletContext().getRealPath("/");
+            contextPath = new File(contextPath).getParent() + ConstantUtils.WORKFLOW_IMAGE_DIR;
             FileInputStream fileInputStream=new FileInputStream(contextPath+File.separator+modelId+".png");
 
             byte[] b = new byte[1024];
