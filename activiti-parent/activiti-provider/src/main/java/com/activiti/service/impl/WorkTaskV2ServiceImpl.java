@@ -168,13 +168,16 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     @Override
-    public boolean setApprove(String processId,String userCodes) throws WorkFlowException{
-        Task task=taskService.createTaskQuery().processInstanceId(processId).singleResult();
+    public boolean setApprove(String processInstanceId,String userCodes) throws WorkFlowException{
+        if(StringUtils.isBlank(processInstanceId)){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"流程实例ID为空!");
+        }
+        Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         if(task==null){
-            throw  new WorkFlowException(CodeConts.WORK_FLOW_TASK_IS_NULL,"任务为空设置失败!");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_TASK_IS_NULL,"任务为空设置失败!");
         }
         if(StringUtils.isNotBlank(task.getAssignee())){
-            logger.info("任务："+processId+"已经设置过审批人，请不要重复设置，当前审批人为："+task.getAssignee());
+            logger.info("任务："+processInstanceId+"已经设置过审批人，请不要重复设置，当前审批人为："+task.getAssignee());
             return false;
         }
         taskService.setAssignee(task.getId(),userCodes);
@@ -224,8 +227,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         taskService.addComment(task.getId(), processInstance.getProcessInstanceId(),commentResult, commentContent);
 
         Map map=taskService.getVariables(taskId);
+        boolean dynamic = (boolean)map.get("dynamic");
         //动态处理审批
-        if(approveVo.isDynamic()){
+        if(dynamic){
             runtimeService.setVariable(processInstanceId,processInstanceId+":"+ TaskVariable.LASTTASKUSER.value,currentUser);
             taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
 
@@ -341,7 +345,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             pageInfo.setList(taskList);
             pageInfo.setTotal(count);
         }else{
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"查询我的任务失败");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"userId为空");
         }
         logger.info("----------------通过用户相关信息查询待审批任务结束,返回值{}----------------",JSONObject.toJSONString(pageInfo));
         return pageInfo;
@@ -432,16 +436,22 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
 
     @Override
-    public  List<Comment> selectCommentList(String processInstanceId){
+    public List<Comment> selectCommentList(String processInstanceId){
         logger.info("----------------查询审批意见列表开始,入参 processInstanceId：{}----------------",processInstanceId);
+        if(StringUtils.isBlank(processInstanceId)){
+            return null;
+        }
         List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
         logger.info("----------------查询审批意见列表结束,返回值：{}----------------",JSONObject.toJSONString(commentList));
         return commentList;
     }
 
     @Override
-    public Map<String, Object> getVariables(String processInstanceId) {
+    public Map<String, Object> getVariables(String processInstanceId){
         logger.info("----------------通过流程实例ID获取属性值开始,入参 processInstanceId：{}----------------",processInstanceId);
+        if(StringUtils.isBlank(processInstanceId)){
+            return null;
+        }
         List<HistoricVariableInstance> list=historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
         Map<String,Object> map=new HashMap<>();
         for(HistoricVariableInstance historicVariableInstance:list){
@@ -818,16 +828,19 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             Map<String,String> mailParam = Maps.newHashMap();
             mailParam.put("applyUserName",taskService.getVariable(task.getId(),"applyUserName")+"");
             mailParam.put("ApplyTitle",taskService.getVariable(task.getId(),"ApplyTitle")+"");
-            initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,mailParam);
 
             String assign = currentTaskEntity.getAssignee();
             if(StringUtils.isNotBlank(assign)){
                 taskService.setOwner(task.getId(), assign);
             }
 
-            //动态审批设置审批人
-            if(StringUtils.isNotBlank(userCodes)){
+            boolean dynamic = (boolean)runtimeService.getVariable(task.getProcessInstanceId(),"dynamic");
+            if(dynamic && StringUtils.isNotBlank(userCodes)){
+                //动态审批设置审批人
                 setApprove(currentTaskEntity.getProcessInstanceId(), userCodes);
+            }else{
+                //非动态审批
+                initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,mailParam);
             }
             logger.info("----------------任务跳转结束，返回值：{}----------------",task.getProcessInstanceId());
             return task.getProcessInstanceId();
@@ -892,7 +905,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
 
         if(tUserTasks==null){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后在创建任务");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台设置审批人后再创建任务");
         }
 
         for(Task task:tasks){
@@ -901,7 +914,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             }
             for(TUserTask tUserTask:tUserTasks){
                 if(StringUtils.isBlank(tUserTask.getCandidateIds())){
-                    throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
+                    throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后再创建任务");
                 }
                 if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
                     String candidateIds = tUserTask.getCandidateIds();
@@ -1028,7 +1041,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }else{
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，有效参数只能为0或1");
         }
-        taskJump(task.getId(), taskDefinitionKey, userCodes);
+        taskJump(task.getProcessInstanceId(), taskDefinitionKey, userCodes);
         if(variables != null && variables.size() > 0){
             runtimeService.setVariables(processInstanceId,variables);
         }
@@ -1158,7 +1171,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     /**
-     * 获取勒种所有属性
+     * 获取类中所有属性
      * @param clazz 类名
      * @return 属性名用逗号隔开
      * @author houjinrong@chtwm.com
