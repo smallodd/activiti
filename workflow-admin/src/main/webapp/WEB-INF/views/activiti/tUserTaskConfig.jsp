@@ -66,6 +66,7 @@
         	for(var i=0;i<taskJsonArray.length;i++){
         		var key = taskJsonArray[i].key;
         		$("#taskUser"+key).val(taskJsonArray[i].name);
+                $("#taskUser"+key).attr("title",taskJsonArray[i].name);
         		$("#"+key).val(taskJsonArray[i].type);
         	}
     	}
@@ -214,6 +215,7 @@
     	            		    if(taskJsonVal[i].value != undefined){
                                     userCount = taskJsonVal[i].value.split(",").length;
                                     $("#taskUser"+datas).val(taskJsonVal[i].name);
+                                    $("#taskUser"+datas).prop("title",taskJsonVal[i].name);
                                 }
     	            		}
     	            	}
