@@ -138,8 +138,21 @@ public class ActivitiServiceImpl implements ActivitiService{
 		});
         pageInfo.setRows(list);
         //查询流程定义
-        long count= repositoryService.createProcessDefinitionQuery().count();
-        pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+		if(pageInfo.getCondition() != null && pageInfo.getCondition().containsKey("key")){
+			long count = repositoryService
+					.createProcessDefinitionQuery()
+					.orderByProcessDefinitionVersion()
+					.asc().latestVersion().processDefinitionKeyLike("%"+pageInfo.getCondition().get("key")+"%")
+					.count();
+			pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+		}else{
+			long count = repositoryService
+					.createProcessDefinitionQuery()
+					.orderByProcessDefinitionVersion()
+					.asc().latestVersion()
+					.count();
+			pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+		}
 	}
 
 	@Override
