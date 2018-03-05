@@ -240,10 +240,7 @@ public class ActivitiModelController extends BaseController {
             repositoryService.addModelEditorSourceExtra(model.getId(),repositoryService.getModelEditorSourceExtra(modelData.getId()));
             String contextPath = request.getSession().getServletContext().getRealPath("/");
             contextPath = new File(contextPath).getParent() + ConstantUtils.WORKFLOW_IMAGE_DIR;
-            File workflowImageDir = new File(contextPath);
-            if(!workflowImageDir.exists()){
-                workflowImageDir.mkdir();
-            }
+
             File srcFile=new File(contextPath+File.separator+modelData.getId()+".png");
             File destFile=new File(contextPath+File.separator+model.getId()+".png");
             FileUtil.copyFile(srcFile,destFile);
