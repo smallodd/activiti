@@ -66,7 +66,9 @@
         	for(var i=0;i<taskJsonArray.length;i++){
         		var key = taskJsonArray[i].key;
         		$("#taskUser"+key).val(taskJsonArray[i].name);
-                $("#taskUser"+key).attr("title",taskJsonArray[i].name.replace(/,/g,"\n"));
+        		if(taskJsonArray[i].name){
+                    $("#taskUser"+key).attr("title",taskJsonArray[i].name.replace(/,/g,"\n"));
+                }
         		$("#"+key).val(taskJsonArray[i].type);
         	}
     	}
@@ -215,7 +217,9 @@
     	            		    if(taskJsonVal[i].value != undefined){
                                     userCount = taskJsonVal[i].value.split(",").length;
                                     $("#taskUser"+datas).val(taskJsonVal[i].name);
-                                    $("#taskUser"+datas).attr("title",taskJsonVal[i].name.replace(/,/g,"\n"));
+                                    if(taskJsonVal[i].name){
+                                        $("#taskUser"+datas).attr("title",taskJsonVal[i].name.replace(/,/g,"\n"));
+                                    }
                                 }
     	            		}
     	            	}
