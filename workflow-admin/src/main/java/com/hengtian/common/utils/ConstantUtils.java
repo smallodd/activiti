@@ -1,7 +1,5 @@
 package com.hengtian.common.utils;
 
-import java.io.File;
-
 /**
  * 数据字典 及 系统常量
  * @author liu.junyang
