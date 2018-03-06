@@ -98,6 +98,7 @@ public class WorkFlowProcessDiagramGenerator extends DefaultProcessDiagramGenera
                     processDiagramCanvas.drawLabel(sequenceFlow.getName(), labelGraphicInfo, false);
                 } else {
                     GraphicInfo lineCenter = getLineCenter(graphicInfoList);
+                    lineCenter.setY(lineCenter.getY()+5);
                     processDiagramCanvas.drawLabel(sequenceFlow.getName(), lineCenter, true);
                 }
             }
