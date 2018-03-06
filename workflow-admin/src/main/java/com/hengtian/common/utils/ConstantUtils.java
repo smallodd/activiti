@@ -35,14 +35,6 @@ public class ConstantUtils {
 	 * 管理员ID
 	 */
 	public final static String ADMIN_ID = "admin";
-	/**
-	 * 工作流图片保存路径
-	 */
-	public final static String WORKFLOW_IMAGE_DIR = File.separator+"workflow-image";
-	/**
-	 * 文件组
-	 */
-	public final static String FILE_GROUP = "group1";
 	
 	/**
 	 * @author liujunyang
