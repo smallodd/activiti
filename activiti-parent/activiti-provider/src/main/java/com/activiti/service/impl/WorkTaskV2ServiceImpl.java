@@ -169,8 +169,13 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
     @Override
     public boolean setApprove(String processInstanceId,String userCodes) throws WorkFlowException{
-        if(StringUtils.isBlank(processInstanceId)){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"流程实例ID为空!");
+        if(StringUtils.isBlank(processInstanceId) || StringUtils.isBlank(userCodes)){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数【processInstanceId】【userCodes】都不可为空!");
+        }
+        String[] array = userCodes.split(",");
+        Set<String> set = new HashSet<String>(Arrays.asList(array));
+        if(array.length-set.size() != 0){
+            throw new WorkFlowException("审批人设置重复");
         }
         Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         if(task==null){
@@ -702,13 +707,20 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     @Override
-    public boolean transferTask(String processInstanceId, String userId, String transferUserId){
+    public boolean transferTask(String processInstanceId, String userId, String transferUserId) throws WorkFlowException{
         logger.info("----------------任务转办开始，入参 taskId：{}，userId：{}，transferUserId：{}----------------",processInstanceId,userId,transferUserId);
+        if(StringUtils.isBlank(processInstanceId) || StringUtils.isBlank(userId) || StringUtils.isBlank(transferUserId)){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数【processInstanceId】【String userId】【 String transferUserId】都不可为空");
+        }
         boolean result = true;
         try {
             Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).active().singleResult();
             if(task == null){
                 throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
+            }
+
+            if(!StringUtils.contains(task.getAssignee(),userId)){
+                throw new WorkFlowException("当前任务的审批人【"+userId+"】不存在");
             }
 
             String taskId = task.getId();

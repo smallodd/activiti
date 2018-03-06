@@ -166,7 +166,7 @@ public interface WorkTaskV2Service {
      * @param transferUserId 转办人工号
      * @return 返回转办成功或失败
      */
-    boolean transferTask(String processInstanceId, String userId, String transferUserId);
+    boolean transferTask(String processInstanceId, String userId, String transferUserId) throws WorkFlowException;
 
     /**
      * 通过流程实例id查询最后审批人

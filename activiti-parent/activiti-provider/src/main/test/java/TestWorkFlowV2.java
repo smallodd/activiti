@@ -50,8 +50,8 @@ public class TestWorkFlowV2 {
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("mayl");
         commonVo.setBusinessKey("0001");
-        commonVo.setBusinessType("activity");
-        commonVo.setModelKey("hour");
+        commonVo.setBusinessType("maket");
+        commonVo.setModelKey("TestStaticTask");
         commonVo.setDynamic(false);
         Map map=new HashMap();
         map.put("param",10000);
@@ -71,8 +71,8 @@ public class TestWorkFlowV2 {
         try {
             ApproveVo approveVo=new ApproveVo();
             approveVo.setDynamic(false);
-            approveVo.setProcessInstanceId("2501");
-            approveVo.setCurrentUser("H000033");
+            approveVo.setProcessInstanceId("77501");
+            approveVo.setCurrentUser("H015745");
             approveVo.setCommentResult("2");
             approveVo.setCommentContent("【同意】");
             workTaskV2Service.completeTask(approveVo,null);
@@ -156,7 +156,11 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testTransferTask(){
-        workTaskV2Service.transferTask("62502","H019236", "H019236");
+        try {
+            workTaskV2Service.transferTask("62502","H019236", "H019236");
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -165,7 +169,7 @@ public class TestWorkFlowV2 {
     @Test
     public void testJumpTask(){
         try {
-            workTaskV2Service.taskJump("12501","p2","H019235");
+            workTaskV2Service.taskJump("68142","p2","H019235");
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -196,7 +200,7 @@ public class TestWorkFlowV2 {
     @Test
     public void testResumeWorkFlow(){
         try {
-            workTaskV2Service.resumeWorkFlow("2501",0,null,null);
+            workTaskV2Service.resumeWorkFlow("68142",0,null,null);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
