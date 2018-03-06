@@ -11,8 +11,6 @@ import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.Tree;
-import com.hengtian.common.utils.ConstantUtils;
-import com.hengtian.common.utils.FileUtil;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import net.sf.json.JSONObject;
@@ -23,11 +21,16 @@ import org.activiti.bpmn.model.FlowElement;
 import org.activiti.bpmn.model.StartEvent;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
+import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.image.ProcessDiagramGenerator;
+import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -39,10 +42,12 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -66,6 +71,12 @@ public class ActivitiModelController extends BaseController {
 
     @Autowired
     TUserTaskService tUserTaskService;
+
+    @Autowired
+    ProcessEngineConfiguration processEngineConfiguration;
+
+    @Autowired
+    ProcessEngineFactoryBean processEngine;
 
     /**
      * 流程模型管理页
@@ -235,15 +246,8 @@ public class ActivitiModelController extends BaseController {
             model.setName(name);
             repositoryService.saveModel(model);
 
-
             repositoryService.addModelEditorSource(model.getId(), modelNode.toString().getBytes("utf-8"));
             repositoryService.addModelEditorSourceExtra(model.getId(),repositoryService.getModelEditorSourceExtra(modelData.getId()));
-            String contextPath = request.getSession().getServletContext().getRealPath("/");
-            contextPath = new File(contextPath).getParent() + ConstantUtils.WORKFLOW_IMAGE_DIR;
-
-            File srcFile=new File(contextPath+File.separator+modelData.getId()+".png");
-            File destFile=new File(contextPath+File.separator+model.getId()+".png");
-            FileUtil.copyFile(srcFile,destFile);
 
             logger.info("复制成功");
             return renderSuccess("复制成功！");
@@ -356,17 +360,23 @@ public class ActivitiModelController extends BaseController {
     @GetMapping("/image/{modelId}")
     public void modelImage(@PathVariable String modelId,HttpServletResponse response,HttpServletRequest request){
         try {
-            String contextPath = request.getSession().getServletContext().getRealPath("/");
-            contextPath = new File(contextPath).getParent() + ConstantUtils.WORKFLOW_IMAGE_DIR;
-            FileInputStream fileInputStream=new FileInputStream(contextPath+File.separator+modelId+".png");
-
+            ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(modelId));
+            BpmnModel bpmnModel = new BpmnJsonConverter().convertToBpmnModel(modelNode);
+            //中文显示的是口口口，设置字体就好了
+            //生成流图片  5.18.0
+            processEngineConfiguration = processEngine.getProcessEngineConfiguration();
+            Context.setProcessEngineConfiguration((ProcessEngineConfigurationImpl) processEngineConfiguration);
+            ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
+            InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG",
+                    processEngineConfiguration.getLabelFontName(),
+                    processEngineConfiguration.getActivityFontName(),
+                    processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1);
             byte[] b = new byte[1024];
-            int len = -1;
-            while ((len = fileInputStream.read(b, 0, 1024)) != -1) {
+            int len;
+            while ((len = imageStream.read(b, 0, 1024)) != -1) {
                 response.getOutputStream().write(b, 0, len);
             }
-
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
