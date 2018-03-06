@@ -1,5 +1,7 @@
 package com.hengtian.common.utils;
 
+import java.io.File;
+
 /**
  * 数据字典 及 系统常量
  * @author liu.junyang
@@ -37,7 +39,7 @@ public class ConstantUtils {
 	/**
 	 * 工作流图片保存路径
 	 */
-	public static String WORKFLOW_IMAGE_DIR = "/workflow-image";
+	public static String WORKFLOW_IMAGE_DIR = File.separator+"workflow-image";
 	
 	/**
 	 * @author liujunyang

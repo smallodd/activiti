@@ -65,7 +65,7 @@ public class ModelSaveRestResource
           byte[] result = outStream.toByteArray();
 
           this.repositoryService.addModelEditorSourceExtra(model.getId(), result);
-          String contextPath = request.getSession().getServletContext().getRealPath("/");
+          String contextPath = request.getServletContext().getRealPath("/");
           contextPath = new File(contextPath).getParent() + ConstantUtils.WORKFLOW_IMAGE_DIR;
           File file=new File(contextPath);
           if(!file.exists()){
