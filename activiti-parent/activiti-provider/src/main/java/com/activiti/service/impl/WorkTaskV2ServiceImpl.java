@@ -770,11 +770,12 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     public String getLastApprover(String processInstanceId) {
         logger.info("----------------获取最后审批人开始,入参 processInstanceId：{}----------------",processInstanceId);
         String result = null;
-        Object lastApprover= runtimeService.getVariable(processInstanceId,processInstanceId+":"+ TaskVariable.LASTTASKUSER.value);
-        if(lastApprover==null){
+        HistoricVariableInstance historicVariableInstance = historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).variableName(processInstanceId + ":" + TaskVariable.LASTTASKUSER.value).singleResult();
+        //Object lastApprover= runtimeService.getVariable(processInstanceId,processInstanceId+":"+ TaskVariable.LASTTASKUSER.value);
+        if(historicVariableInstance==null){
             result = null;
         }else {
-            result = String.valueOf(lastApprover);
+            result = (String)historicVariableInstance.getValue();
         }
         logger.info("----------------获取最后审批人结束,返回值{}----------------",result);
         return result;
