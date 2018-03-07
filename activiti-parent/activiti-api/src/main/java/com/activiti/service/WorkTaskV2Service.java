@@ -206,26 +206,25 @@ public interface WorkTaskV2Service {
     /**
      * 流程驳回
      * @param processInstanceId 流程实例ID
+     * @param type 0：恢复到开始任务节点；1：恢复到驳回前到达的任务节点
      * @return true：成功；false：失败
      * @author houjinrong@chtwm.com
      * date 2018/2/7 15:35
      */
-    boolean rollBackWorkFlow(String processInstanceId);
+    boolean rollBackWorkFlow(String processInstanceId, int type, Map<String,Object> variables, String userCodes) throws WorkFlowException;
 
     /**
      * 恢复驳回的流程
      * @param processInstanceId 流程实例ID
-     * @param resumeType 0：恢复到开始任务节点；1：恢复到驳回前到达的任务节点
      * @param variables 属性值
-     * @param userCodes 要设置的审批人，动态审批时不为空，多个用逗号隔开
      * @return 流程实例ID
      * @author houjinrong@chtwm.com
      * date 2018/2/7 15:36
      */
-    String resumeWorkFlow(String processInstanceId, int resumeType, Map<String,Object> variables, String userCodes) throws WorkFlowException;
+    String resumeWorkFlow(String processInstanceId, Map<String,Object> variables) throws WorkFlowException;
 
     /**
-     *
+     * 获取当前任务的审批人
      * @param processInstanceId 流程实例ID
      * @return 当前任务审批人，多个逗号隔开
      * @author houjinrong@chtwm.com
