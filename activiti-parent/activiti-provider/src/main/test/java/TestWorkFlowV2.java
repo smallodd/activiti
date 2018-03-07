@@ -7,6 +7,7 @@ import com.activiti.expection.WorkFlowException;
 import com.activiti.service.WorkTaskV2Service;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Maps;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.task.Comment;
@@ -52,13 +53,13 @@ public class TestWorkFlowV2 {
         commonVo.setBusinessKey("0001");
         commonVo.setBusinessType("activity");
         commonVo.setModelKey("hour");
-        commonVo.setDynamic(false);
+        commonVo.setDynamic(true);
         Map map=new HashMap();
         map.put("param",10000);
         String processId= null;
         try {
             processId = workTaskV2Service.startTask(commonVo,map);
-            //workTaskV2Service.setApprove(processId,null);
+            workTaskV2Service.setApprove(processId,"H019235,H019236");
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -71,8 +72,8 @@ public class TestWorkFlowV2 {
         try {
             ApproveVo approveVo=new ApproveVo();
             approveVo.setDynamic(false);
-            approveVo.setProcessInstanceId("2501");
-            approveVo.setCurrentUser("H000033");
+            approveVo.setProcessInstanceId("77501");
+            approveVo.setCurrentUser("H015745");
             approveVo.setCommentResult("2");
             approveVo.setCommentContent("【同意】");
             workTaskV2Service.completeTask(approveVo,null);
@@ -89,7 +90,7 @@ public class TestWorkFlowV2 {
         TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
         taskQueryEntity.setBussinessType("activity");
         taskQueryEntity.setModelKey("hour");
-        PageInfo<Task> pageInfo= workTaskV2Service.queryTaskByAssign("H000016",1,10,taskQueryEntity);
+        PageInfo<Task> pageInfo= workTaskV2Service.queryTaskByAssign("H019235",1,10,taskQueryEntity);
         System.out.print(pageInfo.getTotal());
      }
     /**
@@ -156,7 +157,11 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testTransferTask(){
-        workTaskV2Service.transferTask("62502","H019236", "H019236");
+        try {
+            workTaskV2Service.transferTask("62502","H019236", "H019236");
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -165,7 +170,7 @@ public class TestWorkFlowV2 {
     @Test
     public void testJumpTask(){
         try {
-            workTaskV2Service.taskJump("12501","p2","H019235");
+            workTaskV2Service.taskJump("68142","p2","H019235");
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -178,7 +183,8 @@ public class TestWorkFlowV2 {
     public void testSelectMyRefuse(){
         TaskQueryEntity taskQueryEntity = new TaskQueryEntity();
         taskQueryEntity.setBussinessType("activity");
-        PageInfo<HistoricTaskInstance> historicTaskInstanceList = workTaskV2Service.selectMyRefuse("H000006", 1, 10, taskQueryEntity);
+        taskQueryEntity.setModelKey("hour");
+        PageInfo<HistoricTaskInstance> historicTaskInstanceList = workTaskV2Service.selectMyRefuse("H019235", 1, 10, taskQueryEntity);
         System.out.println(historicTaskInstanceList);
     }
 
@@ -187,7 +193,16 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testRollBackWorkFlow(){
-        workTaskV2Service.rollBackWorkFlow("2501");
+        String processInstanceId = "47501";
+        int type = 1;
+        Map<String,Object> variables = Maps.newHashMap();
+        variables.put("testRollBackWorkFlow", "哈哈");
+        String userCodes = "H019235,H019234";
+        try {
+            workTaskV2Service.rollBackWorkFlow(processInstanceId, type, variables, userCodes);
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -196,7 +211,7 @@ public class TestWorkFlowV2 {
     @Test
     public void testResumeWorkFlow(){
         try {
-            workTaskV2Service.resumeWorkFlow("2501",0,null,null);
+            workTaskV2Service.resumeWorkFlow("47501",null);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
