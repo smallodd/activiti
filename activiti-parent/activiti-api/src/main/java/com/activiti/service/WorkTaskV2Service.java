@@ -174,14 +174,6 @@ public interface WorkTaskV2Service {
      * @return 返回当前任务的最后审批人
      */
     String  getLastApprover(String processInstanceId);
-
-    /**
-     * 通过任务id查询评论
-     * @param processInstanceId 流程实例ID
-     * @param userId 用户ID
-     * @return
-     */
-    Comment selectComment(String processInstanceId,String userId) throws WorkFlowException;
     
     /**
      * 任务跳转

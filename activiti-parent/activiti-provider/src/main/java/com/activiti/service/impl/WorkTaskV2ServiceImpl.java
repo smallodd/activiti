@@ -780,31 +780,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         return result;
     }
 
-    @Override
-    public Comment selectComment(String processInstanceId, String userId) throws WorkFlowException{
-        logger.info("----------------获取某一任务节点某人的审批意见开始,返回值{}----------------",processInstanceId,userId);
-        if(StringUtils.isBlank(processInstanceId) || StringUtils.isBlank(userId)){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"未传入必要的参数");
-        }
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).active().singleResult();
-        if(task == null){
-            throw new WorkFlowException("流程实例ID{}当前没有可执行的任务",processInstanceId);
-        }
-        List<Comment> commentListAgree = taskService.getTaskComments(task.getId(),"2");
-        List<Comment> commentListRefuse = taskService.getTaskComments(task.getId(),"3");
-        commentListAgree.addAll(commentListRefuse);
-        if(commentListAgree==null || commentListAgree.size()==0){
-            return null;
-        }
-        for(Comment comment : commentListAgree){
-            if(comment.getUserId().equals(userId)){
-                return comment;
-            }
-        }
-        logger.info("----------------获取某一任务节点某人的审批意见结束----------------");
-        return null;
-    }
-
     /**
      * 任务跳转
      * @param processInstanceId 流程实例ID
@@ -1008,7 +983,12 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
     public boolean rollBackWorkFlow(String processInstanceId, int type, Map<String,Object> variables, String userCodes) throws WorkFlowException{
         if(StringUtils.isBlank(processInstanceId) || StringUtils.isBlank(userCodes)){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数【processInstanceId】【userCodes】都不能为空");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数【processInstanceId】不能为空");
+        }
+
+        boolean dynamic = (boolean)runtimeService.getVariable(processInstanceId,"dynamic");
+        if(dynamic && StringUtils.isNotBlank(userCodes)){
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"动态审批时参数【userCodes】不能为空");
         }
 
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
