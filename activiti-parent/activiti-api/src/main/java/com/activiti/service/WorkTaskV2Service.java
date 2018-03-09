@@ -34,7 +34,7 @@ public interface WorkTaskV2Service {
     String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException;
 
     /**
-     * 查询业务主键是否再流程中
+     * 查询业务主键是否在流程中
      * @param taskQueryEntity 任务查询query
      * @param businessKey 业务主键
      * @return 返回true or false
@@ -47,7 +47,7 @@ public interface WorkTaskV2Service {
      * @param userCodes 用户工号，用逗号隔开
      * @return
      */
-    public boolean setApprove(String processInstanceId,String userCodes) throws WorkFlowException;
+    boolean setApprove(String processInstanceId,String userCodes) throws WorkFlowException;
 
     /**
      * 通过用户相关信息查询待审批任务
