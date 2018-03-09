@@ -999,7 +999,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         if(rollBackType == 0){
             runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
         }else if(rollBackType == 1){
-            //校验属性是否跟系统属性重复
             runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
             for(String s : taskDefinitionKeys.toString().split(",")){
                 if(s.equals(task.getTaskDefinitionKey())){
