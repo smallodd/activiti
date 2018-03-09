@@ -299,9 +299,9 @@ public class ActivitiController extends BaseController{
      * @return
      */
     @SysLog(value="办理任务")
-    @RequestMapping("/complateTask")
+    @RequestMapping("/completeTask")
     @ResponseBody
-    public Object complateTask( @RequestParam("taskId") String taskId,
+    public Object completeTask( @RequestParam("taskId") String taskId,
 								@RequestParam("userId") String userId,
 					    		@RequestParam("commentContent") String commentContent,
 					    		@RequestParam("commentResult") Integer commentResult){

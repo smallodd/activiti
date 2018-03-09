@@ -66,7 +66,7 @@
 
     $(function() {
         $('#complateTaskForm').form({
-            url : '${ctx}/activiti/complateTask',
+            url : '${ctx}/activiti/completeTask',
             onSubmit : function() {
                 progressLoad();
                 var isValid = $(this).form('validate');
