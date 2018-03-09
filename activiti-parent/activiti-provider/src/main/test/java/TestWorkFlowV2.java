@@ -53,13 +53,13 @@ public class TestWorkFlowV2 {
         commonVo.setBusinessKey("0001");
         commonVo.setBusinessType("activity");
         commonVo.setModelKey("hour");
-        commonVo.setDynamic(true);
+        commonVo.setDynamic(false);
         Map map=new HashMap();
         map.put("param",10000);
         String processId= null;
         try {
             processId = workTaskV2Service.startTask(commonVo,map);
-            workTaskV2Service.setApprove(processId,"H019235,H019236");
+            //workTaskV2Service.setApprove(processId,"H019235,H019236");
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -193,13 +193,10 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testRollBackWorkFlow(){
-        String processInstanceId = "47501";
+        String processInstanceId = "5001";
         int type = 1;
-        Map<String,Object> variables = Maps.newHashMap();
-        variables.put("testRollBackWorkFlow", "哈哈");
-        String userCodes = "H019235,H019234";
         try {
-            workTaskV2Service.rollBackWorkFlow(processInstanceId, type, variables, userCodes);
+            workTaskV2Service.rollBackProcess(processInstanceId, type);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -211,23 +208,20 @@ public class TestWorkFlowV2 {
     @Test
     public void testResumeWorkFlow(){
         try {
-            workTaskV2Service.resumeWorkFlow("47501",null);
+            Map<String,Object> variables = Maps.newHashMap();
+            variables.put("testRollBackWorkFlow", "哈哈");
+            workTaskV2Service.resumeProcess("5001","H000014",variables);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * 测试-查询某一任务节点评论
+     * 测试-获取最后审批人
      */
     @Test
-    public void testSelectComment(){
-        Comment comment = null;
-        try {
-            comment = workTaskV2Service.selectComment("5005", "H000013");
-        } catch (WorkFlowException e) {
-            e.printStackTrace();
-        }
-        System.out.println(JSONObject.toJSONString(comment));
+    public void getLastApprover(){
+        String lastApprover = workTaskV2Service.getLastApprover("2501");
+        System.out.println(lastApprover);
     }
 }
