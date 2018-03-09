@@ -997,9 +997,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         String taskDefinitionKey = taskDefinitionKeys.toString().split(",")[0];
         if(rollBackType == 0){
-            runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
+            runtimeService.setVariable(processInstanceId, ProcessVariable.ROLLBACKTYPE.value, rollBackType);
         }else if(rollBackType == 1){
-            runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
+            runtimeService.setVariable(processInstanceId, ProcessVariable.ROLLBACKTYPE.value, rollBackType);
             for(String s : taskDefinitionKeys.toString().split(",")){
                 if(s.equals(task.getTaskDefinitionKey())){
                     break;
@@ -1039,7 +1039,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         }
 
         //获取驳回流程标识，判断是否有权限操作
-        Integer rollBackType = (Integer)runtimeService.getVariable(processInstanceId, "rollBackType");
+        Integer rollBackType = (Integer)runtimeService.getVariable(processInstanceId, ProcessVariable.ROLLBACKTYPE.value);
         if(rollBackType == null){
             throw new WorkFlowException("流程实例processInstanceId没有需要恢复的流程");
         }
@@ -1064,7 +1064,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         runtimeService.activateProcessInstanceById(processInstanceId);
         runtimeService.setVariables(processInstanceId,variables);
         //删除驳回流程标识
-        runtimeService.removeVariable(processInstanceId, "rollBackType");
+        runtimeService.removeVariable(processInstanceId, ProcessVariable.ROLLBACKTYPE.value);
         return true;
     }
 
