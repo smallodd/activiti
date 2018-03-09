@@ -998,11 +998,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         String taskDefinitionKey = taskDefinitionKeys.toString().split(",")[0];
         if(rollBackType == 0){
             runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
-            runtimeService.suspendProcessInstanceById(processInstanceId);
         }else if(rollBackType == 1){
             //校验属性是否跟系统属性重复
             runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
-            runtimeService.suspendProcessInstanceById(processInstanceId);
             for(String s : taskDefinitionKeys.toString().split(",")){
                 if(s.equals(task.getTaskDefinitionKey())){
                     break;
@@ -1018,7 +1016,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             String userCodes = (String)historicVariableInstance.getValue();
             taskJump(task.getProcessInstanceId(), taskDefinitionKey, userCodes);
         }
-
+        runtimeService.suspendProcessInstanceById(processInstanceId);
         return true;
     }
 
