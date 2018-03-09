@@ -966,7 +966,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             runtimeService.deleteProcessInstance(processInstanceId,description);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("删除流程实力失败",e);
             return false;
         }
     }
@@ -974,55 +974,47 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     /**
      * 流程驳回
      * @param processInstanceId 流程实例ID
-     * @param type 0：恢复到开始任务节点；1：恢复到上个任务节点
-     * @param variables 要设置的属性值
+     * @param rollBackType 0：恢复到开始任务节点；1：恢复到上个任务节点
      * @return true：成功；false：失败
      * @author houjinrong@chtwm.com
      * date 2018/2/7 15:35
      */
     @Override
     @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
-    public boolean rollBackWorkFlow(String processInstanceId, int type, Map<String,Object> variables, String userCodes) throws WorkFlowException{
-        if(StringUtils.isBlank(processInstanceId) || StringUtils.isBlank(userCodes)){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数【processInstanceId】不能为空");
-        }
-
-        boolean dynamic = (boolean)runtimeService.getVariable(processInstanceId,"dynamic");
-        if(dynamic && StringUtils.isNotBlank(userCodes)){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"动态审批时参数【userCodes】不能为空");
+    public boolean rollBackProcess(String processInstanceId, int rollBackType) throws WorkFlowException{
+        if(StringUtils.isBlank(processInstanceId)){
+            throw new WorkFlowException("参数【processInstanceId】不能为空");
         }
 
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         if(task == null){
-            throw new WorkFlowException(CodeConts.PROCESS_NOEXISTS,"任务流程异常，找不到被驳回的任务节点");
+            throw new WorkFlowException("任务流程异常，找不到被驳回的任务节点");
         }
 
         Object taskDefinitionKeys = runtimeService.getVariable(processInstanceId, ProcessVariable.PROCESSNODE.value + processInstanceId);
         if(taskDefinitionKeys == null){
-            throw new WorkFlowException(CodeConts.PROCESS_ERROR,"流程定义ID【"+processInstanceId+"】对应的节点不存在");
+            throw new WorkFlowException("流程实例ID【"+processInstanceId+"】对应的任务节点KEY不存在");
         }
-        String taskDefinitionKey = taskDefinitionKeys.toString().split(",")[0];;
-        if(type == 0){
-            taskJump(task.getProcessInstanceId(), taskDefinitionKey, userCodes);
+        String taskDefinitionKey = taskDefinitionKeys.toString().split(",")[0];
+        if(rollBackType == 0){
             runtimeService.suspendProcessInstanceById(processInstanceId);
-        }else if(type == 1){
+        }else if(rollBackType == 1){
             //校验属性是否跟系统属性重复
-            if(variables != null && variables.size() > 0){
-                validateVariables(variables);
-            }
             for(String s : taskDefinitionKeys.toString().split(",")){
                 if(s.equals(task.getTaskDefinitionKey())){
                     break;
                 }
                 taskDefinitionKey = s;
             }
-
-            taskJump(task.getProcessInstanceId(), taskDefinitionKey, userCodes);
-            runtimeService.setVariables(processInstanceId,variables);
         }else{
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，有效参数type只能为0或1");
+            throw new WorkFlowException("参数不合法，有效参数type只能为0或1");
         }
 
+        HistoricVariableInstance historicVariableInstance = historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).variableName(taskDefinitionKey+":"+TaskVariable.TASKUSER.value).singleResult();
+
+        String userCodes = (String)historicVariableInstance.getValue();
+        taskJump(task.getProcessInstanceId(), taskDefinitionKey, userCodes);
+        runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
         return true;
     }
 
@@ -1035,25 +1027,46 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      */
     @Override
     @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
-    public String resumeWorkFlow(String processInstanceId, Map<String,Object> variables) throws WorkFlowException{
-        if(StringUtils.isBlank(processInstanceId)){
-            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数流程实例ID：processInstanceId不能为空");
+    public boolean resumeProcess(String processInstanceId, String operator, Map<String,Object> variables) throws WorkFlowException{
+        if(StringUtils.isBlank(processInstanceId) || StringUtils.isBlank(operator)){
+            throw new WorkFlowException("参数非法，参数【processInstanceId】【operator】不能为空");
         }
+
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+        if(task == null){
+            throw new WorkFlowException("任务流程异常，找不到被驳回的任务节点");
+        }
+
+        //获取驳回流程标识，判断是否有权限操作
+        Integer rollBackType = (Integer)runtimeService.getVariable(processInstanceId, "rollBackType");
+        if(rollBackType == null){
+            throw new WorkFlowException("流程实例processInstanceId没有需要恢复的流程");
+        }
+
+        if(rollBackType.equals(0)){
+            String applyUserId = (String)runtimeService.getVariable(processInstanceId, "applyUserId");
+            if(!operator.equals(applyUserId)){
+                throw new WorkFlowException("【"+operator+"】没有权限进行该操作");
+            }
+        }if(rollBackType.equals(1)){
+            if(!task.getAssignee().contains(operator)){
+                throw new WorkFlowException("【"+operator+"】没有权限进行该操作");
+            }
+        }
+
+        //删除驳回流程标识
+        runtimeService.removeVariable(processInstanceId, "rollBackType");
 
         //校验属性是否跟系统属性重复
         if(variables != null && variables.size() > 0){
             validateVariables(variables);
         }
 
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
-        if(task == null){
-            throw new WorkFlowException(CodeConts.PROCESS_NOEXISTS,"任务流程异常，找不到被驳回的任务节点");
-        }
         //激活挂起的流程实例
         runtimeService.activateProcessInstanceById(processInstanceId);
         runtimeService.setVariables(processInstanceId,variables);
 
-        return processInstanceId;
+        return true;
     }
 
     /**

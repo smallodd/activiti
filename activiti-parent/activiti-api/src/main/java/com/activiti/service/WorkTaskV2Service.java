@@ -198,22 +198,23 @@ public interface WorkTaskV2Service {
     /**
      * 流程驳回
      * @param processInstanceId 流程实例ID
-     * @param type 0：恢复到开始任务节点；1：恢复到驳回前到达的任务节点
+     * @param rollBackType 0：恢复到开始任务节点；1：恢复到驳回前到达的任务节点
      * @return true：成功；false：失败
      * @author houjinrong@chtwm.com
      * date 2018/2/7 15:35
      */
-    boolean rollBackWorkFlow(String processInstanceId, int type, Map<String,Object> variables, String userCodes) throws WorkFlowException;
+    boolean rollBackProcess(String processInstanceId, int rollBackType) throws WorkFlowException;
 
     /**
      * 恢复驳回的流程
      * @param processInstanceId 流程实例ID
+     * @param operator 回复驳回操作人
      * @param variables 属性值
      * @return 流程实例ID
      * @author houjinrong@chtwm.com
      * date 2018/2/7 15:36
      */
-    String resumeWorkFlow(String processInstanceId, Map<String,Object> variables) throws WorkFlowException;
+    boolean resumeProcess(String processInstanceId, String operator, Map<String,Object> variables) throws WorkFlowException;
 
     /**
      * 获取当前任务的审批人
