@@ -200,7 +200,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String completeTask( ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException{
+    public boolean completeTask( ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException{
         logger.info("办理任务{}", "completeTask");
         logger.info("入参 approveVo：{}paramMap：{}",approveVo,paramMap);
 
@@ -250,7 +250,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                 throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"非法参数,commentResult字段请传字符串2或3");
             }
             ProcessInstance result = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-            return result==null?null:processInstanceId;
+            return result==null?false:true;
         }
 
         Object object = map.get("version");
@@ -301,8 +301,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                     }else{
                         //------------任务继续------------
                         taskService.setVariableLocal(taskId,TaskStatus.FINISHED.value+":"+currentUser,TaskStatus.FINISHED.value);
-
-                        return processInstanceId;
+                        return true;
                     }
                 }
             }else {
@@ -320,7 +319,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             //do nothing
         }else if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
             runtimeService.deleteProcessInstance(processInstanceId,"refuse");
-            return processInstanceId;
+            return true;
         }else{
             throw  new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，commentResult 请传 2 审批通过 或 3 审批拒绝");
         }
@@ -328,14 +327,14 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         // 完成委派任务
         if(DelegationState.PENDING == task.getDelegationState()){
             this.taskService.resolveTask(taskId);
-            return processInstanceId;
+            return true;
         }
         //完成任务
         taskService.complete(task.getId());
         initTaskVariable(task.getProcessInstanceId(),processInstance.getProcessDefinitionKey(),version,map);
 
         logger.info("返回值：任务实例ID{}", processInstanceId);
-        return processInstanceId;
+        return true;
     }
 
     @Override
@@ -791,7 +790,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      */
     @Override
     @Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
-    public String taskJump(String processInstanceId, String taskDefinitionKey, String userCodes) throws WorkFlowException{
+    public boolean taskJump(String processInstanceId, String taskDefinitionKey, String userCodes) throws WorkFlowException{
         logger.info("----------------任务跳转开始,入参 taskId：{}，taskDefinitionKey：{}，userCodes：{}----------------",processInstanceId,taskDefinitionKey,userCodes);
         if(StringUtils.isBlank(processInstanceId) || StringUtils.isBlank(taskDefinitionKey)){
             throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"非法的参数，未传入必须的参数");
@@ -832,7 +831,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                 initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,mailParam);
             }
             logger.info("----------------任务跳转结束，返回值：{}----------------",task.getProcessInstanceId());
-            return task.getProcessInstanceId();
+            return true;
         }else{
             throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
         }

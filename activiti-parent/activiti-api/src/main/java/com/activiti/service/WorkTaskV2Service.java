@@ -23,13 +23,6 @@ import java.util.Map;
  * date 2018/1/29 15:15
  */
 public interface WorkTaskV2Service {
-    /**
-     * 查询业务主键是否再流程中
-     * @param taskQueryEntity 任务查询query
-     * @param businessKey 业务主键
-     * @return 返回true or false
-     */
-    public boolean checkBusinessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String businessKey) ;
 
     /**
      * 开启任务
@@ -39,6 +32,14 @@ public interface WorkTaskV2Service {
      * @return 返回部署的任务id,建议存储到业务系统
      */
     String startTask(CommonVo commonVo,Map<String,Object> paramMap) throws WorkFlowException;
+
+    /**
+     * 查询业务主键是否再流程中
+     * @param taskQueryEntity 任务查询query
+     * @param businessKey 业务主键
+     * @return 返回true or false
+     */
+    boolean checkBusinessKeyIsInFlow(TaskQueryEntity taskQueryEntity,String businessKey) ;
 
     /**
      * 设置审批人
@@ -68,7 +69,7 @@ public interface WorkTaskV2Service {
      *              如是动态设置审批人，在审批后如任务还未完成继续返回processId,如任务已结束将返回null
      * @exception WorkFlowException 返回审批异常
      */
-    String  completeTask(ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException;
+    boolean completeTask(ApproveVo approveVo,Map<String,Object> paramMap) throws WorkFlowException;
 
     /**
      * 获取申请人提交的任务
@@ -173,7 +174,7 @@ public interface WorkTaskV2Service {
      * @param processInstanceId  流程实例id
      * @return 返回当前任务的最后审批人
      */
-    String  getLastApprover(String processInstanceId);
+    String getLastApprover(String processInstanceId);
     
     /**
      * 任务跳转
@@ -184,7 +185,7 @@ public interface WorkTaskV2Service {
      * @author houjinrong@chtwm.com
      * date 2018/2/1 20:32
      */
-    String taskJump(String processInstanceId, String taskDefinitionKey, String userCodes) throws WorkFlowException;
+    boolean taskJump(String processInstanceId, String taskDefinitionKey, String userCodes) throws WorkFlowException;
 
     /**
      * 删除一个流程实例
