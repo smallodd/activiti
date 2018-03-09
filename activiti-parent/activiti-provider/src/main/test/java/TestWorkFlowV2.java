@@ -193,13 +193,10 @@ public class TestWorkFlowV2 {
      */
     @Test
     public void testRollBackWorkFlow(){
-        String processInstanceId = "47501";
-        int type = 0;
-        Map<String,Object> variables = Maps.newHashMap();
-        variables.put("testRollBackWorkFlow", "哈哈");
-        String userCodes = "H019235,H019234";
+        String processInstanceId = "5001";
+        int type = 1;
         try {
-            workTaskV2Service.rollBackWorkFlow(processInstanceId, type, variables, userCodes);
+            workTaskV2Service.rollBackProcess(processInstanceId, type);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -211,7 +208,9 @@ public class TestWorkFlowV2 {
     @Test
     public void testResumeWorkFlow(){
         try {
-            workTaskV2Service.resumeWorkFlow("47501",null);
+            Map<String,Object> variables = Maps.newHashMap();
+            variables.put("testRollBackWorkFlow", "哈哈");
+            workTaskV2Service.resumeProcess("5001","H000014",variables);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }

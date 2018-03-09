@@ -995,11 +995,15 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         if(taskDefinitionKeys == null){
             throw new WorkFlowException("流程实例ID【"+processInstanceId+"】对应的任务节点KEY不存在");
         }
+
         String taskDefinitionKey = taskDefinitionKeys.toString().split(",")[0];
         if(rollBackType == 0){
+            runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
             runtimeService.suspendProcessInstanceById(processInstanceId);
         }else if(rollBackType == 1){
             //校验属性是否跟系统属性重复
+            runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
+            runtimeService.suspendProcessInstanceById(processInstanceId);
             for(String s : taskDefinitionKeys.toString().split(",")){
                 if(s.equals(task.getTaskDefinitionKey())){
                     break;
@@ -1010,11 +1014,12 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             throw new WorkFlowException("参数不合法，有效参数type只能为0或1");
         }
 
-        HistoricVariableInstance historicVariableInstance = historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).variableName(taskDefinitionKey+":"+TaskVariable.TASKUSER.value).singleResult();
+        if(!taskDefinitionKey.equals(task.getTaskDefinitionKey())){
+            HistoricVariableInstance historicVariableInstance = historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).variableName(taskDefinitionKey+":"+TaskVariable.TASKUSER.value).singleResult();
+            String userCodes = (String)historicVariableInstance.getValue();
+            taskJump(task.getProcessInstanceId(), taskDefinitionKey, userCodes);
+        }
 
-        String userCodes = (String)historicVariableInstance.getValue();
-        taskJump(task.getProcessInstanceId(), taskDefinitionKey, userCodes);
-        runtimeService.setVariable(processInstanceId, "rollBackType", rollBackType);
         return true;
     }
 
@@ -1054,9 +1059,6 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             }
         }
 
-        //删除驳回流程标识
-        runtimeService.removeVariable(processInstanceId, "rollBackType");
-
         //校验属性是否跟系统属性重复
         if(variables != null && variables.size() > 0){
             validateVariables(variables);
@@ -1065,7 +1067,8 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         //激活挂起的流程实例
         runtimeService.activateProcessInstanceById(processInstanceId);
         runtimeService.setVariables(processInstanceId,variables);
-
+        //删除驳回流程标识
+        runtimeService.removeVariable(processInstanceId, "rollBackType");
         return true;
     }
 
