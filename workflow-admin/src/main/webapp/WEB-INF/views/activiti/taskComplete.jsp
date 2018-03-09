@@ -51,6 +51,9 @@
             url: '${ctx}/activiti/getTaskUserWithEnd',
             data: {"taskId":taskId},
             success: function(json){
+                if(json.success == false){
+                    return;
+				}
                 var option = "";
                 $.each(json,function(i,obj){
                     option = option + "<option value='"+obj.id+"'>"+obj.userName+"</option>";

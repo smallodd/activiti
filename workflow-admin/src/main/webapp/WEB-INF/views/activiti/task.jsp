@@ -156,7 +156,7 @@ function complateTaskFun(id){
         title : '办理',
         width : 400,
         height : 450,
-        href : '${ctx}/activiti/complateTaskPage?id='+id,
+        href : '${ctx}/activiti/completeTaskPage?id='+id,
         buttons : [ {
             text : '确定',
             handler : function() {

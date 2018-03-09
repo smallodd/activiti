@@ -263,8 +263,8 @@ public class ActivitiController extends BaseController{
 	 * @param id 任务ID
      * @return
      */
-    @GetMapping("/complateTaskPage")
-    public String complateTaskPage(Model model,String id) {
+    @GetMapping("/completeTaskPage")
+    public String completeTaskPage(Model model,String id) {
     	Task task = taskService.createTaskQuery().taskId(id).singleResult();
     	String processInstanceId = task.getProcessInstanceId();
 
@@ -288,7 +288,7 @@ public class ActivitiController extends BaseController{
     	}else if(StringUtils.contains("SVacation_Terminate", taskKey)){
     		return "application/tVacationTerminate";
     	}
-        return "activiti/taskComplate";
+        return "activiti/taskComplete";
     }
     
     /**
