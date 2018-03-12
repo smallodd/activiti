@@ -50,7 +50,7 @@ public class TestWorkFlowV2 {
         commonVo.setApplyTitle("测试动态任务");
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("mayl");
-        commonVo.setBusinessKey("0001");
+        commonVo.setBusinessKey("0002");
         commonVo.setBusinessType("activity");
         commonVo.setModelKey("hour");
         commonVo.setDynamic(false);
@@ -59,13 +59,23 @@ public class TestWorkFlowV2 {
         String processId= null;
         try {
             processId = workTaskV2Service.startTask(commonVo,map);
-            //workTaskV2Service.setApprove(processId,"H019235,H019236");
+            boolean b = workTaskV2Service.setApprove(processId, "H019235,H019235");
+            System.out.println(b);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
         System.out.println("返回结果为："+processId);
 
     }
+
+    private void testSetApprover(){
+        try {
+            boolean b = workTaskV2Service.setApprove("17561", "H019235,H019235");
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
+    }
+
     //审批任务
     @Test
     public void  testComplete(){
@@ -158,7 +168,10 @@ public class TestWorkFlowV2 {
     @Test
     public void testTransferTask(){
         try {
-            workTaskV2Service.transferTask("62502","H019236", "H019236");
+            String userId = "H000013";
+            String transferUserId = "H019236";
+            boolean b = workTaskV2Service.transferTask("20001", "", "");
+            System.out.println(b);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
