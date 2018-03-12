@@ -716,7 +716,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         try {
             Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).active().singleResult();
             if(task == null){
-                throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
+                throw new WorkFlowException("任务不存在！");
             }
 
             if(!StringUtils.contains(task.getAssignee(),userId)){
