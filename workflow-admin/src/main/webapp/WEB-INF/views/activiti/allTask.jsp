@@ -110,7 +110,7 @@
                 	</shiro:hasPermission>
 
                 	<shiro:hasPermission name="/activiti/adminComplateTask">
-                		str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="complateTaskFun(\'{0}\');" >办理</a>', row.id);
+                		str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="completeTaskFun(\'{0}\');" >办理</a>', row.id);
             		</shiro:hasPermission>
             		<%--<shiro:hasPermission name="/activiti/adminDelegateTask">
                     	str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
@@ -147,7 +147,7 @@
 /**
  * 办理任务
  */
- function complateTaskFun(id){
+ function completeTaskFun(id){
 	if (id == undefined) {
         var rows = taskDataGrid.datagrid('getSelections');
         id = rows[0].id;
@@ -164,10 +164,13 @@
             handler : function() {
                 parent.$.modalDialog.openner_dataGrid = taskDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
                 var f = parent.$.modalDialog.handler.find('#complateTaskForm');
-                f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
-                f.submit();
+                var op = parent.$.modalDialog.handler.find("#taskUser").val();
+                if(op != null && op != ""){
+                    f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
+                    f.submit();
+                }
             }
-        } ]
+        }]
     });
 }
 
