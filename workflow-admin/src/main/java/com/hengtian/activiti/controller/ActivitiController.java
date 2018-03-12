@@ -33,6 +33,7 @@ import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
+import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
@@ -52,10 +53,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.zip.ZipInputStream;
 
@@ -271,11 +269,13 @@ public class ActivitiController extends BaseController{
 		List<CommentVo> comments = new ArrayList<CommentVo>();
 		List<Comment> commentList= taskService.getProcessInstanceComments(processInstanceId);
 		for(Comment comment : commentList){
+			CommentEntity c = (CommentEntity)comment;
 			CommentVo vo = new CommentVo();
 			SysUser user= sysUserService.selectById(comment.getUserId());
 			vo.setCommentUser(user.getUserName());
 			vo.setCommentTime(DateUtils.formatDateToString(comment.getTime()));
-			vo.setCommentContent(comment.getFullMessage());
+			vo.setCommentContent(c.getMessage());
+
 			comments.add(vo);
 		}
 
