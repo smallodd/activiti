@@ -168,6 +168,8 @@
                 if(op != null && op != ""){
                     f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
                     f.submit();
+                }else{
+                    parent.$.messager.alert('提示', "没有审批人", 'info');
                 }
             }
         }]
