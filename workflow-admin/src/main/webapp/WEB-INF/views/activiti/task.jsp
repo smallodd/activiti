@@ -107,7 +107,7 @@
                 	</shiro:hasPermission>
                 }else{
                 	<shiro:hasPermission name="/activiti/complateTask">
-                		str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="complateTaskFun(\'{0}\');" >办理</a>', row.id);
+                		str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="completeTaskFun(\'{0}\');" >办理</a>', row.id);
             		</shiro:hasPermission>
             		<%--<shiro:hasPermission name="/activiti/delegateTask">
                     	str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
@@ -145,7 +145,7 @@
 /**
  * 办理任务
  */
-function complateTaskFun(id){
+function completeTaskFun(id){
     if (id == undefined) {
         var rows = taskDataGrid.datagrid('getSelections');
         id = rows[0].id;
@@ -156,7 +156,7 @@ function complateTaskFun(id){
         title : '办理',
         width : 400,
         height : 450,
-        href : '${ctx}/activiti/complateTaskPage?id='+id,
+        href : '${ctx}/activiti/completeTaskPage?id='+id,
         buttons : [ {
             text : '确定',
             handler : function() {
