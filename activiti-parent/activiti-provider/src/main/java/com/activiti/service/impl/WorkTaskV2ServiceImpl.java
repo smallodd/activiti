@@ -1076,7 +1076,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      * date 2018/3/5 17:25
      */
     @Override
-    public String getCurrentAssign(String processInstanceId){
+    public String getCurrentApprover(String processInstanceId){
         if(StringUtils.isBlank(processInstanceId)){
             return null;
         }

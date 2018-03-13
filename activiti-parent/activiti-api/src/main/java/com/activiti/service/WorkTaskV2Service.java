@@ -224,5 +224,5 @@ public interface WorkTaskV2Service {
      * @author houjinrong@chtwm.com
      * date 2018/3/5 17:25
      */
-    String getCurrentAssign(String processInstanceId);
+    String getCurrentApprover(String processInstanceId);
 }
