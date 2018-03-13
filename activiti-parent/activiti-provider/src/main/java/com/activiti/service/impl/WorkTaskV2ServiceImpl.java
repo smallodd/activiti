@@ -1088,7 +1088,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      * @param bussnessType
      * @return
      */
-    private  List<String> getProcessKeyByBussnessType(String bussnessType){
+    private List<String> getProcessKeyByBussnessType(String bussnessType){
         EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
         wrapper.where("app_key={0}",bussnessType);
         List<AppModel> listAppModel=appModelService.selectList(wrapper);
