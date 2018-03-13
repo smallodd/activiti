@@ -5,7 +5,6 @@ import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.service.WorkTaskV2Service;
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.activiti.engine.history.HistoricTaskInstance;
