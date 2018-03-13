@@ -321,7 +321,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             runtimeService.deleteProcessInstance(processInstanceId,"refuse");
             return true;
         }else{
-            throw  new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，commentResult 请传 2 审批通过 或 3 审批拒绝");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，commentResult 请传 2 审批通过 或 3 审批拒绝");
         }
 
         // 完成委派任务
