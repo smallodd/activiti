@@ -225,4 +225,11 @@ public interface WorkTaskV2Service {
      * date 2018/3/5 17:25
      */
     String getCurrentApprover(String processInstanceId);
+
+    /**
+     * 设置属性值
+     * @param processInstanceId 流程实例ID
+     * @return
+     */
+    boolean setVariables(String processInstanceId, Map<String,Object> variables) throws WorkFlowException;
 }

@@ -44,6 +44,8 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1081,6 +1083,25 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             return null;
         }
         return taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult().getAssignee();
+    }
+
+    /**
+     * 设置属性值
+     * @param processInstanceId 流程实例ID
+     * @return
+     */
+    @Override
+    public boolean setVariables(String processInstanceId, Map<String,Object> variables) throws WorkFlowException{
+        if(StringUtils.isBlank(processInstanceId) || (MapUtils.isEmpty(variables))){
+            throw new WorkFlowException("参数非法，参数【processInstanceId】【variables】不能为空");
+        }
+
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        if(processInstance == null){
+            throw new WorkFlowException("流程实例ID【processInstanceId】对应的流程实例不存在");
+        }
+        runtimeService.setVariables(processInstanceId,variables);
+        return true;
     }
 
     /**
