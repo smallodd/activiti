@@ -907,6 +907,14 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                     throw  new WorkFlowException(CodeConts.WORK_FLOW_NO_APPROVER,"操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后再创建任务");
                 }
                 if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
+                    if(StringUtils.isNotBlank(task.getAssignee())){
+                        Map<String,Object> variables = Maps.newHashMap();
+                        for(String candidateId : task.getAssignee().split(",")){
+                            variables.put(task.getTaskDefinitionKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
+                        }
+                        taskService.setVariablesLocal(processInstanceId, variables);
+                    }
+
                     String candidateIds = tUserTask.getCandidateIds();
 
                     Map<String,Object> variable = Maps.newHashMap();
