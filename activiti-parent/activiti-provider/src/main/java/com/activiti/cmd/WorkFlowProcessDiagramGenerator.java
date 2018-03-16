@@ -4,7 +4,6 @@ import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.image.impl.DefaultProcessDiagramCanvas;
-import org.activiti.image.impl.DefaultProcessDiagramGenerator;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
