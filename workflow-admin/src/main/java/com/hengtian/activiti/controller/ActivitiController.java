@@ -25,6 +25,7 @@ import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.MailTemplateUtils;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysDepartmentService;
@@ -624,7 +625,7 @@ public class ActivitiController extends BaseController{
 		processEngineConfiguration = processEngine.getProcessEngineConfiguration();
 		Context.setProcessEngineConfiguration((ProcessEngineConfigurationImpl) processEngineConfiguration);
 
-		ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
+		CustomDefaultProcessDiagramGenerator diagramGenerator = (CustomDefaultProcessDiagramGenerator)processEngineConfiguration.getProcessDiagramGenerator();
 		ProcessDefinitionEntity definitionEntity = (ProcessDefinitionEntity)repositoryService.getProcessDefinition(processInstance.getProcessDefinitionId());
 
 		List<HistoricActivityInstance> highLightedActivitList =  historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
@@ -632,7 +633,7 @@ public class ActivitiController extends BaseController{
 		//高亮环节id集合
 		List<String> highLightedActivitis = new ArrayList<String>();
 
-		//任务跳转时处理
+		/*//任务跳转时处理
 		EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
 		wrapper.where("proc_def_key = {0}", definitionEntity.getKey()).andNew("version_={0}",definitionEntity.getVersion());
 		wrapper.orderBy("order_num",true);
@@ -654,7 +655,7 @@ public class ActivitiController extends BaseController{
 					it.remove();
 				}
 			}
-		}
+		}*/
 
 		//高亮线路id集合
 		List<String> highLightedFlows = getHighLightedFlows(definitionEntity,highLightedActivitList);
@@ -664,12 +665,14 @@ public class ActivitiController extends BaseController{
 			highLightedActivitis.add(activityId);
 		}
 
+		Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+
 		//中文显示的是口口口，设置字体就好了
 		//生成流图片  5.18.0
 		InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
 				processEngineConfiguration.getLabelFontName(),
 				processEngineConfiguration.getActivityFontName(),
-				processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
+				processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0, task.getTaskDefinitionKey());
 		//5.22.0
 		//InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
 		//单独返回流程图，不高亮显示
