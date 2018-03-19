@@ -292,12 +292,12 @@ function modelDetail(id) {
     } else {
         modelDataGrid.datagrid('unselectAll').datagrid('uncheckAll');
     }
-    var contentStr= $.formatString('<img src="${ctx}/activiti/model/image/{0}"></img>',id);
+    var contentStr = $.formatString('<img src="${ctx}/activiti/model/image/{0}"></img>',id);
     $("#modelImage").window({
         title : '查看详情',
         width : 900,
         height : 500,
-        content:contentStr,
+        content : contentStr,
         modal : true,
         buttons : [ {
             text : '关闭',
