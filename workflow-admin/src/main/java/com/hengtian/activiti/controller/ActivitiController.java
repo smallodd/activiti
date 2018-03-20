@@ -641,14 +641,18 @@ public class ActivitiController extends BaseController{
 			highLightedActivitis.add(activityId);
 		}
 
-		Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+		List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+		List<String> taskDefinitionKeyList = Lists.newArrayList();
+		for(Task task : taskList){
+			taskDefinitionKeyList.add(task.getTaskDefinitionKey());
+		}
 
 		//中文显示的是口口口，设置字体就好了
 		//生成流图片  5.18.0
 		InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
 				processEngineConfiguration.getLabelFontName(),
 				processEngineConfiguration.getActivityFontName(),
-				processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0, task.getTaskDefinitionKey());
+				processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1, taskDefinitionKeyList);
 		//5.22.0
 		//InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
 		//单独返回流程图，不高亮显示

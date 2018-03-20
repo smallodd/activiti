@@ -9,5 +9,5 @@ import java.util.List;
 public interface CustomDefaultProcessDiagramGenerator extends ProcessDiagramGenerator {
 
     public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, List<String> highLightedActivities, List<String> highLightedFlows,
-                                       String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor, String currentActivityId);
+                                       String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor, List<String> taskDefinitionKeyList);
 }

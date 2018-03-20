@@ -3,6 +3,8 @@ package com.hengtian.common.workflow.activiti;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Event;
 import org.activiti.bpmn.model.Process;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -345,10 +347,10 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
     }
 
     public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, List<String> highLightedActivities, List<String> highLightedFlows,
-                                       String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor, String currentActivityId) {
+                                       String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor, List<String> taskDefinitionKeyList) {
 
         return generateProcessDiagram(bpmnModel, imageType, highLightedActivities, highLightedFlows,
-                activityFontName, labelFontName, customClassLoader, scaleFactor, currentActivityId).generateImage(imageType);
+                activityFontName, labelFontName, customClassLoader, scaleFactor, taskDefinitionKeyList).generateImage(imageType);
     }
 
     public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, List<String> highLightedActivities, List<String> highLightedFlows) {
@@ -415,7 +417,7 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
 
     protected CustomProcessDiagramCanvas generateProcessDiagram(BpmnModel bpmnModel, String imageType,
                                                                 List<String> highLightedActivities, List<String> highLightedFlows,
-                                                                String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor, String currentActivityId) {
+                                                                String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor, List<String> taskDefinitionKeyList) {
 
         prepareBpmnModel(bpmnModel);
 
@@ -437,7 +439,7 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
 
         // Draw activities and their sequence-flows
         for (FlowNode flowNode : bpmnModel.getProcesses().get(0).findFlowElementsOfType(FlowNode.class)) {
-            drawActivity(processDiagramCanvas, bpmnModel, flowNode, highLightedActivities, highLightedFlows, scaleFactor, currentActivityId);
+            drawActivity(processDiagramCanvas, bpmnModel, flowNode, highLightedActivities, highLightedFlows, scaleFactor, taskDefinitionKeyList);
         }
 
         // Draw artifacts
@@ -514,7 +516,7 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
     }
 
     protected void drawActivity(CustomProcessDiagramCanvas processDiagramCanvas, BpmnModel bpmnModel,
-                                FlowNode flowNode, List<String> highLightedActivities, List<String> highLightedFlows, double scaleFactor, String currentActivityId) {
+                                FlowNode flowNode, List<String> highLightedActivities, List<String> highLightedFlows, double scaleFactor, List<String> taskDefinitionKeyList) {
 
         CustomProcessDiagramGenerator.ActivityDrawInstruction drawInstruction = activityDrawInstructions.get(flowNode.getClass());
         if (drawInstruction != null) {
@@ -549,7 +551,8 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
             // Draw highlighted activities
             if (highLightedActivities.contains(flowNode.getId())) {
                 Color color = null;
-                if(flowNode.getId().equals(currentActivityId)){
+
+                if(CollectionUtils.isNotEmpty(taskDefinitionKeyList) && taskDefinitionKeyList.contains(flowNode.getId())){
                     color = Color.GREEN;
                 }
                 drawHighLight(processDiagramCanvas, bpmnModel.getGraphicInfo(flowNode.getId()),color);
