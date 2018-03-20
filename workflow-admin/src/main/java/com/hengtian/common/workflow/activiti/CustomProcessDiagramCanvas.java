@@ -173,7 +173,7 @@ public class CustomProcessDiagramCanvas {
         g.setFont(font);
         this.fontMetrics = g.getFontMetrics();
 
-        LABEL_FONT = new Font(labelFontName, Font.ITALIC, 10);
+        LABEL_FONT = new Font(labelFontName, Font.BOLD, 12);
 
         try {
             USERTASK_IMAGE = ImageIO.read(ReflectUtil.getResource("org/activiti/icons/userTask.png", customClassLoader));
