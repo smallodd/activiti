@@ -49,17 +49,28 @@ public class TestWorkFlowV2 {
         commonVo.setApplyTitle("测试动态任务");
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("mayl");
-        commonVo.setBusinessKey("0002");
+        commonVo.setBusinessKey("0009");
         commonVo.setBusinessType("activity");
-        commonVo.setModelKey("hour");
+        commonVo.setModelKey("cgcpzr");
         commonVo.setDynamic(false);
         Map map=new HashMap();
-        map.put("param",10000);
+        map.put("var1",1);
+        map.put("var2",1);
+        map.put("var3",1);
+        map.put("var4",1);
+        map.put("var5",1);
+        map.put("var6",0);
+        map.put("var7",1);
+        map.put("var8",0);
+        map.put("var9",1);
+        map.put("var10",1);
+        map.put("var11",1);
+
         String processId= null;
         try {
             processId = workTaskV2Service.startTask(commonVo,map);
-            boolean b = workTaskV2Service.setApprove(processId, "H019235,H019235");
-            System.out.println(b);
+            //boolean b = workTaskV2Service.setApprove(processId, "H019235,H019235");
+            //System.out.println(b);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
