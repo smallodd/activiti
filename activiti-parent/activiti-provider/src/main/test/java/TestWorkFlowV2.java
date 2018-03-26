@@ -109,7 +109,8 @@ public class TestWorkFlowV2 {
      public void queryByAssign() throws WorkFlowException {
         TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
         taskQueryEntity.setBussinessType("activity");
-        taskQueryEntity.setModelKey("hour");
+        taskQueryEntity.setModelKey("cgcpzr");
+        taskQueryEntity = null;
         PageInfo<Task> pageInfo= workTaskV2Service.queryTaskByAssign("H019235",1,10,taskQueryEntity);
         System.out.print(pageInfo.getTotal());
      }
