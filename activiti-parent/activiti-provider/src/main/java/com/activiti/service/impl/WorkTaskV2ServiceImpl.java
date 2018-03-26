@@ -869,7 +869,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
             Model model = repositoryService.createModelQuery().modelKey(taskQueryEntity.getModelKey()).singleResult();
-            query.deploymentId(model.getDeploymentId());
+            if(model != null && StringUtils.isNotBlank(model.getDeploymentId())){
+                query.deploymentId(model.getDeploymentId());
+            }
         }else if(StringUtils.isNotBlank(taskQueryEntity.getBussinessType())){
             List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
             query.processDefinitionKeyIn(keys);
