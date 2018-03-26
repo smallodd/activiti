@@ -341,7 +341,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     @Override
     public PageInfo<Task> queryTaskByAssign(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity) throws WorkFlowException {
         logger.info("----------------通过用户相关信息查询待审批任务开始----------------");
-        logger.info("入参 userId：{}，startPage：{}，pageSize：{}，taskQueryEntity：{}",userId,startPage,pageSize,JSONObject.toJSONString(taskQueryEntity));
+        logger.info("入参 userId：{}，startPage：{}，pageSize：{}，taskQueryEntity：{}",userId,startPage,pageSize,taskQueryEntity.toString());
         PageInfo<Task> pageInfo = new PageInfo<>();
         long count = 0;
 
