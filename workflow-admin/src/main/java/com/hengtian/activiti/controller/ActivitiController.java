@@ -2,6 +2,8 @@ package com.hengtian.activiti.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.activiti.model.TMailLog;
@@ -23,16 +25,19 @@ import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.MailTemplateUtils;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysDepartmentService;
 import com.hengtian.system.service.SysUserService;
 import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
+import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
@@ -52,8 +57,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -88,6 +91,8 @@ public class ActivitiController extends BaseController{
 	ProcessEngineConfiguration processEngineConfiguration;
 	@Autowired
 	ProcessEngineFactoryBean processEngine;
+	@Autowired
+	private ObjectMapper objectMapper;
 	/**
      * 部署流程定义页
      * @return
@@ -271,11 +276,13 @@ public class ActivitiController extends BaseController{
 		List<CommentVo> comments = new ArrayList<CommentVo>();
 		List<Comment> commentList= taskService.getProcessInstanceComments(processInstanceId);
 		for(Comment comment : commentList){
+			CommentEntity c = (CommentEntity)comment;
 			CommentVo vo = new CommentVo();
 			SysUser user= sysUserService.selectById(comment.getUserId());
 			vo.setCommentUser(user.getUserName());
 			vo.setCommentTime(DateUtils.formatDateToString(comment.getTime()));
-			vo.setCommentContent(comment.getFullMessage());
+			vo.setCommentContent(c.getMessage());
+
 			comments.add(vo);
 		}
 
@@ -543,17 +550,25 @@ public class ActivitiController extends BaseController{
     		@RequestParam("pdid") String processDefinitionId, 
     		HttpServletResponse response,HttpServletRequest request){
     	try {
-    		if(resourceType.equals("image")){
+     		if(resourceType.equals("image")){
     			ProcessDefinition processDefinition=repositoryService.getProcessDefinition(processDefinitionId);
     			org.activiti.engine.repository.Model model=repositoryService.createModelQuery().deploymentId(processDefinition.getDeploymentId()).deployed().singleResult();
-				String contextPath = request.getSession().getServletContext().getRealPath("image");
-				FileInputStream fileInputStream=new FileInputStream(contextPath+ File.separator+model.getId()+".png");
+				ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(model.getId()));
+				BpmnModel bpmnModel = new BpmnJsonConverter().convertToBpmnModel(modelNode);
+				//中文显示的是口口口，设置字体就好了
+				//生成流图片  5.18.0
+				processEngineConfiguration = processEngine.getProcessEngineConfiguration();
+				Context.setProcessEngineConfiguration((ProcessEngineConfigurationImpl) processEngineConfiguration);
+				ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
+				InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG",
+						processEngineConfiguration.getLabelFontName(),
+						processEngineConfiguration.getActivityFontName(),
+						processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1);
 				byte[] b = new byte[1024];
-				int len = -1;
-				while ((len = fileInputStream.read(b, 0, 1024)) != -1) {
+				int len;
+				while ((len = imageStream.read(b, 0, 1024)) != -1) {
 					response.getOutputStream().write(b, 0, len);
 				}
-				fileInputStream.close();
 				return;
 			}
 			InputStream in = activitiService.getProcessResource(resourceType, processDefinitionId);
@@ -610,37 +625,13 @@ public class ActivitiController extends BaseController{
 		processEngineConfiguration = processEngine.getProcessEngineConfiguration();
 		Context.setProcessEngineConfiguration((ProcessEngineConfigurationImpl) processEngineConfiguration);
 
-		ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
+		CustomDefaultProcessDiagramGenerator diagramGenerator = (CustomDefaultProcessDiagramGenerator)processEngineConfiguration.getProcessDiagramGenerator();
 		ProcessDefinitionEntity definitionEntity = (ProcessDefinitionEntity)repositoryService.getProcessDefinition(processInstance.getProcessDefinitionId());
 
 		List<HistoricActivityInstance> highLightedActivitList =  historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
 
 		//高亮环节id集合
 		List<String> highLightedActivitis = new ArrayList<String>();
-
-		//任务跳转时处理
-		EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-		wrapper.where("proc_def_key = {0}", definitionEntity.getKey()).andNew("version_={0}",definitionEntity.getVersion());
-		wrapper.orderBy("order_num",true);
-		List<TUserTask> userTaskList= tUserTaskService.selectList(wrapper);
-		Map<String,Integer> taskMap = new HashMap<String,Integer>();
-
-		if(CollectionUtils.isNotEmpty(userTaskList)){
-			Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
-			for (TUserTask u:userTaskList) {
-				taskMap.put(u.getTaskDefKey(),1);
-				if(u.getTaskDefKey().equals(task.getTaskDefinitionKey())){
-					break;
-				}
-			}
-			Iterator<HistoricActivityInstance> it = highLightedActivitList.iterator();
-			while(it.hasNext()){
-				HistoricActivityInstance hai = it.next();
-				if(!taskMap.containsKey(hai.getActivityId()) && "userTask".equals(hai.getActivityType())){
-					it.remove();
-				}
-			}
-		}
 
 		//高亮线路id集合
 		List<String> highLightedFlows = getHighLightedFlows(definitionEntity,highLightedActivitList);
@@ -650,12 +641,18 @@ public class ActivitiController extends BaseController{
 			highLightedActivitis.add(activityId);
 		}
 
+		List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+		List<String> taskDefinitionKeyList = Lists.newArrayList();
+		for(Task task : taskList){
+			taskDefinitionKeyList.add(task.getTaskDefinitionKey());
+		}
+
 		//中文显示的是口口口，设置字体就好了
 		//生成流图片  5.18.0
 		InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
 				processEngineConfiguration.getLabelFontName(),
 				processEngineConfiguration.getActivityFontName(),
-				processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
+				processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1, taskDefinitionKeyList);
 		//5.22.0
 		//InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
 		//单独返回流程图，不高亮显示

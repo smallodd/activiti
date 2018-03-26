@@ -224,5 +224,21 @@ public interface WorkTaskV2Service {
      * @author houjinrong@chtwm.com
      * date 2018/3/5 17:25
      */
-    String getCurrentAssign(String processInstanceId);
+    String getCurrentApprover(String processInstanceId);
+
+    /**
+     * 设置属性值
+     * @param processInstanceId 流程实例ID
+     * @return
+     */
+    boolean setVariables(String processInstanceId, Map<String,Object> variables) throws WorkFlowException;
+
+    /**
+     * 通过用户相关信息查询待审批任务总数
+     *
+     * @param userId          用户信息，一般是id
+     * @param taskQueryEntity 查询任务query
+     * @return 返回任务列表
+     */
+    long queryTaskCountByAssign(String userId, TaskQueryEntity taskQueryEntity);
 }

@@ -44,6 +44,7 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -321,7 +322,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
             runtimeService.deleteProcessInstance(processInstanceId,"refuse");
             return true;
         }else{
-            throw  new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，commentResult 请传 2 审批通过 或 3 审批拒绝");
+            throw new WorkFlowException(CodeConts.WORK_FLOW_PARAM_ERROR,"参数不合法，commentResult 请传 2 审批通过 或 3 审批拒绝");
         }
 
         // 完成委派任务
@@ -340,7 +341,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     @Override
     public PageInfo<Task> queryTaskByAssign(String userId,int startPage,int pageSize,TaskQueryEntity taskQueryEntity) throws WorkFlowException {
         logger.info("----------------通过用户相关信息查询待审批任务开始----------------");
-        logger.info("入参 userId：{}，startPage：{}，pageSize：{}，taskQueryEntity：{}",userId,startPage,pageSize,JSONObject.toJSONString(taskQueryEntity));
+        logger.info("入参 userId：{}，startPage：{}，pageSize：{}，taskQueryEntity：{}",userId,startPage,pageSize,taskQueryEntity.toString());
         PageInfo<Task> pageInfo = new PageInfo<>();
         long count = 0;
 
@@ -376,7 +377,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         query.variableValueEquals("businessType",taskQueryEntity.getBussinessType());
         if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
             Model model = repositoryService.createModelQuery().modelKey(taskQueryEntity.getModelKey()).singleResult();
-            query .deploymentId(model.getDeploymentId());
+            query.deploymentId(model.getDeploymentId());
         }else{
             List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
             query.processDefinitionKeyIn(keys);
@@ -716,7 +717,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         try {
             Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).active().singleResult();
             if(task == null){
-                throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
+                throw new WorkFlowException("任务不存在！");
             }
 
             if(!StringUtils.contains(task.getAssignee(),userId)){
@@ -868,7 +869,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
 
         if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
             Model model = repositoryService.createModelQuery().modelKey(taskQueryEntity.getModelKey()).singleResult();
-            query.deploymentId(model.getDeploymentId());
+            if(model != null && StringUtils.isNotBlank(model.getDeploymentId())){
+                query.deploymentId(model.getDeploymentId());
+            }
         }else if(StringUtils.isNotBlank(taskQueryEntity.getBussinessType())){
             List<String> keys=getProcessKeyByBussnessType(taskQueryEntity.getBussinessType());
             query.processDefinitionKeyIn(keys);
@@ -911,10 +914,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
                     variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
                     variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
 
-                    if (TaskType.CANDIDATEGROUP.value.equals(tUserTask.getTaskType())) {
-                        //组
-                        taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
-                    } else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
+                    if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
                         //候选人
                         for(String candidateId : candidateIds.split(",")){
                             variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
@@ -1076,7 +1076,7 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
      * date 2018/3/5 17:25
      */
     @Override
-    public String getCurrentAssign(String processInstanceId){
+    public String getCurrentApprover(String processInstanceId){
         if(StringUtils.isBlank(processInstanceId)){
             return null;
         }
@@ -1084,11 +1084,52 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     /**
+     * 设置属性值
+     * @param processInstanceId 流程实例ID
+     * @return
+     */
+    @Override
+    public boolean setVariables(String processInstanceId, Map<String,Object> variables) throws WorkFlowException{
+        if(StringUtils.isBlank(processInstanceId) || (MapUtils.isEmpty(variables))){
+            throw new WorkFlowException("参数非法，参数【processInstanceId】【variables】不能为空");
+        }
+
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        if(processInstance == null){
+            throw new WorkFlowException("流程实例ID【processInstanceId】对应的流程实例不存在");
+        }
+        runtimeService.setVariables(processInstanceId,variables);
+        return true;
+    }
+
+    /**
+     * 通过用户相关信息查询待审批任务总数
+     *
+     * @param userId          用户信息，一般是id
+     * @param taskQueryEntity 查询任务query
+     * @return 返回任务列表
+     */
+    @Override
+    public long queryTaskCountByAssign(String userId, TaskQueryEntity taskQueryEntity) {
+        logger.info("----------------通过用户相关信息查询待审批任务总数开始----------------");
+        logger.info("入参 userId：{}，taskQueryEntity：{}", userId, JSONObject.toJSONString(taskQueryEntity));
+
+        TaskQuery taskQuery = createTaskQuqery(taskQueryEntity).taskVariableValueEquals(userId + ":" + TaskStatus.UNFINISHED.value);
+        long count = 0;
+        if (StringUtils.isNotBlank(userId)) {
+            taskQuery = taskQuery.taskAssigneeLike("%" + userId + "%");
+        }
+        count = taskQuery.count();
+        logger.info("----------------通过用户相关信息查询待审批任务总数结束----------------");
+        return count;
+    }
+
+    /**
      * 通过业务系统类型获取业务系统下的所有流程定义key
      * @param bussnessType
      * @return
      */
-    private  List<String> getProcessKeyByBussnessType(String bussnessType){
+    private List<String> getProcessKeyByBussnessType(String bussnessType){
         EntityWrapper<AppModel> wrapper=new EntityWrapper<>();
         wrapper.where("app_key={0}",bussnessType);
         List<AppModel> listAppModel=appModelService.selectList(wrapper);

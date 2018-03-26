@@ -29,7 +29,7 @@ public class ApproveVo extends ApproveInterface implements Serializable {
     /**
      * 流程实例的id
      */
-    private  String processInstanceId;
+    private String processInstanceId;
     /**
      * 当前审批人信息（工号）
      */
@@ -39,8 +39,7 @@ public class ApproveVo extends ApproveInterface implements Serializable {
      */
     private String commentContent;
     /**
-     * 审批类型
-     *         2  审批通过
+     * 审批类型 2  审批通过
      *         3 审批拒绝
      */
     private String commentResult;

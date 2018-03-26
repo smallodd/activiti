@@ -5,7 +5,6 @@ import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
 import com.activiti.expection.WorkFlowException;
 import com.activiti.service.WorkTaskV2Service;
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -50,22 +49,43 @@ public class TestWorkFlowV2 {
         commonVo.setApplyTitle("测试动态任务");
         commonVo.setApplyUserId("H000000");
         commonVo.setApplyUserName("mayl");
-        commonVo.setBusinessKey("0001");
+        commonVo.setBusinessKey("0009");
         commonVo.setBusinessType("activity");
-        commonVo.setModelKey("hour");
+        commonVo.setModelKey("cgcpzr");
         commonVo.setDynamic(false);
         Map map=new HashMap();
-        map.put("param",10000);
+        map.put("var1",1);
+        map.put("var2",1);
+        map.put("var3",1);
+        map.put("var4",1);
+        map.put("var5",1);
+        map.put("var6",0);
+        map.put("var7",1);
+        map.put("var8",0);
+        map.put("var9",1);
+        map.put("var10",1);
+        map.put("var11",1);
+
         String processId= null;
         try {
             processId = workTaskV2Service.startTask(commonVo,map);
-            //workTaskV2Service.setApprove(processId,"H019235,H019236");
+            //boolean b = workTaskV2Service.setApprove(processId, "H019235,H019235");
+            //System.out.println(b);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
         System.out.println("返回结果为："+processId);
 
     }
+
+    private void testSetApprover(){
+        try {
+            boolean b = workTaskV2Service.setApprove("17561", "H019235,H019235");
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
+    }
+
     //审批任务
     @Test
     public void  testComplete(){
@@ -89,7 +109,8 @@ public class TestWorkFlowV2 {
      public void queryByAssign() throws WorkFlowException {
         TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
         taskQueryEntity.setBussinessType("activity");
-        taskQueryEntity.setModelKey("hour");
+        taskQueryEntity.setModelKey("cgcpzr");
+        taskQueryEntity = null;
         PageInfo<Task> pageInfo= workTaskV2Service.queryTaskByAssign("H019235",1,10,taskQueryEntity);
         System.out.print(pageInfo.getTotal());
      }
@@ -158,7 +179,10 @@ public class TestWorkFlowV2 {
     @Test
     public void testTransferTask(){
         try {
-            workTaskV2Service.transferTask("62502","H019236", "H019236");
+            String userId = "H000013";
+            String transferUserId = "H019236";
+            boolean b = workTaskV2Service.transferTask("20001", "", "");
+            System.out.println(b);
         } catch (WorkFlowException e) {
             e.printStackTrace();
         }
@@ -223,5 +247,15 @@ public class TestWorkFlowV2 {
     public void getLastApprover(){
         String lastApprover = workTaskV2Service.getLastApprover("2501");
         System.out.println(lastApprover);
+    }
+
+    @Test
+    public void queryTaskCountByAssign(){
+        String userId = "H000000";
+        TaskQueryEntity taskQueryEntity = new TaskQueryEntity();
+        taskQueryEntity.setBussinessType("activity");
+        taskQueryEntity.setModelKey("cgcpzr");
+        long l = workTaskV2Service.queryTaskCountByAssign(userId, taskQueryEntity);
+        System.out.println(l);
     }
 }

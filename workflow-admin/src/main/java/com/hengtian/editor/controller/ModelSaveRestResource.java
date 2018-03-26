@@ -65,10 +65,10 @@ public class ModelSaveRestResource
           byte[] result = outStream.toByteArray();
 
           this.repositoryService.addModelEditorSourceExtra(model.getId(), result);
-      } catch (Exception e)
+    } catch (Exception e)
         {
           LOGGER.error("Error saving model", e);
           throw new ActivitiException("Error saving model", e);
         }
-  }
+    }
 }
