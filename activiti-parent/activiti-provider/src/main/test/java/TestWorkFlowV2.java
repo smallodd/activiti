@@ -247,4 +247,14 @@ public class TestWorkFlowV2 {
         String lastApprover = workTaskV2Service.getLastApprover("2501");
         System.out.println(lastApprover);
     }
+
+    @Test
+    public void queryTaskCountByAssign(){
+        String userId = "H000000";
+        TaskQueryEntity taskQueryEntity = new TaskQueryEntity();
+        taskQueryEntity.setBussinessType("activity");
+        taskQueryEntity.setModelKey("cgcpzr");
+        long l = workTaskV2Service.queryTaskCountByAssign(userId, taskQueryEntity);
+        System.out.println(l);
+    }
 }

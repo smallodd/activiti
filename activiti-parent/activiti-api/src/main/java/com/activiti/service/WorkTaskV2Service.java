@@ -232,4 +232,13 @@ public interface WorkTaskV2Service {
      * @return
      */
     boolean setVariables(String processInstanceId, Map<String,Object> variables) throws WorkFlowException;
+
+    /**
+     * 通过用户相关信息查询待审批任务总数
+     *
+     * @param userId          用户信息，一般是id
+     * @param taskQueryEntity 查询任务query
+     * @return 返回任务列表
+     */
+    long queryTaskCountByAssign(String userId, TaskQueryEntity taskQueryEntity);
 }

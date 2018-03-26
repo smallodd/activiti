@@ -1101,6 +1101,28 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
     }
 
     /**
+     * 通过用户相关信息查询待审批任务总数
+     *
+     * @param userId          用户信息，一般是id
+     * @param taskQueryEntity 查询任务query
+     * @return 返回任务列表
+     */
+    @Override
+    public long queryTaskCountByAssign(String userId, TaskQueryEntity taskQueryEntity) {
+        logger.info("----------------通过用户相关信息查询待审批任务总数开始----------------");
+        logger.info("入参 userId：{}，taskQueryEntity：{}", userId, JSONObject.toJSONString(taskQueryEntity));
+
+        TaskQuery taskQuery = createTaskQuqery(taskQueryEntity).taskVariableValueEquals(userId + ":" + TaskStatus.UNFINISHED.value);
+        long count = 0;
+        if (StringUtils.isNotBlank(userId)) {
+            taskQuery = taskQuery.taskAssigneeLike("%" + userId + "%");
+        }
+        count = taskQuery.count();
+        logger.info("----------------通过用户相关信息查询待审批任务总数结束----------------");
+        return count;
+    }
+
+    /**
      * 通过业务系统类型获取业务系统下的所有流程定义key
      * @param bussnessType
      * @return
