@@ -13,7 +13,7 @@
         <jdk.version>1.8</jdk.version>
         <junit.version>4.12</junit.version>
         <servlet.version>3.0.1</servlet.version>
-        <activiti.version>5.18.0</activiti.version>
+        <activiti.version>5.22.0</activiti.version>
         <batik.version>1.7</batik.version>
         <jackson.version>2.6.3</jackson.version>
         <jackson.version>2.6.3</jackson.version>
