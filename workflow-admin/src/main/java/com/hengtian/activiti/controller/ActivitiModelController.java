@@ -370,6 +370,7 @@ public class ActivitiModelController extends BaseController {
             InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG",
                     processEngineConfiguration.getLabelFontName(),
                     processEngineConfiguration.getActivityFontName(),
+                    "宋体",
                     processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1);
             byte[] b = new byte[1024];
             int len;
