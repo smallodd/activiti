@@ -36,5 +36,5 @@
 	<import resource="classpath*:activiti-context.xml"/>
     <import resource="classpath*:spring-mybatis.xml"/>
     <import resource="classpath*:spring-shiro.xml"/>
-    <import resource="dubbo-server-consumer.xml"/>
+    <!--<import resource="dubbo-server-consumer.xml"/>-->
 </beans>
