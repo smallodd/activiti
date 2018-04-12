@@ -1,11 +1,9 @@
 package com.hengtian.activiti.service.impl;
 
-import com.activiti.common.CodeConts;
-import com.activiti.common.EmailUtil;
-import com.activiti.expection.WorkFlowException;
+
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.common.util.ConfigUtil;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.activiti.model.TUserTask;
@@ -21,13 +19,10 @@ import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
-import com.hengtian.common.utils.BeanUtils;
-import com.hengtian.common.utils.ConstantUtils;
-import com.hengtian.common.utils.PageInfo;
-import com.hengtian.common.utils.StringUtils;
+import com.hengtian.common.utils.*;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
-import com.hengtian.system.model.SysUser;
+import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.system.service.SysUserService;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
@@ -405,6 +400,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", new ArrayList<>(), new ArrayList<>(),
 					processEngineConfiguration.getLabelFontName(),
 					processEngineConfiguration.getActivityFontName(),
+					"宋体",
 					processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
 			return imageStream;
 
@@ -436,7 +432,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 
 	@Override
 	@Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
-	public void jumpTask(String taskId, String taskDefinitionKey) throws WorkFlowException{
+	public void jumpTask(String taskId, String taskDefinitionKey) throws WorkFlowException {
 		TaskEntity currentTaskEntity = (TaskEntity) this.taskService.createTaskQuery().taskId(taskId).singleResult();
 
 		if(currentTaskEntity != null){
@@ -705,24 +701,24 @@ public class ActivitiServiceImpl implements ActivitiService{
 	 * @param title 标题
 	 */
 	private void sendEmail(String assignee,Object applyUserName,Object title){
-		String[] strs = assignee.split(",");
-		for (String str : strs) {
-			SysUser sysUser = sysUserService.selectById(str);
-			if (org.apache.commons.lang3.StringUtils.isNotBlank(sysUser.getUserEmail())) {
-				EmailUtil emailUtil = EmailUtil.getEmailUtil();
-				try {
-					emailUtil.sendEmail(
-							ConfigUtil.getValue("email.send.account"),
-							"System emmail",
-							sysUser.getUserEmail(),
-							"您有一个待审批邮件待处理",
-							applyUserName + "提交了一个标题为【"+title+"】审批申请，请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
-				} catch (Exception e) {
-					e.printStackTrace();
-					continue;
-
-				}
-			}
-		}
+//		String[] strs = assignee.split(",");
+//		for (String str : strs) {
+//			SysUser sysUser = sysUserService.selectById(str);
+//			if (org.apache.commons.lang3.StringUtils.isNotBlank(sysUser.getUserEmail())) {
+//				EmailUtil emailUtil = EmailUtil.getEmailUtil();
+//				try {
+//					emailUtil.sendEmail(
+//							ConfigUtil.getValue("email.send.account"),
+//							"System emmail",
+//							sysUser.getUserEmail(),
+//							"您有一个待审批邮件待处理",
+//							applyUserName + "提交了一个标题为【"+title+"】审批申请，请到<a href='http://core.chtwm.com/login.html'>综合业务平台系统</a>中进行审批!");
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//					continue;
+//
+//				}
+//			}
+//		}
 	}
 }
