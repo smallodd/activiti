@@ -11,21 +11,30 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by ma on 2017/10/31.
+ * jdbc操作
+ * @author mayunliang@chtwm.com
+ * date 2018/4/13 15:08
  */
 @Service
 public class SqlService {
 
     // 四大金刚
-    String driver = "com.mysql.jdbc.Driver" ;// 驱动名称
-    String url = ConfigUtil.getValue("db.emp.url");// 连接字符串
-    String username = ConfigUtil.getValue("db.emp.user");// 用户名
-    String password = ConfigUtil.getValue("db.emp.pwd"); ;// 密码
+    /**驱动名称*/
+    String driver = "com.mysql.jdbc.Driver" ;
+     /**连接字符串*/
+    String url = ConfigUtil.getValue("db.emp.url");
+     /**用户名*/
+    String username = ConfigUtil.getValue("db.emp.user");
+     /**密码*/
+    String password = ConfigUtil.getValue("db.emp.pwd"); ;
 
     // 三剑客
-    Connection con = null ;// 连接对象
-    PreparedStatement pstmt = null ;// 语句对象
-    ResultSet rs = null ;// 结果集对象
+    /**连接对象*/
+    Connection con = null ;
+    /**语句对象*/
+    PreparedStatement pstmt = null ;
+    /**结果集对象*/
+    ResultSet rs = null ;
 
     /**
      * 获得连接对象
@@ -49,12 +58,17 @@ public class SqlService {
     public void close(ResultSet rs, PreparedStatement pstmt, Connection con) {
 
         try {
-            if (rs != null)
+            if (rs != null){
                 rs.close();
-            if (pstmt != null)
+            }
+
+            if (pstmt != null){
                 pstmt.close();
-            if (con != null)
+            }
+
+            if (con != null){
                 con.close();
+            }
         } catch (SQLException e) {
             // TODO: handle exception
             e.printStackTrace();
@@ -73,7 +87,8 @@ public class SqlService {
     public int execUpdate(String sql, Object[] params) {
         try {
             this .getConnection();// 获得连接对象
-            this .pstmt = this. con .prepareStatement(sql);// 获得预设语句对象
+            // 获得预设语句对象
+            this .pstmt = this. con .prepareStatement(sql);
 
             if (params != null) {
                 // 设置参数列表
@@ -83,7 +98,8 @@ public class SqlService {
                 }
             }
 
-            return this .pstmt .executeUpdate(); // 执行更新，并返回影响行数
+            // 执行更新，并返回影响行数
+            return this .pstmt .executeUpdate();
 
         } catch (ClassNotFoundException | SQLException e) {
             // TODO Auto-generated catch block
@@ -106,8 +122,10 @@ public class SqlService {
     public List<Map<String, Object>> execQuery(String sql, Object[] params) {
 
         try {
-            this .getConnection();// 获得连接对象
-            this .pstmt = this. con .prepareStatement(sql);// 获得预设语句对象
+            // 获得连接对象
+            this .getConnection();
+            // 获得预设语句对象
+            this .pstmt = this. con .prepareStatement(sql);
 
             if (params != null) {
                 // 设置参数列表
