@@ -1,4 +1,4 @@
-package com.hengtian.thirdparty.controller;
+package com.hengtian.extend.controller;
 
 import java.io.Serializable;
 

@@ -1,4 +1,4 @@
-package com.hengtian.thirdparty.service;
+package com.hengtian.extend.service;
 
 
 import com.hengtian.common.utils.ConfigUtil;

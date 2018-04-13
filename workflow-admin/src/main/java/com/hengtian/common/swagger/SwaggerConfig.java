@@ -21,7 +21,7 @@ public class SwaggerConfig {
 	@Bean
     public Docket buildDocket(){
         return new Docket(DocumentationType.SWAGGER_2).apiInfo(buildApiInf()).select()
-		                .apis(RequestHandlerSelectors.basePackage("com.hengtian.thirdparty.controller"))
+		                .apis(RequestHandlerSelectors.basePackage("com.hengtian.extend.controller"))
 		                .paths(PathSelectors.any())
 		                .build();
     }

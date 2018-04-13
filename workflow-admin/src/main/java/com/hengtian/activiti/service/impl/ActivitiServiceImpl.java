@@ -644,7 +644,7 @@ public class ActivitiServiceImpl implements ActivitiService{
 			}
 			for(TUserTask tUserTask:tUserTasks){
 				if(StringUtils.isBlank(tUserTask.getCandidateIds())){
-					throw  new WorkFlowException("操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
+					throw new WorkFlowException("操作失败，请在工作流管理平台将任务节点：'"+tUserTask.getTaskName()+"'设置审批人后在创建任务");
 				}
 				if(task.getTaskDefinitionKey().trim().equals(tUserTask.getTaskDefKey().trim())){
 					String candidateIds = tUserTask.getCandidateIds();

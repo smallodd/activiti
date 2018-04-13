@@ -1,8 +1,7 @@
-package com.hengtian.thirdparty;
+package com.hengtian.extend;
 
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.hengtian.common.utils.ConfigUtil;
 import com.hengtian.common.utils.DigestUtils;
 import com.hengtian.common.utils.StringUtils;
@@ -13,11 +12,9 @@ import com.hengtian.system.service.SysDepartmentService;
 import com.hengtian.system.service.SysRoleService;
 import com.hengtian.system.service.SysUserService;
 import com.hengtian.system.vo.SysUserVo;
-import com.hengtian.thirdparty.service.SqlService;
-import org.activiti.engine.IdentityService;
+import com.hengtian.extend.service.SqlService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
