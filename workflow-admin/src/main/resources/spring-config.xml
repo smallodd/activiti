@@ -10,14 +10,6 @@
        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd"
        default-autowire="byName">
     <task:annotation-driven />
-    <bean id="sqlService" class="com.hengtian.extend.service.SqlService"/>
-    <bean id="myTask" class="com.hengtian.extend.Scheduler"></bean>
-
-    <task:scheduled-tasks>
-        <!-- 这里表示的是每隔五秒执行一次 -->
-        <task:scheduled ref="myTask" method="executeUser" cron="0 */10 * * * ?" />
-        <task:scheduled ref="myTask" method="executeDepartment" cron="0 */10 * * * ?"/>
-    </task:scheduled-tasks>
 
     <!-- 自动扫描的包名 -->
 
