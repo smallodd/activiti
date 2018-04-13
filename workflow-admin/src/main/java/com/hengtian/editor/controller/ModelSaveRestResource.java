@@ -1,4 +1,4 @@
- package com.hengtian.editor.controller;
+package com.hengtian.editor.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 
- @RestController
+@RestController
 public class ModelSaveRestResource
   implements ModelDataJsonConstants
 {
