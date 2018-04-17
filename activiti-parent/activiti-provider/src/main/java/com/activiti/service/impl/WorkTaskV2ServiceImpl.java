@@ -346,7 +346,9 @@ public class WorkTaskV2ServiceImpl implements WorkTaskV2Service {
         long count = 0;
 
         if(StringUtils.isNotBlank(userId)){
-            List<Task> taskList =createTaskQuqery(taskQueryEntity).taskVariableValueEquals(userId+":"+TaskStatus.UNFINISHED.value).taskAssigneeLike("%"+userId+"%").listPage((startPage-1)*pageSize,pageSize);
+            TaskQuery taskQuery = createTaskQuqery(taskQueryEntity).taskVariableValueEquals(userId + ":" + TaskStatus.UNFINISHED.value).taskAssigneeLike("%" + userId + "%");
+            List<Task> taskList = taskQuery.listPage((startPage-1)*pageSize,pageSize);
+            count = taskQuery.count();
             pageInfo.setList(taskList);
             pageInfo.setTotal(count);
         }else{
