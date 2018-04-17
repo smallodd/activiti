@@ -31,7 +31,7 @@ public class TRuTask implements Serializable {
     @TableField(value = "updater")
     private String updater;
     @TableField(value = "is_finished")
-    private String isFinished;
+    private int isFinished;
 
     public String getId() {
         return id;
@@ -97,11 +97,11 @@ public class TRuTask implements Serializable {
         this.updater = updater;
     }
 
-    public String getIsFinished() {
+    public int getIsFinished() {
         return isFinished;
     }
 
-    public void setIsFinished(String isFinished) {
+    public void setIsFinished(int isFinished) {
         this.isFinished = isFinished;
     }
 }
