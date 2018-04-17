@@ -7,16 +7,33 @@ import java.io.Serializable;
  */
 public class Result implements Serializable {
 
-    public static final int SUCCESS = 1;
-    public static final int FAILURE = -1;
+
 
     private static final long serialVersionUID = 5576237395711742681L;
-
+    /**
+     * 是否成功 ，默认false
+     */
     private boolean success = false;
-
+    /**
+     * 消息
+     */
     private String msg = "";
-
+    /**
+     * code编码
+     */
+    private String code;
+    /**
+     * 数据
+     */
     private Object obj = null;
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 
     public boolean isSuccess() {
         return success;
