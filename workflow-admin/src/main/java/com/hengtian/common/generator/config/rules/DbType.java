@@ -21,7 +21,6 @@ package com.hengtian.common.generator.config.rules;
  * @author YangHu
  * @since 2016/8/30
  */
-@Deprecated
 public enum DbType {
 
 	MYSQL("mysql"), ORACLE("oracle"),SQLSERVER("sqlserver");

@@ -22,7 +22,6 @@ import com.hengtian.common.generator.config.rules.NamingStrategy;
  * 策略配置项
  * </p>
  */
-@Deprecated
 public class StrategyConfig {
 
 	/**
