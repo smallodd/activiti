@@ -7,6 +7,7 @@
 
 package com.hengtian.common.webservice;
 
+@Deprecated
 public interface TestWebservice_PortType extends java.rmi.Remote {
     public java.lang.String testService(java.lang.String msg) throws java.rmi.RemoteException;
 }

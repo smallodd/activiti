@@ -27,6 +27,7 @@ import com.hengtian.common.generator.config.rules.DbType;
  * 数据库配置
  * </p>
  */
+@Deprecated
 public class DataSourceConfig {
 
 	/**

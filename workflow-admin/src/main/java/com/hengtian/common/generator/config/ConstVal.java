@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 /**
  * 定义常量
  */
+@Deprecated
 public class ConstVal {
 	
 	public static final String MODULENAME = "ModuleName";

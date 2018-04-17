@@ -23,6 +23,7 @@ import com.hengtian.common.generator.config.rules.NamingStrategy;
  * 代码生成器
  * </p>
  */
+@Deprecated
 public class GeneratorCode {
     public static void main(String[] args) {
         /* 获取 JDBC 配置文件 */

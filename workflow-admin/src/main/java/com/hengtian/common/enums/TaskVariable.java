@@ -1,5 +1,6 @@
 package com.hengtian.common.enums;
 
+@Deprecated
 public enum TaskVariable {
 
     //任务类型

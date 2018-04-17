@@ -28,6 +28,7 @@ import com.baomidou.mybatisplus.toolkit.StringUtils;
  * @author YangHu
  * @since 2016/8/30
  */
+@Deprecated
 public class TableInfo {
 
 	private String name;

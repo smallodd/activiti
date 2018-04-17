@@ -5,6 +5,7 @@ import javax.jws.WebResult;
 import javax.jws.WebService;
 
 @WebService
+@Deprecated
 public interface TestWebservice {
 	
 	@WebMethod
