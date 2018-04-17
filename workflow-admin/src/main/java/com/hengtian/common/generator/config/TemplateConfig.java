@@ -20,6 +20,7 @@ package com.hengtian.common.generator.config;
  * 模板路径配置项
  * </p>
  */
+@Deprecated
 public class TemplateConfig {
 
 	private String entity = ConstVal.TEMPLATE_ENTITY;

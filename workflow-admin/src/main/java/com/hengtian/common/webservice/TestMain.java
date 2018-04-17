@@ -2,6 +2,7 @@ package com.hengtian.common.webservice;
 
 import javax.xml.ws.Endpoint;
 
+@Deprecated
 public class TestMain {
 	public static void main(String[] args) {
 		//发布Webservice服务

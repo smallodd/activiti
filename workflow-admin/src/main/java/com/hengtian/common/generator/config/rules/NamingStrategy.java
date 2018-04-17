@@ -24,6 +24,7 @@ import com.hengtian.common.generator.config.ConstVal;
  * @author YangHu, tangguo
  * @since 2016/8/30
  */
+@Deprecated
 public enum NamingStrategy {
 	/**
 	 * 不做任何改变，原样输出

@@ -27,6 +27,7 @@ import com.hengtian.common.generator.config.po.TableInfo;
 /**
  * 生成文件
  */
+@Deprecated
 public class AutoGenerator extends AbstractGenerator {
 
 	private static final Log logger = LogFactory.getLog(AutoGenerator.class);

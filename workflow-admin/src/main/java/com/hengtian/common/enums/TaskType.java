@@ -1,5 +1,6 @@
 package com.hengtian.common.enums;
 
+@Deprecated
 public enum TaskType {
     //审核人
     ASSIGNEE("assignee"),

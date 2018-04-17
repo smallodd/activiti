@@ -5,6 +5,7 @@ import java.util.List;
 /**
  * @description：TreeVO
  */
+@Deprecated
 public class Tree implements java.io.Serializable {
 
     private static final long serialVersionUID = 980682543891282923L;
