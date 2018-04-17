@@ -6,14 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.hengtian.activiti.model.TMailLog;
-import com.hengtian.activiti.model.TUserTask;
-import com.hengtian.activiti.service.ActivitiService;
-import com.hengtian.activiti.service.TMailLogService;
-import com.hengtian.activiti.service.TUserTaskService;
-import com.hengtian.activiti.vo.CommentVo;
-import com.hengtian.activiti.vo.ProcessDefinitionVo;
-import com.hengtian.activiti.vo.TaskVo;
+
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
@@ -26,6 +19,14 @@ import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.MailTemplateUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
+import com.hengtian.flow.model.TMailLog;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.ActivitiService;
+import com.hengtian.flow.service.TMailLogService;
+import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.vo.CommentVo;
+import com.hengtian.flow.vo.ProcessDefinitionVo;
+import com.hengtian.flow.vo.TaskVo;
 import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysDepartmentService;
@@ -142,7 +143,7 @@ public class ActivitiController extends BaseController{
     @SysLog(value="查询流程定义")
     @PostMapping("/processdefDataGrid")
     @ResponseBody
-    public PageInfo dataGrid(ProcessDefinitionVo processDefinitionVo, Integer page, Integer rows, String sort,String order,String key) {
+    public PageInfo dataGrid(ProcessDefinitionVo processDefinitionVo, Integer page, Integer rows, String sort, String order, String key) {
     	PageInfo pageInfo = new PageInfo(page, rows);
     	pageInfo.setSort(sort);
     	pageInfo.setOrder(order);
@@ -253,7 +254,7 @@ public class ActivitiController extends BaseController{
 	 */
 	@PostMapping("/allHisTaskDataGrid")
 	@ResponseBody
-	public PageInfo allHisTaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
+	public PageInfo allHisTaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort, String order) {
 		PageInfo pageInfo = new PageInfo(page, rows);
 		pageInfo.setOrder(order);
 		pageInfo.setSort(sort);

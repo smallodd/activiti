@@ -1,4 +1,4 @@
-package com.hengtian.activiti.vo;
+package com.hengtian.flow.vo;
 
 import java.io.Serializable;
 import java.util.Date;

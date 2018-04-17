@@ -1,10 +1,11 @@
-package com.hengtian.activiti.service.impl;
+package com.hengtian.flow.service.impl;
 
+import com.hengtian.flow.dao.TMailLogDao;
+import com.hengtian.flow.model.TMailLog;
+import com.hengtian.flow.service.TMailLogService;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import com.hengtian.activiti.dao.TMailLogDao;
-import com.hengtian.activiti.model.TMailLog;
-import com.hengtian.activiti.service.TMailLogService;
+
 /**
  * <p>
  * 邮件发送日志  服务实现类

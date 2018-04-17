@@ -22,8 +22,7 @@ public class MulitiInstanceListener implements ExecutionListener,Serializable{
 	private static final long serialVersionUID = 1L;
 	@Autowired
 	private RuntimeService runtimeService;
-	@Autowired
-	private TVacationService tVacationService;
+
 
 	@Override
 	public void notify(DelegateExecution execution) throws Exception {
@@ -45,7 +44,7 @@ public class MulitiInstanceListener implements ExecutionListener,Serializable{
 		//通过的数量
 		int passNum= (int) runtimeService.getVariable(execution.getProcessInstanceId(), "passCount");
 		
-		TVacation vacation = tVacationService.selectById(execution.getProcessBusinessKey());
+
 		//判断会签是否通过
 		runtimeService.setVariable(execution.getProcessInstanceId(), "completeCondition", false);
 		
@@ -54,15 +53,15 @@ public class MulitiInstanceListener implements ExecutionListener,Serializable{
 		if(nrOfActiveInstances>0){
 			if(passNum/nrOfInstances>=ConstantUtils.PERCENT){
 				//更新请假业务
-				vacation.setVacationStatus(ConstantUtils.vacationStatus.PASSED.getValue());
-	        	tVacationService.updateById(vacation);
+
+
 	        	runtimeService.setVariable(execution.getProcessInstanceId(), "completeCondition", true);
 			}
 		}else{
 			if(passNum/nrOfInstances<ConstantUtils.PERCENT){
 				//更新请假业务
-				vacation.setVacationStatus(ConstantUtils.vacationStatus.NOT_PASSED.getValue());
-	        	tVacationService.updateById(vacation);
+
+
 			}
 		}
 	}

@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.hengtian.common.enums.TaskType;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.ActivitiService;
+import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.vo.ProcessDefinitionVo;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
@@ -26,10 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.hengtian.activiti.model.TUserTask;
-import com.hengtian.activiti.service.ActivitiService;
-import com.hengtian.activiti.service.TUserTaskService;
-import com.hengtian.activiti.vo.ProcessDefinitionVo;
+
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.utils.PageInfo;
 
@@ -78,7 +79,7 @@ public class TUserTaskController extends BaseController{
    
     @PostMapping("/dataGrid")
     @ResponseBody
-    public PageInfo dataGrid(ProcessDefinitionVo processDefinitionVo, Integer page, Integer rows, String sort,String order,String key) {
+    public PageInfo dataGrid(ProcessDefinitionVo processDefinitionVo, Integer page, Integer rows, String sort, String order, String key) {
     	PageInfo pageInfo = new PageInfo(page, rows);
 		Map<String,Object> params = new HashMap<String,Object>();
 		if(StringUtils.isNotBlank(key)){

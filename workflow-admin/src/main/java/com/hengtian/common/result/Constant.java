@@ -17,6 +17,10 @@ public class Constant {
      * 失败编码
      */
     public static final String FAIL="9999";
+    /**
+     * 业务主键已经创建过任务
+     */
+    public static final String BUSSINESSKEY_EXIST="1001";
 
 
 

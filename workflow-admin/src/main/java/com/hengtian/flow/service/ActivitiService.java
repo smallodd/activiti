@@ -1,10 +1,11 @@
-package com.hengtian.activiti.service;
+package com.hengtian.flow.service;
 
 
-import com.hengtian.activiti.vo.TaskVo;
+
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.exception.WorkFlowException;
+import com.hengtian.flow.vo.TaskVo;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -75,12 +76,12 @@ public interface ActivitiService {
 	 * 我的已办任务
 	 * @param pageInfo
 	 */
-	 void selectHisTaskDataGrid(PageInfo pageInfo,boolean flag,TaskVo taskVo);
+	 void selectHisTaskDataGrid(PageInfo pageInfo, boolean flag, TaskVo taskVo);
 	
 	
 	/**
 	 * 提供公共的发送邮件服务
 	 */
-	 void sendMailService(Map<String,Object> params);
+	 void sendMailService(Map<String, Object> params);
 
 }

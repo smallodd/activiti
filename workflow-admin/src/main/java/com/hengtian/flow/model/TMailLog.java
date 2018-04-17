@@ -1,4 +1,4 @@
-package com.hengtian.activiti.model;
+package com.hengtian.flow.model;
 
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableField;
