@@ -1,4 +1,4 @@
- package com.hengtian.editor.controller;
+package com.hengtian.editor.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -15,42 +15,40 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class ModelEditorJsonRestResource
-  implements ModelDataJsonConstants
-{
-  protected static final Logger LOGGER = LoggerFactory.getLogger(ModelEditorJsonRestResource.class);
+public class ModelEditorJsonRestResource implements ModelDataJsonConstants {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(ModelEditorJsonRestResource.class);
 
-  @Autowired
-  private RepositoryService repositoryService;
+    @Autowired
+    private RepositoryService repositoryService;
 
-  @Autowired
-  private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-  @RequestMapping(value={"/service/model/{modelId}/json"}, method={org.springframework.web.bind.annotation.RequestMethod.GET}, produces={"application/json"})
-  public ObjectNode getEditorJson(@PathVariable String modelId) { ObjectNode modelNode = null;
+    @RequestMapping(value = {"/service/model/{modelId}/json"}, method = {org.springframework.web.bind.annotation.RequestMethod.GET}, produces = {"application/json"})
+    public ObjectNode getEditorJson(@PathVariable String modelId) {
+        ObjectNode modelNode = null;
 
-  	System.out.println("ModelEditorJsonRestResource.getEditorJson---------");
-    Model model = this.repositoryService.getModel(modelId);
+        System.out.println("ModelEditorJsonRestResource.getEditorJson---------");
+        Model model = this.repositoryService.getModel(modelId);
 
-    if (model != null) {
-      try {
-        if (StringUtils.isNotEmpty(model.getMetaInfo())) {
-          modelNode = (ObjectNode)this.objectMapper.readTree(model.getMetaInfo());
-        } else {
-          modelNode = this.objectMapper.createObjectNode();
-          modelNode.put("name", model.getName());
+        if (model != null) {
+            try {
+                if (StringUtils.isNotEmpty(model.getMetaInfo())) {
+                    modelNode = (ObjectNode) this.objectMapper.readTree(model.getMetaInfo());
+                } else {
+                    modelNode = this.objectMapper.createObjectNode();
+                    modelNode.put("name", model.getName());
+                }
+                modelNode.put("modelId", model.getId());
+                ObjectNode editorJsonNode = (ObjectNode) this.objectMapper.readTree(new String(this.repositoryService
+                        .getModelEditorSource(model
+                                .getId()), "utf-8"));
+                modelNode.put("model", editorJsonNode);
+            } catch (Exception e) {
+                LOGGER.error("Error creating model JSON", e);
+                throw new ActivitiException("Error creating model JSON", e);
+            }
         }
-        modelNode.put("modelId", model.getId());
-        ObjectNode editorJsonNode = (ObjectNode)this.objectMapper.readTree(new String(this.repositoryService
-          .getModelEditorSource(model
-          .getId()), "utf-8"));
-        modelNode.put("model", editorJsonNode);
-      }
-      catch (Exception e) {
-        LOGGER.error("Error creating model JSON", e);
-        throw new ActivitiException("Error creating model JSON", e);
-      }
+        return modelNode;
     }
-    return modelNode;
-  }
 }
