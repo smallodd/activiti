@@ -24,7 +24,6 @@ import com.hengtian.common.generator.config.StrategyConfig;
  * @author YangHu
  * @since 2016-12-03
  */
-@Deprecated
 public class TableField {
 	private boolean keyFlag;
 	private String name;

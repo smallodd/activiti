@@ -22,7 +22,6 @@ package com.hengtian.common.generator.config.rules;
  *
  * @since 2016-04-25
  */
-@Deprecated
 public enum QuerySQL {
     MYSQL("mysql", "show tables", "show table status",
             "show full fields from %s",

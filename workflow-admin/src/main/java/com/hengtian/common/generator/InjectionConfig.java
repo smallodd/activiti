@@ -9,7 +9,6 @@ import com.hengtian.common.generator.config.builder.ConfigBuilder;
  * 抽象的对外接口
  * </p>
  */
-@Deprecated
 public abstract class InjectionConfig {
 
 	/**

@@ -20,7 +20,6 @@ package com.hengtian.common.generator.config;
  * 全局配置
  * </p>
  */
-@Deprecated
 public class GlobalConfig {
 	/**
 	 * 生成文件的输出目录【默认 D 盘根目录】

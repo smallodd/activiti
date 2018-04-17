@@ -42,7 +42,6 @@ import com.hengtian.common.generator.config.rules.QuerySQL;
 /**
  * 配置汇总 传递给文件生成工具
  */
-@Deprecated
 public class ConfigBuilder {
 
 	/**

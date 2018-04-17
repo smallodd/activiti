@@ -21,7 +21,6 @@ import com.baomidou.mybatisplus.toolkit.StringUtils;
  * <p>
  * 跟包相关的配置项
  */
-@Deprecated
 public class PackageConfig {
 
 	/**
