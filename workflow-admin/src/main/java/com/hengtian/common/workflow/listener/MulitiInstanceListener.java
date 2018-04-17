@@ -8,8 +8,6 @@ import org.activiti.engine.delegate.ExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hengtian.application.model.TVacation;
-import com.hengtian.application.service.TVacationService;
 import com.hengtian.common.utils.ConstantUtils;
 
 
