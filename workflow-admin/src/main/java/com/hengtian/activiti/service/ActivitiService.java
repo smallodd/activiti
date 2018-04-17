@@ -1,5 +1,6 @@
 package com.hengtian.activiti.service;
 
+import com.activiti.expection.WorkFlowException;
 import com.hengtian.activiti.vo.TaskVo;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
@@ -38,7 +39,7 @@ public interface ActivitiService {
 	 * @param commentContent
 	 * @param commentResult
 	 */
-	Result complateTask(String taskId, String commentContent, Integer commentResult);
+	Result completeTask(String taskId, String userId, String commentContent, Integer commentResult);
 
 	/**
 	 * 获取流程资源文件
@@ -67,7 +68,7 @@ public interface ActivitiService {
 	 * @param taskId
 	 * @param taskDefinitionKey
 	 */
-	 void jumpTask(String taskId, String taskDefinitionKey);
+	 void jumpTask(String taskId, String taskDefinitionKey) throws WorkFlowException;
 
 	/**
 	 * 我的已办任务

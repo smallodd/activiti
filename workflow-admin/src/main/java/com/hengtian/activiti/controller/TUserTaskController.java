@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.hengtian.common.enums.TaskType;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
@@ -157,11 +158,7 @@ public class TUserTaskController extends BaseController{
 				array.add(obj);
 			}
 			String taskJson=array.toJSONString().replaceAll("\"", "&quot;");
-			if(StringUtils.isNotBlank(tasks.get(0).getCandidateIds())){
-				model.addAttribute("taskJson", taskJson);
-			}else{
-				model.addAttribute("taskJson", "");
-			}
+			model.addAttribute("taskJson", taskJson);
 			model.addAttribute("tasks", tasks);
 		}
         return "activiti/tUserTaskConfig";
@@ -182,9 +179,22 @@ public class TUserTaskController extends BaseController{
     		JSONObject obj= (JSONObject)it.next();
     		String taskId= obj.get("id").toString();
     		TUserTask tUserTask= tUserTaskService.selectById(taskId);
-    		tUserTask.setTaskType(obj.get("type").toString());
+
+			tUserTask.setTaskType(obj.get("type").toString());
+    		if(TaskType.COUNTERSIGN.value.equals(obj.get("type").toString())){
+				if(obj.get("value").toString().split(",").length == 1){
+					//会签时，任务节点审核人只有一个时转为普通任务
+					tUserTask.setTaskType(TaskType.ASSIGNEE.value);
+				}
+			}
     		tUserTask.setCandidateIds(obj.get("value").toString());
     		tUserTask.setCandidateName(obj.get("name").toString());
+			tUserTask.setUserCountTotal(obj.get("name").toString().split(",").length);
+			Integer userCountNeed = obj.getInteger("userCountNeed");
+			if(userCountNeed == null){
+				userCountNeed = 0;
+			}
+    		tUserTask.setUserCountNeed(userCountNeed);
     		boolean b = tUserTaskService.updateById(tUserTask);
     		if(!b){
     			return renderError("配置失败！");

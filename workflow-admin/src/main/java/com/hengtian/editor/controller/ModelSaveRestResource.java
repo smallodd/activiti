@@ -3,6 +3,7 @@
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.hengtian.common.utils.ConstantUtils;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
@@ -64,25 +65,10 @@ public class ModelSaveRestResource
           byte[] result = outStream.toByteArray();
 
           this.repositoryService.addModelEditorSourceExtra(model.getId(), result);
-          String contextPath = request.getSession().getServletContext().getRealPath("image");
-          File file=new File(contextPath);
-          if(!file.exists()){
-              file.mkdir();
-          }
-          File file1=new File(contextPath+File.separator+modelId+".png");
-          if(file1.exists()){
-              file1.delete();
-          }
-          FileOutputStream fileOutputStream=new FileOutputStream(contextPath+ File.separator+modelId+".png");
-          fileOutputStream.write(result);
-          fileOutputStream.close();
-
-          outStream.close();
-
-      } catch (Exception e)
+    } catch (Exception e)
         {
           LOGGER.error("Error saving model", e);
           throw new ActivitiException("Error saving model", e);
         }
-  }
+    }
 }

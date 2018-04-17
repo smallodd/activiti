@@ -41,7 +41,6 @@ public class CodeConts {
      */
     public final static String WORK_FLOW_PARAM_REPART = "W1003";
 
-
     /**
      * 审批人没有配置全
      */
@@ -58,6 +57,16 @@ public class CodeConts {
      * 提交失败，任务已提交
      */
     public final static String WORK_FLOW_PUBLISH_ERROR="W1007";
-
-
+    /**
+     * 任务为空
+     */
+    public final static String WORK_FLOW_TASK_IS_NULL="W1008";
+    /**
+     * 流程不存在或已损坏
+     */
+    public final static String PROCESS_ERROR="W1009";
+    /**
+     * 流程实例不存在
+     */
+    public final static String PROCESS_NOEXISTS="W1010";
 }

@@ -1,8 +1,11 @@
 import com.activiti.common.EmailUtil;
+import com.activiti.entity.ApproveVo;
 import com.activiti.entity.CommonVo;
 import com.activiti.entity.HistoryTasksVo;
 import com.activiti.entity.TaskQueryEntity;
+import com.activiti.expection.WorkFlowException;
 import com.activiti.service.WorkTaskService;
+import com.activiti.service.WorkTaskV2Service;
 import com.github.pagehelper.PageInfo;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.task.Comment;
@@ -28,11 +31,13 @@ import java.util.Map;
 public class SpringTest {
     ApplicationContext act;
     WorkTaskService workTaskService;
+    WorkTaskV2Service workTaskV2Service;
 
     @Before
     public void testBefore(){
         act=new ClassPathXmlApplicationContext("dubbo-server-consumer.xml");
          workTaskService= (WorkTaskService) act.getBean("workTaskService");
+         workTaskV2Service= (WorkTaskV2Service) act.getBean("workTaskV2Service");
 
     }
     //开启任务
@@ -41,28 +46,42 @@ public class SpringTest {
 
 
         CommonVo commonVo=new CommonVo();
-        commonVo.setApplyTitle("测试转办任务");
+        commonVo.setApplyTitle("测试动态任务");
         commonVo.setApplyUserId("H000000");
-        commonVo.setApplyUserName("测试人");
-        commonVo.setBusinessKey("业务key");
-        commonVo.setBusinessType("sys1");
-        commonVo.setModelKey("ceshi");
+        commonVo.setApplyUserName("mayl");
+        commonVo.setBusinessKey("0006");
+        commonVo.setBusinessType("maket");
+        commonVo.setModelKey("dyceshi");
+        commonVo.setDynamic(true);
         Map map=new HashMap();
         map.put("param",10000);
-        String processId=workTaskService.startTask(commonVo,map);
+        String processId= null;
+        try {
+            processId = workTaskV2Service.startTask(commonVo,map);
+            workTaskV2Service.setApprove(processId,"H017830,H017831");
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
         System.out.println("返回结果为："+processId);
+
     }
     //审批任务
     @Test
     public void  testComplete(){
-        workTaskService.completeTask("22520", "6414f0ca9eaf4ba596736eb7db0ad157","我不同意这个审批","3");
+        try {
+            ApproveVo approveVo=new ApproveVo();
+            approveVo.setDynamic(true);
+            workTaskV2Service.completeTask(null,null);
+        } catch (WorkFlowException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * 查询待审批列表
      */
     @Test
-     public void queryList(){
+     public void queryList() throws WorkFlowException {
         TaskQueryEntity taskQueryEntity= new TaskQueryEntity();
         taskQueryEntity.setBussinessType("maket");
         taskQueryEntity.setModelKey("ceshi");
@@ -91,7 +110,7 @@ public class SpringTest {
      */
     @Test
     public void testQueryHistoryTask(){
-        String processInstanceId = "2513";
+        String processInstanceId = "33395";
         List<String> variableNames = new ArrayList<String>();
         variableNames.add("applyUserName");
         variableNames.add("isPass");

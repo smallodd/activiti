@@ -17,6 +17,7 @@
 					<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="userSearchFun();">查询</a>
 					<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="userCleanFun();">清空</a>
 				</td>
+				<td id="taskUserTd"></td>
 			</tr>
 		</table>
 	</form>
@@ -37,11 +38,32 @@
 </form>
 
 <form id="taskTransferForm" method="post">
-	<input type="hidden" name="taskId" id="taskId_"/>
+	<input type="hidden" name="taskId" id="taskId_" value="${taskId}"/>
 	<input type="hidden" name="userId" id="userId_"/>
+	<input type="hidden" name="transferUserId" id="transferUserId"/>
 </form>
 
 <script>
+	var taskId = parent.$("#taskId_").val();
+	if(taskId != undefined && taskId != ""){
+        $.ajax({
+            type: 'POST',
+            dataType : 'json',
+            url: '${ctx}/activiti/getTaskUser',
+            data: {"taskId":taskId},
+            success: function(json){
+                var select = "";
+                var option = "";
+                $.each(json,function(i,obj){
+                    option = option + "<option value='"+obj.id+"'>"+obj.userName+"</option>";
+				})
+                select = "<select id='taskUser' style='width:100px;'>" + option + "<select>";
+                $("#taskUserTd").html(select);
+                $("#taskUser").combobox({});
+            }
+        });
+    }
+
     /**
      * 清除
      */
@@ -102,7 +124,7 @@
                     progressClose();
                     return false;
                 }
-                $("#userId_").val(rows[0].id);
+                $("#transferUserId").val(rows[0].id);
                 return true;
             },
 

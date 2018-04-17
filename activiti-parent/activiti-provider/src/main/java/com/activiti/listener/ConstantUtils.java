@@ -76,14 +76,14 @@ public class ConstantUtils {
 	 * TVacation(请假表) 请假状态
 	 */
 	public static enum vacationStatus{
-		APPROVING("正在审批",1),
-		PASSED("审批通过",2),
-		NOT_PASSED("审批不通过",3);
+		APPROVING("正在审批","1"),
+		PASSED("审批通过","2"),
+		NOT_PASSED("审批不通过","3");
 		
 		private String name;
-		private Integer value;
+		private String value;
 		
-		private vacationStatus(String name,Integer value){
+		private vacationStatus(String name,String value){
 			this.name = name;
 			this.value = value;
 		}
@@ -94,10 +94,10 @@ public class ConstantUtils {
 		public void setName(String name) {
 			this.name = name;
 		}
-		public Integer getValue() {
+		public String getValue() {
 			return value;
 		}
-		public void setValue(Integer value) {
+		public void setValue(String value) {
 			this.value = value;
 		}
 	}

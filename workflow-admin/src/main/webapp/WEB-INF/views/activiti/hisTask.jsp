@@ -81,7 +81,7 @@
             field : 'taskCreateTime',
             sortable : true
         }, {
-            width : '100',
+            width : '200',
             title : '最后审批人',
             field : 'taskAssign'
         }, {width : '50',
