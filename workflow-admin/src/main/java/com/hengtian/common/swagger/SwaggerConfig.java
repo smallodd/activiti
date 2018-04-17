@@ -16,7 +16,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @Configuration
 @EnableSwagger2
 @EnableWebMvc
-@Deprecated
 public class SwaggerConfig {
 
 	@Bean
@@ -29,10 +28,10 @@ public class SwaggerConfig {
 
     private ApiInfo buildApiInf(){
         return new ApiInfoBuilder()
-                .title("魔盾钉钉开发接口文档")
+                .title("恒天工作流开发接口文档")
                 .termsOfServiceUrl("http://localhost:8081")
                 .description("接口文档")
-                .contact(new Contact("liujunyang", "http://localhost:8081", "2205511679@qq.com"))
+                .contact(new Contact("hengtian", "http://localhost:8080", "houjinrong@chtwm.com"))
                 .build();
 
     }
