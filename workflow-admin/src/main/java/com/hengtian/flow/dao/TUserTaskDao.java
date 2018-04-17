@@ -1,7 +1,8 @@
-package com.hengtian.activiti.dao;
+package com.hengtian.flow.dao;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
-import com.hengtian.activiti.model.TUserTask;
+import com.hengtian.flow.model.TUserTask;
+
 
 /**
  * <p>

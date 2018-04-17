@@ -1,7 +1,8 @@
-package com.hengtian.activiti.service;
+package com.hengtian.flow.service;
 
 import com.baomidou.mybatisplus.service.IService;
-import com.hengtian.activiti.model.TMailLog;
+import com.hengtian.flow.model.TMailLog;
+
 
 /**
  * <p>

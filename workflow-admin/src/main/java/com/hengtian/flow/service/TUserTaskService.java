@@ -1,7 +1,7 @@
-package com.hengtian.activiti.service;
+package com.hengtian.flow.service;
 
 import com.baomidou.mybatisplus.service.IService;
-import com.hengtian.activiti.model.TUserTask;
+import com.hengtian.flow.model.TUserTask;
 
 /**
  * <p>

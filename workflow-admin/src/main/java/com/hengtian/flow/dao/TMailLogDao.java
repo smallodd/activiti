@@ -1,7 +1,8 @@
-package com.hengtian.activiti.dao;
+package com.hengtian.flow.dao;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
-import com.hengtian.activiti.model.TMailLog;
+import com.hengtian.flow.model.TMailLog;
+
 
 /**
  * <p>

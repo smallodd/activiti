@@ -1,4 +1,4 @@
-package com.hengtian.activiti.service.impl;
+package com.hengtian.flow.service.impl;
 
 
 import com.alibaba.fastjson.JSONObject;
@@ -6,12 +6,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.hengtian.activiti.model.TUserTask;
-import com.hengtian.activiti.service.ActivitiService;
-import com.hengtian.activiti.service.TUserTaskService;
-import com.hengtian.activiti.vo.CommonVo;
-import com.hengtian.activiti.vo.ProcessDefinitionVo;
-import com.hengtian.activiti.vo.TaskVo;
+
 import com.hengtian.application.model.App;
 import com.hengtian.application.service.AppService;
 import com.hengtian.common.enums.TaskStatus;
@@ -23,6 +18,12 @@ import com.hengtian.common.utils.*;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import com.hengtian.common.workflow.exception.WorkFlowException;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.ActivitiService;
+import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.vo.CommonVo;
+import com.hengtian.flow.vo.ProcessDefinitionVo;
+import com.hengtian.flow.vo.TaskVo;
 import com.hengtian.system.service.SysUserService;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
@@ -52,7 +53,7 @@ import java.util.*;
 
 
 @Service
-public class ActivitiServiceImpl implements ActivitiService{
+public class ActivitiServiceImpl implements ActivitiService {
 
 	
 	@Autowired

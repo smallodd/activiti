@@ -3,6 +3,9 @@ package com.hengtian.common.workflow.listener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.TUserTaskService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.delegate.DelegateExecution;
@@ -11,8 +14,7 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.hengtian.activiti.model.TUserTask;
-import com.hengtian.activiti.service.TUserTaskService;
+
 import com.hengtian.application.model.TVacation;
 import com.hengtian.application.service.TVacationService;
 import com.hengtian.common.utils.ConstantUtils;
@@ -32,8 +34,7 @@ public class ExeListener implements ExecutionListener,Serializable{
     private RepositoryService repositoryService;
 	@Autowired
 	private RuntimeService runtimeService;
-	@Autowired
-	private TVacationService tVacationService;
+
 
 	@Override
 	public void notify(DelegateExecution execution) throws Exception {
@@ -70,38 +71,8 @@ public class ExeListener implements ExecutionListener,Serializable{
 				}
 			}
 		}else if("end".equals(execution.getEventName())){
-			//如果是请假任务
-			if("TVacation".equals(processDefinitionKey)){
-				//得到存的变量值
-				String result = (String) runtimeService.getVariable(execution.getProcessInstanceId(), "vacationResult");
-				//得到当前流程实例对应的请假实例
-				EntityWrapper<TVacation> wrapper = new EntityWrapper<TVacation>();
-				wrapper.where("proc_inst_id = {0}", execution.getProcessInstanceId());
-				TVacation vacation = tVacationService.selectOne(wrapper);
-				if("pass".equals(result)){
-					vacation.setVacationStatus(ConstantUtils.vacationStatus.PASSED.getValue());
-				}else if("notPass".equals(result)){
-					vacation.setVacationStatus(ConstantUtils.vacationStatus.NOT_PASSED.getValue());
-				}
-				//更新请假业务
-	        	tVacationService.updateById(vacation);
-			}else if("SVacation".equals(processDefinitionKey)){
 
-				//得到存的变量值
-				String result = (String) runtimeService.getVariable(execution.getProcessInstanceId(), "vacationResult");
-				//得到当前流程实例对应的请假实例
-				EntityWrapper<TVacation> wrapper = new EntityWrapper<TVacation>();
-				wrapper.where("proc_inst_id = {0}", execution.getProcessInstanceId());
-				TVacation vacation = tVacationService.selectOne(wrapper);
-				if("pass".equals(result)){
-					vacation.setVacationStatus(ConstantUtils.vacationStatus.PASSED.getValue());
-				}else if("notPass".equals(result)){
-					vacation.setVacationStatus(ConstantUtils.vacationStatus.NOT_PASSED.getValue());
-				}
-				//更新请假业务
-	        	tVacationService.updateById(vacation);
-			
-			}
+
 		}
 		
 	}
