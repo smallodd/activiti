@@ -5,9 +5,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
+import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskActionParam;
+import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.flow.model.TRuTask;
@@ -60,7 +63,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("接口创建任务操作")
     @ApiOperation(httpMethod = "POST", value = "生成任务接口")
-    public Result startProcessInstance(@RequestBody @ApiParam(value = "processParam", name = "创建任务必传信息", required = true) ProcessParam processParam) {
+    public Result startProcessInstance( @ApiParam(value = "创建任务必传信息", name = "processParam", required = true) @RequestBody ProcessParam processParam) {
         logger.info("接口创建任务开始，请求参数{}", JSONObject.toJSONString(processParam));
         String jsonVariables = processParam.getJsonVariables();
         Map<String, Object> variables = new HashMap<>();
@@ -122,14 +125,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
                 } else {
                     logger.info("业务平台设置审批人");
-                    for (Task task : taskList) {
-                        TRuTask tRuTask = new TRuTask();
-                        tRuTask.setExpireTime(task.getDueDate());
-                        tRuTask.setIsFinished(0);
-                        tRuTask.setTaskId(task.getId());
-                        tRuTask.setOwer(task.getOwner());
-                        tRuTaskService.insert(tRuTask);
-                    }
+//
                     result.setSuccess(true);
                     result.setCode(Constant.SUCCESS);
                     result.setMsg("申请成功");
@@ -141,13 +137,61 @@ public class WorkflowOperateController extends WorkflowBaseController {
         return result;
     }
 
+    /**
+     * 设置审批人接口
+     * @param taskParam
+     * @return
+     */
     @RequestMapping(value = "setApprover", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("设置审批人接口")
     @ApiOperation(httpMethod = "POST", value = "设置审批人接口")
-    public Result setApprover() {
+    public Result setApprover( @ApiParam(value = "设置审批人信息", name = "taskParam", required = true)@RequestBody TaskParam taskParam) {
+        logger.info("设置审批人接口调用，参数{}",JSONObject.toJSONString(taskParam));
+        Result result=new Result();
+        if(StringUtils.isBlank(taskParam.getApprover())||taskParam.getAssignType()==null||StringUtils.isBlank(taskParam.getTaskType())||StringUtils.isBlank(taskParam.getTaskId())){
+            logger.info("参数不合法");
+            result.setMsg("参数不合法");
+            result.setCode(Constant.PARAM_ERROR);
+            return result;
+        }
+        if(!TaskType.checkExist(taskParam.getTaskType())){
+            logger.info("任务类型不存在");
+            result.setCode(Constant.TASK_TYPE_ERROR);
+            result.setMsg("任务类型不正确");
+            result.setObj(TaskType.getTaskTypeList());
+            return result;
+        }
 
-        return null;
+        if(!AssignType.checkExist(taskParam.getAssignType())){
+            logger.info("审批人类型不存在");
+            result.setCode(Constant.ASSIGN_TYPE_ERROR);
+            result.setMsg("审批人类型不正确");
+            result.setObj(AssignType.getList());
+            return result;
+        }
+        Task task=taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
+        if(task==null){
+            result.setMsg("任务不存在！");
+            result.setCode(Constant.TASK_NOT_EXIT);
+            result.setSuccess(false);
+            return result;
+        }
+        TUserTask tUserTask=new TUserTask();
+        tUserTask.setAssignType(taskParam.getAssignType());
+        tUserTask.setTaskType(taskParam.getTaskType());
+        tUserTask.setCandidateIds(taskParam.getApprover());
+        Boolean flag= setApprover(task, tUserTask);
+        if(flag){
+            result.setMsg("设置成功！");
+            result.setCode(Constant.SUCCESS);
+            result.setSuccess(true);
+        }else{
+            result.setMsg("设置失败，请联系管理员！");
+            result.setCode(Constant.FAIL);
+
+        }
+        return result;
     }
 
     /**
