@@ -118,7 +118,7 @@ public class TaskActionParam {
      */
     public Result validate(){
         Result result = new Result();
-        result.setCode(Constant.FAIL);
+        result.setCode(Constant.PARAM_ERROR);
         String actionType = this.getActionType();
         if(TaskActionEnum.contains(actionType)){
             if(TaskActionEnum.JUMP.value.equals(actionType)){
