@@ -21,7 +21,7 @@ public class SwaggerConfig {
 	@Bean
     public Docket buildDocket(){
         return new Docket(DocumentationType.SWAGGER_2).apiInfo(buildApiInf()).select()
-		                .apis(RequestHandlerSelectors.basePackage("com.hengtian.extend.controller"))
+		                .apis(RequestHandlerSelectors.basePackage("com.hengtian.flow.controller"))
 		                .paths(PathSelectors.any())
 		                .build();
     }
@@ -29,9 +29,9 @@ public class SwaggerConfig {
     private ApiInfo buildApiInf(){
         return new ApiInfoBuilder()
                 .title("恒天工作流开发接口文档")
-                .termsOfServiceUrl("http://localhost:8081")
+                .termsOfServiceUrl("")
                 .description("接口文档")
-                .contact(new Contact("hengtian", "http://localhost:8080", "houjinrong@chtwm.com"))
+                .contact(new Contact("hengtian", "", "houjinrong@chtwm.com"))
                 .build();
 
     }

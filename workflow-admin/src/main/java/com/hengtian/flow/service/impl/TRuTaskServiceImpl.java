@@ -7,9 +7,11 @@ import com.hengtian.flow.model.TMailLog;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.TMailLogService;
 import com.hengtian.flow.service.TRuTaskService;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by ma on 2018/4/17.
  */
+@Service
 public class TRuTaskServiceImpl extends ServiceImpl<TRuTaskDao, TRuTask> implements TRuTaskService {
 }
