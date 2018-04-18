@@ -4,5 +4,5 @@ import com.hengtian.common.result.Result;
 
 public interface TaskManager {
 
-    Result action(String actionType);
+    Result taskAction(String actionType);
 }

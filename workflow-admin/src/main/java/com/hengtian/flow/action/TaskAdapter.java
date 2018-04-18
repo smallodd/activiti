@@ -11,7 +11,7 @@ public class TaskAdapter implements TaskManager {
     private WorkflowService WorkflowService;
 
     @Override
-    public Result action(String actionType) {
+    public Result taskAction(String actionType) {
         if(TaskActionEnum.JUMP.value.equals(actionType)){
             //跳转
             return WorkflowService.taskJump(actionType);

@@ -295,7 +295,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * 任务操作接口
      *
      * @param taskActionParam
-     *  请求类型
+     *  请求类型 actionType
      *   1跳转 jump
      *   2转办 transfer
      *   3催办 remind
@@ -318,7 +318,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         Result validate = taskActionParam.validate();
         if (validate.isSuccess()) {
             TaskAdapter taskAdapter = new TaskAdapter();
-            return taskAdapter.action(actionType);
+            return taskAdapter.taskAction(actionType);
         }else{
             return validate;
         }
