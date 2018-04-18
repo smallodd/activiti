@@ -48,7 +48,7 @@ public class EnquireController {
      */
     @ResponseBody
     @SysLog(value = "问询意见查询")
-    @PostMapping("/enquireComment/{taskId}")
+    @PostMapping("enquireComment/{taskId}")
     public String enquireComment(@PathVariable String taskId) {
         return "enquire/enquireComment";
     }
