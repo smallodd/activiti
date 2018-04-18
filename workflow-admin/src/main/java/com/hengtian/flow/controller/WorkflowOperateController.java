@@ -3,7 +3,6 @@ package com.hengtian.flow.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.AssignType;
@@ -18,17 +17,13 @@ import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.lang3.StringUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,8 +194,101 @@ public class WorkflowOperateController extends WorkflowBaseController {
         return result;
     }
 
+    /**
+     * 任务跳转
+     *
+     * @param taskId            任务ID
+     * @param taskDefinitionKey 任务key
+     * @return
+     */
+    @SysLog(value = "任务跳转")
+    @RequestMapping("/jumpTask/{taskId}")
+    @ResponseBody
+    public Result jumpTask(@PathVariable String taskId, String taskDefinitionKey) {
+        return null;
+    }
 
+    /**
+     * 任务转办
+     *
+     * @param taskId         任务ID
+     * @param userId         任务原所属用户ID
+     * @param transferUserId 任务要转办用户ID
+     * @return
+     */
+    @SysLog(value = "任务转办")
+    @RequestMapping("/transferTask/{taskId}")
+    @ResponseBody
+    public Result transferTask(@PathVariable String taskId, String userId, String transferUserId) {
+        return null;
+    }
 
+    /**
+     * 确认问询
+     *
+     * @param taskId            任务ID
+     * @param taskDefinitionKey 任务key
+     * @return
+     */
+    @SysLog(value = "确认问询")
+    @RequestMapping("/confirmEnquiries/{taskId}")
+    @ResponseBody
+    public Result confirmEnquiries(@PathVariable String taskId, String taskDefinitionKey) {
+        return null;
+    }
+
+    /**
+     * 挂起任务
+     *
+     * @param taskId            任务ID
+     * @param taskDefinitionKey 任务key
+     * @return
+     */
+    @SysLog(value = "挂起任务")
+    @RequestMapping("/suspendTask/{taskId}")
+    @ResponseBody
+    public Result suspendTask(@PathVariable String taskId, String taskDefinitionKey) {
+        return null;
+    }
+
+    /**
+     * 激活任务
+     *
+     * @param taskId            任务ID
+     * @return
+     */
+    @SysLog(value = "激活任务")
+    @RequestMapping("/activateTask/{taskId}")
+    @ResponseBody
+    public Result activateTask(@PathVariable String taskId) {
+        return null;
+    }
+
+    /**
+     * 挂起流程
+     *
+     * @param processId 流程ID
+     * @return
+     */
+    @SysLog(value = "挂起流程")
+    @RequestMapping("/suspendProcess/{processId}")
+    @ResponseBody
+    public Result suspendProcess(@PathVariable String processId) {
+        return null;
+    }
+
+    /**
+     * 激活流程
+     *
+     * @param processId 流程ID
+     * @return
+     */
+    @SysLog(value = "激活流程")
+    @RequestMapping("/activateProcess/{processId}")
+    @ResponseBody
+    public Result activateProcess(@PathVariable String processId) {
+        return null;
+    }
 
     /**
      * 任务操作接口：包括
