@@ -28,7 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.HashMap;
 import java.util.List;
@@ -196,102 +199,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
     }
 
     /**
-     * 任务跳转
-     *
-     * @param taskId            任务ID
-     * @param taskDefinitionKey 任务key
-     * @return
-     */
-    @SysLog(value = "任务跳转")
-    @RequestMapping("/jumpTask/{taskId}")
-    @ResponseBody
-    public Result jumpTask(@PathVariable String taskId, String taskDefinitionKey) {
-        return null;
-    }
-
-    /**
-     * 任务转办
-     *
-     * @param taskId         任务ID
-     * @param userId         任务原所属用户ID
-     * @param transferUserId 任务要转办用户ID
-     * @return
-     */
-    @SysLog(value = "任务转办")
-    @RequestMapping("/transferTask/{taskId}")
-    @ResponseBody
-    public Result transferTask(@PathVariable String taskId, String userId, String transferUserId) {
-        return null;
-    }
-
-    /**
-     * 确认问询
-     *
-     * @param taskId            任务ID
-     * @param taskDefinitionKey 任务key
-     * @return
-     */
-    @SysLog(value = "确认问询")
-    @RequestMapping("/confirmEnquiries/{taskId}")
-    @ResponseBody
-    public Result confirmEnquiries(@PathVariable String taskId, String taskDefinitionKey) {
-        return null;
-    }
-
-    /**
-     * 挂起任务
-     *
-     * @param taskId            任务ID
-     * @param taskDefinitionKey 任务key
-     * @return
-     */
-    @SysLog(value = "挂起任务")
-    @RequestMapping("/suspendTask/{taskId}")
-    @ResponseBody
-    public Result suspendTask(@PathVariable String taskId, String taskDefinitionKey) {
-        return null;
-    }
-
-    /**
-     * 激活任务
-     *
-     * @param taskId 任务ID
-     * @return
-     */
-    @SysLog(value = "激活任务")
-    @RequestMapping("/activateTask/{taskId}")
-    @ResponseBody
-    public Result activateTask(@PathVariable String taskId) {
-        return null;
-    }
-
-    /**
-     * 挂起流程
-     *
-     * @param processId 流程ID
-     * @return
-     */
-    @SysLog(value = "挂起流程")
-    @RequestMapping("/suspendProcess/{processId}")
-    @ResponseBody
-    public Result suspendProcess(@PathVariable String processId) {
-        return null;
-    }
-
-    /**
-     * 激活流程
-     *
-     * @param processId 流程ID
-     * @return
-     */
-    @SysLog(value = "激活流程")
-    @RequestMapping("/activateProcess/{processId}")
-    @ResponseBody
-    public Result activateProcess(@PathVariable String processId) {
-        return null;
-    }
-
-    /**
      * 任务操作接口
      *
      * @param taskActionParam 请求类型 actionType
@@ -308,6 +215,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @author houjinrong@chtwm.com
      * date 2018/4/18 9:38
      */
+    @RequestMapping(value = "/option", method = RequestMethod.POST)
+    @ResponseBody
+    @SysLog("任务操作接口")
+    @ApiOperation(httpMethod = "POST", value = "任务操作接口")
     public Object taskAction(TaskActionParam taskActionParam) {
         String actionType = taskActionParam.getActionType();
         if (StringUtils.isBlank(actionType)) {
