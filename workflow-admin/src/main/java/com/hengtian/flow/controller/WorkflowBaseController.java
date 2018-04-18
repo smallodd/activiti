@@ -1,9 +1,14 @@
 package com.hengtian.flow.controller;
 
 import com.hengtian.common.base.BaseController;
+import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.TRuTaskService;
+import io.swagger.annotations.ApiParam;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -11,6 +16,8 @@ import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
+import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -34,6 +41,55 @@ public class WorkflowBaseController extends BaseController{
 
     @Autowired
     private HistoryService historyService;
+
+    @Autowired
+    private TaskService taskService;
+
+    @Autowired
+    private TRuTaskService tRuTaskService;
+    /**
+     * 设置审批人接口
+     *
+     * @param task
+     * @param tUserTask
+     */
+    protected void setApprover(Task task, TUserTask tUserTask) {
+        String approvers = tUserTask.getCandidateIds();
+        taskService.setAssignee(task.getId(), approvers);
+        TRuTask tRuTask = new TRuTask();
+        String[] approverList = approvers.split(",");
+        for (int i = 0; i < approverList.length; i++) {
+            //生成扩展任务信息
+            String approver = approverList[i];
+            tRuTask.setApprover(approver);
+            tRuTask.setApproverType(tUserTask.getAssignType());
+            tRuTask.setOwer(task.getOwner());
+            tRuTask.setTaskId(task.getId());
+            tRuTask.setTaskType(tUserTask.getTaskType());
+            tRuTask.setIsFinished(0);
+            tRuTask.setExpireTime(task.getDueDate());
+            tRuTaskService.insert(tRuTask);
+        }
+    }
+
+    /**
+     * 校验业务主键是否已经生成过任务
+     *
+     * @param processDefiniKey
+     * @param bussinessKey
+     * @param appKey
+     * @return
+     */
+    protected Boolean checkBusinessKeyIsInFlow(String processDefiniKey, String bussinessKey, String appKey) {
+        TaskQuery taskQuery = taskService.createTaskQuery().processDefinitionKey(processDefiniKey).processInstanceBusinessKey(bussinessKey).taskTenantId(appKey);
+
+        Task task = taskQuery.singleResult();
+
+        if (task != null) {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * 根据实例编号获取下一个任务节点实例集合

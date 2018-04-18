@@ -145,49 +145,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
         }
         return result;
     }
+    @RequestMapping(value = "setApprover",method = RequestMethod.POST)
+    @ResponseBody
+    @SysLog("设置审批人接口")
+    @ApiOperation(httpMethod = "POST", value = "设置审批人接口")
+    public Result setApprover(){
 
-    /**
-     * 设置审批人接口
-     *
-     * @param task
-     * @param tUserTask
-     */
-    private void setApprover(Task task, TUserTask tUserTask) {
-        String approvers = tUserTask.getCandidateIds();
-        taskService.setAssignee(task.getId(), approvers);
-        TRuTask tRuTask = new TRuTask();
-        String[] approverList = approvers.split(",");
-        for (int i = 0; i < approverList.length; i++) {
-            //生成扩展任务信息
-            String approver = approverList[i];
-            tRuTask.setApprover(approver);
-            tRuTask.setApproverType(tUserTask.getAssignType());
-            tRuTask.setOwer(task.getOwner());
-            tRuTask.setTaskId(task.getId());
-            tRuTask.setTaskType(tUserTask.getTaskType());
-            tRuTask.setIsFinished(0);
-            tRuTask.setExpireTime(task.getDueDate());
-            tRuTaskService.insert(tRuTask);
-        }
-    }
-
-    /**
-     * 校验业务主键是否已经生成过任务
-     *
-     * @param processDefiniKey
-     * @param bussinessKey
-     * @param appKey
-     * @return
-     */
-    private Boolean checkBusinessKeyIsInFlow(String processDefiniKey, String bussinessKey, String appKey) {
-        TaskQuery taskQuery = taskService.createTaskQuery().processDefinitionKey(processDefiniKey).processInstanceBusinessKey(bussinessKey).taskTenantId(appKey);
-
-        Task task = taskQuery.singleResult();
-
-        if (task != null) {
-            return true;
-        }
-        return false;
+        return null;
     }
 
 
