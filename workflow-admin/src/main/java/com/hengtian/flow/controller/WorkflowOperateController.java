@@ -13,8 +13,7 @@ import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
-import com.hengtian.flow.action.TaskAdapter;
-import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
@@ -303,8 +302,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
      *   5确认问询 confirmEnquire
      *   6撤回 revoke
      *   7取消 cancel
-     *   8挂起任务 suspendTask
-     *   9激活任务 activateTask
+     *   8挂起任务 suspend
+     *   9激活任务 activate
      *
      * @return result
      * @author houjinrong@chtwm.com
@@ -314,11 +313,18 @@ public class WorkflowOperateController extends WorkflowBaseController {
         String actionType = taskActionParam.getActionType();
         if (StringUtils.isBlank(actionType)) {
             return renderError("操作类型不能为空");
+        }else if (StringUtils.isBlank(taskActionParam.getUserId())){
+            return renderError("操作人工号不能为空");
         }
+
+        //校验操作人权限
+
+
+        //参数校验
         Result validate = taskActionParam.validate();
         if (validate.isSuccess()) {
             TaskAdapter taskAdapter = new TaskAdapter();
-            return taskAdapter.taskAction(actionType);
+            return taskAdapter.taskAction(taskActionParam);
         }else{
             return validate;
         }

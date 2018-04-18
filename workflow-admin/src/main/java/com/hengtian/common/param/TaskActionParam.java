@@ -3,6 +3,7 @@ package com.hengtian.common.param;
 import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 /**
@@ -118,28 +119,59 @@ public class TaskActionParam {
     public Result validate(){
         Result result = new Result();
         result.setCode(Constant.FAIL);
-
         String actionType = this.getActionType();
         if(TaskActionEnum.contains(actionType)){
             if(TaskActionEnum.JUMP.value.equals(actionType)){
-
-            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
-
-            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
-
-            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
-
-            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
-
-            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
-
-            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
-
-            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
-
+                //跳转-参数校验
+                if(StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetTaskDefKey())){
+                    result.setMsg("参数taskId，targetTaskDefKey都不能为空");
+                }
+            }else if(TaskActionEnum.TRANSFER.value.equals(actionType)){
+                //转办-参数校验
+                if(StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetUserId())){
+                    result.setMsg("参数taskId，targetUserId都不能为空");
+                }
+            }else if(TaskActionEnum.REMIND.value.equals(actionType)){
+                //催办-参数校验
+                if(StringUtils.isBlank(getProcessInstanceId()) || StringUtils.isBlank(getTargetTaskDefKey())){
+                    result.setMsg("参数processInstanceId，targetTaskDefKey都不能为空");
+                }
+            }else if(TaskActionEnum.ENQUIRE.value.equals(actionType)){
+                //问询-参数校验
+                if(StringUtils.isBlank(getProcessInstanceId()) || StringUtils.isBlank(getTargetTaskDefKey())){
+                    result.setMsg("参数processInstanceId，targetTaskDefKey都不能为空");
+                }
+            }else if(TaskActionEnum.CONFIRMENQUIRE.value.equals(actionType)){
+                //确认问询-参数校验
+                if(StringUtils.isBlank(getProcessInstanceId())){
+                    result.setMsg("参数processInstanceId不能为空");
+                }
+            }else if(TaskActionEnum.REVOKE.value.equals(actionType)){
+                //撤回-参数校验
+                if(StringUtils.isBlank(getProcessInstanceId())){
+                    result.setMsg("参数processInstanceId不能为空");
+                }
+            }else if(TaskActionEnum.CANCEL.value.equals(actionType)){
+                //取消-参数校验
+                if(StringUtils.isBlank(getProcessInstanceId())){
+                    result.setMsg("参数processInstanceId不能为空");
+                }
+            }else if(TaskActionEnum.SUSPEND.value.equals(actionType)){
+                //挂起-参数校验
+                if(StringUtils.isBlank(getTaskId())){
+                    result.setMsg("参数taskId不能为空");
+                }
+            }else if(TaskActionEnum.ACTIVATE.value.equals(actionType)){
+                //激活-参数校验
+                if(StringUtils.isBlank(getTaskId())){
+                    result.setMsg("参数taskId不能为空");
+                }
+            }else {
+                result.setCode(Constant.SUCCESS);
+                result.setSuccess(true);
             }
-        }else{
-            result.setMsg("参数actionType不合法,actionType值只能为"+TaskActionEnum.valuesToString());
+        }else {
+            result.setMsg("参数actionType不合法,actionType值只能为:"+TaskActionEnum.valuesToString());
         }
         return result;
     }

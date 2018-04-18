@@ -54,4 +54,8 @@ public enum TaskActionEnum {
         System.out.println(contains("activate"));
         System.out.println(TaskActionEnum.valuesToString());
     }
+
+    public static TaskActionEnum getCurrent(String value){
+        return  EnumUtils.getEnum(TaskActionEnum.class, value);
+    }
 }
