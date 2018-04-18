@@ -40,13 +40,13 @@ public interface WorkflowService {
     /**
      * 问询
      * @param userId 操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskId 任务ID
      * @param targetTaskDefKey 问询任务节点KEY
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskEnquire(String userId, String processInstanceId, String targetTaskDefKey);
+    Result taskEnquire(String userId, String taskId, String targetTaskDefKey);
 
     /**
      * 问询确认

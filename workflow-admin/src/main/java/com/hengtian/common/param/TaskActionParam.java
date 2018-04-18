@@ -138,13 +138,13 @@ public class TaskActionParam {
                 }
             }else if(TaskActionEnum.ENQUIRE.value.equals(actionType)){
                 //问询-参数校验
-                if(StringUtils.isBlank(getProcessInstanceId()) || StringUtils.isBlank(getTargetTaskDefKey())){
-                    result.setMsg("参数processInstanceId，targetTaskDefKey都不能为空");
+                if(StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetTaskDefKey())){
+                    result.setMsg("参数taskId，targetTaskDefKey都不能为空");
                 }
             }else if(TaskActionEnum.CONFIRMENQUIRE.value.equals(actionType)){
-                //确认问询-参数校验
-                if(StringUtils.isBlank(getProcessInstanceId())){
-                    result.setMsg("参数processInstanceId不能为空");
+                //问询确认-参数校验
+                if(StringUtils.isBlank(getTaskId())){
+                    result.setMsg("参数taskId不能为空");
                 }
             }else if(TaskActionEnum.REVOKE.value.equals(actionType)){
                 //撤回-参数校验
