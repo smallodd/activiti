@@ -145,14 +145,17 @@ public class WorkflowOperateController extends WorkflowBaseController {
         }
         return result;
     }
-    @RequestMapping(value = "setApprover",method = RequestMethod.POST)
+
+    @RequestMapping(value = "setApprover", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("设置审批人接口")
     @ApiOperation(httpMethod = "POST", value = "设置审批人接口")
-    public Result setApprover(){
+    public Result setApprover() {
 
         return null;
     }
+
+
 
 
     /**
