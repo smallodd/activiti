@@ -1,5 +1,10 @@
 package com.hengtian.common.param;
 
+import com.hengtian.common.enums.TaskActionEnum;
+import com.hengtian.common.result.Constant;
+import com.hengtian.common.result.Result;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+
 /**
  * 任务管理操作接口参数
  * @author houjinrong@chtwm.com
@@ -97,5 +102,45 @@ public class TaskActionParam {
 
     public void setTargetTaskDefKey(String targetTaskDefKey) {
         this.targetTaskDefKey = targetTaskDefKey;
+    }
+
+    @Override
+    public String toString() {
+        //两种方式都可以
+        //return ToStringBuilder.reflectionToString(this);
+        return ReflectionToStringBuilder.toString(this);
+    }
+
+    /**
+     * 校验参数
+     * @return
+     */
+    public Result validate(){
+        Result result = new Result();
+        result.setCode(Constant.FAIL);
+
+        String actionType = this.getActionType();
+        if(TaskActionEnum.contains(actionType)){
+            if(TaskActionEnum.JUMP.value.equals(actionType)){
+
+            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
+
+            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
+
+            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
+
+            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
+
+            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
+
+            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
+
+            }else if(TaskActionEnum.JUMP.value.equals(actionType)){
+
+            }
+        }else{
+            result.setMsg("参数actionType不合法,actionType值只能为"+TaskActionEnum.valuesToString());
+        }
+        return result;
     }
 }

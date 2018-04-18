@@ -11,6 +11,7 @@ import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
+import com.hengtian.flow.action.TaskAdapter;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TRuTaskService;
@@ -192,9 +193,20 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
 
     /**
-     * 任务操作接口：包括
+     * 任务操作接口
      *
      * @param taskActionParam
+     *  请求类型
+     *   1跳转 jump
+     *   2转办 transfer
+     *   3催办 remind
+     *   4问询 enquire
+     *   5确认问询 confirmEnquire
+     *   6撤回 revoke
+     *   7取消 cancel
+     *   8挂起任务 suspendTask
+     *   9激活任务 activateTask
+     *
      * @return result
      * @author houjinrong@chtwm.com
      * date 2018/4/18 9:38
@@ -204,12 +216,12 @@ public class WorkflowOperateController extends WorkflowBaseController {
         if (StringUtils.isBlank(actionType)) {
             return renderError("操作类型不能为空");
         }
-
-        Result result = new Result();
-        if (true) {
-
+        Result validate = taskActionParam.validate();
+        if (validate.isSuccess()) {
+            TaskAdapter taskAdapter = new TaskAdapter();
+            return taskAdapter.action(actionType);
+        }else{
+            return validate;
         }
-
-        return result;
     }
 }
