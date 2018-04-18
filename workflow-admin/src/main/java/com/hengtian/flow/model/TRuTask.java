@@ -23,7 +23,7 @@ public class TRuTask implements Serializable {
     @TableField(value = "approver_type")
     private int approverType;
     @TableField(value = "task_type")
-    private int taskType;
+    private String taskType;
     @TableField(value = "owner")
     private String ower;
     @TableField(value = "expire_time")
@@ -65,11 +65,11 @@ public class TRuTask implements Serializable {
         this.approverType = approverType;
     }
 
-    public int getTaskType() {
+    public String getTaskType() {
         return taskType;
     }
 
-    public void setTaskType(int taskType) {
+    public void setTaskType(String taskType) {
         this.taskType = taskType;
     }
 
