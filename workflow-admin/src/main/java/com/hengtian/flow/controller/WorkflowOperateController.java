@@ -354,6 +354,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @author houjinrong@chtwm.com
      * date 2018/4/18 9:38
      */
+    @RequestMapping(value = "/option", method = RequestMethod.POST)
+    @ResponseBody
+    @SysLog("任务操作接口")
+    @ApiOperation(httpMethod = "POST", value = "任务操作接口")
     public Object taskAction(TaskActionParam taskActionParam) {
         String actionType = taskActionParam.getActionType();
         if (StringUtils.isBlank(actionType)) {
