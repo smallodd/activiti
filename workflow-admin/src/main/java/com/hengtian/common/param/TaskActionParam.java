@@ -35,11 +35,6 @@ public class TaskActionParam {
     private String userId;
 
     /**
-     * 目标任务ID
-     */
-    private String targetTaskId;
-
-    /**
      * 目标用户ID
      */
     private String targetUserId;
@@ -79,14 +74,6 @@ public class TaskActionParam {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getTargetTaskId() {
-        return targetTaskId;
-    }
-
-    public void setTargetTaskId(String targetTaskId) {
-        this.targetTaskId = targetTaskId;
     }
 
     public String getTargetUserId() {
