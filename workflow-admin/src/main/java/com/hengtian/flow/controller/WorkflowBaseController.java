@@ -53,7 +53,10 @@ public class WorkflowBaseController extends BaseController{
      * @param task
      * @param tUserTask
      */
-    protected void setApprover(Task task, TUserTask tUserTask) {
+    protected Boolean setApprover(Task task, TUserTask tUserTask) {
+        try {
+
+
         String approvers = tUserTask.getCandidateIds();
         taskService.setAssignee(task.getId(), approvers);
         TRuTask tRuTask = new TRuTask();
@@ -69,6 +72,11 @@ public class WorkflowBaseController extends BaseController{
             tRuTask.setIsFinished(0);
             tRuTask.setExpireTime(task.getDueDate());
             tRuTaskService.insert(tRuTask);
+        }
+        return true;
+        }catch (Exception e){
+            logger.error(e);
+            return false;
         }
     }
 
