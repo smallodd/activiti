@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Created by ma on 2018/4/17.
  */
-@ApiModel(value = "任务生成参数实体", description = "processParam")
+
 public class ProcessParam {
     /**
      * 创建人id
