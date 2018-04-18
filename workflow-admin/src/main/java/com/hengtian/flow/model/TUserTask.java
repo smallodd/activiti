@@ -78,7 +78,13 @@ public class TUserTask implements Serializable {
      */
     @TableField(value = "user_count_need")
     private int userCountNeed;
-
+    /**
+     * '审批人类型 1 :部门；2：角色：3：人员；4：组'
+     */
+    @TableField(value = "assign_type")
+    private Integer assignType;
+    @TableField(value = "expr")
+    private String expr;
 
     public String getId() {
         return id;
@@ -174,5 +180,21 @@ public class TUserTask implements Serializable {
 
     public void setUserCountNeed(int userCountNeed) {
         this.userCountNeed = userCountNeed;
+    }
+
+    public Integer getAssignType() {
+        return assignType;
+    }
+
+    public void setAssignType(Integer assignType) {
+        this.assignType = assignType;
+    }
+
+    public String getExpr() {
+        return expr;
+    }
+
+    public void setExpr(String expr) {
+        this.expr = expr;
     }
 }

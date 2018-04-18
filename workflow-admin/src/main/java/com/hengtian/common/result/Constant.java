@@ -21,6 +21,10 @@ public class Constant {
      * 业务主键已经创建过任务
      */
     public static final String BUSSINESSKEY_EXIST="1001";
+    /**
+     * 系统与流程定义之间关系不存在
+     */
+    public static final String RELATION_NOT_EXIT="1002";
 
 
 

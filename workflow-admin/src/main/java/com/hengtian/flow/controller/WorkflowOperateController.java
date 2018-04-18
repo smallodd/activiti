@@ -1,9 +1,14 @@
 package com.hengtian.flow.controller;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.hengtian.application.dao.AppModelDao;
+import com.hengtian.application.model.AppModel;
+import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
+import com.hengtian.flow.service.TUserTaskService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -29,6 +34,10 @@ public class WorkflowOperateController {
     RuntimeService runtimeService;
     @Autowired
     TaskService taskService;
+    @Autowired
+    TUserTaskService tUserTaskService;
+    @Autowired
+    AppModelService appModelService;
     /**
      * 任务创建接口
      * @param processParam
@@ -44,6 +53,17 @@ public class WorkflowOperateController {
             if(!result.isSuccess()){
                 return result;
             }else{
+                EntityWrapper<AppModel> wrapperApp=new EntityWrapper();
+
+                wrapperApp.where("app_key={0}",processParam.getAppKey()).andNew("model_key={0}",processParam.getProcessDefinitionKey());
+                AppModel appModelResult=appModelService.selectOne(wrapperApp);
+                //系统与流程定义之间没有配置关系
+                if(appModelResult==null){
+                    result.setCode(Constant.RELATION_NOT_EXIT);
+                    result.setMsg("系统键值：【"+processParam.getAppKey()+"】对应的modelkey:【"+processParam.getProcessDefinitionKey()+"】关系不存在!");
+                    return result;
+
+                }
                 //校验当前业务主键是否已经在系统中存在
                 boolean isInFlow=checekBunessKeyIsInFlow(processParam.getProcessDefinitionKey(),processParam.getAppKey(),processParam.getBussinessKey());
 
@@ -59,6 +79,12 @@ public class WorkflowOperateController {
                    //给对应实例生成标题
                    runtimeService.setProcessInstanceName(processInstance.getId(),processParam.getTitle());
 
+                   //查询创建完任务之后生成的任务信息
+                   List<Task> taskList=taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
+
+                   for(int i=0;i<taskList.size();i++){
+
+                   }
                 }
 
             }
