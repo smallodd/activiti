@@ -43,7 +43,7 @@ public class WorkflowBaseController extends BaseController{
      * @author houjinrong@chtwm.com
      * date 2018/4/17 16:43
      */
-    public List<TaskDefinition> getTaskDefinitionList(String procInstId) {
+    protected List<TaskDefinition> getTaskDefinitionList(String procInstId) {
         List<TaskDefinition> taskDefinitionList = new ArrayList<TaskDefinition>();
         //流程标示
         String processDefinitionId = historyService.createHistoricProcessInstanceQuery().processInstanceId(procInstId).singleResult().getProcessDefinitionId();
@@ -74,7 +74,7 @@ public class WorkflowBaseController extends BaseController{
      * @author houjinrong@chtwm.com
      * date 2018/4/17 16:51
      */
-    private List<TaskDefinition> nextTaskDefinition(ActivityImpl activityImpl, String activityId) {
+    protected List<TaskDefinition> nextTaskDefinition(ActivityImpl activityImpl, String activityId) {
         //所有的任务实例
         List<TaskDefinition> taskDefinitionList = new ArrayList<TaskDefinition>();
         //逐个获取的任务实例
@@ -121,7 +121,7 @@ public class WorkflowBaseController extends BaseController{
      * date 2018/4/17 16:52
      */
     @SuppressWarnings("unused")
-    private List<TaskDefinition> nextTaskDefinition(ActivityImpl activityImpl, String activityId, String elString) {
+    protected List<TaskDefinition> nextTaskDefinition(ActivityImpl activityImpl, String activityId, String elString) {
         //所有的任务实例
         List<TaskDefinition> taskDefinitionList = new ArrayList<TaskDefinition>();
         //逐个获取的任务实例
