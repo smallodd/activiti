@@ -6,6 +6,7 @@ import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.flow.service.TUserTaskService;
@@ -14,6 +15,7 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +31,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/rest/flow/operate")
-public class WorkflowOperateController {
+public class WorkflowOperateController extends WorkflowBaseController{
     @Autowired
     RuntimeService runtimeService;
     @Autowired
@@ -102,4 +104,25 @@ public class WorkflowOperateController {
             return false;
         }
 
+
+    /**
+     * 任务操作接口：包括
+     * @param taskActionParam
+     * @return result
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 9:38
+     */
+    public Object taskAction(TaskActionParam taskActionParam){
+        String actionType = taskActionParam.getActionType();
+        if(StringUtils.isBlank(actionType)){
+            return renderError("操作类型不能为空");
+        }
+
+        Result result = new Result();
+        if(true){
+
+        }
+
+        return result;
+    }
 }

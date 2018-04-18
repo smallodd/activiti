@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller;
 
+import com.hengtian.common.base.BaseController;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
@@ -18,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorkflowBaseController {
+public class WorkflowBaseController extends BaseController{
 
     Logger logger = Logger.getLogger(getClass());
 
