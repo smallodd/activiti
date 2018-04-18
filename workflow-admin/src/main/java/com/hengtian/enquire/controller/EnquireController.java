@@ -30,17 +30,6 @@ public class EnquireController {
         return "enquire/enquiredTask";
     }
 
-
-    /**
-     * 问询
-     *
-     * @return
-     */
-    @GetMapping("enquire")
-    public String enquire() {
-        return "enquire/enquire";
-    }
-
     /**
      * 问询意见查询接口
      *

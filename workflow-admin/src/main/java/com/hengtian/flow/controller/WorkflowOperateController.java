@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
@@ -13,6 +14,7 @@ import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TRuTaskService;
@@ -28,10 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -196,6 +195,146 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
         }
         return result;
+    }
+
+    /**
+     * 任务跳转
+     *
+     * @param taskId            任务ID
+     * @param userId            任务原所属用户ID
+     * @param taskDefinitionKey 任务节点KEY
+     * @return
+     */
+    @SysLog(value = "任务跳转")
+    @RequestMapping("/jumpTask/{taskId}")
+    @ResponseBody
+    public Object jumpTask(@PathVariable String taskId, String userId, String taskDefinitionKey) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.JUMP.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setTaskId(taskId);
+        taskActionParam.setTargetTaskDefKey(taskDefinitionKey);
+        return taskAction(taskActionParam);
+    }
+
+    /**
+     * 任务转办
+     *
+     * @param taskId         任务ID
+     * @param userId         任务原所属用户ID
+     * @param transferUserId 任务要转办用户ID
+     * @return
+     */
+    @SysLog(value = "任务转办")
+    @RequestMapping("/transferTask/{taskId}")
+    @ResponseBody
+    public Object transferTask(@PathVariable String taskId, String userId, String transferUserId) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.TRANSFER.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setTargetUserId(transferUserId);
+        taskActionParam.setTaskId(taskId);
+        return taskAction(taskActionParam);
+    }
+
+    /**
+     * 问询
+     *
+     * @param processInstanceId 流程实例ID
+     * @param userId            任务原所属用户ID
+     * @param taskDefinitionKey 任务节点KEY
+     * @return
+     */
+    @SysLog(value = "问询")
+    @RequestMapping("/enquire/{processInstanceId}")
+    @ResponseBody
+    public Object enquire(@PathVariable String processInstanceId, String userId, String taskDefinitionKey) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.ENQUIRE.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setProcessInstanceId(processInstanceId);
+        taskActionParam.setTargetTaskDefKey(taskDefinitionKey);
+        return taskAction(taskActionParam);
+    }
+
+    /**
+     * 确认问询
+     *
+     * @param processInstanceId 任务ID
+     * @param userId            任务原所属用户ID
+     * @return
+     */
+    @SysLog(value = "确认问询")
+    @RequestMapping("/confirmEnquiries/{processInstanceId}")
+    @ResponseBody
+    public Object confirmEnquiries(@PathVariable String processInstanceId, String userId) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.CONFIRMENQUIRE.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setProcessInstanceId(processInstanceId);
+        return taskAction(taskActionParam);
+    }
+
+    /**
+     * 挂起任务
+     *
+     * @param taskId 任务ID
+     * @param userId 任务原所属用户ID
+     * @return
+     */
+    @SysLog(value = "挂起任务")
+    @RequestMapping("/suspendTask/{taskId}")
+    @ResponseBody
+    public Object suspendTask(@PathVariable String taskId, String userId) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setTaskId(taskId);
+        return taskAction(taskActionParam);
+    }
+
+    /**
+     * 激活任务
+     *
+     * @param taskId 任务ID
+     * @param userId 任务原所属用户ID
+     * @return
+     */
+    @SysLog(value = "激活任务")
+    @RequestMapping("/activateTask/{taskId}")
+    @ResponseBody
+    public Object activateTask(@PathVariable String taskId, String userId) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setTaskId(taskId);
+        return taskAction(taskActionParam);
+    }
+
+    /**
+     * 挂起流程
+     *
+     * @param processId 流程ID
+     * @return
+     */
+    @SysLog(value = "挂起流程")
+    @RequestMapping("/suspendProcess/{processId}")
+    @ResponseBody
+    public Result suspendProcess(@PathVariable String processId) {
+        return null;
+    }
+
+    /**
+     * 激活流程
+     *
+     * @param processId 流程ID
+     * @return
+     */
+    @SysLog(value = "激活流程")
+    @RequestMapping("/activateProcess/{processId}")
+    @ResponseBody
+    public Result activateProcess(@PathVariable String processId) {
+        return null;
     }
 
     /**
