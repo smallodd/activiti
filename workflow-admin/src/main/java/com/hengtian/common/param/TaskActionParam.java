@@ -3,6 +3,7 @@ package com.hengtian.common.param;
 import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
@@ -15,33 +16,38 @@ public class TaskActionParam {
 
     /**
      * 操作类型
-     *
      */
+    @ApiModelProperty(value = "操作类型", required = true, example="actionType")
     private String actionType;
 
     /**
      * 流程实例ID
      */
+    @ApiModelProperty(value = "流程实例ID", required = false, example="processInstanceId")
     private String processInstanceId;
 
     /**
      * 当前任务ID
      */
+    @ApiModelProperty(value = "当前任务ID", required = false, example="taskId")
     private String taskId;
 
     /**
-     * 当前任务ID
+     * 操作人ID
      */
+    @ApiModelProperty(value = "操作人ID", required = true, example="H000000")
     private String userId;
 
     /**
      * 目标用户ID
      */
+    @ApiModelProperty(value = "目标用户ID", required = false, example="H000001")
     private String targetUserId;
 
     /**
      * 目标任务节点KEY
      */
+    @ApiModelProperty(value = "目标任务节点KEY", required = false, example="targetTaskDefKey")
     private String targetTaskDefKey;
 
     public String getActionType() {
