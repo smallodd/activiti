@@ -1,10 +1,21 @@
 package com.hengtian.flow.controller;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
+import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.param.TaskNodeResult;
+import com.hengtian.common.param.TaskParam;
+import com.hengtian.common.result.Constant;
+import com.hengtian.common.result.Result;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TUserTaskService;
+import com.rbac.entity.RbacRole;
+import com.rbac.service.RoleService;
+import com.sun.org.apache.regexp.internal.RE;
+import com.user.service.emp.EmpService;
 import io.swagger.annotations.ApiParam;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
@@ -17,6 +28,7 @@ import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.activiti.spring.ProcessEngineFactoryBean;
@@ -24,9 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WorkflowBaseController extends BaseController{
 
@@ -49,6 +59,12 @@ public class WorkflowBaseController extends BaseController{
 
     @Autowired
     private TRuTaskService tRuTaskService;
+    @Autowired
+    private TUserTaskService tUserTaskService;
+    @Autowired
+    EmpService empService;
+    @Autowired
+    RoleService roleService;
     /**
      * 设置审批人接口
      *
@@ -58,26 +74,36 @@ public class WorkflowBaseController extends BaseController{
     protected Boolean setApprover(Task task, TUserTask tUserTask) {
         try {
             Map<String,Object> map=taskService.getVariables(task.getId());
-        String approvers = tUserTask.getCandidateIds();
-        taskService.setAssignee(task.getId(), approvers);
-        TRuTask tRuTask = new TRuTask();
-        String[] approverList = approvers.split(",");
-        List<TRuTask> tRuTaskList=new ArrayList<>();
-        for (int i = 0; i < approverList.length; i++) {
-            //生成扩展任务信息
-            String approver = approverList[i];
-            tRuTask.setApprover(approver);
-            tRuTask.setApproverType(tUserTask.getAssignType());
-            tRuTask.setOwer(task.getOwner());
-            tRuTask.setTaskId(task.getId());
-            tRuTask.setTaskType(tUserTask.getTaskType());
-            tRuTask.setIsFinished(0);
-            tRuTask.setExpireTime(task.getDueDate());
-            tRuTask.setAppKey(map.get("appKey").toString());
-            tRuTaskList.add(tRuTask);
+            String approvers = tUserTask.getCandidateIds();
+            String [] strs=approvers.split(",");
+            List list=  Arrays.asList(strs);
+            Set set = new HashSet(list);
+            String [] rid=(String [])set.toArray(new String[0]);
 
-        }
-        tRuTaskService.insertBatch(tRuTaskList);
+//            taskService.setAssignee(task.getId(), approvers);
+            TRuTask tRuTask = new TRuTask();
+            List<TRuTask> tRuTaskList=new ArrayList<>();
+
+            //生成扩展任务信息
+            for(String approver: rid) {
+                tRuTask.setApprover(approver);
+                tRuTask.setApproverType(tUserTask.getAssignType());
+                tRuTask.setOwer(task.getOwner());
+                tRuTask.setTaskId(task.getId());
+                tRuTask.setTaskType(tUserTask.getTaskType());
+                if(AssignType.ROLE.code.intValue()==tUserTask.getAssignType()||AssignType.GROUP.code.intValue()==tUserTask.getAssignType()||AssignType.DEPARTMENT.code==tUserTask.getAssignType()) {
+                    tRuTask.setIsFinished(-1);
+                }else{
+                    tRuTask.setIsFinished(0);
+                    tRuTask.setApproverReal(approver);
+                }
+                tRuTask.setExpireTime(task.getDueDate());
+                tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
+                tRuTaskList.add(tRuTask);
+            }
+
+
+            tRuTaskService.insertBatch(tRuTaskList);
         return true;
         }catch (Exception e){
             logger.error(e);
@@ -93,9 +119,9 @@ public class WorkflowBaseController extends BaseController{
      * @param appKey
      * @return
      */
-    protected Boolean checkBusinessKeyIsInFlow(String processDefiniKey, String bussinessKey, String appKey) {
+    protected Boolean checkBusinessKeyIsInFlow(String processDefiniKey, String bussinessKey, Integer appKey) {
         TaskQuery taskQuery = taskService.createTaskQuery().processDefinitionKey(processDefiniKey).processInstanceBusinessKey(bussinessKey);
-        taskQuery.processVariableValueLike("appKey",appKey);
+        taskQuery.processVariableValueEquals("appKey",appKey);
         Task task = taskQuery.singleResult();
 
         if (task != null) {
@@ -235,7 +261,7 @@ public class WorkflowBaseController extends BaseController{
      * @param list
      * @return
      */
-    public static List<TaskNodeResult> toTaskNodeResultList(List<Task> list){
+    protected  List<TaskNodeResult> toTaskNodeResultList(List<Task> list){
         List<TaskNodeResult> nodeResults=new ArrayList<>();
         TaskNodeResult taskNodeResult;
         for(Task task:list){
@@ -250,7 +276,7 @@ public class WorkflowBaseController extends BaseController{
      * @param task
      * @return
      */
-    public static TaskNodeResult toTaskNodeResult(Task task){
+    protected static TaskNodeResult toTaskNodeResult(Task task){
 
         TaskNodeResult taskNodeResult=new TaskNodeResult();
 
@@ -259,5 +285,58 @@ public class WorkflowBaseController extends BaseController{
         taskNodeResult.setFormKey(task.getFormKey());
         taskNodeResult.setName(task.getName());
         return taskNodeResult;
+    }
+
+    /**
+     * 判断某个用户是否拥有审批某个角色的权限
+     * @param task
+     * @param userId
+     * @return
+     */
+
+    protected Object approveTask(Task  task, TaskParam taskParam){
+        //TODO
+        EntityWrapper entityWrapper=new EntityWrapper();
+        entityWrapper.where("task_id={0}",task.getId());
+        entityWrapper.like("approver_real","%"+taskParam.getApprover()+"%");
+        ProcessDefinition processDefinition=repositoryService.getProcessDefinition(task.getProcessDefinitionId());
+        TRuTask ruTask=  tRuTaskService.selectOne(entityWrapper);
+       if(ruTask==null){
+           return renderError("该用户没有操作此任务的权限！", Constant.TASK_NOT_BELONG_USER);
+       }else{
+           Task t=taskService.createTaskQuery().taskId(task.getId()).singleResult();
+           EntityWrapper wrapper=new EntityWrapper();
+           wrapper.where("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={0}",processDefinition.getVersion()).andNew("proc_def_key={0}",processDefinition.getKey());
+
+           TUserTask tUserTask=tUserTaskService.selectOne(wrapper);
+           if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())) {
+
+               taskService.setAssignee(task.getId(),StringUtils.isBlank(t.getAssignee())?taskParam.getApprover():t.getAssignee()+","+taskParam.getApprover());
+               Map map = taskService.getVariables(task.getId());
+               int total= (int) map.get("approve_total");
+               int pass= (int) map.get("approve_pass");
+               int not_pass= (int) map.get("approve_not_pass");
+               total=total+1;
+                if(taskParam.getPass()==1){
+                    pass=pass+1;
+                    //tRuTaskService.update(tUserTask)
+                }else if(taskParam.getPass()==2){
+                    not_pass=not_pass+1;
+                }
+                map.put("approve_total",total);
+                map.put("approve_pass",pass);
+                map.put("not_pass",not_pass);
+               double passPer = pass / tUserTask.getUserCountTotal();
+               double not_pass_per=not_pass/tUserTask.getUserCountTotal();
+               if (passPer >=tUserTask.getUserCountNeed()) {
+                    taskService.complete(task.getId());
+               }else if(not_pass_per>1-tUserTask.getUserCountNeed()){
+                    taskService.deleteTask(task.getId(),"任务没有达到通过率");
+               }
+           }
+       }
+
+        return  null;
+
     }
 }
