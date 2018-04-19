@@ -12,7 +12,7 @@ import com.hengtian.flow.model.RemindTask;
  */
 public interface RemindTaskService extends IService<RemindTask> {
 
-    //PageInfo taskRemindList(TaskQueryParam taskQueryParam);
+    PageInfo taskRemindList(TaskQueryParam taskQueryParam);
 
-    //PageInfo taskRemindedList(TaskQueryParam taskQueryParam);
+    PageInfo taskRemindedList(TaskQueryParam taskQueryParam);
 }

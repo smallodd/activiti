@@ -36,6 +36,11 @@ public class RemindTask {
     @TableField(value = "task_name")
     private String taskName;
     /**
+     * 任务节点key
+     */
+    @TableField(value = "task_def_key")
+    private String taskDefKey;
+    /**
      * 催办人工号
      */
     @TableField(value = "reminder_id")
@@ -64,14 +69,6 @@ public class RemindTask {
         this.id = id;
     }
 
-    public String getTaskName() {
-        return taskName;
-    }
-
-    public void setTaskName(String taskName) {
-        this.taskName = taskName;
-    }
-
     public String getProcInstId() {
         return procInstId;
     }
@@ -86,6 +83,22 @@ public class RemindTask {
 
     public void setTaskId(String taskId) {
         this.taskId = taskId;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public String getTaskDefKey() {
+        return taskDefKey;
+    }
+
+    public void setTaskDefKey(String taskDefKey) {
+        this.taskDefKey = taskDefKey;
     }
 
     public String getReminderId() {
