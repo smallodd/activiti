@@ -49,7 +49,7 @@ public class SysOperLogAspect {
 	public void after(JoinPoint joinPoint, Object rvt) {
 		try {
 			ShiroUser loginUser = (ShiroUser) SecurityUtils.getSubject().getPrincipal();
-			if(loginUser==null){
+			if(loginUser==null&&request.getRequestURI().contains("/rest/flow")){
 				logger.error("系统没有认证信息!");
 				return;
 			}

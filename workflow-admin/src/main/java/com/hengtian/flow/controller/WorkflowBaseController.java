@@ -1,6 +1,7 @@
 package com.hengtian.flow.controller;
 
 import com.hengtian.common.base.BaseController;
+import com.hengtian.common.param.TaskNodeResult;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TRuTaskService;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class WorkflowBaseController extends BaseController{
 
@@ -55,12 +57,12 @@ public class WorkflowBaseController extends BaseController{
      */
     protected Boolean setApprover(Task task, TUserTask tUserTask) {
         try {
-
-
+            Map<String,Object> map=taskService.getVariables(task.getId());
         String approvers = tUserTask.getCandidateIds();
         taskService.setAssignee(task.getId(), approvers);
         TRuTask tRuTask = new TRuTask();
         String[] approverList = approvers.split(",");
+        List<TRuTask> tRuTaskList=new ArrayList<>();
         for (int i = 0; i < approverList.length; i++) {
             //生成扩展任务信息
             String approver = approverList[i];
@@ -71,8 +73,11 @@ public class WorkflowBaseController extends BaseController{
             tRuTask.setTaskType(tUserTask.getTaskType());
             tRuTask.setIsFinished(0);
             tRuTask.setExpireTime(task.getDueDate());
-            tRuTaskService.insert(tRuTask);
+            tRuTask.setAppKey(map.get("appKey").toString());
+            tRuTaskList.add(tRuTask);
+
         }
+        tRuTaskService.insertBatch(tRuTaskList);
         return true;
         }catch (Exception e){
             logger.error(e);
@@ -89,8 +94,8 @@ public class WorkflowBaseController extends BaseController{
      * @return
      */
     protected Boolean checkBusinessKeyIsInFlow(String processDefiniKey, String bussinessKey, String appKey) {
-        TaskQuery taskQuery = taskService.createTaskQuery().processDefinitionKey(processDefiniKey).processInstanceBusinessKey(bussinessKey).taskTenantId(appKey);
-
+        TaskQuery taskQuery = taskService.createTaskQuery().processDefinitionKey(processDefiniKey).processInstanceBusinessKey(bussinessKey);
+        taskQuery.processVariableValueLike("appKey",appKey);
         Task task = taskQuery.singleResult();
 
         if (task != null) {
@@ -224,5 +229,35 @@ public class WorkflowBaseController extends BaseController{
             }
         }
         return taskDefinitionList;
+    }
+    /**
+     * 将任务列表转换成返回出参任务列表
+     * @param list
+     * @return
+     */
+    public static List<TaskNodeResult> toTaskNodeResultList(List<Task> list){
+        List<TaskNodeResult> nodeResults=new ArrayList<>();
+        TaskNodeResult taskNodeResult;
+        for(Task task:list){
+            taskNodeResult=toTaskNodeResult(task);
+            nodeResults.add(taskNodeResult);
+        }
+        return nodeResults;
+    }
+
+    /**
+     * 转换成出参任务
+     * @param task
+     * @return
+     */
+    public static TaskNodeResult toTaskNodeResult(Task task){
+
+        TaskNodeResult taskNodeResult=new TaskNodeResult();
+
+        taskNodeResult.setTaskId(task.getId());
+        taskNodeResult.setTaskDefinedKey(task.getTaskDefinitionKey());
+        taskNodeResult.setFormKey(task.getFormKey());
+        taskNodeResult.setName(task.getName());
+        return taskNodeResult;
     }
 }
