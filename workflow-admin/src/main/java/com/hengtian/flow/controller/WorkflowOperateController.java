@@ -1,7 +1,10 @@
 package com.hengtian.flow.controller;
 
+
 import com.alibaba.fastjson.JSON;
+
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
@@ -10,6 +13,7 @@ import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskActionParam;
+import com.hengtian.common.param.TaskNodeResult;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
@@ -19,8 +23,11 @@ import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +59,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
     AppModelService appModelService;
     @Autowired
     TRuTaskService tRuTaskService;
+    @Autowired
+    RepositoryService repositoryService;
+    @Autowired
+    HistoryService historyService;
 
     /**
      * 任务创建接口
@@ -64,15 +75,18 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @SysLog("接口创建任务操作")
     @ApiOperation(httpMethod = "POST", value = "生成任务接口")
     public Result startProcessInstance( @ApiParam(value = "创建任务必传信息", name = "processParam", required = true) @RequestBody ProcessParam processParam) {
+
         logger.info("接口创建任务开始，请求参数{}", JSONObject.toJSONString(processParam));
         String jsonVariables = processParam.getJsonVariables();
         Map<String, Object> variables = new HashMap<>();
         if (StringUtils.isNotBlank(jsonVariables)) {
             variables = JSON.parseObject(jsonVariables);
         }
+
         //校验参数是否合法
         Result result = processParam.validate();
         if (!result.isSuccess()) {
+
             return result;
         } else {
             EntityWrapper<AppModel> wrapperApp = new EntityWrapper();
@@ -89,7 +103,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
             }
             //校验当前业务主键是否已经在系统中存在
-            boolean isInFlow = checkBusinessKeyIsInFlow(processParam.getProcessDefinitionKey(), processParam.getAppKey(), processParam.getBussinessKey());
+            boolean isInFlow = checkBusinessKeyIsInFlow(processParam.getProcessDefinitionKey(), processParam.getBussinessKey(), processParam.getAppKey());
 
             if (isInFlow) {
                 logger.info("业务主键【{}】已经提交过任务", processParam.getBussinessKey());
@@ -100,28 +114,40 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 return result;
             } else {
                 variables.put("customApprover", true);
+                variables.put("appKey",processParam.getAppKey());
                 //生成任务
-                ProcessInstance processInstance = runtimeService.startProcessInstanceByKeyAndTenantId(processParam.getProcessDefinitionKey(), processParam.getBussinessKey(), variables, processParam.getAppKey());
+                ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(processParam.getProcessDefinitionKey(), processParam.getBussinessKey(), variables);
+
                 //给对应实例生成标题
                 runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());
-
+                ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
                 //查询创建完任务之后生成的任务信息
                 List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
-
+                //String aa=net.sf.json.JSONObject.fromObject(taskList);
                 if (!processParam.isCustomApprover()) {
                     logger.info("工作流平台设置审批人");
                     for (int i = 0; i < taskList.size(); i++) {
                         Task task = taskList.get(0);
                         EntityWrapper entityWrapper = new EntityWrapper();
-                        entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processInstance.getProcessDefinitionVersion());
+                        entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}",processDefinition.getVersion() );
                         //查询当前任务任务节点信息
                         TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
-                        setApprover(task, tUserTask);
+                       boolean flag= setApprover(task, tUserTask);
+                       if(!flag){
+                           taskService.addComment(task.getId(), processInstance.getProcessInstanceId(), "生成扩展任务时失败，删除任务！");//备注
+                           runtimeService.deleteProcessInstance(processInstance.getProcessInstanceId(),"");
+                           historyService.deleteHistoricProcessInstance(processInstance.getProcessInstanceId());//(顺序不能换)
+
+                           result.setSuccess(false);
+                           result.setCode(Constant.FAIL);
+                           result.setMsg("生成扩展任务失败，删除其他信息");
+                           return result;
+                       }
                     }
                     result.setSuccess(true);
                     result.setCode(Constant.SUCCESS);
                     result.setMsg("申请成功");
-                    result.setObj(taskList);
+                    result.setObj(toTaskNodeResultList(taskList));
 
                 } else {
                     logger.info("业务平台设置审批人");
@@ -129,7 +155,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     result.setSuccess(true);
                     result.setCode(Constant.SUCCESS);
                     result.setMsg("申请成功");
-                    result.setObj(taskList);
+                    result.setObj(toTaskNodeResultList(taskList));
                 }
             }
 
