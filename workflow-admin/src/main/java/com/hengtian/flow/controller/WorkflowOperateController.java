@@ -2,9 +2,7 @@ package com.hengtian.flow.controller;
 
 
 import com.alibaba.fastjson.JSON;
-
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
@@ -14,11 +12,9 @@ import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskActionParam;
-import com.hengtian.common.param.TaskNodeResult;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
-import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TUserTask;

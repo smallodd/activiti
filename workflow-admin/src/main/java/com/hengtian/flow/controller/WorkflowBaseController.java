@@ -38,7 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
-public class WorkflowBaseController extends BaseController{
+public class WorkflowBaseController extends BaseController {
 
     Logger logger = Logger.getLogger(getClass());
 
@@ -74,36 +74,34 @@ public class WorkflowBaseController extends BaseController{
     protected Boolean setApprover(Task task, TUserTask tUserTask) {
         try {
             Map<String,Object> map=taskService.getVariables(task.getId());
-            String approvers = tUserTask.getCandidateIds();
-            String [] strs=approvers.split(",");
+        String approvers = tUserTask.getCandidateIds();
+        String [] strs=approvers.split(",");
             List list=  Arrays.asList(strs);
             Set set = new HashSet(list);
             String [] rid=(String [])set.toArray(new String[0]);
 
-//            taskService.setAssignee(task.getId(), approvers);
-            TRuTask tRuTask = new TRuTask();
-            List<TRuTask> tRuTaskList=new ArrayList<>();
+//taskService.setAssignee(task.getId(), approvers);
+        TRuTask tRuTask = new TRuTask();
+
+        List<TRuTask> tRuTaskList=new ArrayList<>();
 
             //生成扩展任务信息
-            for(String approver: rid) {
-                tRuTask.setApprover(approver);
-                tRuTask.setApproverType(tUserTask.getAssignType());
-                tRuTask.setOwer(task.getOwner());
-                tRuTask.setTaskId(task.getId());
-                tRuTask.setTaskType(tUserTask.getTaskType());
-                if(AssignType.ROLE.code.intValue()==tUserTask.getAssignType()||AssignType.GROUP.code.intValue()==tUserTask.getAssignType()||AssignType.DEPARTMENT.code==tUserTask.getAssignType()) {
+            for(String approver : rid) {
+            tRuTask.setApprover(approver);
+            tRuTask.setApproverType(tUserTask.getAssignType());
+            tRuTask.setOwer(task.getOwner());
+            tRuTask.setTaskId(task.getId());
+            tRuTask.setTaskType(tUserTask.getTaskType());
+            if(AssignType.ROLE.code.intValue()==tUserTask.getAssignType()||AssignType.GROUP.code.intValue()==tUserTask.getAssignType()||AssignType.DEPARTMENT.code==tUserTask.getAssignType()) {
                     tRuTask.setIsFinished(-1);
-                }else{
-                    tRuTask.setIsFinished(0);
-                    tRuTask.setApproverReal(approver);
-                }
-                tRuTask.setExpireTime(task.getDueDate());
-                tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
-                tRuTaskList.add(tRuTask);
-            }
+                }else{tRuTask.setIsFinished(0);
+            tRuTask.setApproverReal(approver);
+                }tRuTask.setExpireTime(task.getDueDate());
+            tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
+            tRuTaskList.add(tRuTask);}
 
 
-            tRuTaskService.insertBatch(tRuTaskList);
+        tRuTaskService.insertBatch(tRuTaskList);
         return true;
         }catch (Exception e){
             logger.error(e);
@@ -121,7 +119,7 @@ public class WorkflowBaseController extends BaseController{
      */
     protected Boolean checkBusinessKeyIsInFlow(String processDefiniKey, String bussinessKey, Integer appKey) {
         TaskQuery taskQuery = taskService.createTaskQuery().processDefinitionKey(processDefiniKey).processInstanceBusinessKey(bussinessKey);
-        taskQuery.processVariableValueEquals("appKey",appKey);
+        taskQuery.processVariableValueEquals("appKey", appKey);
         Task task = taskQuery.singleResult();
 
         if (task != null) {
@@ -256,16 +254,18 @@ public class WorkflowBaseController extends BaseController{
         }
         return taskDefinitionList;
     }
+
     /**
      * 将任务列表转换成返回出参任务列表
+     *
      * @param list
      * @return
      */
-    protected  List<TaskNodeResult> toTaskNodeResultList(List<Task> list){
-        List<TaskNodeResult> nodeResults=new ArrayList<>();
+    protected  List<TaskNodeResult> toTaskNodeResultList(List<Task> list) {
+        List<TaskNodeResult> nodeResults = new ArrayList<>();
         TaskNodeResult taskNodeResult;
-        for(Task task:list){
-            taskNodeResult=toTaskNodeResult(task);
+        for (Task task : list) {
+            taskNodeResult = toTaskNodeResult(task);
             nodeResults.add(taskNodeResult);
         }
         return nodeResults;
@@ -273,12 +273,13 @@ public class WorkflowBaseController extends BaseController{
 
     /**
      * 转换成出参任务
+     *
      * @param task
      * @return
      */
-    protected static TaskNodeResult toTaskNodeResult(Task task){
+    protected static TaskNodeResult toTaskNodeResult(Task task) {
 
-        TaskNodeResult taskNodeResult=new TaskNodeResult();
+        TaskNodeResult taskNodeResult = new TaskNodeResult();
 
         taskNodeResult.setTaskId(task.getId());
         taskNodeResult.setTaskDefinedKey(task.getTaskDefinitionKey());

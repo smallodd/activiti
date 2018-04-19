@@ -7,8 +7,6 @@ import java.io.Serializable;
  */
 public class Result implements Serializable {
 
-
-
     private static final long serialVersionUID = 5576237395711742681L;
     /**
      * 是否成功 ，默认false
@@ -23,9 +21,26 @@ public class Result implements Serializable {
      */
     private String code;
     /**
+     * 描述信息
+     */
+    private String desc;
+    /**
      * 数据
      */
     private Object obj = null;
+
+    public Result(){}
+
+    public Result(String code, String msg){
+        this.code = code;
+        this.msg = msg;
+        this.success = false;
+    }
+
+    public Result(boolean success, String msg) {
+        this.success = success;
+        this.msg = msg;
+    }
 
     public String getCode() {
         return code;
@@ -59,4 +74,11 @@ public class Result implements Serializable {
         this.obj = obj;
     }
 
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
 }
