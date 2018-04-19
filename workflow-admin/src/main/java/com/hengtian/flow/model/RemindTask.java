@@ -31,11 +31,6 @@ public class RemindTask {
     @TableField(value = "task_id")
     private String taskId;
     /**
-     * 审批人工号
-     */
-    @TableField(value = "approver_id")
-    private String approverId;
-    /**
      * 催办人工号
      */
     @TableField(value = "reminder_id")
@@ -78,14 +73,6 @@ public class RemindTask {
 
     public void setTaskId(String taskId) {
         this.taskId = taskId;
-    }
-
-    public String getApproverId() {
-        return approverId;
-    }
-
-    public void setApproverId(String approverId) {
-        this.approverId = approverId;
     }
 
     public String getReminderId() {
