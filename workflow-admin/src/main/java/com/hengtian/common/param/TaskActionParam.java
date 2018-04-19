@@ -126,7 +126,7 @@ public class TaskActionParam {
                 }
             }else if(TaskActionEnum.REMIND.value.equals(actionType)){
                 //催办-参数校验
-                if(StringUtils.isBlank(getProcessInstanceId()) || StringUtils.isBlank(getTargetTaskDefKey())){
+                if(StringUtils.isBlank(getTaskId())){
                     result.setMsg("参数processInstanceId，targetTaskDefKey都不能为空");
                 }
             }else if(TaskActionEnum.ENQUIRE.value.equals(actionType)){

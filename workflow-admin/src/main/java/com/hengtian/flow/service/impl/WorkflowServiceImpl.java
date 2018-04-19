@@ -36,14 +36,13 @@ public class WorkflowServiceImpl implements WorkflowService {
     /**
      * 催办 只有申请人可以催办
      * @param userId 操作人ID
-     * @param processInstanceId 流程实例ID
-     * @param targetTaskDefKey 催办任务节点KEY，多个用逗号隔开，为空时催办流程中所有任务
+     * @param taskId 任务 ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:00
      */
     @Override
-    public Result taskRemind(String userId, String processInstanceId, String targetTaskDefKey) {
+    public Result taskRemind(String userId, String taskId) {
 
         return null;
     }
