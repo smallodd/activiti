@@ -89,6 +89,19 @@ public abstract class BaseController {
         return JSONObject.toJSONString(result);
     }
 
+
+    /**
+     * ajax成功
+     * @param msg 消息
+     * @return {Object}
+     */
+    public Result resultSuccess(String msg) {
+        Result result = new Result();
+        result.setSuccess(true);
+        result.setMsg(msg);
+        return result;
+    }
+
     /**
      * ajax成功
      * @param obj 成功时的对象

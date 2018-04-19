@@ -49,7 +49,6 @@ public class ProcessParam {
      * 自定义参数
      */
     @ApiModelProperty(value = "自定义审批人", required = true, example="{'code':'string'}")
-
     private String  jsonVariables;
 
     public String getCreatorId() {
@@ -59,8 +58,6 @@ public class ProcessParam {
     public void setCreatorId(String creatorId) {
         this.creatorId = creatorId;
     }
-
-
 
     public String getTitle() {
         return title;

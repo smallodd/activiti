@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
@@ -17,7 +18,8 @@ import com.hengtian.common.param.TaskNodeResult;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
-import com.hengtian.flow.model.TRuTask;
+import com.hengtian.common.shiro.ShiroUser;
+import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
@@ -74,8 +76,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("接口创建任务操作")
     @ApiOperation(httpMethod = "POST", value = "生成任务接口")
-    public Result startProcessInstance( @ApiParam(value = "创建任务必传信息", name = "processParam", required = true) @RequestBody ProcessParam processParam) {
-
+    public Result startProcessInstance(@ApiParam(value = "创建任务必传信息", name = "processParam", required = true) @RequestBody ProcessParam processParam) {
         logger.info("接口创建任务开始，请求参数{}", JSONObject.toJSONString(processParam));
         String jsonVariables = processParam.getJsonVariables();
         Map<String, Object> variables = new HashMap<>();
@@ -165,6 +166,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
     /**
      * 设置审批人接口
+     *
      * @param taskParam
      * @return
      */
@@ -172,16 +174,16 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("设置审批人接口")
     @ApiOperation(httpMethod = "POST", value = "设置审批人接口")
-    public Result setApprover( @ApiParam(value = "设置审批人信息", name = "taskParam", required = true)@RequestBody TaskParam taskParam) {
-        logger.info("设置审批人接口调用，参数{}",JSONObject.toJSONString(taskParam));
-        Result result=new Result();
-        if(StringUtils.isBlank(taskParam.getApprover())||taskParam.getAssignType()==null||StringUtils.isBlank(taskParam.getTaskType())||StringUtils.isBlank(taskParam.getTaskId())){
+    public Result setApprover(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
+        logger.info("设置审批人接口调用，参数{}", JSONObject.toJSONString(taskParam));
+        Result result = new Result();
+        if (StringUtils.isBlank(taskParam.getApprover()) || taskParam.getAssignType() == null || StringUtils.isBlank(taskParam.getTaskType()) || StringUtils.isBlank(taskParam.getTaskId())) {
             logger.info("参数不合法");
             result.setMsg("参数不合法");
             result.setCode(Constant.PARAM_ERROR);
             return result;
         }
-        if(!TaskType.checkExist(taskParam.getTaskType())){
+        if (!TaskType.checkExist(taskParam.getTaskType())) {
             logger.info("任务类型不存在");
             result.setCode(Constant.TASK_TYPE_ERROR);
             result.setMsg("任务类型不正确");
@@ -189,30 +191,30 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return result;
         }
 
-        if(!AssignType.checkExist(taskParam.getAssignType())){
+        if (!AssignType.checkExist(taskParam.getAssignType())) {
             logger.info("审批人类型不存在");
             result.setCode(Constant.ASSIGN_TYPE_ERROR);
             result.setMsg("审批人类型不正确");
             result.setObj(AssignType.getList());
             return result;
         }
-        Task task=taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
-        if(task==null){
+        Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
+        if (task == null) {
             result.setMsg("任务不存在！");
             result.setCode(Constant.TASK_NOT_EXIT);
             result.setSuccess(false);
             return result;
         }
-        TUserTask tUserTask=new TUserTask();
+        TUserTask tUserTask = new TUserTask();
         tUserTask.setAssignType(taskParam.getAssignType());
         tUserTask.setTaskType(taskParam.getTaskType());
         tUserTask.setCandidateIds(taskParam.getApprover());
-        Boolean flag= setApprover(task, tUserTask);
-        if(flag){
+        Boolean flag = setApprover(task, tUserTask);
+        if (flag) {
             result.setMsg("设置成功！");
             result.setCode(Constant.SUCCESS);
             result.setSuccess(true);
-        }else{
+        } else {
             result.setMsg("设置失败，请联系管理员！");
             result.setCode(Constant.FAIL);
 
@@ -224,14 +226,20 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * 任务跳转
      *
      * @param taskId            任务ID
-     * @param taskDefinitionKey 任务key
+     * @param userId            任务原所属用户ID
+     * @param taskDefinitionKey 任务节点KEY
      * @return
      */
     @SysLog(value = "任务跳转")
     @RequestMapping("/jumpTask/{taskId}")
     @ResponseBody
-    public Result jumpTask(@PathVariable String taskId, String taskDefinitionKey) {
-        return null;
+    public Object jumpTask(@PathVariable String taskId, String userId, String taskDefinitionKey) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.JUMP.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setTaskId(taskId);
+        taskActionParam.setTargetTaskDefKey(taskDefinitionKey);
+        return taskAction(taskActionParam);
     }
 
     /**
@@ -245,49 +253,87 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @SysLog(value = "任务转办")
     @RequestMapping("/transferTask/{taskId}")
     @ResponseBody
-    public Result transferTask(@PathVariable String taskId, String userId, String transferUserId) {
-        return null;
+    public Object transferTask(@PathVariable String taskId, String userId, String transferUserId) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.TRANSFER.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setTargetUserId(transferUserId);
+        taskActionParam.setTaskId(taskId);
+        return taskAction(taskActionParam);
+    }
+
+    /**
+     * 问询
+     *
+     * @param processInstanceId 流程实例ID
+     * @param userId            任务原所属用户ID
+     * @param taskDefinitionKey 任务节点KEY
+     * @return
+     */
+    @SysLog(value = "问询")
+    @RequestMapping("/enquire/{processInstanceId}")
+    @ResponseBody
+    public Object enquire(@PathVariable String processInstanceId, String userId, String taskDefinitionKey) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.ENQUIRE.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setProcessInstanceId(processInstanceId);
+        taskActionParam.setTargetTaskDefKey(taskDefinitionKey);
+        return taskAction(taskActionParam);
     }
 
     /**
      * 确认问询
      *
-     * @param taskId            任务ID
-     * @param taskDefinitionKey 任务key
+     * @param processInstanceId 任务ID
+     * @param userId            任务原所属用户ID
      * @return
      */
     @SysLog(value = "确认问询")
-    @RequestMapping("/confirmEnquiries/{taskId}")
+    @RequestMapping("/confirmEnquiries/{processInstanceId}")
     @ResponseBody
-    public Result confirmEnquiries(@PathVariable String taskId, String taskDefinitionKey) {
-        return null;
+    public Object confirmEnquiries(@PathVariable String processInstanceId, String userId) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.CONFIRMENQUIRE.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setProcessInstanceId(processInstanceId);
+        return taskAction(taskActionParam);
     }
 
     /**
      * 挂起任务
      *
-     * @param taskId            任务ID
-     * @param taskDefinitionKey 任务key
+     * @param taskId 任务ID
+     * @param userId 任务原所属用户ID
      * @return
      */
     @SysLog(value = "挂起任务")
     @RequestMapping("/suspendTask/{taskId}")
     @ResponseBody
-    public Result suspendTask(@PathVariable String taskId, String taskDefinitionKey) {
-        return null;
+    public Object suspendTask(@PathVariable String taskId, String userId) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setTaskId(taskId);
+        return taskAction(taskActionParam);
     }
 
     /**
      * 激活任务
      *
-     * @param taskId            任务ID
+     * @param taskId 任务ID
+     * @param userId 任务原所属用户ID
      * @return
      */
     @SysLog(value = "激活任务")
     @RequestMapping("/activateTask/{taskId}")
     @ResponseBody
-    public Result activateTask(@PathVariable String taskId) {
-        return null;
+    public Object activateTask(@PathVariable String taskId, String userId) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setTaskId(taskId);
+        return taskAction(taskActionParam);
     }
 
     /**
@@ -317,24 +363,44 @@ public class WorkflowOperateController extends WorkflowBaseController {
     }
 
     /**
-     * 任务操作接口：包括
+     * 任务操作接口
      *
-     * @param taskActionParam
+     * @param taskActionParam 请求类型 actionType
+     *                        1跳转 jump
+     *                        2转办 transfer
+     *                        3催办 remind
+     *                        4问询 enquire
+     *                        5确认问询 confirmEnquire
+     *                        6撤回 revoke
+     *                        7取消 cancel
+     *                        8挂起任务 suspend
+     *                        9激活任务 activate
      * @return result
      * @author houjinrong@chtwm.com
      * date 2018/4/18 9:38
      */
+    @RequestMapping(value = "/option", method = RequestMethod.POST)
+    @ResponseBody
+    @SysLog("任务操作接口")
+    @ApiOperation(httpMethod = "POST", value = "任务操作接口")
     public Object taskAction(TaskActionParam taskActionParam) {
         String actionType = taskActionParam.getActionType();
         if (StringUtils.isBlank(actionType)) {
             return renderError("操作类型不能为空");
+        } else if (StringUtils.isBlank(taskActionParam.getUserId())) {
+            return renderError("操作人工号不能为空");
         }
 
-        Result result = new Result();
-        if (true) {
+        //校验操作人权限
 
+
+        //参数校验
+        Result validate = taskActionParam.validate();
+        if (validate.isSuccess()) {
+            TaskAdapter taskAdapter = new TaskAdapter();
+            return taskAdapter.taskAction(taskActionParam);
+        } else {
+            return validate;
         }
-
-        return result;
     }
 }
