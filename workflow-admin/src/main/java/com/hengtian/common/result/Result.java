@@ -37,6 +37,11 @@ public class Result implements Serializable {
         this.success = false;
     }
 
+    public Result(boolean success, String msg) {
+        this.success = success;
+        this.msg = msg;
+    }
+
     public String getCode() {
         return code;
     }
