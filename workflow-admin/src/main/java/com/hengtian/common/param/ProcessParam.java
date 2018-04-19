@@ -30,7 +30,7 @@ public class ProcessParam {
      * 系统定义的key
      */
     @ApiModelProperty(value = "系统定义的key", required = true, example="系统定义的key")
-    private String appKey;
+    private Integer appKey;
     /**
      * 业务主键，各个业务系统中唯一
      */
@@ -71,11 +71,11 @@ public class ProcessParam {
         this.processDefinitionKey = processDefinitionKey;
     }
 
-    public String getAppKey() {
+    public Integer getAppKey() {
         return appKey;
     }
 
-    public void setAppKey(String appKey) {
+    public void setAppKey(Integer appKey) {
         this.appKey = appKey;
     }
 
@@ -116,7 +116,7 @@ public class ProcessParam {
             result.setMsg("title标题属于必传字段！");
         }else if(StringUtils.isBlank(getProcessDefinitionKey())){
             result.setMsg("processDefinitionKey流程定义key属于必传字段！");
-        }else if(StringUtils.isBlank(getAppKey())){
+        }else if(getAppKey()==null){
             result.setMsg("appKey系统定义key属于必传字段！");
         }else if(StringUtils.isBlank(getBussinessKey())){
             result.setMsg("bussinessKey业务主键属于必传字段！");

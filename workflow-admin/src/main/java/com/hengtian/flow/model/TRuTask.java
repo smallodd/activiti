@@ -33,7 +33,9 @@ public class TRuTask implements Serializable {
     @TableField(value = "is_finished")
     private int isFinished;
     @TableField(value = "app_key")
-    private String appKey;
+    private Integer appKey;
+    @TableField(value = "approver_real")
+    private String approverReal;
 
     public String getId() {
         return id;
@@ -107,11 +109,19 @@ public class TRuTask implements Serializable {
         this.isFinished = isFinished;
     }
 
-    public String getAppKey() {
+    public Integer getAppKey() {
         return appKey;
     }
 
-    public void setAppKey(String appKey) {
+    public void setAppKey(Integer appKey) {
         this.appKey = appKey;
+    }
+
+    public String getApproverReal() {
+        return approverReal;
+    }
+
+    public void setApproverReal(String approverReal) {
+        this.approverReal = approverReal;
     }
 }

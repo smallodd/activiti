@@ -41,7 +41,14 @@ public class Constant {
      * 任务不存在
      */
     public static final String TASK_NOT_EXIT="1005";
-
+    /**
+     * 问询的任务不能继续审批
+     */
+    public static final String ASK_TASK_EXIT="1006";
+    /**
+     * 任务不属于该用户
+     */
+    public static final String TASK_NOT_BELONG_USER="1007";
 
 
 

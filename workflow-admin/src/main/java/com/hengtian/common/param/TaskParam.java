@@ -1,6 +1,10 @@
 package com.hengtian.common.param;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Map;
 
 /**
  * Created by ma on 2018/4/18.
@@ -20,7 +24,17 @@ public class TaskParam {
     //审批人
     @ApiModelProperty(value = "审批人", example="H00001")
     private String approver;
-
+    @JsonIgnore
+    @ApiModelProperty(value = "审批时传参数", example="审批意见")
+    private String comment;
+    //通过状态  1 通过 2 是拒绝 3通过参数流转
+    @JsonIgnore
+    @ApiModelProperty(value = "是否通过", example="1是通过，2是拒绝，3是通过条件参数流转")
+    private int pass;
+    //参数的json格式
+    @JsonIgnore
+    @ApiModelProperty(value = "审批时传的条件参数", example="{a:b}")
+    private String jsonVariables;
     public String getTaskId() {
         return taskId;
     }
@@ -51,5 +65,29 @@ public class TaskParam {
 
     public void setApprover(String approver) {
         this.approver = approver;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public int getPass() {
+        return pass;
+    }
+
+    public void setPass(int pass) {
+        this.pass = pass;
+    }
+
+    public String getJsonVariables() {
+        return jsonVariables;
+    }
+
+    public void setJsonVariables(String jsonVariables) {
+        this.jsonVariables = jsonVariables;
     }
 }

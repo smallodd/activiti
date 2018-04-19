@@ -16,7 +16,9 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.flow.extend.TaskAdapter;
+import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
 import io.swagger.annotations.ApiOperation;
@@ -61,6 +63,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
     RepositoryService repositoryService;
     @Autowired
     HistoryService historyService;
+
+    @Autowired
+    TAskTaskService tAskTaskService;
 
     /**
      * 任务创建接口
@@ -110,7 +115,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 result.setCode(Constant.BUSSINESSKEY_EXIST);
                 return result;
             } else {
-                variables.put("customApprover", true);
+                variables.put("customApprover", processParam.isCustomApprover());
                 variables.put("appKey",processParam.getAppKey());
                 //生成任务
                 ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(processParam.getProcessDefinitionKey(), processParam.getBussinessKey(), variables);
@@ -153,6 +158,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     result.setCode(Constant.SUCCESS);
                     result.setMsg("申请成功");
                     result.setObj(toTaskNodeResultList(taskList));
+
                 }
             }
 
@@ -170,7 +176,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("设置审批人接口")
     @ApiOperation(httpMethod = "POST", value = "设置审批人接口")
-    public Result setApprover(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
+    public Object setApprover(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
         logger.info("设置审批人接口调用，参数{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         if (StringUtils.isBlank(taskParam.getApprover()) || taskParam.getAssignType() == null || StringUtils.isBlank(taskParam.getTaskType()) || StringUtils.isBlank(taskParam.getTaskId())) {
@@ -201,6 +207,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
             result.setSuccess(false);
             return result;
         }
+        //判断此节点可以设置审批人
+        Map<String,Object> map=taskService.getVariables(task.getId());
+        if(!Boolean.valueOf(map.get("customApprover").toString())){
+            return renderError("此任务不可以设置审批人！审批人由操作后台设置",Constant.PARAM_ERROR);
+        }
         TUserTask tUserTask = new TUserTask();
         tUserTask.setAssignType(taskParam.getAssignType());
         tUserTask.setTaskType(taskParam.getTaskType());
@@ -218,6 +229,33 @@ public class WorkflowOperateController extends WorkflowBaseController {
         return result;
     }
 
+
+    @RequestMapping(value = "approveTask", method = RequestMethod.POST)
+    @ResponseBody
+    @SysLog("审批任务接口")
+    @ApiOperation(httpMethod = "POST", value = "审批任务接口")
+    public Object approveTask(@RequestBody  TaskParam taskParam){
+        Result result=new Result();
+        Task task=taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
+        if(task==null){
+            return renderError("任务不存在！",Constant.TASK_NOT_EXIT);
+        }
+        //查询是否当前审批人是否在当前结点有问询信息
+        EntityWrapper entityWrapper=new EntityWrapper();
+        entityWrapper.where("current_task_key={0}",task.getTaskDefinitionKey()).andNew("is_ask_end={0}",0).andNew("ask_user_id={0}",taskParam.getApprover());
+        //查询是否有正在问询的节点
+        TAskTask tAskTask=tAskTaskService.selectOne(entityWrapper);
+        if(tAskTask!=null){
+
+            return  renderError("您的问询信息还未得到相应，不能审批通过",Constant.ASK_TASK_EXIT);
+        }
+        //查询当前任务节点审批人是不是当前人
+
+        return approveTask(task,taskParam);
+
+
+
+    }
     /**
      * 任务跳转
      *
