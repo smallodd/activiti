@@ -1,6 +1,5 @@
 package com.hengtian.common.param;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**

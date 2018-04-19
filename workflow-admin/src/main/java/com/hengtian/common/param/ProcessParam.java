@@ -1,13 +1,9 @@
 package com.hengtian.common.param;
 
-import com.alibaba.fastjson.JSONObject;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Map;
 
 /**
  * Created by ma on 2018/4/17.
@@ -48,7 +44,7 @@ public class ProcessParam {
     /**
      * 自定义参数
      */
-    @ApiModelProperty(value = "自定义审批人", required = true, example="{'code':'string'}")
+    @ApiModelProperty(value = "自定义参数", required = true, example="{'code':'string'}")
     private String  jsonVariables;
 
     public String getCreatorId() {

@@ -1,9 +1,21 @@
 package com.hengtian.flow.service.impl;
 
+import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.result.Result;
+import com.hengtian.flow.model.RemindTask;
+import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import org.activiti.engine.TaskService;
+import org.activiti.engine.task.Task;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class WorkflowServiceImpl implements WorkflowService {
+
+    @Autowired
+    private TaskService taskService;
+
+    @Autowired
+    private RemindTaskService remindTaskService;
 
     /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
@@ -43,7 +55,21 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskRemind(String userId, String taskId) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task ==  null){
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
 
+        RemindTask remindTask = new RemindTask();
+        remindTask.setReminderId(userId);
+        remindTask.setProcInstId(task.getProcessInstanceId());
+        remindTask.setTaskId(taskId);
+        remindTask.setIsComplete(0);
+
+        boolean insertFlag = remindTaskService.insert(remindTask);
+        if(insertFlag){
+            //发送邮件
+        }
         return null;
     }
 
