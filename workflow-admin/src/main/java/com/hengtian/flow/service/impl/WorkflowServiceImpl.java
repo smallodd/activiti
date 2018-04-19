@@ -2,19 +2,32 @@ package com.hengtian.flow.service.impl;
 
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
+import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import com.hengtian.flow.model.RemindTask;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import org.activiti.engine.ManagementService;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.impl.interceptor.Command;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.task.Task;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 public class WorkflowServiceImpl implements WorkflowService {
-    private static final Logger log = LoggerFactory.getLogger(WorkflowServiceImpl.class);
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
     @Autowired
     private RepositoryService repositoryService;
-    @Autowired
-    private TaskService taskService;
+
     @Autowired
     private ManagementService managementService;
 
