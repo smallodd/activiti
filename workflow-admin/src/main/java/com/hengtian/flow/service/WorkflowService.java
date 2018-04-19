@@ -1,6 +1,7 @@
 package com.hengtian.flow.service;
 
 import com.hengtian.common.result.Result;
+import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.exception.WorkFlowException;
 
 public interface WorkflowService {

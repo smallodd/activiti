@@ -109,6 +109,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         remindTask.setReminderId(userId);
         remindTask.setProcInstId(task.getProcessInstanceId());
         remindTask.setTaskId(taskId);
+        remindTask.setTaskName(task.getName());
         remindTask.setIsComplete(0);
 
         boolean insertFlag = remindTaskService.insert(remindTask);

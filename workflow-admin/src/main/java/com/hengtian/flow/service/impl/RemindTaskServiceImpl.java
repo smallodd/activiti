@@ -6,4 +6,5 @@ import com.hengtian.flow.model.RemindTask;
 import com.hengtian.flow.service.RemindTaskService;
 
 public class RemindTaskServiceImpl extends ServiceImpl<RemindTaskDao, RemindTask> implements RemindTaskService {
+
 }

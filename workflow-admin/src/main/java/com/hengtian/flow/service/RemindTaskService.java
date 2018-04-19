@@ -1,6 +1,8 @@
 package com.hengtian.flow.service;
 
 import com.baomidou.mybatisplus.service.IService;
+import com.hengtian.common.param.TaskQueryParam;
+import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.RemindTask;
 
 /**
@@ -10,5 +12,7 @@ import com.hengtian.flow.model.RemindTask;
  */
 public interface RemindTaskService extends IService<RemindTask> {
 
+    //PageInfo taskRemindList(TaskQueryParam taskQueryParam);
 
+    //PageInfo taskRemindedList(TaskQueryParam taskQueryParam);
 }
