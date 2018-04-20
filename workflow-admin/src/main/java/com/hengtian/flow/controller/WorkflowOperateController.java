@@ -389,7 +389,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object revokeProcessInstance(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
                                         @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
-        taskActionParam.setActionType(TaskActionEnum.CANCEL.value);
+        taskActionParam.setActionType(TaskActionEnum.REVOKE.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
         return taskAction(taskActionParam);
