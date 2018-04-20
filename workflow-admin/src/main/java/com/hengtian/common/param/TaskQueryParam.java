@@ -2,7 +2,6 @@ package com.hengtian.common.param;
 
 import io.swagger.annotations.ApiModelProperty;
 
-
 /**
  * 查询任务-入参
  * @author houjinrong@chtwm.com
@@ -21,20 +20,16 @@ public class TaskQueryParam {
     @ApiModelProperty(value = "创建任务的标题",  example="测试任务标题")
     private String title;
     /**
-     * 流程定义key
+     * 任务名称
      */
-    @ApiModelProperty(value = "流程定义key", example="流程定义key")
-    private String processDefinitionKey;
+    @ApiModelProperty(value = "任务名称", example="任务名称")
+    private String taskName;
     /**
      * 系统定义的key
      */
     @ApiModelProperty(value = "系统定义的key", required = true, example="系统定义的key")
     private String appKey;
-    /**
-     * 业务主键，各个业务系统中唯一
-     */
-    @ApiModelProperty(value = "业务主键，各个业务系统中唯一", example="业务主键")
-    private String bussinessKey;
+
     /**
      * 分页-当前页
      */
@@ -62,12 +57,12 @@ public class TaskQueryParam {
         this.title = title;
     }
 
-    public String getProcessDefinitionKey() {
-        return processDefinitionKey;
+    public String getTaskName() {
+        return taskName;
     }
 
-    public void setProcessDefinitionKey(String processDefinitionKey) {
-        this.processDefinitionKey = processDefinitionKey;
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
     }
 
     public String getAppKey() {
@@ -76,14 +71,6 @@ public class TaskQueryParam {
 
     public void setAppKey(String appKey) {
         this.appKey = appKey;
-    }
-
-    public String getBussinessKey() {
-        return bussinessKey;
-    }
-
-    public void setBussinessKey(String bussinessKey) {
-        this.bussinessKey = bussinessKey;
     }
 
     public int getPageNum() {

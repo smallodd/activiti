@@ -3,19 +3,44 @@
 <mapper namespace="com.hengtian.flow.dao.RemindTaskDao">
 
     <select id="taskRemindList" parameterType="com.hengtian.common.param.TaskQueryParam" resultType="RemindTask">
-      SELECT
-        *
-      FROM
-        t_remind_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID = art.ID_ AND trt.REMINDER_ID=#{reminderId}
-        LEFT JOIN act_re_procdef AS arp ON art.PROC_DEF_ID_=arp.ID_
-        LEFT JOIN t_app_model AS tam ON tam.MODEL_KEY=arp.KEY_ AND arp.APP_KEY=#{appKey}
-      WHERE 1=1
-        <if test="title != null and title != ''">
-          AND
-        </if>
+        SELECT
+            trt.*
+        FROM
+            t_remind_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID = art.ID_ AND trt.REMINDER_ID=#{userId}
+
+            <if test="appKey != null and appKey != ''">
+                LEFT JOIN t_app_procinst AS tap ON tap.APP_KEY=#{appKey} AND tap.PROC_INST_ID=art.PROC_INST_ID_
+            </if>
+            <if test="title != null and title != ''">
+                LEFT JOIN act_hi_procinst AS ahp ON ahp.PROC_INST_ID_=art.PROC_INST_ID_
+            </if>
+            WHERE 1=1
+            <if test="title != null and title != ''">
+                AND ahp.NAME_ LIKE CONCAT("%",#{title},"%")
+            </if>
+            <if test="taskName != null and taskName != ''">
+                AND art.NAME_ LIKE CONCAT("%",#{taskName},"%")
+            </if>
     </select>
 
     <select id="taskRemindedList" parameterType="com.hengtian.common.param.TaskQueryParam" resultType="RemindTask">
+        SELECT
+          trt.*
+        FROM
+            t_remind_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID = art.ID_
 
+            <if test="appKey != null and appKey != ''">
+                LEFT JOIN t_app_procinst AS tap ON tap.APP_KEY=#{appKey} AND tap.PROC_INST_ID=art.PROC_INST_ID_
+            </if>
+            <if test="title != null and title != ''">
+                LEFT JOIN act_hi_procinst AS ahp ON ahp.PROC_INST_ID_=art.PROC_INST_ID_
+            </if>
+            WHERE art.ASSIGNEE_ LIKE CONCAT("%",#{userId},"%")
+            <if test="title != null and title != ''">
+                AND ahp.NAME_ LIKE CONCAT("%",#{title},"%")
+            </if>
+            <if test="taskName != null and taskName != ''">
+                AND art.NAME_ LIKE CONCAT("%",#{taskName},"%")
+            </if>
     </select>
 </mapper>

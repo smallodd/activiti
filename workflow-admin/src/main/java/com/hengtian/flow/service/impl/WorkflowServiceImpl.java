@@ -173,8 +173,10 @@ public class WorkflowServiceImpl implements WorkflowService {
         boolean insertFlag = remindTaskService.insert(remindTask);
         if (insertFlag) {
             //发送邮件
+
+            return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
         }
-        return null;
+        return new Result(false, ResultEnum.FAIL.code, ResultEnum.FAIL.msg);
     }
 
     /**

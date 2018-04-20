@@ -127,7 +127,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
                 //添加应用-流程实例对应关系
                 AppProcinst appProcinst = new AppProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId());
-                boolean appProcinstInsertFlag = appProcinstService.insert(appProcinst);
+                appProcinstService.insert(appProcinst);
 
                 //给对应实例生成标题
                 runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());
