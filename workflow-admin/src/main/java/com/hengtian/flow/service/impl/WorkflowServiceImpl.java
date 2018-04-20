@@ -2,6 +2,7 @@ package com.hengtian.flow.service.impl;
 
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.enums.TaskVariable;
@@ -16,6 +17,7 @@ import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import org.activiti.engine.ManagementService;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -43,6 +45,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private RuntimeService runtimeService;
 
     @Autowired
     private RemindTaskService remindTaskService;
@@ -163,7 +168,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         remindTask.setProcInstId(task.getProcessInstanceId());
         remindTask.setTaskId(taskId);
         remindTask.setTaskName(task.getName());
-        remindTask.setIsComplete(0);
+        remindTask.setIsFinished(TaskStatusEnum.REMIND_UNFINISHED.status);
 
         boolean insertFlag = remindTaskService.insert(remindTask);
         if (insertFlag) {

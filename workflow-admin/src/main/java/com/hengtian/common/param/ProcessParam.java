@@ -30,7 +30,7 @@ public class ProcessParam {
      * 系统定义的key
      */
     @ApiModelProperty(value = "系统定义的key", required = true, example="系统定义的key")
-    private Integer appKey;
+    private String appKey;
     /**
      * 业务主键，各个业务系统中唯一
      */
@@ -71,11 +71,11 @@ public class ProcessParam {
         this.processDefinitionKey = processDefinitionKey;
     }
 
-    public Integer getAppKey() {
+    public String getAppKey() {
         return appKey;
     }
 
-    public void setAppKey(Integer appKey) {
+    public void setAppKey(String appKey) {
         this.appKey = appKey;
     }
 

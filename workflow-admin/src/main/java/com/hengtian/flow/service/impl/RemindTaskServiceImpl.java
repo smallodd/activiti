@@ -10,9 +10,11 @@ import com.hengtian.flow.service.RemindTaskService;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.generator.plugins.RowBoundsPlugin;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class RemindTaskServiceImpl extends ServiceImpl<RemindTaskDao, RemindTask> implements RemindTaskService {
 
     @Autowired

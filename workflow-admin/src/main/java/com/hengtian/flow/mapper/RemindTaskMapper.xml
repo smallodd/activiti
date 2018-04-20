@@ -6,8 +6,13 @@
       SELECT
         *
       FROM
-        t_remind_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID = art.ID_
-        LEFT JOIN
+        t_remind_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID = art.ID_ AND trt.REMINDER_ID=#{reminderId}
+        LEFT JOIN act_re_procdef AS arp ON art.PROC_DEF_ID_=arp.ID_
+        LEFT JOIN t_app_model AS tam ON tam.MODEL_KEY=arp.KEY_ AND arp.APP_KEY=#{appKey}
+      WHERE 1=1
+        <if test="title != null and title != ''">
+          AND
+        </if>
     </select>
 
     <select id="taskRemindedList" parameterType="com.hengtian.common.param.TaskQueryParam" resultType="RemindTask">

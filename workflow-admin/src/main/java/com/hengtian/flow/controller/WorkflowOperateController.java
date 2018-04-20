@@ -16,8 +16,10 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.flow.extend.TaskAdapter;
+import com.hengtian.flow.model.AppProcinst;
 import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.AppProcinstService;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
@@ -67,6 +69,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @Autowired
     TAskTaskService tAskTaskService;
 
+    @Autowired
+    AppProcinstService appProcinstService;
+
     /**
      * 任务创建接口
      *
@@ -97,9 +102,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
             AppModel appModelResult = appModelService.selectOne(wrapperApp);
             //系统与流程定义之间没有配置关系
             if (appModelResult == null) {
-                logger.info("系统键值：【{}】对应的modelkey:【{}】关系不存在!", processParam.getAppKey(), processParam.getProcessDefinitionKey());
+                logger.info("系统键值：【{}】对应的modelKey:【{}】关系不存在!", processParam.getAppKey(), processParam.getProcessDefinitionKey());
                 result.setCode(Constant.RELATION_NOT_EXIT);
-                result.setMsg("系统键值：【" + processParam.getAppKey() + "】对应的modelkey:【" + processParam.getProcessDefinitionKey() + "】关系不存在!");
+                result.setMsg("系统键值：【" + processParam.getAppKey() + "】对应的modelKey:【" + processParam.getProcessDefinitionKey() + "】关系不存在!");
                 result.setSuccess(false);
                 return result;
 
@@ -119,6 +124,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 variables.put("appKey", processParam.getAppKey());
                 //生成任务
                 ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(processParam.getProcessDefinitionKey(), processParam.getBussinessKey(), variables);
+
+                //添加应用-流程实例对应关系
+                AppProcinst appProcinst = new AppProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId());
+                boolean appProcinstInsertFlag = appProcinstService.insert(appProcinst);
 
                 //给对应实例生成标题
                 runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());

@@ -48,8 +48,8 @@ public class RemindTask {
     /**
      * 催办任务是否完成
      */
-    @TableField(value = "is_complete")
-    private int isComplete;
+    @TableField(value = "is_finished")
+    private int isFinished;
     /**
      * 创建时间
      */
@@ -109,12 +109,12 @@ public class RemindTask {
         this.reminderId = reminderId;
     }
 
-    public int getIsComplete() {
-        return isComplete;
+    public int getIsFinished() {
+        return isFinished;
     }
 
-    public void setIsComplete(int isComplete) {
-        this.isComplete = isComplete;
+    public void setIsFinished(int isFinished) {
+        this.isFinished = isFinished;
     }
 
     public Date getCreateTime() {
