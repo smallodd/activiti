@@ -64,6 +64,9 @@ public class WorkflowQueryController {
      * @param taskQueryParam 任务查询条件实体类
      * @return
      */
+    @ResponseBody
+    @SysLog("问询任务列表")
+    @ApiOperation(httpMethod = "POST", value = "问询任务列表")
     @RequestMapping(value = "/rest/task/enquire/page",method = RequestMethod.POST)
     public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         return enquireService.enquireTaskList(taskQueryParam);
@@ -76,6 +79,9 @@ public class WorkflowQueryController {
      * @param taskQueryParam 任务查询条件实体类
      * @return
      */
+    @ResponseBody
+    @SysLog("被问询任务列表")
+    @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
     @RequestMapping(value = "/rest/task/enquired/page",method = RequestMethod.POST)
     public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         return enquireService.enquiredTaskList(taskQueryParam);
@@ -87,6 +93,9 @@ public class WorkflowQueryController {
      * @param taskQueryParam 任务查询条件实体类
      * @return
      */
+    @ResponseBody
+    @SysLog("问询意见查询接口")
+    @ApiOperation(httpMethod = "POST", value = "问询意见查询接口")
     @RequestMapping(value = "/rest/task/enquired/comment",method = RequestMethod.POST)
     public Object enquireComment(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         return null;
