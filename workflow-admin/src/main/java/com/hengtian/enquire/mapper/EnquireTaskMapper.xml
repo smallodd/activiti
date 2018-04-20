@@ -6,13 +6,19 @@
             resultType="com.hengtian.enquire.model.EnquireTask">
         SELECT tet.*
         FROM t_enquire_task tet
-        WHERE tet.is_ask_end = 0 AND tet.create_id = #{userId}
+        WHERE tet.is_ask_end = 0
+        <if test="userId!=null">
+            AND tet.create_id = #{userId}
+        </if>
     </select>
 
     <select id="enquiredTaskList" parameterType="com.hengtian.common.param.TaskQueryParam"
             resultType="com.hengtian.enquire.model.EnquireTask">
         SELECT tet.*
         FROM t_enquire_task tet
-        WHERE tet.is_ask_end = 0 AND tet.ask_user_id = #{userId}
+        WHERE tet.is_ask_end = 0
+        <if test="userId!=null">
+            AND tet.ask_user_id = #{userId}
+        </if>
     </select>
 </mapper>
