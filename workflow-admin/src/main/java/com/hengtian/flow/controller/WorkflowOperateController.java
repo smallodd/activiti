@@ -116,13 +116,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 return result;
             } else {
                 variables.put("customApprover", processParam.isCustomApprover());
-                variables.put("appKey",processParam.getAppKey());
+                variables.put("appKey", processParam.getAppKey());
                 //生成任务
                 ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(processParam.getProcessDefinitionKey(), processParam.getBussinessKey(), variables);
 
                 //给对应实例生成标题
                 runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());
-                ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
+                ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
                 //查询创建完任务之后生成的任务信息
                 List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
                 //String aa=net.sf.json.JSONObject.fromObject(taskList);
@@ -131,20 +131,20 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     for (int i = 0; i < taskList.size(); i++) {
                         Task task = taskList.get(0);
                         EntityWrapper entityWrapper = new EntityWrapper();
-                        entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}",processDefinition.getVersion() );
+                        entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                         //查询当前任务任务节点信息
                         TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
-                       boolean flag= setApprover(task, tUserTask);
-                       if(!flag){
-                           taskService.addComment(task.getId(), processInstance.getProcessInstanceId(), "生成扩展任务时失败，删除任务！");//备注
-                           runtimeService.deleteProcessInstance(processInstance.getProcessInstanceId(),"");
-                           historyService.deleteHistoricProcessInstance(processInstance.getProcessInstanceId());//(顺序不能换)
+                        boolean flag = setApprover(task, tUserTask);
+                        if (!flag) {
+                            taskService.addComment(task.getId(), processInstance.getProcessInstanceId(), "生成扩展任务时失败，删除任务！");//备注
+                            runtimeService.deleteProcessInstance(processInstance.getProcessInstanceId(), "");
+                            historyService.deleteHistoricProcessInstance(processInstance.getProcessInstanceId());//(顺序不能换)
 
-                           result.setSuccess(false);
-                           result.setCode(Constant.FAIL);
-                           result.setMsg("生成扩展任务失败，删除其他信息");
-                           return result;
-                       }
+                            result.setSuccess(false);
+                            result.setCode(Constant.FAIL);
+                            result.setMsg("生成扩展任务失败，删除其他信息");
+                            return result;
+                        }
                     }
                     result.setSuccess(true);
                     result.setCode(Constant.SUCCESS);
@@ -208,9 +208,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return result;
         }
         //判断此节点可以设置审批人
-        Map<String,Object> map=taskService.getVariables(task.getId());
-        if(!Boolean.valueOf(map.get("customApprover").toString())){
-            return renderError("此任务不可以设置审批人！审批人由操作后台设置",Constant.PARAM_ERROR);
+        Map<String, Object> map = taskService.getVariables(task.getId());
+        if (!Boolean.valueOf(map.get("customApprover").toString())) {
+            return renderError("此任务不可以设置审批人！审批人由操作后台设置", Constant.PARAM_ERROR);
         }
         TUserTask tUserTask = new TUserTask();
         tUserTask.setAssignType(taskParam.getAssignType());
@@ -234,28 +234,28 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "审批任务接口")
-    public Object approveTask(@RequestBody  TaskParam taskParam){
-        Result result=new Result();
-        Task task=taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
-        if(task==null){
-            return renderError("任务不存在！",Constant.TASK_NOT_EXIT);
+    public Object approveTask(@RequestBody TaskParam taskParam) {
+        Result result = new Result();
+        Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
+        if (task == null) {
+            return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
         }
         //查询是否当前审批人是否在当前结点有问询信息
-        EntityWrapper entityWrapper=new EntityWrapper();
-        entityWrapper.where("current_task_key={0}",task.getTaskDefinitionKey()).andNew("is_ask_end={0}",0).andNew("ask_user_id={0}",taskParam.getApprover());
+        EntityWrapper entityWrapper = new EntityWrapper();
+        entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getApprover());
         //查询是否有正在问询的节点
-        TAskTask tAskTask=tAskTaskService.selectOne(entityWrapper);
-        if(tAskTask!=null){
+        TAskTask tAskTask = tAskTaskService.selectOne(entityWrapper);
+        if (tAskTask != null) {
 
-            return  renderError("您的问询信息还未得到相应，不能审批通过",Constant.ASK_TASK_EXIT);
+            return renderError("您的问询信息还未得到相应，不能审批通过", Constant.ASK_TASK_EXIT);
         }
         //查询当前任务节点审批人是不是当前人
 
-        return approveTask(task,taskParam);
-
+        return approveTask(task, taskParam);
 
 
     }
+
     /**
      * 任务跳转
      *
@@ -265,9 +265,12 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @return
      */
     @SysLog(value = "任务跳转")
-    @RequestMapping("/jumpTask/{taskId}")
+    @RequestMapping(value = "jumpTask", method = RequestMethod.POST)
     @ResponseBody
-    public Object jumpTask(@PathVariable String taskId, String userId, String taskDefinitionKey) {
+    @ApiOperation(httpMethod = "POST", value = "任务跳转接口")
+    public Object jumpTask(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
+                           @ApiParam(name = "userId", required = true, value = "任务原所属用户ID") String userId,
+                           @ApiParam(name = "taskDefinitionKey", required = true, value = "任务节点KEY") String taskDefinitionKey) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.JUMP.value);
         taskActionParam.setUserId(userId);
@@ -285,9 +288,12 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @return
      */
     @SysLog(value = "任务转办")
-    @RequestMapping("/transferTask/{taskId}")
+    @RequestMapping(value = "transferTask", method = RequestMethod.POST)
     @ResponseBody
-    public Object transferTask(@PathVariable String taskId, String userId, String transferUserId) {
+    @ApiOperation(httpMethod = "POST", value = "任务转办接口")
+    public Object transferTask(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
+                               @ApiParam(name = "userId", required = true, value = "任务原所属用户ID") String userId,
+                               @ApiParam(name = "transferUserId", required = true, value = "任务要转办用户ID") String transferUserId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.TRANSFER.value);
         taskActionParam.setUserId(userId);
@@ -300,14 +306,17 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * 问询
      *
      * @param processInstanceId 流程实例ID
-     * @param userId            任务原所属用户ID
+     * @param userId            用户ID
      * @param taskDefinitionKey 任务节点KEY
      * @return
      */
     @SysLog(value = "问询")
-    @RequestMapping("/enquire/{processInstanceId}")
+    @RequestMapping(value = "enquire", method = RequestMethod.POST)
     @ResponseBody
-    public Object enquire(@PathVariable String processInstanceId, String userId, String taskDefinitionKey) {
+    @ApiOperation(httpMethod = "POST", value = "问询接口")
+    public Object enquire(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
+                          @ApiParam(name = "userId", required = true, value = "用户ID") String userId,
+                          @ApiParam(name = "taskDefinitionKey", required = true, value = "任务节点KEY") String taskDefinitionKey) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ENQUIRE.value);
         taskActionParam.setUserId(userId);
@@ -320,13 +329,15 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * 确认问询
      *
      * @param processInstanceId 任务ID
-     * @param userId            任务原所属用户ID
+     * @param userId            用户ID
      * @return
      */
     @SysLog(value = "确认问询")
-    @RequestMapping("/confirmEnquiries/{processInstanceId}")
+    @RequestMapping(value = "confirmEnquiries", method = RequestMethod.POST)
     @ResponseBody
-    public Object confirmEnquiries(@PathVariable String processInstanceId, String userId) {
+    @ApiOperation(httpMethod = "POST", value = "确认问询接口")
+    public Object confirmEnquiries(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
+                                   @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.CONFIRMENQUIRE.value);
         taskActionParam.setUserId(userId);
@@ -338,13 +349,15 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * 挂起任务
      *
      * @param taskId 任务ID
-     * @param userId 任务原所属用户ID
+     * @param userId 用户ID
      * @return
      */
     @SysLog(value = "挂起任务")
-    @RequestMapping("/suspendTask/{taskId}")
+    @RequestMapping(value = "suspendTask", method = RequestMethod.POST)
     @ResponseBody
-    public Object suspendTask(@PathVariable String taskId, String userId) {
+    @ApiOperation(httpMethod = "POST", value = "挂起任务接口")
+    public Object suspendTask(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
+                              @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
         taskActionParam.setUserId(userId);
@@ -356,13 +369,15 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * 激活任务
      *
      * @param taskId 任务ID
-     * @param userId 任务原所属用户ID
+     * @param userId 用户ID
      * @return
      */
     @SysLog(value = "激活任务")
-    @RequestMapping("/activateTask/{taskId}")
+    @RequestMapping(value = "activateTask", method = RequestMethod.POST)
     @ResponseBody
-    public Object activateTask(@PathVariable String taskId, String userId) {
+    @ApiOperation(httpMethod = "POST", value = "激活任务接口")
+    public Object activateTask(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
+                               @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
         taskActionParam.setUserId(userId);
@@ -373,26 +388,32 @@ public class WorkflowOperateController extends WorkflowBaseController {
     /**
      * 挂起流程
      *
-     * @param processId 流程ID
+     * @param processInstanceId 流程实例ID
+     * @param userId            用户ID
      * @return
      */
     @SysLog(value = "挂起流程")
-    @RequestMapping("/suspendProcess/{processId}")
+    @RequestMapping(value = "suspendProcess", method = RequestMethod.POST)
     @ResponseBody
-    public Result suspendProcess(@PathVariable String processId) {
+    @ApiOperation(httpMethod = "POST", value = "挂起流程接口")
+    public Result suspendProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
+                                 @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         return null;
     }
 
     /**
      * 激活流程
      *
-     * @param processId 流程ID
+     * @param processInstanceId 流程实例ID
+     * @param userId            用户ID
      * @return
      */
     @SysLog(value = "激活流程")
-    @RequestMapping("/activateProcess/{processId}")
+    @RequestMapping(value = "activateProcess", method = RequestMethod.POST)
     @ResponseBody
-    public Result activateProcess(@PathVariable String processId) {
+    @ApiOperation(httpMethod = "POST", value = "激活流程接口")
+    public Result activateProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
+                                  @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         return null;
     }
 
