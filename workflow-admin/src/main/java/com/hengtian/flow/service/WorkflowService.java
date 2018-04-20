@@ -2,15 +2,14 @@ package com.hengtian.flow.service;
 
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
-import com.hengtian.common.utils.PageInfo;
-import com.hengtian.common.workflow.exception.WorkFlowException;
 
 public interface WorkflowService {
 
     /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     *
+     * @param userId           操作人ID
+     * @param taskId           任务ID
      * @param targetTaskDefKey 跳转到的任务节点KEY
      * @return
      * @author houjinrong@chtwm.com
@@ -20,8 +19,9 @@ public interface WorkflowService {
 
     /**
      * 转办 管理严权限不受限制，可以任意设置转办
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     *
+     * @param userId       操作人ID
+     * @param taskId       任务ID
      * @param targetUserId 转办人ID
      * @return
      * @author houjinrong@chtwm.com
@@ -31,6 +31,7 @@ public interface WorkflowService {
 
     /**
      * 催办 只有申请人可以催办
+     *
      * @param userId 操作人ID
      * @param taskId 任务 ID
      * @return
@@ -41,8 +42,9 @@ public interface WorkflowService {
 
     /**
      * 问询
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     *
+     * @param userId           操作人ID
+     * @param taskId           任务ID
      * @param targetTaskDefKey 问询任务节点KEY
      * @return
      * @author houjinrong@chtwm.com
@@ -52,6 +54,7 @@ public interface WorkflowService {
 
     /**
      * 问询确认
+     *
      * @param userId 操作人ID
      * @param taskId 需问询确认的任务ID
      * @return
@@ -62,7 +65,8 @@ public interface WorkflowService {
 
     /**
      * 撤回
-     * @param userId 操作人ID
+     *
+     * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
@@ -72,7 +76,8 @@ public interface WorkflowService {
 
     /**
      * 取消 只有流程发起人方可进行取消操作
-     * @param userId 操作人ID
+     *
+     * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
@@ -82,6 +87,7 @@ public interface WorkflowService {
 
     /**
      * 挂起
+     *
      * @param userId 操作人ID
      * @param taskId 任务ID
      * @return
@@ -92,6 +98,7 @@ public interface WorkflowService {
 
     /**
      * 激活
+     *
      * @param userId 操作人ID
      * @param taskId 任务ID
      * @return

@@ -3,6 +3,7 @@ package com.hengtian.flow.controller;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
+import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import io.swagger.annotations.ApiOperation;
@@ -23,6 +24,8 @@ public class WorkflowQueryController {
 
     @Autowired
     private RemindTaskService remindTaskService;
+    @Autowired
+    private EnquireService enquireService;
 
     @Autowired
     private WorkflowService workflowService;
@@ -30,6 +33,8 @@ public class WorkflowQueryController {
     /**
      * 催办任务列表
      * @param taskRemindQueryParam 任务查询条件实体类
+     *
+     * @param taskQueryParam 任务查询条件实体类
      * @return json
      * @author houjinrong@chtwm.com
      * date 2018/4/19 15:17
@@ -38,6 +43,8 @@ public class WorkflowQueryController {
     @SysLog("催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "催办任务列表")
     @RequestMapping(value = "/rest/task/remind/page", method = RequestMethod.POST)
+    public Object taskRemindList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+        return remindTaskService.taskRemindList(taskQueryParam);
     public Object taskRemindList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam){
         return remindTaskService.taskRemindList(taskRemindQueryParam);
     }
@@ -45,6 +52,8 @@ public class WorkflowQueryController {
     /**
      * 被催办任务列表
      * @param taskRemindQueryParam 任务查询条件实体类
+     *
+     * @param taskQueryParam 任务查询条件实体类
      * @return json
      * @author houjinrong@chtwm.com
      * date 2018/4/19 15:17
@@ -85,6 +94,8 @@ public class WorkflowQueryController {
     @RequestMapping(value = "/rest/task/close/page", method = RequestMethod.POST)
     public Object taskCloseList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
         return workflowService.taskOpenList(taskQueryParam);
+    public Object taskRemindedList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+        return remindTaskService.taskRemindedList(taskQueryParam);
     }
 
 
@@ -94,9 +105,12 @@ public class WorkflowQueryController {
      * @param taskQueryParam 任务查询条件实体类
      * @return
      */
-    @RequestMapping("/rest/task/enquire/page")
+    @ResponseBody
+    @SysLog("问询任务列表")
+    @ApiOperation(httpMethod = "POST", value = "问询任务列表")
+    @RequestMapping(value = "/rest/task/enquire/page",method = RequestMethod.POST)
     public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        return null;
+        return enquireService.enquireTaskList(taskQueryParam);
     }
 
 
@@ -106,8 +120,25 @@ public class WorkflowQueryController {
      * @param taskQueryParam 任务查询条件实体类
      * @return
      */
-    @RequestMapping("/rest/task/enquired/page")
+    @ResponseBody
+    @SysLog("被问询任务列表")
+    @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
+    @RequestMapping(value = "/rest/task/enquired/page",method = RequestMethod.POST)
     public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+        return enquireService.enquiredTaskList(taskQueryParam);
+    }
+
+    /**
+     * 问询意见查询接口
+     *
+     * @param taskQueryParam 任务查询条件实体类
+     * @return
+     */
+    @ResponseBody
+    @SysLog("问询意见查询接口")
+    @ApiOperation(httpMethod = "POST", value = "问询意见查询接口")
+    @RequestMapping(value = "/rest/task/enquired/comment",method = RequestMethod.POST)
+    public Object enquireComment(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         return null;
     }
 }
