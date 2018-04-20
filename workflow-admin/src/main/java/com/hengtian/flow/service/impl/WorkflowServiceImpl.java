@@ -134,6 +134,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 催办 只有申请人可以催办
+     *
      * @param userId 操作人ID
      * @param taskId 任务 ID
      * @return
@@ -143,7 +144,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Override
     public Result taskRemind(String userId, String taskId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(task ==  null){
+        if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
 
@@ -155,7 +156,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         remindTask.setIsComplete(0);
 
         boolean insertFlag = remindTaskService.insert(remindTask);
-        if(insertFlag){
+        if (insertFlag) {
             //发送邮件
         }
         return null;
@@ -163,8 +164,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 问询
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     *
+     * @param userId           操作人ID
+     * @param taskId           任务ID
      * @param targetTaskDefKey 问询任务节点KEY
      * @return
      * @author houjinrong@chtwm.com
@@ -177,6 +179,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 问询确认
+     *
      * @param userId 操作人ID
      * @param taskId 需问询确认的任务ID
      * @return
@@ -190,7 +193,8 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 撤回
-     * @param userId 操作人ID
+     *
+     * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
@@ -203,7 +207,8 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 取消 只有流程发起人方可进行取消操作
-     * @param userId 操作人ID
+     *
+     * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
@@ -216,6 +221,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 挂起
+     *
      * @param userId 操作人ID
      * @param taskId 任务ID
      * @return
@@ -229,6 +235,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 激活
+     *
      * @param userId 操作人ID
      * @param taskId 任务ID
      * @return
