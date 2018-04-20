@@ -94,6 +94,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * date 2018/4/18 16:00
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result taskTransfer(String userId, String taskId, String targetUserId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
