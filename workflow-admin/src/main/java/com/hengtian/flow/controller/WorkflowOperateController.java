@@ -354,6 +354,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         return taskAction(taskActionParam);
     }
 
+
     /**
      * 挂起任务
      *
@@ -371,6 +372,26 @@ public class WorkflowOperateController extends WorkflowBaseController {
         taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setTaskId(taskId);
+        return taskAction(taskActionParam);
+    }
+
+    /**
+     * 任务撤办
+     *
+     * @param processInstanceId 流程实例ID
+     * @param userId            用户ID
+     * @return
+     */
+    @SysLog(value = "任务撤办")
+    @RequestMapping(value = "revokeProcessInstance", method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation(httpMethod = "POST", value = "任务撤办接口")
+    public Object revokeProcessInstance(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
+                                        @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.CANCEL.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setProcessInstanceId(processInstanceId);
         return taskAction(taskActionParam);
     }
 
