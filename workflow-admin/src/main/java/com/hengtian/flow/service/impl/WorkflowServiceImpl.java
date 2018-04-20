@@ -75,6 +75,8 @@ public class WorkflowServiceImpl implements WorkflowService {
             log.error("任务不存在taskId:{}", taskId);
             return new Result(false, "任务跳转失败");
         }
+        //todo 并行分支校验,不允许跳出分支
+
         //跳转前终止原任务流程
         Command<Void> deleteCmd = new DeleteActiveTaskCmd(taskEntity, "jump", true);
         managementService.executeCommand(deleteCmd);
@@ -91,7 +93,7 @@ public class WorkflowServiceImpl implements WorkflowService {
             Task task = taskService.createTaskQuery().processInstanceId(taskEntity.getProcessInstanceId()).singleResult();
             taskService.setOwner(task.getId(), assignee);
         }
-        //初始化任务属性值 todo
+        //todo 初始化任务属性值
         return new Result(true, "任务跳转成功");
     }
 
