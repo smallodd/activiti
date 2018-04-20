@@ -2,6 +2,7 @@ package com.hengtian.flow.controller;
 
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.TaskQueryParam;
+import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.service.RemindTaskService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -21,9 +22,12 @@ public class WorkflowQueryController {
 
     @Autowired
     private RemindTaskService remindTaskService;
+    @Autowired
+    private EnquireService enquireService;
 
     /**
      * 催办任务列表
+     *
      * @param taskQueryParam 任务查询条件实体类
      * @return json
      * @author houjinrong@chtwm.com
@@ -33,12 +37,13 @@ public class WorkflowQueryController {
     @SysLog("催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "催办任务列表")
     @RequestMapping(value = "/rest/task/remind/page", method = RequestMethod.POST)
-    public Object taskRemindList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
+    public Object taskRemindList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         return remindTaskService.taskRemindList(taskQueryParam);
     }
 
     /**
      * 被催办任务列表
+     *
      * @param taskQueryParam 任务查询条件实体类
      * @return json
      * @author houjinrong@chtwm.com
@@ -48,7 +53,7 @@ public class WorkflowQueryController {
     @SysLog("被催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "被催办任务列表")
     @RequestMapping(value = "/rest/task/reminded/page", method = RequestMethod.POST)
-    public Object taskRemindedList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
+    public Object taskRemindedList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         return remindTaskService.taskRemindedList(taskQueryParam);
     }
 
@@ -61,7 +66,7 @@ public class WorkflowQueryController {
      */
     @RequestMapping("/rest/task/enquire/page")
     public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        return null;
+        return enquireService.enquireTaskList(taskQueryParam);
     }
 
 
@@ -73,11 +78,11 @@ public class WorkflowQueryController {
      */
     @RequestMapping("/rest/task/enquired/page")
     public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        return null;
+        return enquireService.enquiredTaskList(taskQueryParam);
     }
 
     /**
-     * 被问询任务列表
+     * 问询意见查询接口
      *
      * @param taskQueryParam 任务查询条件实体类
      * @return

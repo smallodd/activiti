@@ -290,26 +290,4 @@ public class WorkflowServiceImpl implements WorkflowService {
     public Result taskActivate(String userId, String taskId) {
         return null;
     }
-
-    /**
-     * 问询任务列表
-     *
-     * @param pageInfo
-     * @return
-     */
-    @Override
-    public Result enquireTaskList(PageInfo pageInfo) {
-        return null;
-    }
-
-    /**
-     * 被问询任务列表
-     *
-     * @param pageInfo
-     * @return
-     */
-    @Override
-    public Result enquiredTaskList(PageInfo pageInfo) {
-        return null;
-    }
 }

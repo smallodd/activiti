@@ -1,7 +1,6 @@
 package com.hengtian.flow.service;
 
 import com.hengtian.common.result.Result;
-import com.hengtian.common.utils.PageInfo;
 
 public interface WorkflowService {
 
@@ -106,21 +105,4 @@ public interface WorkflowService {
      * date 2018/4/18 16:03
      */
     Result taskActivate(String userId, String taskId);
-
-
-    /**
-     * 问询任务列表
-     *
-     * @param pageInfo
-     * @return
-     */
-    Result enquireTaskList(PageInfo pageInfo);
-
-    /**
-     * 被问询任务列表
-     *
-     * @param pageInfo
-     * @return
-     */
-    Result enquiredTaskList(PageInfo pageInfo);
 }
