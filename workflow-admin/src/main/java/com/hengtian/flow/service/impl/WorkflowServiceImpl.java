@@ -6,8 +6,11 @@ import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
+import com.hengtian.enquire.model.EnquireTask;
+import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.model.RemindTask;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.WorkflowService;
@@ -25,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.Map;
 
 public class WorkflowServiceImpl implements WorkflowService {
@@ -42,6 +46,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     private RemindTaskService remindTaskService;
+
+    @Autowired
+    private EnquireService enquireService;
 
     /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
@@ -98,10 +105,12 @@ public class WorkflowServiceImpl implements WorkflowService {
     public Result taskTransfer(String userId, String taskId, String targetUserId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
-            return new Result(false, "任务不存在");
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
         //todo 用户组权限判断
-
+        if (!ConstantUtils.ADMIN_ID.equals(userId) && !userId.equals(task.getOwner())) {
+            return new Result(false, "您所在的用户组没有权限进行该操作");
+        }
         String assignee = task.getAssignee();
         String taskDefinitionKey = task.getTaskDefinitionKey();
         //获取参数: 任务类型
@@ -175,7 +184,26 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskEnquire(String userId, String taskId, String targetTaskDefKey) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        EnquireTask enquireTask = new EnquireTask();
+        enquireTask.setProcInstId(task.getProcessInstanceId());
+        enquireTask.setCurrentTaskId(taskId);
+        enquireTask.setCurrentTaskKey(task.getTaskDefinitionKey());
+        enquireTask.setIsAskEnd(0);
+        enquireTask.setAskTaskKey(targetTaskDefKey);
+        enquireTask.setCreateTime(new Date());
+        enquireTask.setUpdateTime(new Date());
+        enquireTask.setCreateId(userId);
+        enquireTask.setUpdateId(userId);
+        enquireTask.setAskUserId(userId);
+        boolean success = enquireService.insert(enquireTask);
+        if (!success) {
+            return new Result(false, "问询失败");
+        }
+        return new Result(true, "问询成功");
     }
 
     /**
@@ -189,6 +217,11 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskConfirmEnquire(String userId, String taskId) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+
         return null;
     }
 
