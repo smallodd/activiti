@@ -51,4 +51,28 @@ public class WorkflowQueryController {
     public Object taskRemindedList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
         return remindTaskService.taskRemindedList(taskQueryParam);
     }
+
+
+    /**
+     * 问询任务列表
+     *
+     * @param taskQueryParam 任务查询条件实体类
+     * @return
+     */
+    @RequestMapping("/rest/task/enquire/page")
+    public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+        return null;
+    }
+
+
+    /**
+     * 被问询任务列表
+     *
+     * @param taskQueryParam 任务查询条件实体类
+     * @return
+     */
+    @RequestMapping("/rest/task/enquired/page")
+    public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+        return null;
+    }
 }
