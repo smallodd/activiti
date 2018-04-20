@@ -4,19 +4,15 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskType;
-import com.hengtian.common.param.TaskNodeResult;
+import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
-import com.hengtian.common.result.Result;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
-import com.rbac.entity.RbacRole;
 import com.rbac.service.RoleService;
-import com.sun.org.apache.regexp.internal.RE;
 import com.user.service.emp.EmpService;
-import io.swagger.annotations.ApiParam;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
@@ -93,8 +89,8 @@ public class WorkflowBaseController extends BaseController {
             tRuTask.setTaskId(task.getId());
             tRuTask.setTaskType(tUserTask.getTaskType());
             if(AssignType.ROLE.code.intValue()==tUserTask.getAssignType()||AssignType.GROUP.code.intValue()==tUserTask.getAssignType()||AssignType.DEPARTMENT.code==tUserTask.getAssignType()) {
-                    tRuTask.setIsFinished(-1);
-                }else{tRuTask.setIsFinished(0);
+                    tRuTask.setStatus(-1);
+                }else{tRuTask.setStatus(0);
             tRuTask.setApproverReal(approver);
                 }tRuTask.setExpireTime(task.getDueDate());
             tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
@@ -291,7 +287,7 @@ public class WorkflowBaseController extends BaseController {
     /**
      * 判断某个用户是否拥有审批某个角色的权限
      * @param task
-     * @param userId
+     * @param taskParam
      * @return
      */
 

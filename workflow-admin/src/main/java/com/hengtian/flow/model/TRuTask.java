@@ -30,8 +30,8 @@ public class TRuTask implements Serializable {
     private Date expireTime;
     @TableField(value = "updater")
     private String updater;
-    @TableField(value = "is_finished")
-    private int isFinished;
+    @TableField(value = "status")
+    private int status;
     @TableField(value = "app_key")
     private Integer appKey;
     @TableField(value = "approver_real")
@@ -101,12 +101,12 @@ public class TRuTask implements Serializable {
         this.updater = updater;
     }
 
-    public int getIsFinished() {
-        return isFinished;
+    public int getStatus() {
+        return status;
     }
 
-    public void setIsFinished(int isFinished) {
-        this.isFinished = isFinished;
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public Integer getAppKey() {

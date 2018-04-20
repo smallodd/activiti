@@ -1,7 +1,7 @@
 package com.hengtian.flow.service;
 
 import com.baomidou.mybatisplus.service.IService;
-import com.hengtian.common.param.TaskQueryParam;
+import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.RemindTask;
 
@@ -12,7 +12,21 @@ import com.hengtian.flow.model.RemindTask;
  */
 public interface RemindTaskService extends IService<RemindTask> {
 
-    PageInfo taskRemindList(TaskQueryParam taskQueryParam);
+    /**
+     * 催办任务列表
+     * @param taskRemindQueryParam 催办任务查询条件
+     * @return 分页
+     * @author houjinrong@chtwm.com
+     * date 2018/4/20 15:28
+     */
+    PageInfo taskRemindList(TaskRemindQueryParam taskRemindQueryParam);
 
-    PageInfo taskRemindedList(TaskQueryParam taskQueryParam);
+    /**
+     * 被催办任务列表
+     * @param taskRemindQueryParam 催办任务查询条件
+     * @return 分页
+     * @author houjinrong@chtwm.com
+     * date 2018/4/20 15:28
+     */
+    PageInfo taskRemindedList(TaskRemindQueryParam taskRemindQueryParam);
 }

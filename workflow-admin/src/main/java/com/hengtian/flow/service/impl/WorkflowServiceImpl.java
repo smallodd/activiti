@@ -6,8 +6,10 @@ import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.enums.TaskVariable;
+import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.ConstantUtils;
+import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import com.hengtian.enquire.model.EnquireTask;
@@ -15,10 +17,8 @@ import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.model.RemindTask;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.WorkflowService;
-import org.activiti.engine.ManagementService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import org.activiti.engine.*;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 public class WorkflowServiceImpl implements WorkflowService {
@@ -48,6 +49,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     private RuntimeService runtimeService;
+
+    @Autowired
+    private HistoryService historyService;
 
     @Autowired
     private RemindTaskService remindTaskService;
@@ -286,5 +290,74 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Override
     public Result taskActivate(String userId, String taskId) {
         return null;
+    }
+
+    /**
+     * 未办任务列表
+     * @param taskQueryParam 任务查询条件
+     * @return 分页
+     * @author houjinrong@chtwm.com
+     * date 2018/4/20 15:35
+     */
+    @Override
+    public PageInfo taskOpenList(TaskQueryParam taskQueryParam) {
+        String con = " WHERE trt.STATUS = " + TaskStatusEnum.OPEN.status;
+        StringBuffer sb = new StringBuffer();
+        sb.append(" SELECT art.* FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
+        if(StringUtils.isNotBlank(taskQueryParam.getAppKey())){
+            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=ahp.PROC_INST_ID ");
+            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+        }
+        if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
+            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+        }
+        if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
+            con = con + " AND art.NAME_ LIKE '%" + taskQueryParam.getTaskName() + "%' ";
+        }
+        if(StringUtils.isNotBlank(taskQueryParam.getUserId())){
+            con = con + " AND art.ASSIGNEE_ LIKE '%" + taskQueryParam.getUserId() + "%' ";
+        }
+        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(),taskQueryParam.getPageSize());
+        String sql = sb.toString() + con;
+        List<Task> tasks = taskService.createNativeTaskQuery().sql(sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        pageInfo.setRows(tasks);
+        pageInfo.setTotal((int)taskService.createNativeTaskQuery().sql(sql).count());
+        return pageInfo;
+    }
+
+    /**
+     * 已办任务列表
+     * @param taskQueryParam 任务查询条件实体类
+     * @return json
+     * @author houjinrong@chtwm.com
+     * date 2018/4/19 15:17
+     */
+    @Override
+    public PageInfo taskCloseList(TaskQueryParam taskQueryParam) {
+        String con = " WHERE trt.STATUS IN(" + TaskStatusEnum.getCloseStatus()+") ";
+        StringBuffer sb = new StringBuffer();
+        sb.append(" SELECT art.* FROM t_ru_task AS trt LEFT JOIN act_hi_taskinst AS art ON trt.TASK_ID=art.ID_ ");
+        if(StringUtils.isNotBlank(taskQueryParam.getAppKey())){
+            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=ahp.PROC_INST_ID ");
+            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+        }
+        if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
+            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+        }
+        if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
+            con = con + " AND art.NAME_ LIKE '%" + taskQueryParam.getTaskName() + "%' ";
+        }
+        if(StringUtils.isNotBlank(taskQueryParam.getUserId())){
+            con = con + " AND art.ASSIGNEE_ LIKE '%" + taskQueryParam.getUserId() + "%' ";
+        }
+        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(),taskQueryParam.getPageSize());
+        String sql = sb.toString() + con;
+        List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        
+        pageInfo.setRows(tasks);
+        pageInfo.setTotal((int)historyService.createNativeHistoricTaskInstanceQuery().sql(sql).count());
+        return pageInfo;
     }
 }

@@ -1,5 +1,6 @@
 package com.hengtian.flow.service;
 
+import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.exception.WorkFlowException;
@@ -98,4 +99,22 @@ public interface WorkflowService {
      * date 2018/4/18 16:03
      */
     Result taskActivate(String userId, String taskId);
+
+    /**
+     * 未办任务列表
+     * @param taskQueryParam 任务查询条件
+     * @return 分页
+     * @author houjinrong@chtwm.com
+     * date 2018/4/20 15:35
+     */
+    PageInfo taskOpenList(TaskQueryParam taskQueryParam);
+
+    /**
+     * 已办任务列表
+     * @param taskQueryParam 任务查询条件
+     * @return 分页
+     * @author houjinrong@chtwm.com
+     * date 2018/4/20 15:35
+     */
+    PageInfo taskCloseList(TaskQueryParam taskQueryParam);
 }

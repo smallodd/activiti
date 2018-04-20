@@ -1,4 +1,4 @@
-package com.hengtian.common.param;
+package com.hengtian.common.result;
 
 
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
@@ -20,6 +20,7 @@ public class TaskNodeResult implements Serializable {
     private String formKey;
 
     private String name;
+
     public String getTaskId() {
         return taskId;
     }
