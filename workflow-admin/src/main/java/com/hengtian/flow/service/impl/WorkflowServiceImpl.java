@@ -8,6 +8,7 @@ import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.ConstantUtils;
+import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import com.hengtian.enquire.model.EnquireTask;
@@ -283,6 +284,28 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskActivate(String userId, String taskId) {
+        return null;
+    }
+
+    /**
+     * 问询任务列表
+     *
+     * @param pageInfo
+     * @return
+     */
+    @Override
+    public Result enquireTaskList(PageInfo pageInfo) {
+        return null;
+    }
+
+    /**
+     * 被问询任务列表
+     *
+     * @param pageInfo
+     * @return
+     */
+    @Override
+    public Result enquiredTaskList(PageInfo pageInfo) {
         return null;
     }
 }
