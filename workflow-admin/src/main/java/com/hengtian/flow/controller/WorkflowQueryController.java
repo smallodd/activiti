@@ -33,8 +33,6 @@ public class WorkflowQueryController {
     /**
      * 催办任务列表
      * @param taskRemindQueryParam 任务查询条件实体类
-     *
-     * @param taskQueryParam 任务查询条件实体类
      * @return json
      * @author houjinrong@chtwm.com
      * date 2018/4/19 15:17
@@ -43,8 +41,6 @@ public class WorkflowQueryController {
     @SysLog("催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "催办任务列表")
     @RequestMapping(value = "/rest/task/remind/page", method = RequestMethod.POST)
-    public Object taskRemindList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        return remindTaskService.taskRemindList(taskQueryParam);
     public Object taskRemindList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam){
         return remindTaskService.taskRemindList(taskRemindQueryParam);
     }
@@ -52,8 +48,6 @@ public class WorkflowQueryController {
     /**
      * 被催办任务列表
      * @param taskRemindQueryParam 任务查询条件实体类
-     *
-     * @param taskQueryParam 任务查询条件实体类
      * @return json
      * @author houjinrong@chtwm.com
      * date 2018/4/19 15:17
@@ -94,8 +88,6 @@ public class WorkflowQueryController {
     @RequestMapping(value = "/rest/task/close/page", method = RequestMethod.POST)
     public Object taskCloseList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
         return workflowService.taskOpenList(taskQueryParam);
-    public Object taskRemindedList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        return remindTaskService.taskRemindedList(taskQueryParam);
     }
 
 

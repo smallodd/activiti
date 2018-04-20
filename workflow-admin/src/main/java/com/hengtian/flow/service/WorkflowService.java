@@ -2,6 +2,7 @@ package com.hengtian.flow.service;
 
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.utils.PageInfo;
 
 public interface WorkflowService {
 
