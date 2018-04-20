@@ -1,5 +1,6 @@
 package com.hengtian.flow.service.impl;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
@@ -218,6 +219,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 问询确认
+     * todo 问询详情
      *
      * @param userId 操作人ID
      * @param taskId 需问询确认的任务ID
@@ -231,8 +233,18 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-
-        return null;
+        EntityWrapper<EnquireTask> wrapper = new EntityWrapper<>();
+        wrapper.where("`ask_user_id`={0}", userId)
+                .and("is_ask_end={0}", 0)
+                .and("ask_task_key={0}", task.getTaskDefinitionKey());
+        EnquireTask enquireTask = enquireService.selectOne(wrapper);
+        enquireTask.setUpdateTime(new Date());
+        enquireTask.setIsAskEnd(1);
+        boolean success = enquireService.updateById(enquireTask);
+        if (!success) {
+            return new Result(false, "问询确认失败");
+        }
+        return new Result(true, "问询确认成功");
     }
 
     /**
