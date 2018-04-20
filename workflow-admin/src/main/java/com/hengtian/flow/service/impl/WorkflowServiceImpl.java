@@ -1,6 +1,10 @@
 package com.hengtian.flow.service.impl;
 
+import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.enums.TaskStatus;
+import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
@@ -20,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 public class WorkflowServiceImpl implements WorkflowService {
 
@@ -77,9 +83,11 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     /**
-     * 转办 管理严权限不受限制，可以任意设置转办
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     * todo 事务 && 用户组权限判断
+     * 转办 管理员权限不受限制，可以任意设置转办
+     *
+     * @param userId       操作人ID
+     * @param taskId       任务ID
      * @param targetUserId 转办人ID
      * @return
      * @author houjinrong@chtwm.com
@@ -87,7 +95,41 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskTransfer(String userId, String taskId, String targetUserId) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(false, "任务不存在");
+        }
+        //todo 用户组权限判断
+
+        String assignee = task.getAssignee();
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        //获取参数: 任务类型
+        String taskType = (String) taskService.getVariable(taskId, taskDefinitionKey + ":" + TaskVariable.TASKTYPE.value);
+        if (TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)) {
+            //会签 | 修改会签人
+            String candidateIds = taskService.getVariable(taskId, taskDefinitionKey + ":" + TaskVariable.TASKUSER.value) + "";
+            if (StringUtils.contains(candidateIds, targetUserId)) {
+                return new Result(false, "【" + targetUserId + "】已在当前任务中<br/>（同一任务节点同一个人最多可办理一次）");
+            }
+            taskService.setAssignee(taskId, assignee.replace(userId, targetUserId));
+            //修改会签人相关属性值
+            Map<String, Object> variable = Maps.newHashMap();
+            variable.put(taskDefinitionKey + ":" + userId, userId + ":" + TaskStatus.TRANSFER.value);
+            variable.put(taskDefinitionKey + ":" + targetUserId, targetUserId + ":" + TaskStatus.UNFINISHED.value);
+            variable.put(taskDefinitionKey + ":" + TaskVariable.TASKUSER.value, candidateIds.replace(userId, targetUserId));
+            taskService.setVariablesLocal(taskId, variable);
+        } else {
+            Map<String, Object> variable = Maps.newHashMap();
+            variable.put(taskDefinitionKey + ":" + userId, TaskStatus.TRANSFER.value);
+            variable.put(taskDefinitionKey + ":" + targetUserId, targetUserId + ":" + TaskStatus.UNFINISHED.value);
+            variable.put(taskDefinitionKey + ":" + TaskVariable.TASKUSER.value, targetUserId);
+            taskService.setVariablesLocal(taskId, variable);
+            taskService.setAssignee(taskId, targetUserId);
+            if (StringUtils.isNoneBlank(assignee)) {
+                taskService.setOwner(taskId, assignee);
+            }
+        }
+        return new Result(true, "转办任务成功");
     }
 
     /**
