@@ -117,7 +117,7 @@ public class WorkflowBaseController extends BaseController {
      * @param appKey
      * @return
      */
-    protected Boolean checkBusinessKeyIsInFlow(String processDefiniKey, String bussinessKey, Integer appKey) {
+    protected Boolean checkBusinessKeyIsInFlow(String processDefiniKey, String bussinessKey, String appKey) {
         TaskQuery taskQuery = taskService.createTaskQuery().processDefinitionKey(processDefiniKey).processInstanceBusinessKey(bussinessKey);
         taskQuery.processVariableValueEquals("appKey", appKey);
         Task task = taskQuery.singleResult();
