@@ -1,10 +1,17 @@
 package com.hengtian.flow.service.impl;
 
+import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
+import com.hengtian.common.enums.TaskStatus;
+import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
+import com.hengtian.enquire.model.EnquireTask;
+import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.model.RemindTask;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.WorkflowService;
@@ -22,6 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
+import java.util.Map;
 
 public class WorkflowServiceImpl implements WorkflowService {
 
@@ -41,6 +51,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     private RemindTaskService remindTaskService;
+
+    @Autowired
+    private EnquireService enquireService;
 
     /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
@@ -82,21 +95,61 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     /**
-     * 转办 管理严权限不受限制，可以任意设置转办
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     * todo 事务 && 用户组权限判断
+     * 转办 管理员权限不受限制，可以任意设置转办
+     *
+     * @param userId       操作人ID
+     * @param taskId       任务ID
      * @param targetUserId 转办人ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:00
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result taskTransfer(String userId, String taskId, String targetUserId) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        //todo 用户组权限判断
+        if (!ConstantUtils.ADMIN_ID.equals(userId) && !userId.equals(task.getOwner())) {
+            return new Result(false, "您所在的用户组没有权限进行该操作");
+        }
+        String assignee = task.getAssignee();
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        //获取参数: 任务类型
+        String taskType = (String) taskService.getVariable(taskId, taskDefinitionKey + ":" + TaskVariable.TASKTYPE.value);
+        if (TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)) {
+            //会签 | 修改会签人
+            String candidateIds = taskService.getVariable(taskId, taskDefinitionKey + ":" + TaskVariable.TASKUSER.value) + "";
+            if (StringUtils.contains(candidateIds, targetUserId)) {
+                return new Result(false, "【" + targetUserId + "】已在当前任务中<br/>（同一任务节点同一个人最多可办理一次）");
+            }
+            taskService.setAssignee(taskId, assignee.replace(userId, targetUserId));
+            //修改会签人相关属性值
+            Map<String, Object> variable = Maps.newHashMap();
+            variable.put(taskDefinitionKey + ":" + userId, userId + ":" + TaskStatus.TRANSFER.value);
+            variable.put(taskDefinitionKey + ":" + targetUserId, targetUserId + ":" + TaskStatus.UNFINISHED.value);
+            variable.put(taskDefinitionKey + ":" + TaskVariable.TASKUSER.value, candidateIds.replace(userId, targetUserId));
+            taskService.setVariablesLocal(taskId, variable);
+        } else {
+            Map<String, Object> variable = Maps.newHashMap();
+            variable.put(taskDefinitionKey + ":" + userId, TaskStatus.TRANSFER.value);
+            variable.put(taskDefinitionKey + ":" + targetUserId, targetUserId + ":" + TaskStatus.UNFINISHED.value);
+            variable.put(taskDefinitionKey + ":" + TaskVariable.TASKUSER.value, targetUserId);
+            taskService.setVariablesLocal(taskId, variable);
+            taskService.setAssignee(taskId, targetUserId);
+            if (StringUtils.isNoneBlank(assignee)) {
+                taskService.setOwner(taskId, assignee);
+            }
+        }
+        return new Result(true, "转办任务成功");
     }
 
     /**
      * 催办 只有申请人可以催办
+     *
      * @param userId 操作人ID
      * @param taskId 任务 ID
      * @return
@@ -106,7 +159,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Override
     public Result taskRemind(String userId, String taskId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(task ==  null){
+        if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
 
@@ -118,7 +171,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         remindTask.setIsFinished(TaskStatusEnum.REMIND_UNFINISHED.status);
 
         boolean insertFlag = remindTaskService.insert(remindTask);
-        if(insertFlag){
+        if (insertFlag) {
             //发送邮件
         }
         return null;
@@ -126,8 +179,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 问询
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     *
+     * @param userId           操作人ID
+     * @param taskId           任务ID
      * @param targetTaskDefKey 问询任务节点KEY
      * @return
      * @author houjinrong@chtwm.com
@@ -135,11 +189,31 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskEnquire(String userId, String taskId, String targetTaskDefKey) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        EnquireTask enquireTask = new EnquireTask();
+        enquireTask.setProcInstId(task.getProcessInstanceId());
+        enquireTask.setCurrentTaskId(taskId);
+        enquireTask.setCurrentTaskKey(task.getTaskDefinitionKey());
+        enquireTask.setIsAskEnd(0);
+        enquireTask.setAskTaskKey(targetTaskDefKey);
+        enquireTask.setCreateTime(new Date());
+        enquireTask.setUpdateTime(new Date());
+        enquireTask.setCreateId(userId);
+        enquireTask.setUpdateId(userId);
+        enquireTask.setAskUserId(userId);
+        boolean success = enquireService.insert(enquireTask);
+        if (!success) {
+            return new Result(false, "问询失败");
+        }
+        return new Result(true, "问询成功");
     }
 
     /**
      * 问询确认
+     *
      * @param userId 操作人ID
      * @param taskId 需问询确认的任务ID
      * @return
@@ -148,12 +222,18 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskConfirmEnquire(String userId, String taskId) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+
         return null;
     }
 
     /**
      * 撤回
-     * @param userId 操作人ID
+     *
+     * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
@@ -166,7 +246,8 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 取消 只有流程发起人方可进行取消操作
-     * @param userId 操作人ID
+     *
+     * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
@@ -179,6 +260,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 挂起
+     *
      * @param userId 操作人ID
      * @param taskId 任务ID
      * @return
@@ -192,6 +274,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 激活
+     *
      * @param userId 操作人ID
      * @param taskId 任务ID
      * @return
