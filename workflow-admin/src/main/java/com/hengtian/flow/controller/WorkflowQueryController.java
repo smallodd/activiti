@@ -1,11 +1,16 @@
 package com.hengtian.flow.controller;
 
+import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.TaskQueryParam;
-import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.service.RemindTaskService;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Created by ma on 2018/4/17.
@@ -14,7 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class WorkflowQueryController {
 
-    private WorkflowService workflowService;
+    @Autowired
+    private RemindTaskService remindTaskService;
 
     /**
      * 催办任务列表
@@ -23,10 +29,12 @@ public class WorkflowQueryController {
      * @author houjinrong@chtwm.com
      * date 2018/4/19 15:17
      */
-    @RequestMapping("/rest/task/remind/page")
+    @ResponseBody
+    @SysLog("催办任务列表")
+    @ApiOperation(httpMethod = "POST", value = "催办任务列表")
+    @RequestMapping(value = "/rest/task/remind/page", method = RequestMethod.POST)
     public Object taskRemindList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
-        //workflowService.taskRemindList(taskQueryParam);
-        return null;
+        return remindTaskService.taskRemindList(taskQueryParam);
     }
 
     /**
@@ -36,10 +44,12 @@ public class WorkflowQueryController {
      * @author houjinrong@chtwm.com
      * date 2018/4/19 15:17
      */
-    @RequestMapping("/rest/task/reminded/page")
+    @ResponseBody
+    @SysLog("被催办任务列表")
+    @ApiOperation(httpMethod = "POST", value = "被催办任务列表")
+    @RequestMapping(value = "/rest/task/reminded/page", method = RequestMethod.POST)
     public Object taskRemindedList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
-        //workflowService.taskRemindedList(taskQueryParam);
-        return null;
+        return remindTaskService.taskRemindedList(taskQueryParam);
     }
 
 
