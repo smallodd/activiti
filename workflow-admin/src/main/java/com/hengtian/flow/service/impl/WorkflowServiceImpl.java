@@ -258,7 +258,13 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskRevoke(String userId, String processInstanceId) {
-        return null;
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        //todo 撤回
+        runtimeService.deleteProcessInstance(processInstanceId, "revoke");
+        return new Result(true, "撤回成功");
     }
 
     /**
