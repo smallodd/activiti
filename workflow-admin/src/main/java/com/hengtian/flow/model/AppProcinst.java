@@ -1,7 +1,9 @@
 package com.hengtian.flow.model;
 
 import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
+import com.baomidou.mybatisplus.enums.IdType;
 
 /**
  * 应用流程实例对应关系
@@ -14,13 +16,13 @@ public class AppProcinst {
     /**
      * 主键
      */
-    @TableField(value = "id")
+    @TableId(type = IdType.AUTO)
     private Long id;
     /**
      * 应用key
      */
     @TableField(value = "app_key")
-    private String appKey;
+    private Integer appKey;
     /**
      * 流程实例ID
      */
@@ -31,7 +33,7 @@ public class AppProcinst {
 
     }
 
-    public AppProcinst(String appKey, String procinstId) {
+    public AppProcinst(Integer appKey, String procinstId) {
         this.appKey = appKey;
         this.procinstId = procinstId;
     }
@@ -44,11 +46,11 @@ public class AppProcinst {
         this.id = id;
     }
 
-    public String getAppKey() {
+    public Integer getAppKey() {
         return appKey;
     }
 
-    public void setAppKey(String appKey) {
+    public void setAppKey(Integer appKey) {
         this.appKey = appKey;
     }
 

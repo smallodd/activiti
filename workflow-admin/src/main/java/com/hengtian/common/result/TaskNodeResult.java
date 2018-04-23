@@ -53,5 +53,37 @@ public class TaskNodeResult implements Serializable {
         this.name = name;
     }
 
+    /**
+     * 将任务列表转换成返回出参任务列表
+     *
+     * @param list
+     * @return
+     */
+    public  static   List<TaskNodeResult> toTaskNodeResultList(List<Task> list) {
+        List<TaskNodeResult> nodeResults = new ArrayList<>();
+        TaskNodeResult taskNodeResult;
+        for (Task task : list) {
+            taskNodeResult = toTaskNodeResult(task);
+            nodeResults.add(taskNodeResult);
+        }
+        return nodeResults;
+    }
+
+    /**
+     * 转换成出参任务
+     *
+     * @param task
+     * @return
+     */
+    public  static TaskNodeResult toTaskNodeResult(Task task) {
+
+        TaskNodeResult taskNodeResult = new TaskNodeResult();
+
+        taskNodeResult.setTaskId(task.getId());
+        taskNodeResult.setTaskDefinedKey(task.getTaskDefinitionKey());
+        taskNodeResult.setFormKey(task.getFormKey());
+        taskNodeResult.setName(task.getName());
+        return taskNodeResult;
+    }
 
 }

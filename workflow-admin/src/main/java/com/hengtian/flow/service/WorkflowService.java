@@ -1,10 +1,36 @@
 package com.hengtian.flow.service;
 
+import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.flow.model.TUserTask;
+import org.activiti.engine.task.Task;
 
 public interface WorkflowService {
+    /**
+     * 申请任务
+     * @param processParam
+     * @return
+     */
+    Result startProcessInstance(ProcessParam processParam);
+
+    /**
+     * 设置审批人
+     * @param task
+     * @param tUserTask
+     * @return
+     */
+     Boolean setApprover(Task task, TUserTask tUserTask);
+
+    /**
+     * 审批接口
+     * @param task
+     * @param taskParam
+     * @return
+     */
+     Object approveTask(Task  task, TaskParam taskParam);
 
     /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点

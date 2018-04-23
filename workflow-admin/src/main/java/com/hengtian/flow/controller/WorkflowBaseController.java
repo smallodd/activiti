@@ -61,68 +61,8 @@ public class WorkflowBaseController extends BaseController {
     EmpService empService;
     @Autowired
     RoleService roleService;
-    /**
-     * 设置审批人接口
-     *
-     * @param task
-     * @param tUserTask
-     */
-    protected Boolean setApprover(Task task, TUserTask tUserTask) {
-        try {
-            Map<String,Object> map=taskService.getVariables(task.getId());
-        String approvers = tUserTask.getCandidateIds();
-        String [] strs=approvers.split(",");
-            List list=  Arrays.asList(strs);
-            Set set = new HashSet(list);
-            String [] rid=(String [])set.toArray(new String[0]);
-
-//taskService.setAssignee(task.getId(), approvers);
-        TRuTask tRuTask = new TRuTask();
-
-        List<TRuTask> tRuTaskList=new ArrayList<>();
-
-            //生成扩展任务信息
-            for(String approver : rid) {
-            tRuTask.setApprover(approver);
-            tRuTask.setApproverType(tUserTask.getAssignType());
-            tRuTask.setOwer(task.getOwner());
-            tRuTask.setTaskId(task.getId());
-            tRuTask.setTaskType(tUserTask.getTaskType());
-            if(AssignType.ROLE.code.intValue()==tUserTask.getAssignType()||AssignType.GROUP.code.intValue()==tUserTask.getAssignType()||AssignType.DEPARTMENT.code==tUserTask.getAssignType()) {
-                    tRuTask.setStatus(-1);
-                }else{tRuTask.setStatus(0);
-            tRuTask.setApproverReal(approver);
-                }tRuTask.setExpireTime(task.getDueDate());
-            tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
-            tRuTaskList.add(tRuTask);}
 
 
-        tRuTaskService.insertBatch(tRuTaskList);
-        return true;
-        }catch (Exception e){
-            logger.error(e);
-            return false;
-        }
-    }
-
-    /**
-     * 校验业务主键是否已经生成过任务
-     *
-     * @param processDefiniKey
-     * @param bussinessKey
-     * @param appKey
-     * @return
-     */
-    protected Boolean checkBusinessKeyIsInFlow(String processDefiniKey, String bussinessKey, String appKey) {
-        TaskQuery taskQuery = taskService.createTaskQuery().processDefinitionKey(processDefiniKey).processInstanceBusinessKey(bussinessKey);
-        taskQuery.processVariableValueEquals("appKey", appKey);
-        Task task = taskQuery.singleResult();
-
-        if (task != null) {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * 根据实例编号获取下一个任务节点实例集合
@@ -251,89 +191,6 @@ public class WorkflowBaseController extends BaseController {
         return taskDefinitionList;
     }
 
-    /**
-     * 将任务列表转换成返回出参任务列表
-     *
-     * @param list
-     * @return
-     */
-    protected  List<TaskNodeResult> toTaskNodeResultList(List<Task> list) {
-        List<TaskNodeResult> nodeResults = new ArrayList<>();
-        TaskNodeResult taskNodeResult;
-        for (Task task : list) {
-            taskNodeResult = toTaskNodeResult(task);
-            nodeResults.add(taskNodeResult);
-        }
-        return nodeResults;
-    }
 
-    /**
-     * 转换成出参任务
-     *
-     * @param task
-     * @return
-     */
-    protected static TaskNodeResult toTaskNodeResult(Task task) {
 
-        TaskNodeResult taskNodeResult = new TaskNodeResult();
-
-        taskNodeResult.setTaskId(task.getId());
-        taskNodeResult.setTaskDefinedKey(task.getTaskDefinitionKey());
-        taskNodeResult.setFormKey(task.getFormKey());
-        taskNodeResult.setName(task.getName());
-        return taskNodeResult;
-    }
-
-    /**
-     * 判断某个用户是否拥有审批某个角色的权限
-     * @param task
-     * @param taskParam
-     * @return
-     */
-
-    protected Object approveTask(Task  task, TaskParam taskParam){
-        //TODO
-        EntityWrapper entityWrapper=new EntityWrapper();
-        entityWrapper.where("task_id={0}",task.getId());
-        entityWrapper.like("approver_real","%"+taskParam.getApprover()+"%");
-        ProcessDefinition processDefinition=repositoryService.getProcessDefinition(task.getProcessDefinitionId());
-        TRuTask ruTask=  tRuTaskService.selectOne(entityWrapper);
-       if(ruTask==null){
-           return renderError("该用户没有操作此任务的权限！", Constant.TASK_NOT_BELONG_USER);
-       }else{
-           Task t=taskService.createTaskQuery().taskId(task.getId()).singleResult();
-           EntityWrapper wrapper=new EntityWrapper();
-           wrapper.where("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={0}",processDefinition.getVersion()).andNew("proc_def_key={0}",processDefinition.getKey());
-
-           TUserTask tUserTask=tUserTaskService.selectOne(wrapper);
-           if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())) {
-
-               taskService.setAssignee(task.getId(),StringUtils.isBlank(t.getAssignee())?taskParam.getApprover():t.getAssignee()+","+taskParam.getApprover());
-               Map map = taskService.getVariables(task.getId());
-               int total= (int) map.get("approve_total");
-               int pass= (int) map.get("approve_pass");
-               int not_pass= (int) map.get("approve_not_pass");
-               total=total+1;
-                if(taskParam.getPass()==1){
-                    pass=pass+1;
-                    //tRuTaskService.update(tUserTask)
-                }else if(taskParam.getPass()==2){
-                    not_pass=not_pass+1;
-                }
-                map.put("approve_total",total);
-                map.put("approve_pass",pass);
-                map.put("not_pass",not_pass);
-               double passPer = pass / tUserTask.getUserCountTotal();
-               double not_pass_per=not_pass/tUserTask.getUserCountTotal();
-               if (passPer >=tUserTask.getUserCountNeed()) {
-                    taskService.complete(task.getId());
-               }else if(not_pass_per>1-tUserTask.getUserCountNeed()){
-                    taskService.deleteTask(task.getId(),"任务没有达到通过率");
-               }
-           }
-       }
-
-        return  null;
-
-    }
 }
