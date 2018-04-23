@@ -134,7 +134,7 @@ public class WorkflowQueryController {
     @ResponseBody
     @SysLog("问询意见查询接口")
     @ApiOperation(httpMethod = "POST", value = "问询意见查询接口")
-    @RequestMapping(value = "/rest/task/enquire/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/enquire/comment", method = RequestMethod.POST)
     public Object enquireComment(@ApiParam(value = "操作人ID", name = "userId", required = true) String userId, @ApiParam(value = "任务ID", name = "taskId", required = true) String taskId) {
         return workflowService.enquireComment(userId, taskId);
     }
