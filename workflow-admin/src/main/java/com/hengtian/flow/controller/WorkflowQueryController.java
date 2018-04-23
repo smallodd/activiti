@@ -87,7 +87,7 @@ public class WorkflowQueryController {
     @ApiOperation(httpMethod = "POST", value = "已办任务列表")
     @RequestMapping(value = "/rest/task/close/page", method = RequestMethod.POST)
     public Object taskCloseList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
-        return workflowService.taskOpenList(taskQueryParam);
+        return workflowService.taskCloseList(taskQueryParam);
     }
 
 
