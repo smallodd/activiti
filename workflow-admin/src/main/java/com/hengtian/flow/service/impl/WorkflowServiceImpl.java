@@ -27,6 +27,7 @@ import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     private SysUserService sysUserService;
 
     /**
+     * todo 初始化任务属性值
      * 跳转 管理员权限不受限制，可以任意跳转到已完成任务节点
      *
      * @param userId           操作人ID
@@ -87,7 +89,12 @@ public class WorkflowServiceImpl implements WorkflowService {
             log.error("任务不存在taskId:{}", taskId);
             return new Result(false, "任务跳转失败");
         }
-        //todo 并行分支校验,不允许跳出分支
+        //并行分支校验,不允许跳出分支
+        List<Task> list = taskService.createTaskQuery().processInstanceId(taskEntity.getProcessInstanceId()).list();
+        if (CollectionUtils.isNotEmpty(list) && list.size() > 1) {
+            log.error("并行分支,不允许跳出分支 taskId:{}", taskId);
+            return new Result(false, "并行分支,不允许跳出分支");
+        }
 
         //跳转前终止原任务流程
         Command<Void> deleteCmd = new DeleteActiveTaskCmd(taskEntity, "jump", true);
@@ -110,7 +117,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     /**
-     * todo 事务 && 用户组权限判断
+     * todo 用户组权限判断
      * 转办 管理员权限不受限制，可以任意设置转办
      *
      * @param userId       操作人ID
@@ -127,7 +134,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        //todo 用户组权限判断
+        //用户组权限判断
         if (!ConstantUtils.ADMIN_ID.equals(userId) && !userId.equals(task.getOwner())) {
             return new Result(false, "您所在的用户组没有权限进行该操作");
         }
@@ -206,6 +213,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * date 2018/4/18 16:01
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result taskEnquire(String userId, String taskId, String targetTaskDefKey, String commentResult) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
@@ -234,7 +242,6 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 问询确认
-     * todo 问询详情
      *
      * @param userId 操作人ID
      * @param taskId 需问询确认的任务ID
@@ -243,6 +250,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * date 2018/4/18 16:01
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result taskConfirmEnquire(String userId, String taskId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
@@ -417,39 +425,39 @@ public class WorkflowServiceImpl implements WorkflowService {
             con = con + " AND tap.APP_KEY LIKE #{appKey}";
         }
 
-        if(StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())){
+        if (StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())) {
             sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
-            if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+            if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
                 con = con + " AND tap.APP_KEY LIKE #{title} ";
             }
-            if(StringUtils.isNotBlank(taskQueryParam.getCreater())){
+            if (StringUtils.isNotBlank(taskQueryParam.getCreater())) {
                 con = con + " AND art.START_USER_ID_ = #{creater} ";
             }
         }
 
-        if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
+        if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
             con = con + " AND art.NAME_ LIKE #{taskName} ";
         }
 
-        if(StringUtils.isNotBlank(taskQueryParam.getApprover())){
+        if (StringUtils.isNotBlank(taskQueryParam.getApprover())) {
             con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
         List<Task> tasks = taskService.createNativeTaskQuery().sql(re + sql)
-                .parameter("appKey",taskQueryParam.getAppKey())
-                .parameter("title","%"+taskQueryParam.getTitle()+"%")
-                .parameter("creater",taskQueryParam.getCreater())
-                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
-                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .parameter("appKey", taskQueryParam.getAppKey())
+                .parameter("title", "%" + taskQueryParam.getTitle() + "%")
+                .parameter("creater", taskQueryParam.getCreater())
+                .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
+                .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
                 .listPage(pageInfo.getFrom(), pageInfo.getSize());
         pageInfo.setRows(tasks);
-        pageInfo.setTotal((int)taskService.createNativeTaskQuery().sql(reC + sql)
-                .parameter("appKey",taskQueryParam.getAppKey())
-                .parameter("title","%"+taskQueryParam.getTitle()+"%")
-                .parameter("creater",taskQueryParam.getCreater())
-                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
-                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+        pageInfo.setTotal((int) taskService.createNativeTaskQuery().sql(reC + sql)
+                .parameter("appKey", taskQueryParam.getAppKey())
+                .parameter("title", "%" + taskQueryParam.getTitle() + "%")
+                .parameter("creater", taskQueryParam.getCreater())
+                .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
+                .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
                 .count());
         return pageInfo;
     }
@@ -474,42 +482,42 @@ public class WorkflowServiceImpl implements WorkflowService {
             con = con + " AND tap.APP_KEY LIKE #{appKey} ";
         }
 
-        if(StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())){
+        if (StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())) {
             sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
-            if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+            if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
                 con = con + " AND tap.APP_KEY LIKE #{title} ";
             }
-            if(StringUtils.isNotBlank(taskQueryParam.getCreater())){
+            if (StringUtils.isNotBlank(taskQueryParam.getCreater())) {
                 con = con + " AND art.START_USER_ID_ = #{creater} ";
             }
         }
 
-        if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
+        if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
             con = con + " AND art.NAME_ LIKE #{taskName} ";
         }
 
-        if(StringUtils.isNotBlank(taskQueryParam.getApprover())){
+        if (StringUtils.isNotBlank(taskQueryParam.getApprover())) {
             con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
 
         List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql)
-                .parameter("appKey",taskQueryParam.getAppKey())
-                .parameter("title","%"+taskQueryParam.getTitle()+"%")
-                .parameter("creater",taskQueryParam.getCreater())
-                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
-                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .parameter("appKey", taskQueryParam.getAppKey())
+                .parameter("title", "%" + taskQueryParam.getTitle() + "%")
+                .parameter("creater", taskQueryParam.getCreater())
+                .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
+                .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
                 .listPage(pageInfo.getFrom(), pageInfo.getSize());
 
         pageInfo.setRows(tasks);
 
-        pageInfo.setTotal((int)historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql)
-                .parameter("appKey",taskQueryParam.getAppKey())
-                .parameter("title","%"+taskQueryParam.getTitle()+"%")
-                .parameter("creater",taskQueryParam.getCreater())
-                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
-                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+        pageInfo.setTotal((int) historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql)
+                .parameter("appKey", taskQueryParam.getAppKey())
+                .parameter("title", "%" + taskQueryParam.getTitle() + "%")
+                .parameter("creater", taskQueryParam.getCreater())
+                .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
+                .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
                 .count());
         return pageInfo;
     }
