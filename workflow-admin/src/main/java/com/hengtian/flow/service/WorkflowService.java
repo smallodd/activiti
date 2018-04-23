@@ -168,7 +168,7 @@ public interface WorkflowService {
      * @author houjinrong@chtwm.com
      * date 2018/4/20 15:35
      */
-    PageInfo taskOpenList(TaskQueryParam taskQueryParam);
+    PageInfo openTaskList(TaskQueryParam taskQueryParam);
 
     /**
      * 已办任务列表
@@ -178,5 +178,23 @@ public interface WorkflowService {
      * @author houjinrong@chtwm.com
      * date 2018/4/20 15:35
      */
-    PageInfo taskCloseList(TaskQueryParam taskQueryParam);
+    PageInfo closeTaskList(TaskQueryParam taskQueryParam);
+    
+    /**
+     * 待处理任务（包括待认领和待办任务）
+     * @param taskQueryParam 任务查询条件
+     * @return 
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 16:01
+     */
+    PageInfo activeTaskList(TaskQueryParam taskQueryParam);
+
+    /**
+     * 待认领任务列表， 任务签收后变为待办任务，待办任务可取消签认领
+     * @param taskQueryParam 任务查询条件
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 15:59
+     */
+    PageInfo claimTaskList(TaskQueryParam taskQueryParam);
 }

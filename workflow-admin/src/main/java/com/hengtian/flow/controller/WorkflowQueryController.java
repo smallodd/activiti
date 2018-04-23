@@ -42,8 +42,8 @@ public class WorkflowQueryController {
     @SysLog("催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "催办任务列表")
     @RequestMapping(value = "/rest/task/remind/page", method = RequestMethod.POST)
-    public Object taskRemindList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
-        return remindTaskService.taskRemindList(taskRemindQueryParam);
+    public Object remindTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
+        return remindTaskService.remindTaskList(taskRemindQueryParam);
     }
 
     /**
@@ -58,8 +58,8 @@ public class WorkflowQueryController {
     @SysLog("被催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "被催办任务列表")
     @RequestMapping(value = "/rest/task/reminded/page", method = RequestMethod.POST)
-    public Object taskRemindedList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
-        return remindTaskService.taskRemindedList(taskRemindQueryParam);
+    public Object remindedTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
+        return remindTaskService.remindedTaskList(taskRemindQueryParam);
     }
 
     /**
@@ -74,8 +74,8 @@ public class WorkflowQueryController {
     @SysLog("未办任务列表")
     @ApiOperation(httpMethod = "POST", value = "未办任务列表")
     @RequestMapping(value = "/rest/task/open/page", method = RequestMethod.POST)
-    public Object taskOpenList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        return workflowService.taskOpenList(taskQueryParam);
+    public Object openTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+        return workflowService.openTaskList(taskQueryParam);
     }
 
     /**
@@ -90,8 +90,8 @@ public class WorkflowQueryController {
     @SysLog("已办任务列表")
     @ApiOperation(httpMethod = "POST", value = "已办任务列表")
     @RequestMapping(value = "/rest/task/close/page", method = RequestMethod.POST)
-    public Object taskCloseList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        return workflowService.taskCloseList(taskQueryParam);
+    public Object closeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+        return workflowService.closeTaskList(taskQueryParam);
     }
 
 
@@ -134,7 +134,7 @@ public class WorkflowQueryController {
     @ResponseBody
     @SysLog("问询意见查询接口")
     @ApiOperation(httpMethod = "POST", value = "问询意见查询接口")
-    @RequestMapping(value = "/rest/task/enquired/comment", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/enquire/page", method = RequestMethod.POST)
     public Object enquireComment(@ApiParam(value = "操作人ID", name = "userId", required = true) String userId, @ApiParam(value = "任务ID", name = "taskId", required = true) String taskId) {
         return workflowService.enquireComment(userId, taskId);
     }

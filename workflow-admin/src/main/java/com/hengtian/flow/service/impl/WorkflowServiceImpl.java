@@ -28,7 +28,6 @@ import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -460,7 +459,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * date 2018/4/20 15:35
      */
     @Override
-    public PageInfo taskOpenList(TaskQueryParam taskQueryParam) {
+    public PageInfo openTaskList(TaskQueryParam taskQueryParam) {
         String con = " WHERE trt.STATUS = " + TaskStatusEnum.OPEN.status;
         String re = "SELECT art.*";
         String reC = "SELECT COUNT(*)";
@@ -517,7 +516,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * date 2018/4/19 15:17
      */
     @Override
-    public PageInfo taskCloseList(TaskQueryParam taskQueryParam) {
+    public PageInfo closeTaskList(TaskQueryParam taskQueryParam) {
         String con = " WHERE trt.STATUS IN(" + TaskStatusEnum.getCloseStatus() + ") ";
         String re = "SELECT art.*";
         String reC = "SELECT COUNT(*)";
@@ -566,5 +565,29 @@ public class WorkflowServiceImpl implements WorkflowService {
                 .parameter("approver","%"+taskQueryParam.getApprover()+"%")
                 .count());
         return pageInfo;
+    }
+
+    /**
+     * 待处理任务（包括待认领和待办任务）
+     * @param taskQueryParam 任务查询条件
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 16:01
+     */
+    @Override
+    public PageInfo activeTaskList(TaskQueryParam taskQueryParam) {
+        return null;
+    }
+
+    /**
+     * 待认领任务列表， 任务签收后变为待办任务，待办任务可取消签认领
+     * @param taskQueryParam 任务查询条件
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 15:59
+     */
+    @Override
+    public PageInfo claimTaskList(TaskQueryParam taskQueryParam) {
+        return null;
     }
 }
