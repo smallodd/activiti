@@ -33,6 +33,26 @@ public interface WorkflowService {
      Object approveTask(Task  task, TaskParam taskParam);
 
     /**
+     * 任务认领 部门，角色，组审批时，需具体人员认领任务
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    Result taskClaim(String userId, String taskId);
+
+    /**
+     * 取消任务认领
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    Result taskUnclaim(String userId, String taskId);
+
+    /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
      *
      * @param userId           操作人ID
@@ -73,11 +93,12 @@ public interface WorkflowService {
      * @param userId           操作人ID
      * @param taskId           任务ID
      * @param targetTaskDefKey 问询任务节点KEY
+     * @param commentResult    意见
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskEnquire(String userId, String taskId, String targetTaskDefKey);
+    Result taskEnquire(String userId, String taskId, String targetTaskDefKey, String commentResult);
 
     /**
      * 问询确认
@@ -113,7 +134,7 @@ public interface WorkflowService {
     Result taskCancel(String userId, String processInstanceId);
 
     /**
-     * 挂起
+     * 挂起任务
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
@@ -124,7 +145,7 @@ public interface WorkflowService {
     Result taskSuspend(String userId, String taskId);
 
     /**
-     * 激活
+     * 激活任务
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
@@ -135,7 +156,39 @@ public interface WorkflowService {
     Result taskActivate(String userId, String taskId);
 
     /**
+     * 挂起流程
+     *
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:01
+     */
+    Result processSuspend(String userId, String processInstanceId);
+
+    /**
+     * 激活流程
+     *
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:03
+     */
+    Result processActivate(String userId, String processInstanceId);
+
+    /**
+     * 问询意见查询接口
+     *
+     * @param userId 操作人ID
+     * @param taskId 任务ID
+     * @return
+     */
+    Result enquireComment(String userId, String taskId);
+
+    /**
      * 未办任务列表
+     *
      * @param taskQueryParam 任务查询条件
      * @return 分页
      * @author houjinrong@chtwm.com
@@ -145,6 +198,7 @@ public interface WorkflowService {
 
     /**
      * 已办任务列表
+     *
      * @param taskQueryParam 任务查询条件
      * @return 分页
      * @author houjinrong@chtwm.com

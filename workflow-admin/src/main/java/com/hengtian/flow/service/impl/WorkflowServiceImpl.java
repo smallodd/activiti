@@ -2,17 +2,20 @@ package com.hengtian.flow.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.*;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskParam;
+import com.hengtian.common.enums.*;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.ConstantUtils;
+import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
@@ -24,15 +27,21 @@ import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
 import com.rbac.service.PrivilegeService;
+import com.hengtian.flow.vo.CommentVo;
+import com.hengtian.system.model.SysUser;
+import com.hengtian.system.service.SysUserService;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.interceptor.Command;
+import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.task.Comment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.apache.commons.collections.CollectionUtils;
 import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -358,8 +367,66 @@ public class WorkflowServiceImpl implements WorkflowService {
         return false;
     }
 
+    @Autowired
+    private SysUserService sysUserService;
+
     /**
-     * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
+     * 任务认领 部门，角色，组审批时，需具体人员认领任务
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    @Override
+    public Result taskClaim(String userId, String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return new Result(false,ResultEnum.TASK_NOT_EXIT.code,ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        String assignee = task.getAssignee();
+        if(StringUtils.isNotBlank(assignee)){
+            assignee = assignee + "," + userId;
+        }else {
+            assignee = userId;
+        }
+        taskService.setAssignee(taskId, assignee);
+
+        return new Result(true, ResultEnum.SUCCESS.code,ResultEnum.SUCCESS.msg);
+    }
+
+    /**
+     * 取消任务认领
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    @Override
+    public Result taskUnclaim(String userId, String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return new Result(false,ResultEnum.TASK_NOT_EXIT.code,ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        String assignee = task.getAssignee();
+        if(StringUtils.isBlank(assignee)){
+            return new Result(false,ResultEnum.TASK_NOT_EXIT.code,ResultEnum.TASK_NOT_EXIT.msg);
+        }else if(StringUtils.contains(assignee, userId)){
+            List<String> list = Arrays.asList(StringUtils.split(","));
+            if(list.contains(userId)){
+                list.remove(userId);
+            }
+            taskService.setAssignee(Joiner.on(",").join(list), assignee);
+        }else {
+            return new Result(false, ResultEnum.ILLEGAL_REQUEST.code,ResultEnum.ILLEGAL_REQUEST.msg);
+        }
+
+        return new Result(true, ResultEnum.SUCCESS.code,ResultEnum.SUCCESS.msg);
+    }
+
+    /**
+     * 跳转 管理员权限不受限制，可以任意跳转到已完成任务节点
      *
      * @param userId           操作人ID
      * @param taskId           任务ID
@@ -490,15 +557,19 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param userId           操作人ID
      * @param taskId           任务ID
      * @param targetTaskDefKey 问询任务节点KEY
+     * @param commentResult    意见
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
     @Override
-    public Result taskEnquire(String userId, String taskId, String targetTaskDefKey) {
+    public Result taskEnquire(String userId, String taskId, String targetTaskDefKey, String commentResult) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        if (StringUtils.isNotBlank(commentResult)) {
+            taskService.addComment(task.getId(), task.getProcessInstanceId(), commentResult);
         }
         EnquireTask enquireTask = new EnquireTask();
         enquireTask.setProcInstId(task.getProcessInstanceId());
@@ -583,7 +654,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     /**
-     * 挂起
+     * 挂起任务
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
@@ -593,11 +664,16 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskSuspend(String userId, String taskId) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        //todo 挂起任务
+        return new Result(true, "挂起成功");
     }
 
     /**
-     * 激活
+     * 激活任务
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
@@ -607,11 +683,80 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskActivate(String userId, String taskId) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        //todo 激活任务
+        return new Result(true, "激活成功");
+    }
+
+    /**
+     * 挂起流程
+     *
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:03
+     */
+    @Override
+    public Result processSuspend(String userId, String processInstanceId) {
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        runtimeService.suspendProcessInstanceById(processInstanceId);
+        return new Result(true, "挂起流程成功");
+    }
+
+    /**
+     * 激活流程
+     *
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:03
+     */
+    @Override
+    public Result processActivate(String userId, String processInstanceId) {
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        runtimeService.activateProcessInstanceById(processInstanceId);
+        return new Result(true, "激活流程成功");
+    }
+
+    /**
+     * 问询意见查询接口
+     *
+     * @param userId 操作人ID
+     * @param taskId 流程实例ID
+     * @return
+     */
+    @Override
+    public Result enquireComment(String userId, String taskId) {
+        List<Comment> commentList = taskService.getTaskComments(taskId);
+        List<CommentVo> comments = new ArrayList<>();
+        commentList.forEach(comment -> {
+            CommentEntity entity = (CommentEntity) comment;
+            SysUser user = sysUserService.selectById(comment.getUserId());
+            CommentVo vo = new CommentVo();
+            vo.setCommentUser(user.getUserName());
+            vo.setCommentTime(DateUtils.formatDateToString(comment.getTime()));
+            vo.setCommentContent(entity.getMessage());
+            comments.add(vo);
+        });
+        Result result = new Result(true, "查询成功");
+        result.setObj(comments);
+        return result;
     }
 
     /**
      * 未办任务列表
+     *
      * @param taskQueryParam 任务查询条件
      * @return 分页
      * @author houjinrong@chtwm.com
@@ -624,30 +769,51 @@ public class WorkflowServiceImpl implements WorkflowService {
         String reC = "SELECT COUNT(*)";
         StringBuffer sb = new StringBuffer();
         sb.append(" FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
-        if(StringUtils.isNotBlank(taskQueryParam.getAppKey())){
+        if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
-            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+            con = con + " AND tap.APP_KEY LIKE #{appKey}";
         }
-        if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+
+        if(StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())){
             sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
-            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+            if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+                con = con + " AND tap.APP_KEY LIKE #{title} ";
+            }
+            if(StringUtils.isNotBlank(taskQueryParam.getCreater())){
+                con = con + " AND art.START_USER_ID_ = #{creater} ";
+            }
         }
+
         if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
-            con = con + " AND art.NAME_ LIKE '%" + taskQueryParam.getTaskName() + "%' ";
+            con = con + " AND art.NAME_ LIKE #{taskName} ";
         }
-        if(StringUtils.isNotBlank(taskQueryParam.getUserId())){
-            con = con + " AND art.ASSIGNEE_ LIKE '%" + taskQueryParam.getUserId() + "%' ";
+
+        if(StringUtils.isNotBlank(taskQueryParam.getApprover())){
+            con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
         }
-        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(),taskQueryParam.getPageSize());
+        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
-        List<Task> tasks = taskService.createNativeTaskQuery().sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        List<Task> tasks = taskService.createNativeTaskQuery().sql(re + sql)
+                .parameter("appKey",taskQueryParam.getAppKey())
+                .parameter("title","%"+taskQueryParam.getTitle()+"%")
+                .parameter("creater",taskQueryParam.getCreater())
+                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
+                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .listPage(pageInfo.getFrom(), pageInfo.getSize());
         pageInfo.setRows(tasks);
-        pageInfo.setTotal((int)taskService.createNativeTaskQuery().sql(reC + sql).count());
+        pageInfo.setTotal((int)taskService.createNativeTaskQuery().sql(reC + sql)
+                .parameter("appKey",taskQueryParam.getAppKey())
+                .parameter("title","%"+taskQueryParam.getTitle()+"%")
+                .parameter("creater",taskQueryParam.getCreater())
+                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
+                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .count());
         return pageInfo;
     }
 
     /**
      * 已办任务列表
+     *
      * @param taskQueryParam 任务查询条件实体类
      * @return json
      * @author houjinrong@chtwm.com
@@ -655,31 +821,53 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public PageInfo taskCloseList(TaskQueryParam taskQueryParam) {
-        String con = " WHERE trt.STATUS IN(" + TaskStatusEnum.getCloseStatus()+") ";
+        String con = " WHERE trt.STATUS IN(" + TaskStatusEnum.getCloseStatus() + ") ";
         String re = "SELECT art.*";
         String reC = "SELECT COUNT(*)";
         StringBuffer sb = new StringBuffer();
         sb.append(" FROM t_ru_task AS trt LEFT JOIN act_hi_taskinst AS art ON trt.TASK_ID=art.ID_ ");
-        if(StringUtils.isNotBlank(taskQueryParam.getAppKey())){
+        if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
-            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+            con = con + " AND tap.APP_KEY LIKE #{appKey} ";
         }
-        if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+
+        if(StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())){
             sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
-            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+            if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+                con = con + " AND tap.APP_KEY LIKE #{title} ";
+            }
+            if(StringUtils.isNotBlank(taskQueryParam.getCreater())){
+                con = con + " AND art.START_USER_ID_ = #{creater} ";
+            }
         }
+
         if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
-            con = con + " AND art.NAME_ LIKE '%" + taskQueryParam.getTaskName() + "%' ";
+            con = con + " AND art.NAME_ LIKE #{taskName} ";
         }
-        if(StringUtils.isNotBlank(taskQueryParam.getUserId())){
-            con = con + " AND art.ASSIGNEE_ LIKE '%" + taskQueryParam.getUserId() + "%' ";
+
+        if(StringUtils.isNotBlank(taskQueryParam.getApprover())){
+            con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
         }
-        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(),taskQueryParam.getPageSize());
+        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
-        List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
-        
+
+        List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql)
+                .parameter("appKey",taskQueryParam.getAppKey())
+                .parameter("title","%"+taskQueryParam.getTitle()+"%")
+                .parameter("creater",taskQueryParam.getCreater())
+                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
+                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .listPage(pageInfo.getFrom(), pageInfo.getSize());
+
         pageInfo.setRows(tasks);
-        pageInfo.setTotal((int)historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql).count());
+
+        pageInfo.setTotal((int)historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql)
+                .parameter("appKey",taskQueryParam.getAppKey())
+                .parameter("title","%"+taskQueryParam.getTitle()+"%")
+                .parameter("creater",taskQueryParam.getCreater())
+                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
+                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .count());
         return pageInfo;
     }
 }

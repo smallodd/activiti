@@ -11,6 +11,8 @@ import org.apache.commons.lang3.EnumUtils;
  */
 public enum TaskActionEnum {
 
+    CLAIM("claim","认领"),
+    UNCLAIM("unclaim","取消认领"),
     JUMP("jump","跳转"),
     TRANSFER("transfer","转办"),
     REMIND("remind","催办"),
@@ -19,7 +21,9 @@ public enum TaskActionEnum {
     REVOKE("revoke","撤回"),
     CANCEL("cancel","取消"),
     SUSPEND("suspend","挂起"),
-    ACTIVATE("activate","激活");
+    ACTIVATE("activate","激活"),
+    SUSPENDPROCESS("suspendProcess","挂起"),
+    ACTIVATEPROCESS("activateProcess","激活");
 
     public String value;
 

@@ -14,7 +14,13 @@ public class TaskAdapter implements TaskManager {
     @Override
     public Result taskAction(TaskActionParam taskActionParam) {
         String actionType = taskActionParam.getActionType();
-        if (TaskActionEnum.JUMP.value.equals(actionType)) {
+        if (TaskActionEnum.CLAIM.value.equals(actionType)) {
+            //认领
+            return WorkflowService.taskClaim(taskActionParam.getUserId(), taskActionParam.getTaskId());
+        } else if (TaskActionEnum.UNCLAIM.value.equals(actionType)) {
+            //取消认领
+            return WorkflowService.taskUnclaim(taskActionParam.getUserId(), taskActionParam.getTaskId());
+        } else if (TaskActionEnum.JUMP.value.equals(actionType)) {
             //跳转
             return WorkflowService.taskJump(taskActionParam.getUserId(), taskActionParam.getTaskId(), taskActionParam.getTargetTaskDefKey());
         } else if (TaskActionEnum.TRANSFER.value.equals(actionType)) {
@@ -25,7 +31,7 @@ public class TaskAdapter implements TaskManager {
             return WorkflowService.taskRemind(taskActionParam.getUserId(), taskActionParam.getTaskId());
         } else if (TaskActionEnum.ENQUIRE.value.equals(actionType)) {
             //问询
-            return WorkflowService.taskEnquire(taskActionParam.getUserId(), taskActionParam.getProcessInstanceId(), taskActionParam.getTargetTaskDefKey());
+            return WorkflowService.taskEnquire(taskActionParam.getUserId(), taskActionParam.getProcessInstanceId(), taskActionParam.getTargetTaskDefKey(), taskActionParam.getCommentResult());
         } else if (TaskActionEnum.CONFIRMENQUIRE.value.equals(actionType)) {
             //确认问询
             return WorkflowService.taskConfirmEnquire(taskActionParam.getUserId(), taskActionParam.getTaskId());
@@ -41,6 +47,12 @@ public class TaskAdapter implements TaskManager {
         } else if (TaskActionEnum.ACTIVATE.value.equals(actionType)) {
             //激活
             return WorkflowService.taskActivate(taskActionParam.getUserId(), taskActionParam.getTaskId());
+        } else if (TaskActionEnum.SUSPENDPROCESS.value.equals(actionType)) {
+            //挂起流程
+            return WorkflowService.processSuspend(taskActionParam.getUserId(), taskActionParam.getTaskId());
+        } else if (TaskActionEnum.ACTIVATEPROCESS.value.equals(actionType)) {
+            //激活流程
+            return WorkflowService.processActivate(taskActionParam.getUserId(), taskActionParam.getTaskId());
         }
 
         return new Result();

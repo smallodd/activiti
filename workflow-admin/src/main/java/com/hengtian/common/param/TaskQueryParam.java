@@ -8,12 +8,17 @@ import io.swagger.annotations.ApiModelProperty;
  * date 2018/4/19 15:10
  */
 public class TaskQueryParam {
-    /**
-     * 用户id
-     */
-    @ApiModelProperty(value = "用户id", example="H000000")
-    private String userId;
 
+    /**
+     * 创建人id
+     */
+    @ApiModelProperty(value = "创建人id", example="H000000")
+    private String creater;
+    /**
+     * 审批人id
+     */
+    @ApiModelProperty(value = "审批人id", example="H000000")
+    private String approver;
     /**
      * 创建任务的标题
      */
@@ -41,12 +46,20 @@ public class TaskQueryParam {
     @ApiModelProperty(value = "每页条数", required = true, example="10")
     private int pageSize;
 
-    public String getUserId() {
-        return userId;
+    public String getCreater() {
+        return creater;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setCreater(String creater) {
+        this.creater = creater;
+    }
+
+    public String getApprover() {
+        return approver;
+    }
+
+    public void setApprover(String approver) {
+        this.approver = approver;
     }
 
     public String getTitle() {
