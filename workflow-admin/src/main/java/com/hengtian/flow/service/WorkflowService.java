@@ -47,11 +47,12 @@ public interface WorkflowService {
      * @param userId           操作人ID
      * @param taskId           任务ID
      * @param targetTaskDefKey 问询任务节点KEY
+     * @param commentResult    意见
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskEnquire(String userId, String taskId, String targetTaskDefKey);
+    Result taskEnquire(String userId, String taskId, String targetTaskDefKey, String commentResult);
 
     /**
      * 问询确认
@@ -129,6 +130,15 @@ public interface WorkflowService {
      * date 2018/4/18 16:03
      */
     Result processActivate(String userId, String processInstanceId);
+
+    /**
+     * 问询意见查询接口
+     *
+     * @param userId 操作人ID
+     * @param taskId 任务ID
+     * @return
+     */
+    Result enquireComment(String userId, String taskId);
 
     /**
      * 未办任务列表

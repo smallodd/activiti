@@ -10,6 +10,7 @@ import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.ConstantUtils;
+import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
@@ -18,13 +19,18 @@ import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.model.RemindTask;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.vo.CommentVo;
+import com.hengtian.system.model.SysUser;
+import com.hengtian.system.service.SysUserService;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.interceptor.Command;
+import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -33,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +69,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     private EnquireService enquireService;
+
+    @Autowired
+    private SysUserService sysUserService;
 
     /**
      * 跳转 管理员权限不受限制，可以任意跳转到已完成任务节点
@@ -195,15 +205,19 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param userId           操作人ID
      * @param taskId           任务ID
      * @param targetTaskDefKey 问询任务节点KEY
+     * @param commentResult    意见
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
     @Override
-    public Result taskEnquire(String userId, String taskId, String targetTaskDefKey) {
+    public Result taskEnquire(String userId, String taskId, String targetTaskDefKey, String commentResult) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        if (StringUtils.isNotBlank(commentResult)) {
+            taskService.addComment(task.getId(), task.getProcessInstanceId(), commentResult);
         }
         EnquireTask enquireTask = new EnquireTask();
         enquireTask.setProcInstId(task.getProcessInstanceId());
@@ -361,6 +375,31 @@ public class WorkflowServiceImpl implements WorkflowService {
         }
         runtimeService.activateProcessInstanceById(processInstanceId);
         return new Result(true, "激活流程成功");
+    }
+
+    /**
+     * 问询意见查询接口
+     *
+     * @param userId 操作人ID
+     * @param taskId 流程实例ID
+     * @return
+     */
+    @Override
+    public Result enquireComment(String userId, String taskId) {
+        List<Comment> commentList = taskService.getTaskComments(taskId);
+        List<CommentVo> comments = new ArrayList<>();
+        commentList.forEach(comment -> {
+            CommentEntity entity = (CommentEntity) comment;
+            SysUser user = sysUserService.selectById(comment.getUserId());
+            CommentVo vo = new CommentVo();
+            vo.setCommentUser(user.getUserName());
+            vo.setCommentTime(DateUtils.formatDateToString(comment.getTime()));
+            vo.setCommentContent(entity.getMessage());
+            comments.add(vo);
+        });
+        Result result = new Result(true, "查询成功");
+        result.setObj(comments);
+        return result;
     }
 
     /**

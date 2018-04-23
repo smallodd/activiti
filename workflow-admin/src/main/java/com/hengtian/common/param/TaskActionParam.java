@@ -50,6 +50,11 @@ public class TaskActionParam {
      */
     @ApiModelProperty(value = "目标任务节点KEY", required = false, example = "targetTaskDefKey")
     private String targetTaskDefKey;
+    /**
+     * 意见
+     */
+    @ApiModelProperty(value = "意见", required = false, example = "commentResult")
+    private String commentResult;
 
     public String getActionType() {
         return actionType;
@@ -97,6 +102,14 @@ public class TaskActionParam {
 
     public void setTargetTaskDefKey(String targetTaskDefKey) {
         this.targetTaskDefKey = targetTaskDefKey;
+    }
+
+    public String getCommentResult() {
+        return commentResult;
+    }
+
+    public void setCommentResult(String commentResult) {
+        this.commentResult = commentResult;
     }
 
     @Override
