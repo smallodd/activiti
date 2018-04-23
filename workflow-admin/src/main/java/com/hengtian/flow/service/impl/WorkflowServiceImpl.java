@@ -2,11 +2,7 @@ package com.hengtian.flow.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Maps;
-import com.hengtian.common.enums.ResultEnum;
-import com.hengtian.common.enums.TaskStatusEnum;
-import com.hengtian.common.enums.TaskStatus;
-import com.hengtian.common.enums.TaskType;
-import com.hengtian.common.enums.TaskVariable;
+import com.hengtian.common.enums.*;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.ConstantUtils;
@@ -29,7 +25,6 @@ import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
@@ -419,23 +414,43 @@ public class WorkflowServiceImpl implements WorkflowService {
         sb.append(" FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
         if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
-            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+            con = con + " AND tap.APP_KEY LIKE #{appKey}";
         }
-        if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
+
+        if(StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())){
             sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
-            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+            if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+                con = con + " AND tap.APP_KEY LIKE #{title} ";
+            }
+            if(StringUtils.isNotBlank(taskQueryParam.getCreater())){
+                con = con + " AND art.START_USER_ID_ = #{creater} ";
+            }
         }
-        if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
-            con = con + " AND art.NAME_ LIKE '%" + taskQueryParam.getTaskName() + "%' ";
+
+        if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
+            con = con + " AND art.NAME_ LIKE #{taskName} ";
         }
-        if (StringUtils.isNotBlank(taskQueryParam.getUserId())) {
-            con = con + " AND art.ASSIGNEE_ LIKE '%" + taskQueryParam.getUserId() + "%' ";
+
+        if(StringUtils.isNotBlank(taskQueryParam.getApprover())){
+            con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
-        List<Task> tasks = taskService.createNativeTaskQuery().sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        List<Task> tasks = taskService.createNativeTaskQuery().sql(re + sql)
+                .parameter("appKey",taskQueryParam.getAppKey())
+                .parameter("title","%"+taskQueryParam.getTitle()+"%")
+                .parameter("creater",taskQueryParam.getCreater())
+                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
+                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .listPage(pageInfo.getFrom(), pageInfo.getSize());
         pageInfo.setRows(tasks);
-        pageInfo.setTotal((int) taskService.createNativeTaskQuery().sql(reC + sql).count());
+        pageInfo.setTotal((int)taskService.createNativeTaskQuery().sql(reC + sql)
+                .parameter("appKey",taskQueryParam.getAppKey())
+                .parameter("title","%"+taskQueryParam.getTitle()+"%")
+                .parameter("creater",taskQueryParam.getCreater())
+                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
+                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .count());
         return pageInfo;
     }
 
@@ -456,24 +471,46 @@ public class WorkflowServiceImpl implements WorkflowService {
         sb.append(" FROM t_ru_task AS trt LEFT JOIN act_hi_taskinst AS art ON trt.TASK_ID=art.ID_ ");
         if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
-            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+            con = con + " AND tap.APP_KEY LIKE #{appKey} ";
         }
-        if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
+
+        if(StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())){
             sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
-            con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
+            if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
+                con = con + " AND tap.APP_KEY LIKE #{title} ";
+            }
+            if(StringUtils.isNotBlank(taskQueryParam.getCreater())){
+                con = con + " AND art.START_USER_ID_ = #{creater} ";
+            }
         }
-        if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
-            con = con + " AND art.NAME_ LIKE '%" + taskQueryParam.getTaskName() + "%' ";
+
+        if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
+            con = con + " AND art.NAME_ LIKE #{taskName} ";
         }
-        if (StringUtils.isNotBlank(taskQueryParam.getUserId())) {
-            con = con + " AND art.ASSIGNEE_ LIKE '%" + taskQueryParam.getUserId() + "%' ";
+
+        if(StringUtils.isNotBlank(taskQueryParam.getApprover())){
+            con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
-        List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+
+        List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql)
+                .parameter("appKey",taskQueryParam.getAppKey())
+                .parameter("title","%"+taskQueryParam.getTitle()+"%")
+                .parameter("creater",taskQueryParam.getCreater())
+                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
+                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .listPage(pageInfo.getFrom(), pageInfo.getSize());
 
         pageInfo.setRows(tasks);
-        pageInfo.setTotal((int) historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql).count());
+
+        pageInfo.setTotal((int)historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql)
+                .parameter("appKey",taskQueryParam.getAppKey())
+                .parameter("title","%"+taskQueryParam.getTitle()+"%")
+                .parameter("creater",taskQueryParam.getCreater())
+                .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
+                .parameter("approver","%"+taskQueryParam.getApprover()+"%")
+                .count());
         return pageInfo;
     }
 }
