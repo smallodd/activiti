@@ -24,6 +24,7 @@ import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -63,7 +64,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     private EnquireService enquireService;
 
     /**
-     * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
+     * 跳转 管理员权限不受限制，可以任意跳转到已完成任务节点
      *
      * @param userId           操作人ID
      * @param taskId           任务ID
@@ -297,7 +298,11 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskSuspend(String userId, String taskId) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        return new Result(true,"挂起成功");
     }
 
     /**
@@ -311,7 +316,11 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskActivate(String userId, String taskId) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        return new Result(true,"激活成功");
     }
 
     /**
