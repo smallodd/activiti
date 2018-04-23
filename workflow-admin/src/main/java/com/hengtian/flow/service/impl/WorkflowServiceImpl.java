@@ -333,14 +333,16 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Override
     public PageInfo taskOpenList(TaskQueryParam taskQueryParam) {
         String con = " WHERE trt.STATUS = " + TaskStatusEnum.OPEN.status;
+        String re = "SELECT art.*";
+        String reC = "SELECT COUNT(*)";
         StringBuffer sb = new StringBuffer();
-        sb.append(" SELECT art.* FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
+        sb.append(" FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
         if(StringUtils.isNotBlank(taskQueryParam.getAppKey())){
-            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=ahp.PROC_INST_ID ");
+            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
             con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
         }
         if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
-            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
+            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
             con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
         }
         if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
@@ -351,9 +353,9 @@ public class WorkflowServiceImpl implements WorkflowService {
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(),taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
-        List<Task> tasks = taskService.createNativeTaskQuery().sql(sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        List<Task> tasks = taskService.createNativeTaskQuery().sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
         pageInfo.setRows(tasks);
-        pageInfo.setTotal((int)taskService.createNativeTaskQuery().sql(sql).count());
+        pageInfo.setTotal((int)taskService.createNativeTaskQuery().sql(reC + sql).count());
         return pageInfo;
     }
 
@@ -367,14 +369,16 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Override
     public PageInfo taskCloseList(TaskQueryParam taskQueryParam) {
         String con = " WHERE trt.STATUS IN(" + TaskStatusEnum.getCloseStatus()+") ";
+        String re = "SELECT art.*";
+        String reC = "SELECT COUNT(*)";
         StringBuffer sb = new StringBuffer();
-        sb.append(" SELECT art.* FROM t_ru_task AS trt LEFT JOIN act_hi_taskinst AS art ON trt.TASK_ID=art.ID_ ");
+        sb.append(" FROM t_ru_task AS trt LEFT JOIN act_hi_taskinst AS art ON trt.TASK_ID=art.ID_ ");
         if(StringUtils.isNotBlank(taskQueryParam.getAppKey())){
-            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=ahp.PROC_INST_ID ");
+            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
             con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
         }
         if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
-            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
+            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
             con = con + " AND tap.APP_KEY LIKE '%" + taskQueryParam.getAppKey() + "%' ";
         }
         if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
@@ -385,10 +389,10 @@ public class WorkflowServiceImpl implements WorkflowService {
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(),taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
-        List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
         
         pageInfo.setRows(tasks);
-        pageInfo.setTotal((int)historyService.createNativeHistoricTaskInstanceQuery().sql(sql).count());
+        pageInfo.setTotal((int)historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql).count());
         return pageInfo;
     }
 }
