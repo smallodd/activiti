@@ -19,7 +19,7 @@ public interface RemindTaskService extends IService<RemindTask> {
      * @author houjinrong@chtwm.com
      * date 2018/4/20 15:28
      */
-    PageInfo taskRemindList(TaskRemindQueryParam taskRemindQueryParam);
+    PageInfo remindTaskList(TaskRemindQueryParam taskRemindQueryParam);
 
     /**
      * 被催办任务列表
@@ -28,5 +28,5 @@ public interface RemindTaskService extends IService<RemindTask> {
      * @author houjinrong@chtwm.com
      * date 2018/4/20 15:28
      */
-    PageInfo taskRemindedList(TaskRemindQueryParam taskRemindQueryParam);
+    PageInfo remindedTaskList(TaskRemindQueryParam taskRemindQueryParam);
 }

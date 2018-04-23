@@ -1,6 +1,7 @@
 package com.hengtian.flow.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.*;
 import com.hengtian.common.param.TaskQueryParam;
@@ -35,10 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
@@ -68,6 +66,61 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     private SysUserService sysUserService;
+
+    /**
+     * 任务认领 部门，角色，组审批时，需具体人员认领任务
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    @Override
+    public Result taskClaim(String userId, String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return new Result(false,ResultEnum.TASK_NOT_EXIT.code,ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        String assignee = task.getAssignee();
+        if(StringUtils.isNotBlank(assignee)){
+            assignee = assignee + "," + userId;
+        }else {
+            assignee = userId;
+        }
+        taskService.setAssignee(taskId, assignee);
+
+        return new Result(true, ResultEnum.SUCCESS.code,ResultEnum.SUCCESS.msg);
+    }
+
+    /**
+     * 取消任务认领
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    @Override
+    public Result taskUnclaim(String userId, String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return new Result(false,ResultEnum.TASK_NOT_EXIT.code,ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        String assignee = task.getAssignee();
+        if(StringUtils.isBlank(assignee)){
+            return new Result(false,ResultEnum.TASK_NOT_EXIT.code,ResultEnum.TASK_NOT_EXIT.msg);
+        }else if(StringUtils.contains(assignee, userId)){
+            List<String> list = Arrays.asList(StringUtils.split(","));
+            if(list.contains(userId)){
+                list.remove(userId);
+            }
+            taskService.setAssignee(Joiner.on(",").join(list), assignee);
+        }else {
+            return new Result(false, ResultEnum.ILLEGAL_REQUEST.code,ResultEnum.ILLEGAL_REQUEST.msg);
+        }
+
+        return new Result(true, ResultEnum.SUCCESS.code,ResultEnum.SUCCESS.msg);
+    }
 
     /**
      * todo 初始化任务属性值
@@ -414,7 +467,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * date 2018/4/20 15:35
      */
     @Override
-    public PageInfo taskOpenList(TaskQueryParam taskQueryParam) {
+    public PageInfo openTaskList(TaskQueryParam taskQueryParam) {
         String con = " WHERE trt.STATUS = " + TaskStatusEnum.OPEN.status;
         String re = "SELECT art.*";
         String reC = "SELECT COUNT(*)";
@@ -471,7 +524,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * date 2018/4/19 15:17
      */
     @Override
-    public PageInfo taskCloseList(TaskQueryParam taskQueryParam) {
+    public PageInfo closeTaskList(TaskQueryParam taskQueryParam) {
         String con = " WHERE trt.STATUS IN(" + TaskStatusEnum.getCloseStatus() + ") ";
         String re = "SELECT art.*";
         String reC = "SELECT COUNT(*)";
@@ -520,5 +573,29 @@ public class WorkflowServiceImpl implements WorkflowService {
                 .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
                 .count());
         return pageInfo;
+    }
+
+    /**
+     * 待处理任务（包括待认领和待办任务）
+     * @param taskQueryParam 任务查询条件
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 16:01
+     */
+    @Override
+    public PageInfo activeTaskList(TaskQueryParam taskQueryParam) {
+        return null;
+    }
+
+    /**
+     * 待认领任务列表， 任务签收后变为待办任务，待办任务可取消签认领
+     * @param taskQueryParam 任务查询条件
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 15:59
+     */
+    @Override
+    public PageInfo claimTaskList(TaskQueryParam taskQueryParam) {
+        return null;
     }
 }

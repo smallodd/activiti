@@ -26,10 +26,10 @@ public class RemindTaskServiceImpl extends ServiceImpl<RemindTaskDao, RemindTask
      * date 2018/4/20 15:28
      */
     @Override
-    public PageInfo taskRemindList(TaskRemindQueryParam taskRemindQueryParam) {
+    public PageInfo remindTaskList(TaskRemindQueryParam taskRemindQueryParam) {
         PageInfo pageInfo = new PageInfo(taskRemindQueryParam.getPageNum(), taskRemindQueryParam.getPageSize());
         Page<RemindTask> page = new Page(taskRemindQueryParam.getPageNum(), taskRemindQueryParam.getPageSize());
-        List<RemindTask> list = remindTaskDao.taskRemindList(page, taskRemindQueryParam);
+        List<RemindTask> list = remindTaskDao.remindTaskList(page, taskRemindQueryParam);
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
         return pageInfo;
@@ -43,10 +43,10 @@ public class RemindTaskServiceImpl extends ServiceImpl<RemindTaskDao, RemindTask
      * date 2018/4/20 15:28
      */
     @Override
-    public PageInfo taskRemindedList(TaskRemindQueryParam taskRemindQueryParam) {
+    public PageInfo remindedTaskList(TaskRemindQueryParam taskRemindQueryParam) {
         PageInfo pageInfo = new PageInfo(taskRemindQueryParam.getPageNum(), taskRemindQueryParam.getPageSize());
         Page<RemindTask> page = new Page(taskRemindQueryParam.getPageNum(), taskRemindQueryParam.getPageSize());
-        List<RemindTask> list = remindTaskDao.taskRemindedList(page, taskRemindQueryParam);
+        List<RemindTask> list = remindTaskDao.remindedTaskList(page, taskRemindQueryParam);
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
         return pageInfo;

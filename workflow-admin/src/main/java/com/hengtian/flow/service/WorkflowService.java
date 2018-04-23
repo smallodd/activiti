@@ -1,10 +1,56 @@
 package com.hengtian.flow.service;
 
+import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.flow.model.TUserTask;
+import org.activiti.engine.task.Task;
 
 public interface WorkflowService {
+    /**
+     * 申请任务
+     * @param processParam
+     * @return
+     */
+    Result startProcessInstance(ProcessParam processParam);
+
+    /**
+     * 设置审批人
+     * @param task
+     * @param tUserTask
+     * @return
+     */
+     Boolean setApprover(Task task, TUserTask tUserTask);
+
+    /**
+     * 审批接口
+     * @param task
+     * @param taskParam
+     * @return
+     */
+     Object approveTask(Task  task, TaskParam taskParam);
+
+    /**
+     * 任务认领 部门，角色，组审批时，需具体人员认领任务
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    Result taskClaim(String userId, String taskId);
+
+    /**
+     * 取消任务认领
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    Result taskUnclaim(String userId, String taskId);
 
     /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
@@ -148,7 +194,7 @@ public interface WorkflowService {
      * @author houjinrong@chtwm.com
      * date 2018/4/20 15:35
      */
-    PageInfo taskOpenList(TaskQueryParam taskQueryParam);
+    PageInfo openTaskList(TaskQueryParam taskQueryParam);
 
     /**
      * 已办任务列表
@@ -158,5 +204,23 @@ public interface WorkflowService {
      * @author houjinrong@chtwm.com
      * date 2018/4/20 15:35
      */
-    PageInfo taskCloseList(TaskQueryParam taskQueryParam);
+    PageInfo closeTaskList(TaskQueryParam taskQueryParam);
+    
+    /**
+     * 待处理任务（包括待认领和待办任务）
+     * @param taskQueryParam 任务查询条件
+     * @return 
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 16:01
+     */
+    PageInfo activeTaskList(TaskQueryParam taskQueryParam);
+
+    /**
+     * 待认领任务列表， 任务签收后变为待办任务，待办任务可取消签认领
+     * @param taskQueryParam 任务查询条件
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 15:59
+     */
+    PageInfo claimTaskList(TaskQueryParam taskQueryParam);
 }

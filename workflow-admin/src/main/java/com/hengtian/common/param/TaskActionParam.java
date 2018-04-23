@@ -129,7 +129,17 @@ public class TaskActionParam {
         result.setCode(Constant.PARAM_ERROR);
         String actionType = this.getActionType();
         if (TaskActionEnum.contains(actionType)) {
-            if (TaskActionEnum.JUMP.value.equals(actionType)) {
+            if (TaskActionEnum.CLAIM.value.equals(actionType)) {
+                //认领-参数校验
+                if (StringUtils.isBlank(getTaskId())) {
+                    result.setMsg("参数taskId不能为空");
+                }
+            } else if (TaskActionEnum.UNCLAIM.value.equals(actionType)) {
+                //取消认领-参数校验
+                if (StringUtils.isBlank(getTaskId())) {
+                    result.setMsg("参数taskId不能为空");
+                }
+            }  else if (TaskActionEnum.JUMP.value.equals(actionType)) {
                 //跳转-参数校验
                 if (StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetTaskDefKey())) {
                     result.setMsg("参数taskId，targetTaskDefKey都不能为空");
