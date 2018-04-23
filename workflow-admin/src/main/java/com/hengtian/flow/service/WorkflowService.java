@@ -87,7 +87,7 @@ public interface WorkflowService {
     Result taskCancel(String userId, String processInstanceId);
 
     /**
-     * 挂起
+     * 挂起任务
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
@@ -98,7 +98,7 @@ public interface WorkflowService {
     Result taskSuspend(String userId, String taskId);
 
     /**
-     * 激活
+     * 激活任务
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
@@ -109,7 +109,30 @@ public interface WorkflowService {
     Result taskActivate(String userId, String taskId);
 
     /**
+     * 挂起流程
+     *
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:01
+     */
+    Result processSuspend(String userId, String processInstanceId);
+
+    /**
+     * 激活流程
+     *
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:03
+     */
+    Result processActivate(String userId, String processInstanceId);
+
+    /**
      * 未办任务列表
+     *
      * @param taskQueryParam 任务查询条件
      * @return 分页
      * @author houjinrong@chtwm.com
@@ -119,6 +142,7 @@ public interface WorkflowService {
 
     /**
      * 已办任务列表
+     *
      * @param taskQueryParam 任务查询条件
      * @return 分页
      * @author houjinrong@chtwm.com

@@ -24,6 +24,7 @@ import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -63,7 +64,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     private EnquireService enquireService;
 
     /**
-     * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
+     * 跳转 管理员权限不受限制，可以任意跳转到已完成任务节点
      *
      * @param userId           操作人ID
      * @param taskId           任务ID
@@ -287,7 +288,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     /**
-     * 挂起
+     * 挂起任务
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
@@ -297,11 +298,16 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskSuspend(String userId, String taskId) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        //todo 挂起任务
+        return new Result(true, "挂起成功");
     }
 
     /**
-     * 激活
+     * 激活任务
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
@@ -311,11 +317,55 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskActivate(String userId, String taskId) {
-        return null;
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        //todo 激活任务
+        return new Result(true, "激活成功");
+    }
+
+    /**
+     * 挂起流程
+     *
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:03
+     */
+    @Override
+    public Result processSuspend(String userId, String processInstanceId) {
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        runtimeService.suspendProcessInstanceById(processInstanceId);
+        return new Result(true, "挂起流程成功");
+    }
+
+    /**
+     * 激活流程
+     *
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:03
+     */
+    @Override
+    public Result processActivate(String userId, String processInstanceId) {
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        runtimeService.activateProcessInstanceById(processInstanceId);
+        return new Result(true, "激活流程成功");
     }
 
     /**
      * 未办任务列表
+     *
      * @param taskQueryParam 任务查询条件
      * @return 分页
      * @author houjinrong@chtwm.com
@@ -328,10 +378,11 @@ public class WorkflowServiceImpl implements WorkflowService {
         String reC = "SELECT COUNT(*)";
         StringBuffer sb = new StringBuffer();
         sb.append(" FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
-        if(StringUtils.isNotBlank(taskQueryParam.getAppKey())){
+        if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
             con = con + " AND tap.APP_KEY LIKE #{appKey}";
         }
+        if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
         if(StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())){
             sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
             if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
@@ -341,13 +392,17 @@ public class WorkflowServiceImpl implements WorkflowService {
                 con = con + " AND art.START_USER_ID_ = #{creater} ";
             }
         }
+        if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
+            con = con + " AND art.NAME_ LIKE '%" + taskQueryParam.getTaskName() + "%' ";
         if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
             con = con + " AND art.NAME_ LIKE #{taskName} ";
         }
+        if (StringUtils.isNotBlank(taskQueryParam.getUserId())) {
+            con = con + " AND art.ASSIGNEE_ LIKE '%" + taskQueryParam.getUserId() + "%' ";
         if(StringUtils.isNotBlank(taskQueryParam.getApprover())){
             con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
         }
-        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(),taskQueryParam.getPageSize());
+        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
         List<Task> tasks = taskService.createNativeTaskQuery().sql(re + sql)
                 .parameter("appKey",taskQueryParam.getAppKey())
@@ -357,6 +412,7 @@ public class WorkflowServiceImpl implements WorkflowService {
                 .parameter("approver","%"+taskQueryParam.getApprover()+"%")
                 .listPage(pageInfo.getFrom(), pageInfo.getSize());
         pageInfo.setRows(tasks);
+        pageInfo.setTotal((int) taskService.createNativeTaskQuery().sql(reC + sql).count());
         pageInfo.setTotal((int)taskService.createNativeTaskQuery().sql(reC + sql)
                 .parameter("appKey",taskQueryParam.getAppKey())
                 .parameter("title","%"+taskQueryParam.getTitle()+"%")
@@ -369,6 +425,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 已办任务列表
+     *
      * @param taskQueryParam 任务查询条件实体类
      * @return json
      * @author houjinrong@chtwm.com
@@ -376,15 +433,16 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public PageInfo taskCloseList(TaskQueryParam taskQueryParam) {
-        String con = " WHERE trt.STATUS IN(" + TaskStatusEnum.getCloseStatus()+") ";
+        String con = " WHERE trt.STATUS IN(" + TaskStatusEnum.getCloseStatus() + ") ";
         String re = "SELECT art.*";
         String reC = "SELECT COUNT(*)";
         StringBuffer sb = new StringBuffer();
         sb.append(" FROM t_ru_task AS trt LEFT JOIN act_hi_taskinst AS art ON trt.TASK_ID=art.ID_ ");
-        if(StringUtils.isNotBlank(taskQueryParam.getAppKey())){
+        if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
             con = con + " AND tap.APP_KEY LIKE #{appKey} ";
         }
+        if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
         if(StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())){
             sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
             if(StringUtils.isNotBlank(taskQueryParam.getTitle())){
@@ -394,14 +452,20 @@ public class WorkflowServiceImpl implements WorkflowService {
                 con = con + " AND art.START_USER_ID_ = #{creater} ";
             }
         }
+        if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
+            con = con + " AND art.NAME_ LIKE '%" + taskQueryParam.getTaskName() + "%' ";
         if(StringUtils.isNotBlank(taskQueryParam.getTaskName())){
             con = con + " AND art.NAME_ LIKE #{taskName} ";
         }
+        if (StringUtils.isNotBlank(taskQueryParam.getUserId())) {
+            con = con + " AND art.ASSIGNEE_ LIKE '%" + taskQueryParam.getUserId() + "%' ";
         if(StringUtils.isNotBlank(taskQueryParam.getApprover())){
             con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
         }
-        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(),taskQueryParam.getPageSize());
+        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
         String sql = sb.toString() + con;
+        List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+
         List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql)
                 .parameter("appKey",taskQueryParam.getAppKey())
                 .parameter("title","%"+taskQueryParam.getTitle()+"%")
@@ -409,8 +473,9 @@ public class WorkflowServiceImpl implements WorkflowService {
                 .parameter("taskName","%"+taskQueryParam.getTaskName()+"%")
                 .parameter("approver","%"+taskQueryParam.getApprover()+"%")
                 .listPage(pageInfo.getFrom(), pageInfo.getSize());
-        
+
         pageInfo.setRows(tasks);
+        pageInfo.setTotal((int) historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql).count());
         pageInfo.setTotal((int)historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql)
                 .parameter("appKey",taskQueryParam.getAppKey())
                 .parameter("title","%"+taskQueryParam.getTitle()+"%")

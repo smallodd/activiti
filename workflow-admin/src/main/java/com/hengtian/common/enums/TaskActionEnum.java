@@ -19,7 +19,9 @@ public enum TaskActionEnum {
     REVOKE("revoke","撤回"),
     CANCEL("cancel","取消"),
     SUSPEND("suspend","挂起"),
-    ACTIVATE("activate","激活");
+    ACTIVATE("activate","激活"),
+    SUSPENDPROCESS("suspendProcess","挂起"),
+    ACTIVATEPROCESS("activateProcess","激活");
 
     public String value;
 
