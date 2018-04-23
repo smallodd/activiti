@@ -94,6 +94,35 @@ public class WorkflowQueryController {
         return workflowService.closeTaskList(taskQueryParam);
     }
 
+    /**
+     * 待处理任务列表
+     * @param taskQueryParam 任务查询条件实体类
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 16:35
+     */
+    @ResponseBody
+    @SysLog("待处理任务列表")
+    @ApiOperation(httpMethod = "POST", value = "待处理任务列表")
+    @RequestMapping(value = "/rest/task/close/page", method = RequestMethod.POST)
+    public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
+        return workflowService.activeTaskList(taskQueryParam);
+    }
+
+    /**
+     * 待签收任务列表
+     * @param taskQueryParam 任务查询条件实体类
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 16:35
+     */
+    @ResponseBody
+    @SysLog("待签收任务列表")
+    @ApiOperation(httpMethod = "POST", value = "待签收任务列表")
+    @RequestMapping(value = "/rest/task/close/page", method = RequestMethod.POST)
+    public Object claimTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
+        return workflowService.claimTaskList(taskQueryParam);
+    }
 
     /**
      * 问询任务列表
