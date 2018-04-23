@@ -11,6 +11,8 @@ public enum ResultEnum {
     SUCCESS("0000", "成功"),
     FAIL("9999","失败"),
     PARAM_ERROR("0001","参数不合法"),
+    PERMISSION_DENY("0002","没有权限"),
+    ILLEGAL_REQUEST("0003","非法请求"),
 
     /*********************流程（1***）********************/
     BUSSINESSKEY_EXIST("1001","业务主键已经创建过任务"),

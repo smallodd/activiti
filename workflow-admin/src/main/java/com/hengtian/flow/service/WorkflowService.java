@@ -7,6 +7,26 @@ import com.hengtian.common.utils.PageInfo;
 public interface WorkflowService {
 
     /**
+     * 任务认领 部门，角色，组审批时，需具体人员认领任务
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    Result taskClaim(String userId, String taskId);
+
+    /**
+     * 取消任务认领
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    Result taskUnclaim(String userId, String taskId);
+
+    /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
      *
      * @param userId           操作人ID

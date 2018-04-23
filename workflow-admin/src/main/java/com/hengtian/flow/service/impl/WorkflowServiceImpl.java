@@ -1,6 +1,7 @@
 package com.hengtian.flow.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.*;
 import com.hengtian.common.param.TaskQueryParam;
@@ -27,6 +28,7 @@ import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
@@ -67,6 +66,61 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     private SysUserService sysUserService;
+
+    /**
+     * 任务认领 部门，角色，组审批时，需具体人员认领任务
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    @Override
+    public Result taskClaim(String userId, String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return new Result(false,ResultEnum.TASK_NOT_EXIT.code,ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        String assignee = task.getAssignee();
+        if(StringUtils.isNotBlank(assignee)){
+            assignee = assignee + "," + userId;
+        }else {
+            assignee = userId;
+        }
+        taskService.setAssignee(taskId, assignee);
+
+        return new Result(true, ResultEnum.SUCCESS.code,ResultEnum.SUCCESS.msg);
+    }
+
+    /**
+     * 取消任务认领
+     * @param userId 认领人ID
+     * @param  taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 14:55
+     */
+    @Override
+    public Result taskUnclaim(String userId, String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return new Result(false,ResultEnum.TASK_NOT_EXIT.code,ResultEnum.TASK_NOT_EXIT.msg);
+        }
+        String assignee = task.getAssignee();
+        if(StringUtils.isBlank(assignee)){
+            return new Result(false,ResultEnum.TASK_NOT_EXIT.code,ResultEnum.TASK_NOT_EXIT.msg);
+        }else if(StringUtils.contains(assignee, userId)){
+            List<String> list = Arrays.asList(StringUtils.split(","));
+            if(list.contains(userId)){
+                list.remove(userId);
+            }
+            taskService.setAssignee(Joiner.on(",").join(list), assignee);
+        }else {
+            return new Result(false, ResultEnum.ILLEGAL_REQUEST.code,ResultEnum.ILLEGAL_REQUEST.msg);
+        }
+
+        return new Result(true, ResultEnum.SUCCESS.code,ResultEnum.SUCCESS.msg);
+    }
 
     /**
      * 跳转 管理员权限不受限制，可以任意跳转到已完成任务节点
