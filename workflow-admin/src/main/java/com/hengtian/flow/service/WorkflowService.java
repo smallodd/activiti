@@ -111,24 +111,24 @@ public interface WorkflowService {
     /**
      * 挂起流程
      *
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result processSuspend(String userId, String taskId);
+    Result processSuspend(String userId, String processInstanceId);
 
     /**
      * 激活流程
      *
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
-    Result processActivate(String userId, String taskId);
+    Result processActivate(String userId, String processInstanceId);
 
     /**
      * 未办任务列表

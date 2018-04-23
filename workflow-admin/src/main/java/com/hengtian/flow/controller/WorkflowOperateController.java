@@ -429,9 +429,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "suspendProcess", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "挂起流程接口")
-    public Result suspendProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
+    public Object suspendProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
                                  @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
-        return null;
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.SUSPENDPROCESS.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setProcessInstanceId(processInstanceId);
+        return taskAction(taskActionParam);
     }
 
     /**
@@ -445,9 +449,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "activateProcess", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "激活流程接口")
-    public Result activateProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
+    public Object activateProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
                                   @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
-        return null;
+        TaskActionParam taskActionParam = new TaskActionParam();
+        taskActionParam.setActionType(TaskActionEnum.ACTIVATEPROCESS.value);
+        taskActionParam.setUserId(userId);
+        taskActionParam.setProcessInstanceId(processInstanceId);
+        return taskAction(taskActionParam);
     }
 
     /**

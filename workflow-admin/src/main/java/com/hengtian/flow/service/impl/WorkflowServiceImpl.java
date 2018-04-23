@@ -328,38 +328,38 @@ public class WorkflowServiceImpl implements WorkflowService {
     /**
      * 挂起流程
      *
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
     @Override
-    public Result processSuspend(String userId, String taskId) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+    public Result processSuspend(String userId, String processInstanceId) {
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        repositoryService.suspendProcessDefinitionById(task.getProcessDefinitionId());
+        runtimeService.suspendProcessInstanceById(processInstanceId);
         return new Result(true, "挂起流程成功");
     }
 
     /**
      * 激活流程
      *
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
     @Override
-    public Result processActivate(String userId, String taskId) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+    public Result processActivate(String userId, String processInstanceId) {
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        repositoryService.activateProcessDefinitionById(task.getProcessDefinitionId());
+        runtimeService.activateProcessInstanceById(processInstanceId);
         return new Result(true, "激活流程成功");
     }
 
