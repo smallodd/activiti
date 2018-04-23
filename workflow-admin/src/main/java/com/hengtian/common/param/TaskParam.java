@@ -24,15 +24,15 @@ public class TaskParam {
     //审批人
     @ApiModelProperty(value = "审批人", example="H00001")
     private String approver;
-    @JsonIgnore
+
     @ApiModelProperty(value = "审批时传参数", example="审批意见")
     private String comment;
     //通过状态  1 通过 2 是拒绝 3通过参数流转
-    @JsonIgnore
-    @ApiModelProperty(value = "是否通过", example="1是通过，2是拒绝，3是通过条件参数流转")
+
+    @ApiModelProperty(value = "审批时传参", example="1是通过，2是拒绝，3是通过条件参数流转")
     private int pass;
     //参数的json格式
-    @JsonIgnore
+
     @ApiModelProperty(value = "审批时传的条件参数", example="{a:b}")
     private String jsonVariables;
     public String getTaskId() {
