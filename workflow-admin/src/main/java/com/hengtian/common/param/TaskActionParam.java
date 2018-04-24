@@ -139,7 +139,7 @@ public class TaskActionParam {
                 if (StringUtils.isBlank(getTaskId())) {
                     result.setMsg("参数taskId不能为空");
                 }
-            }  else if (TaskActionEnum.JUMP.value.equals(actionType)) {
+            } else if (TaskActionEnum.JUMP.value.equals(actionType)) {
                 //跳转-参数校验
                 if (StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetTaskDefKey())) {
                     result.setMsg("参数taskId，targetTaskDefKey都不能为空");
@@ -175,22 +175,12 @@ public class TaskActionParam {
                     result.setMsg("参数processInstanceId不能为空");
                 }
             } else if (TaskActionEnum.SUSPEND.value.equals(actionType)) {
-                //挂起-参数校验
-                if (StringUtils.isBlank(getTaskId())) {
-                    result.setMsg("参数taskId不能为空");
-                }
-            } else if (TaskActionEnum.ACTIVATE.value.equals(actionType)) {
-                //激活-参数校验
-                if (StringUtils.isBlank(getTaskId())) {
-                    result.setMsg("参数taskId不能为空");
-                }
-            } else if (TaskActionEnum.SUSPENDPROCESS.value.equals(actionType)) {
                 //挂起流程-参数校验
                 if (StringUtils.isBlank(getProcessInstanceId())) {
                     result.setMsg("参数processInstanceId不能为空");
                 }
-            } else if (TaskActionEnum.ACTIVATEPROCESS.value.equals(actionType)) {
-                //激活-参数校验
+            } else if (TaskActionEnum.ACTIVATE.value.equals(actionType)) {
+                //激活流程-参数校验
                 if (StringUtils.isBlank(getProcessInstanceId())) {
                     result.setMsg("参数processInstanceId不能为空");
                 }

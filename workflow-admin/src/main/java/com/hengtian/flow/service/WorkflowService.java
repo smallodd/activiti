@@ -11,6 +11,7 @@ import org.activiti.engine.task.Task;
 public interface WorkflowService {
     /**
      * 申请任务
+     *
      * @param processParam
      * @return
      */
@@ -18,24 +19,27 @@ public interface WorkflowService {
 
     /**
      * 设置审批人
+     *
      * @param task
      * @param tUserTask
      * @return
      */
-     Boolean setApprover(Task task, TUserTask tUserTask);
+    Boolean setApprover(Task task, TUserTask tUserTask);
 
     /**
      * 审批接口
+     *
      * @param task
      * @param taskParam
      * @return
      */
-     Object approveTask(Task  task, TaskParam taskParam);
+    Object approveTask(Task task, TaskParam taskParam);
 
     /**
      * 任务认领 部门，角色，组审批时，需具体人员认领任务
+     *
      * @param userId 认领人ID
-     * @param  taskId 任务ID
+     * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 14:55
@@ -44,8 +48,9 @@ public interface WorkflowService {
 
     /**
      * 取消任务认领
+     *
      * @param userId 认领人ID
-     * @param  taskId 任务ID
+     * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 14:55
@@ -134,28 +139,6 @@ public interface WorkflowService {
     Result taskCancel(String userId, String processInstanceId);
 
     /**
-     * 挂起任务
-     *
-     * @param userId 操作人ID
-     * @param taskId 任务ID
-     * @return
-     * @author houjinrong@chtwm.com
-     * date 2018/4/18 16:01
-     */
-    Result taskSuspend(String userId, String taskId);
-
-    /**
-     * 激活任务
-     *
-     * @param userId 操作人ID
-     * @param taskId 任务ID
-     * @return
-     * @author houjinrong@chtwm.com
-     * date 2018/4/18 16:03
-     */
-    Result taskActivate(String userId, String taskId);
-
-    /**
      * 挂起流程
      *
      * @param userId            操作人ID
@@ -205,11 +188,12 @@ public interface WorkflowService {
      * date 2018/4/20 15:35
      */
     PageInfo closeTaskList(TaskQueryParam taskQueryParam);
-    
+
     /**
      * 待处理任务（包括待认领和待办任务）
+     *
      * @param taskQueryParam 任务查询条件
-     * @return 
+     * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 16:01
      */
@@ -217,6 +201,7 @@ public interface WorkflowService {
 
     /**
      * 待认领任务列表， 任务签收后变为待办任务，待办任务可取消签认领
+     *
      * @param taskQueryParam 任务查询条件
      * @return
      * @author houjinrong@chtwm.com

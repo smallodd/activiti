@@ -1,11 +1,8 @@
 package com.hengtian.flow.controller;
 
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.hengtian.application.model.AppModel;
-import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.enums.TaskType;
@@ -16,18 +13,13 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.flow.extend.TaskAdapter;
-import com.hengtian.flow.model.AppProcinst;
 import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TUserTask;
-import com.hengtian.flow.service.*;
+import com.hengtian.flow.service.TAskTaskService;
+import com.hengtian.flow.service.WorkflowService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,8 +31,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -265,27 +255,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
         return taskAction(taskActionParam);
     }
 
-
-    /**
-     * 挂起任务
-     *
-     * @param taskId 任务ID
-     * @param userId 用户ID
-     * @return
-     */
-    @SysLog(value = "挂起任务")
-    @RequestMapping(value = "suspendTask", method = RequestMethod.POST)
-    @ResponseBody
-    @ApiOperation(httpMethod = "POST", value = "挂起任务接口")
-    public Object suspendTask(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
-                              @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
-        TaskActionParam taskActionParam = new TaskActionParam();
-        taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
-        taskActionParam.setUserId(userId);
-        taskActionParam.setTaskId(taskId);
-        return taskAction(taskActionParam);
-    }
-
     /**
      * 任务撤办
      *
@@ -307,26 +276,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
     }
 
     /**
-     * 激活任务
-     *
-     * @param taskId 任务ID
-     * @param userId 用户ID
-     * @return
-     */
-    @SysLog(value = "激活任务")
-    @RequestMapping(value = "activateTask", method = RequestMethod.POST)
-    @ResponseBody
-    @ApiOperation(httpMethod = "POST", value = "激活任务接口")
-    public Object activateTask(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
-                               @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
-        TaskActionParam taskActionParam = new TaskActionParam();
-        taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
-        taskActionParam.setUserId(userId);
-        taskActionParam.setTaskId(taskId);
-        return taskAction(taskActionParam);
-    }
-
-    /**
      * 挂起流程
      *
      * @param processInstanceId 流程实例ID
@@ -340,7 +289,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object suspendProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
                                  @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
-        taskActionParam.setActionType(TaskActionEnum.SUSPENDPROCESS.value);
+        taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
         return taskAction(taskActionParam);
@@ -360,7 +309,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object activateProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
                                   @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
-        taskActionParam.setActionType(TaskActionEnum.ACTIVATEPROCESS.value);
+        taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
         return taskAction(taskActionParam);
@@ -377,8 +326,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
      *                        5确认问询 confirmEnquire
      *                        6撤回 revoke
      *                        7取消 cancel
-     *                        8挂起任务 suspend
-     *                        9激活任务 activate
+     *                        8挂起流程 suspend
+     *                        9激活流程 activate
      * @return result
      * @author houjinrong@chtwm.com
      * date 2018/4/18 9:38
