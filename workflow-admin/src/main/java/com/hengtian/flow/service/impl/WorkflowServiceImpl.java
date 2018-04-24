@@ -95,6 +95,9 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     private IdentityService identityService;
 
+    @Autowired
+    IdentityService identityService;
+
     @Override
     public Result startProcessInstance(ProcessParam processParam) {
         Result result = new Result();
@@ -139,6 +142,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
             //给对应实例生成标题
             runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());
+            identityService.setAuthenticatedUserId(processParam.getCreatorId());
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
             //查询创建完任务之后生成的任务信息
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
