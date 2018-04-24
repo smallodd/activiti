@@ -17,6 +17,7 @@ import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TAskTaskService;
+import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
@@ -183,7 +184,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @SysLog("批量审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "批量审批任务接口")
     public Object approveTaskList(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds, @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "type", required = true)  @RequestParam("type") Integer type,@ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false,example = "{'a':'b'}") @RequestParam(value = "jsonVariable",required = false)  String jsonVariable,@ApiParam(value = "审批人信息", name = "approver", required = true)  @RequestParam("approver")String approver){
-        Map map=JSON.parseObject(jsonVariable);
+        Map map=JSONObject.parseObject(jsonVariable);
         Result result=new Result();
         result.setMsg("审批成功");
         if(StringUtils.isBlank(taskIds)||type==null){
