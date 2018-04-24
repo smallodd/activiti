@@ -374,28 +374,36 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     /**
      * 任务认领 部门，角色，组审批时，需具体人员认领任务
+     * 认领是需要将认领人放置到t_ru_task表的approver_real字段
      *
      * @param userId 认领人ID
      * @param taskId 任务ID
+     * @param workId 节点任务具体执行ID，一个任务taskId对应多个审批人，每个审批人对应一个执行ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 14:55
      */
     @Override
-    public Result taskClaim(String userId, String taskId) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if (task == null) {
+    public Result taskClaim(String userId, String taskId, String workId) {
+        TRuTask tRuTask = tRuTaskService.selectById(workId);
+        if (tRuTask == null || !StringUtils.equals(taskId, tRuTask.getTaskId())) {
             return new Result(false, ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        String assignee = task.getAssignee();
+        String assignee = tRuTask.getApproverReal();
         if (StringUtils.isNotBlank(assignee)) {
             assignee = assignee + "," + userId;
         } else {
             assignee = userId;
         }
-        taskService.setAssignee(taskId, assignee);
-
-        return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
+        tRuTask = new TRuTask();
+        tRuTask.setId(workId);
+        tRuTask.setApproverReal(assignee);
+        boolean updateFlag = tRuTaskService.updateById(tRuTask);
+        if(updateFlag){
+            return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
+        }else{
+            return new Result(false, ResultEnum.FAIL.code, ResultEnum.FAIL.msg);
+        }
     }
 
     /**
@@ -403,17 +411,18 @@ public class WorkflowServiceImpl implements WorkflowService {
      *
      * @param userId 认领人ID
      * @param taskId 任务ID
+     * @param workId 节点任务具体执行ID，一个任务taskId对应多个审批人，每个审批人对应一个执行ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 14:55
      */
     @Override
-    public Result taskUnclaim(String userId, String taskId) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if (task == null) {
+    public Result taskUnclaim(String userId, String taskId, String workId) {
+        TRuTask tRuTask = tRuTaskService.selectById(workId);
+        if (tRuTask == null || !StringUtils.equals(taskId, tRuTask.getTaskId())) {
             return new Result(false, ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        String assignee = task.getAssignee();
+        String assignee = tRuTask.getApproverReal();
         if (StringUtils.isBlank(assignee)) {
             return new Result(false, ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         } else if (StringUtils.contains(assignee, userId)) {
@@ -421,12 +430,19 @@ public class WorkflowServiceImpl implements WorkflowService {
             if (list.contains(userId)) {
                 list.remove(userId);
             }
-            taskService.setAssignee(Joiner.on(",").join(list), assignee);
+            assignee = Joiner.on(",").join(list);
         } else {
             return new Result(false, ResultEnum.ILLEGAL_REQUEST.code, ResultEnum.ILLEGAL_REQUEST.msg);
         }
-
-        return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
+        tRuTask = new TRuTask();
+        tRuTask.setId(workId);
+        tRuTask.setApproverReal(assignee);
+        boolean updateFlag = tRuTaskService.updateById(tRuTask);
+        if(updateFlag){
+            return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
+        }else{
+            return new Result(false, ResultEnum.FAIL.code, ResultEnum.FAIL.msg);
+        }
     }
 
     /**

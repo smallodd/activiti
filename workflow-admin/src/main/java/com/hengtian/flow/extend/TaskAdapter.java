@@ -16,10 +16,10 @@ public class TaskAdapter implements TaskManager {
         String actionType = taskActionParam.getActionType();
         if (TaskActionEnum.CLAIM.value.equals(actionType)) {
             //认领
-            return WorkflowService.taskClaim(taskActionParam.getUserId(), taskActionParam.getTaskId());
+            return WorkflowService.taskClaim(taskActionParam.getUserId(), taskActionParam.getTaskId(), taskActionParam.getWorkId());
         } else if (TaskActionEnum.UNCLAIM.value.equals(actionType)) {
             //取消认领
-            return WorkflowService.taskUnclaim(taskActionParam.getUserId(), taskActionParam.getTaskId());
+            return WorkflowService.taskUnclaim(taskActionParam.getUserId(), taskActionParam.getTaskId(), taskActionParam.getWorkId());
         } else if (TaskActionEnum.JUMP.value.equals(actionType)) {
             //跳转
             return WorkflowService.taskJump(taskActionParam.getUserId(), taskActionParam.getTaskId(), taskActionParam.getTargetTaskDefKey());
