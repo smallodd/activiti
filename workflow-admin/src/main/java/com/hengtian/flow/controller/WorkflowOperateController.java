@@ -52,6 +52,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     WorkflowService workflowService;
     @Autowired
     TRuTaskService tRuTaskService;
+
     /**
      * 任务创建接口
      *
@@ -72,7 +73,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return result;
         } else {
 
-           return workflowService.startProcessInstance(processParam);
+            return workflowService.startProcessInstance(processParam);
         }
 
     }
@@ -142,7 +143,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
     /**
      * 审批任务接口
-     * @param taskParam  任务信息对象 @TaskParam
+     *
+     * @param taskParam 任务信息对象 @TaskParam
      * @return
      */
     @RequestMapping(value = "approveTask", method = RequestMethod.POST)
@@ -173,54 +175,56 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
     /**
      * 批量审批接口
-     * @param taskIds  任务id字符串，用","隔开
-     * @param type     类型 1是通过，2是拒绝 3是通过自定义参数流转
-     * @param jsonVariable   参数map
-     * @param approver    审批人
+     *
+     * @param taskIds      任务id字符串，用","隔开
+     * @param type         类型 1是通过，2是拒绝 3是通过自定义参数流转
+     * @param jsonVariable 参数map
+     * @param approver     审批人
      * @return
      */
     @RequestMapping(value = "approveTaskList", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("批量审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "批量审批任务接口")
-    public Object approveTaskList(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds, @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "type", required = true)  @RequestParam("type") Integer type,@ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false,example = "{'a':'b'}") @RequestParam(value = "jsonVariable",required = false)  String jsonVariable,@ApiParam(value = "审批人信息", name = "approver", required = true)  @RequestParam("approver")String approver){
-        Map map=JSONObject.parseObject(jsonVariable);
-        Result result=new Result();
+    public Object approveTaskList(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds, @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "type", required = true) @RequestParam("type") Integer type, @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable, @ApiParam(value = "审批人信息", name = "approver", required = true) @RequestParam("approver") String approver) {
+        Map map = JSONObject.parseObject(jsonVariable);
+        Result result = new Result();
         result.setMsg("审批成功");
-        if(StringUtils.isBlank(taskIds)||type==null){
-            return renderError("请传正确的参数！",Constant.PARAM_ERROR);
+        if (StringUtils.isBlank(taskIds) || type == null) {
+            return renderError("请传正确的参数！", Constant.PARAM_ERROR);
         }
-        String [] strs=taskIds.split(",");
-        for(String taskId:strs){
+        String[] strs = taskIds.split(",");
+        for (String taskId : strs) {
 
-            Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
-            if(task==null){
-                return renderError("请传正确的参数！【"+taskId+"】任务不存在！",Constant.PARAM_ERROR);
+            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            if (task == null) {
+                return renderError("请传正确的参数！【" + taskId + "】任务不存在！", Constant.PARAM_ERROR);
             }
-            EntityWrapper wrapper=new EntityWrapper();
-            wrapper.where("task_id={0}",task.getId());
-            wrapper.like("approver_real","%"+approver+"%");
-            TRuTask tRuTask=tRuTaskService.selectOne(wrapper);
-            if(tRuTask==null){
-                result.setMsg(result.getMsg()+","+task.getName()+"不属于"+"【"+approver+"】审批失败");
+            EntityWrapper wrapper = new EntityWrapper();
+            wrapper.where("task_id={0}", task.getId());
+            wrapper.like("approver_real", "%" + approver + "%");
+            TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
+            if (tRuTask == null) {
+                result.setMsg(result.getMsg() + "," + task.getName() + "不属于" + "【" + approver + "】审批失败");
             }
-            if(type.intValue()==1) {
-                taskService.setAssignee(task.getId(),approver+"_Y");
+            if (type.intValue() == 1) {
+                taskService.setAssignee(task.getId(), approver + "_Y");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "批量同意");
-                taskService.complete(taskId,map);
-            }else if(type.intValue()==2){
-                taskService.setAssignee(task.getId(),approver+"_N");
+                taskService.complete(taskId, map);
+            } else if (type.intValue() == 2) {
+                taskService.setAssignee(task.getId(), approver + "_N");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "拒绝");
-                taskService.deleteTask(taskId,"批量拒绝");
-            }else if(type.intValue()==3){
-                taskService.setAssignee(task.getId(),approver+"_F");
+                taskService.deleteTask(taskId, "批量拒绝");
+            } else if (type.intValue() == 3) {
+                taskService.setAssignee(task.getId(), approver + "_F");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "流程流转");
-                taskService.complete(taskId,map);
+                taskService.complete(taskId, map);
 
             }
         }
-        return  result;
+        return result;
     }
+
     /**
      * 任务跳转
      *
@@ -406,7 +410,12 @@ public class WorkflowOperateController extends WorkflowBaseController {
         Result validate = taskActionParam.validate();
         if (validate.isSuccess()) {
             TaskAdapter taskAdapter = new TaskAdapter();
-            return taskAdapter.taskAction(taskActionParam);
+            try {
+                return taskAdapter.taskAction(taskActionParam);
+            } catch (Exception e) {
+                logger.error("", e);
+                return renderError("操作失败");
+            }
         } else {
             return validate;
         }
