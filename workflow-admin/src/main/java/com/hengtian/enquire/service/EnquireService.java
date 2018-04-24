@@ -2,7 +2,6 @@ package com.hengtian.enquire.service;
 
 import com.baomidou.mybatisplus.service.IService;
 import com.hengtian.common.param.TaskEnquireParam;
-import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.enquire.model.EnquireTask;
 

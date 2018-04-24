@@ -3,12 +3,10 @@ package com.hengtian.enquire.service.impl;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.hengtian.common.param.TaskEnquireParam;
-import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.enquire.dao.EnquireTaskDao;
 import com.hengtian.enquire.model.EnquireTask;
 import com.hengtian.enquire.service.EnquireService;
-import com.hengtian.flow.model.RemindTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
