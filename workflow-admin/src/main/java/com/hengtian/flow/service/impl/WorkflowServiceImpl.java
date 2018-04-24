@@ -93,10 +93,8 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Autowired
     private TRuTaskService tRuTaskService;
 
-    private IdentityService identityService;
-
     @Autowired
-    IdentityService identityService;
+    private IdentityService identityService;
 
     @Override
     public Result startProcessInstance(ProcessParam processParam) {
