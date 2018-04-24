@@ -1,6 +1,7 @@
 package com.hengtian.flow.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
@@ -90,6 +91,8 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     TRuTaskService tRuTaskService;
+
+
 
     @Override
     public Result startProcessInstance(ProcessParam processParam) {
@@ -184,7 +187,9 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Boolean setApprover(Task task, TUserTask tUserTask) {
+        log.info("进入设置审批人接口,tUserTask参数{}",JSONObject.toJSONString(tUserTask));
         try {
+            //获取任务中的自定义参数
             Map<String,Object> map=taskService.getVariables(task.getId());
             String approvers = tUserTask.getCandidateIds();
             String [] strs=approvers.split(",");
@@ -199,11 +204,19 @@ public class WorkflowServiceImpl implements WorkflowService {
 
             //生成扩展任务信息
             for(String approver : rid) {
+                tRuTask.setTaskId(task.getId());
                 tRuTask.setApprover(approver);
+                EntityWrapper entityWrapper=new EntityWrapper();
+                entityWrapper.where("task_id={0}",task.getId()).andNew("approver={0}",approver);
+                TRuTask tRu=tRuTaskService.selectOne(entityWrapper);
+                if(tRu!=null){
+                    continue;
+                }
                 tRuTask.setApproverType(tUserTask.getAssignType());
                 tRuTask.setOwer(task.getOwner());
-                tRuTask.setTaskId(task.getId());
+
                 tRuTask.setTaskType(tUserTask.getTaskType());
+                //判断如果是非人员审批，需要认领之后才能审批
                 if(AssignType.ROLE.code.intValue()==tUserTask.getAssignType().intValue()||AssignType.GROUP.code.intValue()==tUserTask.getAssignType().intValue()||AssignType.DEPARTMENT.code.intValue()==tUserTask.getAssignType().intValue()) {
                     tRuTask.setStatus(-1);
                 }else{
@@ -214,9 +227,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
                 tRuTaskService.insert(tRuTask);
             }
-
-
-
+            log.info("设置审批人结束");
             return true;
         }catch (Exception e){
             log.error("设置审批人失败",e);
@@ -231,19 +242,21 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Object approveTask(Task  task, TaskParam taskParam){
-
+        log.info("审批接口进入，传入参数taskParam{}",JSONObject.toJSONString(taskParam));
         Result result=new Result();
         result.setCode(Constant.SUCCESS);
         result.setMsg("审批完成");
         EntityWrapper entityWrapper=new EntityWrapper();
         entityWrapper.where("task_id={0}",task.getId());
         entityWrapper.like("approver_real","%"+taskParam.getApprover()+"%");
+        //查询流程定义信息
         ProcessDefinition processDefinition=repositoryService.getProcessDefinition(task.getProcessDefinitionId());
         String jsonVariables = taskParam.getJsonVariables();
         Map<String, Object> variables = new HashMap<>();
         if (StringUtils.isNotBlank(jsonVariables)) {
             variables = JSON.parseObject(jsonVariables);
         }
+        //获取任务参数
         Map map = taskService.getVariables(task.getId());
         map.putAll(variables);
         TRuTask ruTask=  tRuTaskService.selectOne(entityWrapper);
@@ -262,11 +275,17 @@ public class WorkflowServiceImpl implements WorkflowService {
                 result.setCode( Constant.PARAM_ERROR);
                 return result;
             }
+            if(taskParam.getPass()!=1&&taskParam.getPass()!=2){
+                result.setMsg("任务类型参数错误！");
+                result.setCode( Constant.PARAM_ERROR);
+                return result;
+            }
             Task t=taskService.createTaskQuery().taskId(task.getId()).singleResult();
             EntityWrapper wrapper=new EntityWrapper();
             wrapper.where("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={0}",processDefinition.getVersion()).andNew("proc_def_key={0}",processDefinition.getKey());
 
             TUserTask tUserTask=tUserTaskService.selectOne(wrapper);
+            taskService.addComment(taskParam.getTaskId(),task.getProcessInstanceId(),taskParam.getComment());
             if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())) {
 
 
@@ -293,7 +312,7 @@ public class WorkflowServiceImpl implements WorkflowService {
                 taskService.setVariables(task.getId(),map);
                 if (passPer >=tUserTask.getUserCountNeed()) {
 
-                    taskService.complete(task.getId());
+                    taskService.complete(task.getId(),map);
                     TRuTask tRuTask=new TRuTask();
                     tRuTask.setStatus(1);
                     EntityWrapper truWrapper=new EntityWrapper();
@@ -308,27 +327,48 @@ public class WorkflowServiceImpl implements WorkflowService {
                     EntityWrapper truWrapper=new EntityWrapper();
                     truWrapper.where("task_id",t.getId());
                     tRuTaskService.update(tRuTask,truWrapper);
+                    result.setMsg("任务已经拒绝！");
+                    result.setCode(Constant.SUCCESS);
+                    return result;
                 }
 
-            }else {
+            }else  {
                 if(taskParam.getPass()==1){
                     //设置原生工作流表哪些审批了
                     taskService.setAssignee(t.getId(),taskParam.getApprover()+"_Y");
                     taskService.complete(t.getId(),map);
-
+                    TRuTask tRuTask=new TRuTask();
+                    tRuTask.setStatus(1);
+                    EntityWrapper truWrapper=new EntityWrapper();
+                    truWrapper.where("task_id",t.getId());
+                    tRuTaskService.update(tRuTask,truWrapper);
 
                 }else if(taskParam.getPass()==2){
+                    //拒绝任务
                     taskService.setAssignee(task.getId(),taskParam.getApprover()+"_N");
                     taskService.deleteTask(t.getId(),"拒绝此任务");
+                    TRuTask tRuTask=new TRuTask();
+                    tRuTask.setStatus(2);
+                    EntityWrapper truWrapper=new EntityWrapper();
+                    truWrapper.where("task_id",t.getId());
+                    tRuTaskService.update(tRuTask,truWrapper);
+                    result.setMsg("任务已经拒绝！");
+                    result.setCode(Constant.SUCCESS);
+                    return result;
 
-
+                }else {
+//                    //通过线上条件完成任务
+//                    taskService.setAssignee(task.getId(),taskParam.getApprover()+"_F");
+//                    taskService.deleteTask(t.getId(),"拒绝此任务");
+//                    result.setMsg("审批类型不存在");
+//                    result.setSuccess(false);
                 }
             }
             List<Task> taskList= taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
             if(!Boolean.valueOf(map.get("customApprover").toString())){
                 for(Task task1: taskList){
                     EntityWrapper tuserWrapper = new EntityWrapper();
-                    tuserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
+                    tuserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                     //查询当前任务任务节点信息
                     TUserTask tUserTask1 = tUserTaskService.selectOne(tuserWrapper);
                     boolean flag = setApprover(task1, tUserTask1);
