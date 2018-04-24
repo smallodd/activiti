@@ -30,6 +30,7 @@ import com.hengtian.system.service.SysUserService;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
 import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -38,6 +39,7 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
+import org.activiti.engine.task.NativeTaskQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.collections.CollectionUtils;
@@ -49,7 +51,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
@@ -858,7 +859,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         String re = "SELECT art.*";
         String reC = "SELECT COUNT(*)";
         StringBuffer sb = new StringBuffer();
-        sb.append(" FROM t_ru_task AS trt LEFT JOIN act_hi_taskinst AS art ON trt.TASK_ID=art.ID_ ");
+        sb.append(" FROM act_hi_taskinst AS art ");
         if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
             con = con + " AND tap.APP_KEY LIKE #{appKey} ";
@@ -889,7 +890,7 @@ public class WorkflowServiceImpl implements WorkflowService {
                 .parameter("title", "%" + taskQueryParam.getTitle() + "%")
                 .parameter("creater", taskQueryParam.getCreater())
                 .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
-                .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
+                .parameter("approver", "%" + taskQueryParam.getApprover() + "_%")
                 .listPage(pageInfo.getFrom(), pageInfo.getSize());
 
         pageInfo.setRows(tasks);
@@ -914,7 +915,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public PageInfo activeTaskList(TaskQueryParam taskQueryParam) {
-        return null;
+        return taskPage(taskQueryParam, TaskListEnum.ACTIVE.type);
     }
 
     /**
@@ -927,6 +928,104 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public PageInfo claimTaskList(TaskQueryParam taskQueryParam) {
-        return null;
+        return taskPage(taskQueryParam, TaskListEnum.CLAIM.type);
+    }
+
+    /**
+     * 任务相关列表查询
+     * @param taskQueryParam
+     * @param type
+     * @return
+     */
+    private PageInfo taskPage(TaskQueryParam taskQueryParam, String type){
+        StringBuffer sb = new StringBuffer();
+        StringBuffer con = new StringBuffer();
+        con.append(" WHERE 1=1 ");
+        String re = "SELECT art.*";
+        String reC = "SELECT COUNT(*)";
+
+        String departmentId = null;
+        String roleId = null;
+        String groupId = null;
+        if(TaskListEnum.CLOSE.type.equals(type)){
+            sb.append(" FROM act_hi_taskinst AS art ");
+        }else {
+            sb.append(" FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
+        }
+        if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
+            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
+            con.append(" AND tap.APP_KEY LIKE #{appKey}");
+        }
+
+        if (StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())) {
+            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
+            if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
+                con.append(" AND tap.APP_KEY LIKE #{title} ");
+            }
+            if (StringUtils.isNotBlank(taskQueryParam.getCreater())) {
+                con.append(" AND art.START_USER_ID_ = #{creater} ");
+            }
+        }
+
+        if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
+            con.append(" AND art.NAME_ LIKE #{taskName} ");
+        }
+
+        if (StringUtils.isNotBlank(taskQueryParam.getApprover())) {
+            if(TaskListEnum.CLOSE.type.equals(type)){
+                con.append(" AND art.ASSIGNEE_ LIKE #{approver} ");
+            }else if(TaskListEnum.CLAIM.type.equals(type)){
+                con.append(" AND trt.STATUS="+TaskStatusEnum.BEFORESIGN.status);
+                con.append(" AND (");
+                con.append(" (trt.APPROVER_TYPE="+AssignType.DEPARTMENT.code+" AND trt.APPROVER LIKE #{departmentId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.ROLE.code+" AND trt.APPROVER LIKE #{roleId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.GROUP.code+" AND trt.APPROVER LIKE #{groupId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.PERSON.code+" AND trt.APPROVER LIKE #{approver}) ");
+                con.append(")");
+            }else if(TaskListEnum.ACTIVE.type.equals(type)){
+                con.append(" AND trt.STATUS IN ("+ TaskStatusEnum.BEFORESIGN.status+","+TaskStatusEnum.OPEN.status+") ");
+                con.append(" AND (");
+                con.append(" (trt.APPROVER_TYPE="+AssignType.DEPARTMENT.code+" AND trt.APPROVER LIKE #{departmentId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.ROLE.code+" AND trt.APPROVER LIKE #{roleId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.GROUP.code+" AND trt.APPROVER LIKE #{groupId}) ");
+                con.append(" OR (trt.APPROVER LIKE #{approver}) ");
+                con.append(")");
+            }else{
+                con.append(" AND trt.STATUS="+TaskStatusEnum.OPEN.status);
+                con.append(" AND trt.APPROVER_REAL LIKE #{approver} ");
+            }
+        }
+        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
+        String sql = sb.toString() + con.toString();
+        if(TaskListEnum.CLOSE.type.equals(type)){
+            NativeHistoricTaskInstanceQuery query = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql)
+                    .parameter("appKey", taskQueryParam.getAppKey())
+                    .parameter("title", "%" + taskQueryParam.getTitle() + "%")
+                    .parameter("creater", taskQueryParam.getCreater())
+                    .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
+                    .parameter("approver", "%" + taskQueryParam.getApprover() + "_%")
+                    .parameter("departmentId", "%" + departmentId + "%")
+                    .parameter("roleId", "%" + roleId + "%")
+                    .parameter("groupId","%" + groupId + "%");
+            List<HistoricTaskInstance> tasks = query.sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+            pageInfo.setTotal((int) query.sql(reC + sql).count());
+            pageInfo.setRows(tasks);
+        }else{
+            NativeTaskQuery query = taskService.createNativeTaskQuery()
+                    .parameter("appKey", taskQueryParam.getAppKey())
+                    .parameter("title", "%" + taskQueryParam.getTitle() + "%")
+                    .parameter("creater", taskQueryParam.getCreater())
+                    .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
+                    .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
+                    .parameter("departmentId", "%" + departmentId + "%")
+                    .parameter("roleId", "%" + roleId + "%")
+                    .parameter("groupId","%" + groupId + "%");
+            List<Task> tasks = query.sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+            pageInfo.setRows(tasks);
+            pageInfo.setTotal((int) query.sql(reC + sql).count());
+            pageInfo.setRows(tasks);
+        }
+
+        return pageInfo;
     }
 }
