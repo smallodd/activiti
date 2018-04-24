@@ -40,22 +40,24 @@ public interface WorkflowService {
      *
      * @param userId 认领人ID
      * @param taskId 任务ID
+     * @param workId 节点任务具体执行ID，一个任务taskId对应多个审批人，每个审批人对应一个执行ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 14:55
      */
-    Result taskClaim(String userId, String taskId);
+    Result taskClaim(String userId, String taskId, String workId);
 
     /**
      * 取消任务认领
      *
      * @param userId 认领人ID
      * @param taskId 任务ID
+     * @param workId 节点任务具体执行ID，一个任务taskId对应多个审批人，每个审批人对应一个执行ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 14:55
      */
-    Result taskUnclaim(String userId, String taskId);
+    Result taskUnclaim(String userId, String taskId, String workId);
 
     /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点

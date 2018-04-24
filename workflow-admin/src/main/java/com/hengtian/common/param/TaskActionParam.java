@@ -34,6 +34,12 @@ public class TaskActionParam {
     private String taskId;
 
     /**
+     * 任务对应的不同审批人的具体执行ID
+     */
+    @ApiModelProperty(value = "当前任务ID", required = false, example = "workId")
+    private String workId;
+
+    /**
      * 操作人ID
      */
     @ApiModelProperty(value = "操作人ID", required = true, example = "H000000")
@@ -78,6 +84,14 @@ public class TaskActionParam {
 
     public void setTaskId(String taskId) {
         this.taskId = taskId;
+    }
+
+    public String getWorkId() {
+        return workId;
+    }
+
+    public void setWorkId(String workId) {
+        this.workId = workId;
     }
 
     public String getUserId() {

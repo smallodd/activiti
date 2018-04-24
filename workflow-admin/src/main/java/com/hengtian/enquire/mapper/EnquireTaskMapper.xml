@@ -2,23 +2,36 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.hengtian.enquire.dao.EnquireTaskDao">
 
-    <select id="enquireTaskList" parameterType="com.hengtian.common.param.TaskQueryParam"
+    <select id="enquireTaskList" parameterType="com.hengtian.common.param.TaskEnquireParam"
             resultType="com.hengtian.enquire.model.EnquireTask">
         SELECT tet.*
         FROM t_enquire_task tet
-        WHERE tet.is_ask_end = 0
-        <if test="userId!=null">
-            AND tet.create_id = #{userId}
+        WHERE tet.create_id = #{createId}
+        <if test="currentTaskKey!=null">
+            AND tet.current_task_key = #{currentTaskKey}
+        </if>
+        <if test="askTaskKey!=null">
+            AND tet.ask_task_key = #{askTaskKey}
+        </if>
+        <if test="isAskEnd!=null">
+            AND tet.is_ask_end = #{isAskEnd}
         </if>
     </select>
 
-    <select id="enquiredTaskList" parameterType="com.hengtian.common.param.TaskQueryParam"
+
+    <select id="enquiredTaskList" parameterType="com.hengtian.common.param.TaskEnquireParam"
             resultType="com.hengtian.enquire.model.EnquireTask">
         SELECT tet.*
         FROM t_enquire_task tet
-        WHERE tet.is_ask_end = 0
-        <if test="userId!=null">
-            AND tet.ask_user_id = #{userId}
+        WHERE tet.ask_user_id = #{askUserId}
+        <if test="currentTaskKey!=null">
+            AND tet.current_task_key = #{currentTaskKey}
+        </if>
+        <if test="askTaskKey!=null">
+            AND tet.ask_task_key = #{askTaskKey}
+        </if>
+        <if test="isAskEnd!=null">
+            AND tet.is_ask_end = #{isAskEnd}
         </if>
     </select>
 </mapper>
