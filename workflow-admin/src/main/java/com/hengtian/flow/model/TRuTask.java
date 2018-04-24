@@ -21,7 +21,7 @@ public class TRuTask implements Serializable {
     @TableField(value = "approver")
     private String approver;
     @TableField(value = "approver_type")
-    private int approverType;
+    private Integer approverType;
     @TableField(value = "task_type")
     private String taskType;
     @TableField(value = "owner")
@@ -31,7 +31,7 @@ public class TRuTask implements Serializable {
     @TableField(value = "updater")
     private String updater;
     @TableField(value = "status")
-    private int status;
+    private Integer status;
     @TableField(value = "app_key")
     private Integer appKey;
     @TableField(value = "approver_real")
@@ -61,11 +61,11 @@ public class TRuTask implements Serializable {
         this.approver = approver;
     }
 
-    public int getApproverType() {
+    public Integer getApproverType() {
         return approverType;
     }
 
-    public void setApproverType(int approverType) {
+    public void setApproverType(Integer approverType) {
         this.approverType = approverType;
     }
 
@@ -101,11 +101,11 @@ public class TRuTask implements Serializable {
         this.updater = updater;
     }
 
-    public int getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 

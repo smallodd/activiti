@@ -30,7 +30,7 @@ public class TaskParam {
     //通过状态  1 通过 2 是拒绝 3通过参数流转
 
     @ApiModelProperty(value = "审批时传参", example="1是通过，2是拒绝，3是通过条件参数流转")
-    private int pass;
+    private Integer pass;
     //参数的json格式
 
     @ApiModelProperty(value = "审批时传的条件参数", example="{a:b}")
@@ -75,11 +75,11 @@ public class TaskParam {
         this.comment = comment;
     }
 
-    public int getPass() {
+    public Integer getPass() {
         return pass;
     }
 
-    public void setPass(int pass) {
+    public void setPass(Integer pass) {
         this.pass = pass;
     }
 
