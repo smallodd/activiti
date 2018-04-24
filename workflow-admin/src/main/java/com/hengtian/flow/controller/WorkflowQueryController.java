@@ -2,10 +2,13 @@ package com.hengtian.flow.controller;
 
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.operlog.SysLog;
+import com.hengtian.common.param.TaskEnquireParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
+import com.hengtian.common.param.WorkDetailParam;
 import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.service.RemindTaskService;
+import com.hengtian.flow.service.TWorkDetailService;
 import com.hengtian.flow.service.WorkflowService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -66,6 +69,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private TWorkDetailService tWorkDetailService;
 
     /**
      * 催办任务列表
@@ -133,6 +139,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 待处理任务列表
+     *
      * @param taskQueryParam 任务查询条件实体类
      * @return
      * @author houjinrong@chtwm.com
@@ -142,12 +149,13 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("待处理任务列表")
     @ApiOperation(httpMethod = "POST", value = "待处理任务列表")
     @RequestMapping(value = "/rest/task/active/page", method = RequestMethod.POST)
-    public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
+    public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         return workflowService.activeTaskList(taskQueryParam);
     }
 
     /**
      * 待签收任务列表
+     *
      * @param taskQueryParam 任务查询条件实体类
      * @return
      * @author houjinrong@chtwm.com
@@ -157,37 +165,37 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("待签收任务列表")
     @ApiOperation(httpMethod = "POST", value = "待签收任务列表")
     @RequestMapping(value = "/rest/task/claim/page", method = RequestMethod.POST)
-    public Object claimTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
+    public Object claimTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         return workflowService.claimTaskList(taskQueryParam);
     }
 
     /**
      * 问询任务列表
      *
-     * @param taskQueryParam 任务查询条件实体类
+     * @param taskEnquireParam 任务查询条件实体类
      * @return
      */
     @ResponseBody
     @SysLog("问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "问询任务列表")
     @RequestMapping(value = "/rest/task/enquire/page", method = RequestMethod.POST)
-    public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        return enquireService.enquireTaskList(taskQueryParam);
+    public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskEnquireParam taskEnquireParam) {
+        return enquireService.enquireTaskList(taskEnquireParam);
     }
 
 
     /**
      * 被问询任务列表
      *
-     * @param taskQueryParam 任务查询条件实体类
+     * @param taskEnquireParam 任务查询条件实体类
      * @return
      */
     @ResponseBody
     @SysLog("被问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
     @RequestMapping(value = "/rest/task/enquired/page", method = RequestMethod.POST)
-    public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        return enquireService.enquiredTaskList(taskQueryParam);
+    public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskEnquireParam taskEnquireParam) {
+        return enquireService.enquiredTaskList(taskEnquireParam);
     }
 
     /**
@@ -206,6 +214,20 @@ public class WorkflowQueryController extends WorkflowBaseController {
     }
 
     /**
+     * 操作流程详细信息
+     *
+     * @param workDetailParam 任务查询条件
+     * @return
+     */
+    @ResponseBody
+    @SysLog("操作流程详细信息")
+    @ApiOperation(httpMethod = "POST", value = "操作流程详细信息")
+    @RequestMapping(value = "/rest/task/operateDetailInfo", method = RequestMethod.POST)
+    public Object operateDetailInfo(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody WorkDetailParam workDetailParam) {
+        return tWorkDetailService.operateDetailInfo(workDetailParam);
+    }
+
+    /**
      * 流程任务跟踪
      *
      * @param processInstanceId
@@ -215,7 +237,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "流程任务跟踪")
     @RequestMapping(value = "/rest/process/schedule/{processInstanceId}", method = RequestMethod.POST)
     public void getProcessSchedule(HttpServletResponse response,
-                                   @ApiParam(value = "流程实例ID", name = "processInstanceId", required = true)  @PathVariable("processInstanceId") String processInstanceId) {
+                                   @ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @PathVariable("processInstanceId") String processInstanceId) {
         logger.info("----------------获取流程跟踪图开始,入参 processInstanceId：{}----------------", processInstanceId);
         if (StringUtils.isBlank(processInstanceId)) {
             try {
@@ -255,11 +277,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
                     processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);*/
             //中文显示的是口口口，设置字体就好了
             //5.22.0
-            InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,
+            InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis, highLightedFlows,
                     processEngineConfiguration.getLabelFontName(),
                     processEngineConfiguration.getActivityFontName(),
                     processEngineConfiguration.getAnnotationFontName(),
-                    processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(),1.0);
+                    processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
             //单独返回流程图，不高亮显示
             //InputStream imageStream = diagramGenerator.generatePngDiagram(bpmnModel);
             //输出资源内容到相应对象
@@ -277,6 +299,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 评论列表-流程
+     *
      * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
@@ -289,7 +312,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object processCommentList(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) String processInstanceId) {
         logger.info("----------------查询审批意见列表开始,入参 processInstanceId：{}----------------", processInstanceId);
         if (StringUtils.isBlank(processInstanceId)) {
-            return renderError(ResultEnum.PARAM_ERROR.msg,ResultEnum.PARAM_ERROR.code);
+            return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
         return renderSuccess(commentList);
@@ -297,6 +320,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 评论列表-任务
+     *
      * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
@@ -309,7 +333,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object taskCommentList(@ApiParam(value = "任务ID", name = "taskId", required = true) String taskId) {
         logger.info("----------------查询审批意见列表开始,入参 taskId：{}----------------", taskId);
         if (StringUtils.isBlank(taskId)) {
-            return renderError(ResultEnum.PARAM_ERROR.msg,ResultEnum.PARAM_ERROR.code);
+            return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         List<Comment> commentList = taskService.getTaskComments(taskId);
         return renderSuccess(commentList);
