@@ -28,6 +28,7 @@ import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysUserService;
 import org.activiti.engine.*;
+import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
@@ -91,6 +92,9 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Autowired
     TRuTaskService tRuTaskService;
 
+    @Autowired
+    IdentityService identityService;
+
     @Override
     public Result startProcessInstance(ProcessParam processParam) {
         Result result = new Result();
@@ -135,6 +139,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
             //给对应实例生成标题
             runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());
+            identityService.setAuthenticatedUserId(processParam.getCreatorId());
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
             //查询创建完任务之后生成的任务信息
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
