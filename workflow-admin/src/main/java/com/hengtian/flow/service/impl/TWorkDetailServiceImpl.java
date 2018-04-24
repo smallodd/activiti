@@ -7,6 +7,7 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.dao.TWorkDetailDao;
 import com.hengtian.flow.model.TWorkDetail;
 import com.hengtian.flow.service.TWorkDetailService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +17,15 @@ import java.util.List;
  */
 @Service
 public class TWorkDetailServiceImpl extends ServiceImpl<TWorkDetailDao, TWorkDetail> implements TWorkDetailService {
-    TWorkDetailDao tWorkDetailDao;
+    @Autowired
+    private TWorkDetailDao tWorkDetailDao;
+
+    /**
+     * 操作流程详细信息
+     *
+     * @param workDetailParam
+     * @return
+     */
     @Override
     public PageInfo operateDetailInfo(WorkDetailParam workDetailParam) {
         PageInfo pageInfo = new PageInfo(workDetailParam.getPageNum(), workDetailParam.getPageSize());

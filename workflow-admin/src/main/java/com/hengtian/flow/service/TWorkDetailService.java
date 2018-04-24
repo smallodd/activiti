@@ -6,10 +6,16 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TWorkDetail;
 
 /**
- * 操作记录详情接口
+ * 操作流程详细信息
  *
  * @author chenzhangyan  on 2018/4/24.
  */
 public interface TWorkDetailService extends IService<TWorkDetail> {
+    /**
+     * 操作流程详细信息
+     *
+     * @param workDetailParam
+     * @return
+     */
     PageInfo operateDetailInfo(WorkDetailParam workDetailParam);
 }

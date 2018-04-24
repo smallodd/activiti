@@ -8,10 +8,10 @@ import io.swagger.annotations.ApiModelProperty;
 public class WorkDetailParam {
 
     /**
-     * 用户id
+     * 操作人
      */
-    @ApiModelProperty(value = "用户id", example = "H000000")
-    private String userId;
+    @ApiModelProperty(value = "操作人", example = "H000000")
+    private String operator;
     /**
      * 分页-当前页
      */
@@ -23,12 +23,12 @@ public class WorkDetailParam {
     @ApiModelProperty(value = "每页条数", required = true, example = "10")
     private int pageSize;
 
-    public String getUserId() {
-        return userId;
+    public String getOperator() {
+        return operator;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setOperator(String operator) {
+        this.operator = operator;
     }
 
     public int getPageNum() {
