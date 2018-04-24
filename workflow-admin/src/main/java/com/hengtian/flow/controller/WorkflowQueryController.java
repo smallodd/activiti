@@ -141,7 +141,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("待处理任务列表")
     @ApiOperation(httpMethod = "POST", value = "待处理任务列表")
-    @RequestMapping(value = "/rest/task/close/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/active/page", method = RequestMethod.POST)
     public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
         return workflowService.activeTaskList(taskQueryParam);
     }
@@ -156,7 +156,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("待签收任务列表")
     @ApiOperation(httpMethod = "POST", value = "待签收任务列表")
-    @RequestMapping(value = "/rest/task/close/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/claim/page", method = RequestMethod.POST)
     public Object claimTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam){
         return workflowService.claimTaskList(taskQueryParam);
     }
