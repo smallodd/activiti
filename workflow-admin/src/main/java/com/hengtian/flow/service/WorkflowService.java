@@ -210,12 +210,4 @@ public interface WorkflowService {
      * date 2018/4/23 15:59
      */
     PageInfo claimTaskList(TaskQueryParam taskQueryParam);
-
-    /**
-     * 操作流程详细信息
-     *
-     * @param taskQueryParam 任务查询条件
-     * @return
-     */
-    PageInfo operateDetailInfo(TaskQueryParam taskQueryParam);
 }
