@@ -21,6 +21,15 @@ public class EnquireServiceImpl extends ServiceImpl<EnquireTaskDao, EnquireTask>
     @Autowired
     private EnquireTaskDao enquireTaskDao;
 
+    /**
+     * 问询任务列表
+     *
+     * @param taskQueryParam 查询参数
+     *                       userId   操作人ID
+     *                       pageNum当前页数
+     *                       pageSize 每页条数
+     * @return
+     */
     @Override
     public PageInfo enquireTaskList(TaskQueryParam taskQueryParam) {
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
@@ -31,6 +40,15 @@ public class EnquireServiceImpl extends ServiceImpl<EnquireTaskDao, EnquireTask>
         return pageInfo;
     }
 
+    /**
+     * 被问询任务列表
+     *
+     * @param taskQueryParam 查询参数
+     *                       userId   操作人ID
+     *                       pageNum 当前页数
+     *                       pageSize 每页条数
+     * @return
+     */
     @Override
     public PageInfo enquiredTaskList(TaskQueryParam taskQueryParam) {
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
