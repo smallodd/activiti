@@ -3,6 +3,7 @@ package com.hengtian.flow.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.hengtian.application.model.AppModel;
@@ -21,10 +22,7 @@ import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import com.hengtian.enquire.model.EnquireTask;
 import com.hengtian.enquire.service.EnquireService;
-import com.hengtian.flow.model.AppProcinst;
-import com.hengtian.flow.model.RemindTask;
-import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.system.model.SysUser;
@@ -93,8 +91,6 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     TRuTaskService tRuTaskService;
-
-
 
     @Override
     public Result startProcessInstance(ProcessParam processParam) {
@@ -190,7 +186,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Boolean setApprover(Task task, TUserTask tUserTask) {
-        log.info("进入设置审批人接口,tUserTask参数{}",JSONObject.toJSONString(tUserTask));
+        log.info("进入设置审批人接口,tUserTask参数{}", JSONObject.toJSONString(tUserTask));
         try {
             //获取任务中的自定义参数
             Map<String, Object> map = taskService.getVariables(task.getId());
@@ -209,10 +205,10 @@ public class WorkflowServiceImpl implements WorkflowService {
             for (String approver : rid) {
                 tRuTask.setTaskId(task.getId());
                 tRuTask.setApprover(approver);
-                EntityWrapper entityWrapper=new EntityWrapper();
-                entityWrapper.where("task_id={0}",task.getId()).andNew("approver={0}",approver);
-                TRuTask tRu=tRuTaskService.selectOne(entityWrapper);
-                if(tRu!=null){
+                EntityWrapper entityWrapper = new EntityWrapper();
+                entityWrapper.where("task_id={0}", task.getId()).andNew("approver={0}", approver);
+                TRuTask tRu = tRuTaskService.selectOne(entityWrapper);
+                if (tRu != null) {
                     continue;
                 }
                 tRuTask.setApproverType(tUserTask.getAssignType());
@@ -233,7 +229,7 @@ public class WorkflowServiceImpl implements WorkflowService {
             }
 
 
-log.info("设置审批人结束");
+            log.info("设置审批人结束");
             return true;
         } catch (Exception e) {
             log.error("设置审批人失败", e);
@@ -250,7 +246,7 @@ log.info("设置审批人结束");
      */
     @Override
     public Object approveTask(Task task, TaskParam taskParam) {
-        log.info("审批接口进入，传入参数taskParam{}",JSONObject.toJSONString(taskParam));
+        log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         result.setCode(Constant.SUCCESS);
         result.setMsg("审批完成");
@@ -283,9 +279,9 @@ log.info("设置审批人结束");
                 result.setCode(Constant.PARAM_ERROR);
                 return result;
             }
-            if(taskParam.getPass()!=1&&taskParam.getPass()!=2){
+            if (taskParam.getPass() != 1 && taskParam.getPass() != 2) {
                 result.setMsg("任务类型参数错误！");
-                result.setCode( Constant.PARAM_ERROR);
+                result.setCode(Constant.PARAM_ERROR);
                 return result;
             }
             Task t = taskService.createTaskQuery().taskId(task.getId()).singleResult();
@@ -293,7 +289,7 @@ log.info("设置审批人结束");
             wrapper.where("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion()).andNew("proc_def_key={0}", processDefinition.getKey());
 
             TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
-            taskService.addComment(taskParam.getTaskId(),task.getProcessInstanceId(),taskParam.getComment());
+            taskService.addComment(taskParam.getTaskId(), task.getProcessInstanceId(), taskParam.getComment());
             if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())) {
 
 
@@ -320,7 +316,7 @@ log.info("设置审批人结束");
                 taskService.setVariables(task.getId(), map);
                 if (passPer >= tUserTask.getUserCountNeed()) {
 
-                    taskService.complete(task.getId(),map);
+                    taskService.complete(task.getId(), map);
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(1);
                     EntityWrapper truWrapper = new EntityWrapper();
@@ -340,31 +336,31 @@ log.info("设置审批人结束");
                     return result;
                 }
 
-            } else  {
+            } else {
                 if (taskParam.getPass() == 1) {
                     //设置原生工作流表哪些审批了
                     taskService.setAssignee(t.getId(), taskParam.getApprover() + "_Y");
                     taskService.complete(t.getId(), map);
-                    TRuTask tRuTask=new TRuTask();
+                    TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(1);
-                    EntityWrapper truWrapper=new EntityWrapper();
-                    truWrapper.where("task_id",t.getId());
-                    tRuTaskService.update(tRuTask,truWrapper);
+                    EntityWrapper truWrapper = new EntityWrapper();
+                    truWrapper.where("task_id", t.getId());
+                    tRuTaskService.update(tRuTask, truWrapper);
 
                 } else if (taskParam.getPass() == 2) {
                     //拒绝任务
                     taskService.setAssignee(task.getId(), taskParam.getApprover() + "_N");
                     taskService.deleteTask(t.getId(), "拒绝此任务");
-                    TRuTask tRuTask=new TRuTask();
+                    TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(2);
-                    EntityWrapper truWrapper=new EntityWrapper();
-                    truWrapper.where("task_id",t.getId());
-                    tRuTaskService.update(tRuTask,truWrapper);
+                    EntityWrapper truWrapper = new EntityWrapper();
+                    truWrapper.where("task_id", t.getId());
+                    tRuTaskService.update(tRuTask, truWrapper);
                     result.setMsg("任务已经拒绝！");
                     result.setCode(Constant.SUCCESS);
                     return result;
 
-                }else {
+                } else {
 //                    //通过线上条件完成任务
 //                    taskService.setAssignee(task.getId(),taskParam.getApprover()+"_F");
 //                    taskService.deleteTask(t.getId(),"拒绝此任务");
@@ -443,9 +439,9 @@ log.info("设置审批人结束");
         tRuTask.setId(workId);
         tRuTask.setApproverReal(assignee);
         boolean updateFlag = tRuTaskService.updateById(tRuTask);
-        if(updateFlag){
+        if (updateFlag) {
             return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
-        }else{
+        } else {
             return new Result(false, ResultEnum.FAIL.code, ResultEnum.FAIL.msg);
         }
     }
@@ -482,9 +478,9 @@ log.info("设置审批人结束");
         tRuTask.setId(workId);
         tRuTask.setApproverReal(assignee);
         boolean updateFlag = tRuTaskService.updateById(tRuTask);
-        if(updateFlag){
+        if (updateFlag) {
             return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
-        }else{
+        } else {
             return new Result(false, ResultEnum.FAIL.code, ResultEnum.FAIL.msg);
         }
     }

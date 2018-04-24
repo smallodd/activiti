@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.baomidou.mybatisplus.enums.IdType;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -13,11 +14,11 @@ import java.util.Date;
  * @author chenzhangyan  on 2018/4/20.
  */
 @TableName("t_enquire_task")
-public class EnquireTask {
+public class EnquireTask implements Serializable {
     /**
      * 主键
      */
-    @TableId(type = IdType.UUID)
+    @TableId(type = IdType.AUTO)
     private long id;
 
     /**
@@ -27,29 +28,31 @@ public class EnquireTask {
     private String procInstId;
 
     /**
-     * 当前问询的任务节点id
+     * 问询所在任务节点ID
      */
     @TableField(value = "current_task_id")
     private String currentTaskId;
 
     /**
-     * 当前问询的任务节点key
+     * 问询所在任务节点key
      */
     @TableField(value = "current_task_key")
     private String currentTaskKey;
+
     /**
-     * 要问询的任务节点key
+     * 被问询的任务节点key
      */
     @TableField(value = "ask_task_key")
     private String askTaskKey;
 
     /**
-     * 问讯是否结束
+     * 问询是否结束
      */
     @TableField(value = "is_ask_end")
     private int isAskEnd;
+
     /**
-     * 问询人id
+     * 被问询人的id
      */
     @TableField(value = "ask_user_id")
     private String askUserId;
@@ -59,6 +62,7 @@ public class EnquireTask {
      */
     @TableField(value = "create_time")
     private Date createTime;
+
     /**
      * 更新时间
      */
@@ -66,7 +70,7 @@ public class EnquireTask {
     private Date updateTime;
 
     /**
-     * 创建人id
+     * 问询人id
      */
     @TableField(value = "create_id")
     private String createId;

@@ -12,17 +12,31 @@ import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.FlowElement;
+import org.activiti.bpmn.model.ValuedDataObject;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.impl.RepositoryServiceImpl;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.impl.pvm.PvmActivity;
+import org.activiti.engine.impl.pvm.PvmTransition;
+import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by ma on 2018/4/12.
@@ -52,6 +66,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     WorkflowService workflowService;
     @Autowired
     TRuTaskService tRuTaskService;
+    @Autowired
+    TUserTaskService tUserTaskService;
     /**
      * 任务创建接口
      *
@@ -72,7 +88,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return result;
         } else {
 
-           return workflowService.startProcessInstance(processParam);
+            return workflowService.startProcessInstance(processParam);
         }
 
     }
@@ -142,7 +158,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
     /**
      * 审批任务接口
-     * @param taskParam  任务信息对象 @TaskParam
+     *
+     * @param taskParam 任务信息对象 @TaskParam
      * @return
      */
     @RequestMapping(value = "approveTask", method = RequestMethod.POST)
@@ -173,54 +190,171 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
     /**
      * 批量审批接口
-     * @param taskIds  任务id字符串，用","隔开
-     * @param type     类型 1是通过，2是拒绝 3是通过自定义参数流转
-     * @param jsonVariable   参数map
-     * @param approver    审批人
+     *
+     * @param taskIds      任务id字符串，用","隔开
+     * @param type         类型 1是通过，2是拒绝 3是通过自定义参数流转
+     * @param jsonVariable 参数map
+     * @param approver     审批人
      * @return
      */
     @RequestMapping(value = "approveTaskList", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("批量审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "批量审批任务接口")
-    public Object approveTaskList(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds, @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "type", required = true)  @RequestParam("type") Integer type,@ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false,example = "{'a':'b'}") @RequestParam(value = "jsonVariable",required = false)  String jsonVariable,@ApiParam(value = "审批人信息", name = "approver", required = true)  @RequestParam("approver")String approver){
-        Map map=JSONObject.parseObject(jsonVariable);
-        Result result=new Result();
+    public Object approveTaskList(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds, @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "type", required = true) @RequestParam("type") Integer type, @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable, @ApiParam(value = "审批人信息", name = "approver", required = true) @RequestParam("approver") String approver) {
+        Map map = JSONObject.parseObject(jsonVariable);
+        Result result = new Result();
         result.setMsg("审批成功");
-        if(StringUtils.isBlank(taskIds)||type==null){
-            return renderError("请传正确的参数！",Constant.PARAM_ERROR);
+        if (StringUtils.isBlank(taskIds) || type == null) {
+            return renderError("请传正确的参数！", Constant.PARAM_ERROR);
         }
-        String [] strs=taskIds.split(",");
-        for(String taskId:strs){
+        String[] strs = taskIds.split(",");
+        for (String taskId : strs) {
 
-            Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
-            if(task==null){
-                return renderError("请传正确的参数！【"+taskId+"】任务不存在！",Constant.PARAM_ERROR);
+            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            if (task == null) {
+                return renderError("请传正确的参数！【" + taskId + "】任务不存在！", Constant.PARAM_ERROR);
             }
-            EntityWrapper wrapper=new EntityWrapper();
-            wrapper.where("task_id={0}",task.getId());
-            wrapper.like("approver_real","%"+approver+"%");
-            TRuTask tRuTask=tRuTaskService.selectOne(wrapper);
-            if(tRuTask==null){
-                result.setMsg(result.getMsg()+","+task.getName()+"不属于"+"【"+approver+"】审批失败");
+            EntityWrapper wrapper = new EntityWrapper();
+            wrapper.where("task_id={0}", task.getId());
+            wrapper.like("approver_real", "%" + approver + "%");
+            TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
+            if (tRuTask == null) {
+                result.setMsg(result.getMsg() + "," + task.getName() + "不属于" + "【" + approver + "】审批失败");
             }
-            if(type.intValue()==1) {
-                taskService.setAssignee(task.getId(),approver+"_Y");
+            if (type.intValue() == 1) {
+                taskService.setAssignee(task.getId(), approver + "_Y");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "批量同意");
-                taskService.complete(taskId,map);
-            }else if(type.intValue()==2){
-                taskService.setAssignee(task.getId(),approver+"_N");
+                taskService.complete(taskId, map);
+            } else if (type.intValue() == 2) {
+                taskService.setAssignee(task.getId(), approver + "_N");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "拒绝");
-                taskService.deleteTask(taskId,"批量拒绝");
-            }else if(type.intValue()==3){
-                taskService.setAssignee(task.getId(),approver+"_F");
+                taskService.deleteTask(taskId, "批量拒绝");
+            } else if (type.intValue() == 3) {
+                taskService.setAssignee(task.getId(), approver + "_F");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "流程流转");
-                taskService.complete(taskId,map);
+                taskService.complete(taskId, map);
 
             }
         }
-        return  result;
+        return result;
     }
+
+    /**
+     * 获取任务节点信息
+     * @param taskId
+     * @return
+     */
+    @SysLog(value = "获取任务节点信息")
+    @RequestMapping(value = "taskNodeDetail", method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation(httpMethod = "POST", value = "获取任务节点信息")
+    public Object taskNodeDetail(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId")String taskId){
+        Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task==null){
+            return renderError("任务不存在！",Constant.TASK_NOT_EXIT);
+        }
+        return renderSuccess(TaskNodeResult.toTaskNodeResult(task));
+    }
+
+    /**
+     * 获取任务自定义信息或流程实例自定义信息
+     * @param taskId
+     * @param type
+     * @return
+     */
+    @SysLog(value = "获取任务自定义信息或流程实例自定义信息")
+    @RequestMapping(value = "getVariables", method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation(httpMethod = "POST", value = "获取任务自定义信息或流程实例自定义信息")
+    public Object getVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId")String taskId,@ApiParam(value = "类型是流程实例的还是任务的", name = "taskId", required = true,example = "1是流程实例，2是任务的") @RequestParam("type")Integer type){
+
+        if(type==null||(type!=1&&type!=2)){
+            return  renderError("参数不正确，类型不存在！",Constant.PARAM_ERROR);
+        }
+        Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task==null){
+            return renderError("参数不正确，任务不存在！",Constant.TASK_NOT_EXIT);
+        }
+        Map map=new HashMap();
+        if(type==1){
+            map =taskService.getVariables(taskId);
+        }else{
+            map=taskService.getVariablesLocal(taskId);
+        }
+
+        return resultSuccess("操作成功",map);
+    }
+
+    /**
+     * 设置自定义参数
+     * @param taskId  任务id
+
+     * @return
+     */
+    @SysLog(value = "设置自定义参数")
+    @RequestMapping(value = "setVariables", method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation(httpMethod = "POST", value = "设置自定义参数")
+    public Object setVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId,@ApiParam(value = "自定义参数的json串", name = "jsonMap", required = true) @RequestParam("jsonMap")String jsonMap,@ApiParam(value = "类型", name = "type", required = true) @RequestParam("type")Integer type){
+        if(StringUtils.isBlank(jsonMap)||type==null||(type!=1&&type!=2)){
+            return renderError("参数错误",Constant.PARAM_ERROR);
+        }
+        try {
+            Map map=JSONObject.parseObject(jsonMap);
+            if(type==1) {
+                taskService.setVariables(taskId, map);
+            }else{
+                taskService.setVariablesLocal(taskId,map);
+            }
+        }catch (Exception e){
+            return renderError("jsonMap参数错误！",Constant.PARAM_ERROR);
+        }
+       return renderSuccess();
+    }
+    @SysLog(value = "获取下一节点信息")
+    @RequestMapping(value = "getNextTaskNode", method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation(httpMethod = "POST", value = "获取所有节点")
+    public Object getNextTaskNode(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId")String taskId){
+        Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
+
+        if(task==null){
+            return renderError("查询失败，任务不存在",Constant.PARAM_ERROR);
+        }
+        List<TaskNodeResult> taskNodeResults=new ArrayList<>();
+       List<TaskDefinition> list=getTaskDefinitionList(task.getProcessInstanceId());
+        for(TaskDefinition taskDefinition:list){
+            TaskNodeResult taskNodeResult=new TaskNodeResult();
+            if(taskDefinition.getFormKeyExpression()!=null){
+
+                taskNodeResult.setFormKey(taskDefinition.getFormKeyExpression().getExpressionText());
+
+            }
+            taskNodeResult.setName(taskDefinition.getNameExpression().getExpressionText());
+            taskNodeResult.setTaskDefinedKey(taskDefinition.getKey());
+            EntityWrapper entityWrapper =new EntityWrapper();
+            entityWrapper.where("task_def_key={0}",taskDefinition.getKey());
+            TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
+            if(tUserTask!=null&&StringUtils.isNotBlank(tUserTask.getCandidateIds())){
+
+                taskNodeResult.setApprover(tUserTask.getCandidateIds());
+                taskNodeResult.setAssignType(tUserTask.getAssignType());
+            }
+            taskNodeResults.add(taskNodeResult);
+
+        }
+        return resultSuccess("成功",taskNodeResults);
+    }
+    /**
+     * 获取代办任务总数
+     * @return
+     */
+    public Object taskCount(){
+
+        return null;
+    }
+
     /**
      * 任务跳转
      *
@@ -406,7 +540,12 @@ public class WorkflowOperateController extends WorkflowBaseController {
         Result validate = taskActionParam.validate();
         if (validate.isSuccess()) {
             TaskAdapter taskAdapter = new TaskAdapter();
-            return taskAdapter.taskAction(taskActionParam);
+            try {
+                return taskAdapter.taskAction(taskActionParam);
+            } catch (Exception e) {
+                logger.error("", e);
+                return renderError("操作失败");
+            }
         } else {
             return validate;
         }

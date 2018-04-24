@@ -21,6 +21,26 @@ public class TaskNodeResult implements Serializable {
 
     private String name;
 
+    private String approver;
+
+    private Integer assignType;
+
+    public Integer getAssignType() {
+        return assignType;
+    }
+
+    public void setAssignType(Integer assignType) {
+        this.assignType = assignType;
+    }
+
+    public String getApprover() {
+        return approver;
+    }
+
+    public void setApprover(String approver) {
+        this.approver = approver;
+    }
+
     public String getTaskId() {
         return taskId;
     }
