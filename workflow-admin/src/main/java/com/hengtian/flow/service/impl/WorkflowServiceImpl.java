@@ -96,6 +96,9 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Autowired
     IdentityService identityService;
 
+    @Autowired
+    TWorkDetailService workDetailService;
+
     @Override
     public Result startProcessInstance(ProcessParam processParam) {
         Result result = new Result();

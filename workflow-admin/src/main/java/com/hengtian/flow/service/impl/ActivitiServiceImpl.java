@@ -449,8 +449,9 @@ public class ActivitiServiceImpl implements ActivitiService {
 
 			Task task = taskService.createTaskQuery().processInstanceId(currentTaskEntity.getProcessInstanceId()).singleResult();
 
+			ProcessDefinition p=repositoryService.createProcessDefinitionQuery().processDefinitionId(task.getProcessDefinitionId()).singleResult();
 
-			int version = (int)runtimeService.getVariable(task.getProcessInstanceId(),"version");
+			int version = p.getVersion();
 			Map<String,String> mailParam = Maps.newHashMap();
 			mailParam.put("applyUserName",taskService.getVariable(task.getId(),"applyUserName")+"");
 			mailParam.put("ApplyTitle",taskService.getVariable(task.getId(),"ApplyTitle")+"");

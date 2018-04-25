@@ -7,11 +7,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.hengtian.application.model.AppModel;
+import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.operlog.SysLog;
+import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.ConstantUtils;
@@ -24,6 +27,7 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.ActivitiService;
 import com.hengtian.flow.service.TMailLogService;
 import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
 import com.hengtian.flow.vo.TaskVo;
@@ -94,6 +98,10 @@ public class ActivitiController extends BaseController{
 	ProcessEngineFactoryBean processEngine;
 	@Autowired
 	private ObjectMapper objectMapper;
+	@Autowired
+	WorkflowService workflowService;
+	@Autowired
+	AppModelService appModelService;
 	/**
      * 部署流程定义页
      * @return
@@ -102,6 +110,26 @@ public class ActivitiController extends BaseController{
     public String deployPage() {
         return "activiti/processdefDeploy";
     }
+	@SysLog(value="任务开启模拟")
+	@PostMapping("/startTask")
+	@ResponseBody
+    public Object startTask(String processKey){
+		ProcessParam processParam=new ProcessParam();
+		processParam.setBussinessKey(UUID.randomUUID().toString());
+		processParam.setCustomApprover(false);
+		processParam.setCreatorId("admin");
+		processParam.setProcessDefinitionKey(processKey);
+		EntityWrapper entityWrapper=new EntityWrapper();
+		entityWrapper.where("model_key={0}",processKey);
+		List<AppModel> list=appModelService.selectList(entityWrapper);
+		if(list==null||list.size()==0){
+			return renderError("模拟失败，请将流程配置到系统中！");
+		}
+		processParam.setAppKey(Integer.valueOf(list.get(0).getAppKey()));
+		Result result=workflowService.startProcessInstance(processParam);
+		result.setMsg("模拟开启成功！");
+    	return result;
+	}
 	
 	/**
      * 流程部署(压缩包方式)
