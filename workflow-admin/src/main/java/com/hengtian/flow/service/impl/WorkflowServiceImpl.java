@@ -1042,6 +1042,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         String re = "SELECT art.*";
         String reC = "SELECT COUNT(*)";
 
+        String approver = taskQueryParam.getApprover();
         String departmentId = null;
         String roleId = null;
         String groupId = null;
@@ -1052,7 +1053,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         }
         if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
-            con.append(" AND tap.APP_KEY LIKE #{appKey}");
+            con.append(" AND tap.APP_KEY = #{appKey}");
         }
 
         if (StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())) {
@@ -1072,21 +1073,22 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (StringUtils.isNotBlank(taskQueryParam.getApprover())) {
             if(TaskListEnum.CLOSE.type.equals(type)){
                 con.append(" AND art.ASSIGNEE_ LIKE #{approver} ");
+                approver = approver + "_";
             }else if(TaskListEnum.CLAIM.type.equals(type)){
                 con.append(" AND trt.STATUS="+TaskStatusEnum.BEFORESIGN.status);
                 con.append(" AND (");
-                con.append(" (trt.APPROVER_TYPE="+AssignType.DEPARTMENT.code+" AND trt.APPROVER LIKE #{departmentId}) ");
-                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.ROLE.code+" AND trt.APPROVER LIKE #{roleId}) ");
-                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.GROUP.code+" AND trt.APPROVER LIKE #{groupId}) ");
-                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.PERSON.code+" AND trt.APPROVER LIKE #{approver}) ");
+                con.append(" (trt.APPROVER_TYPE="+AssignType.DEPARTMENT.code+" AND trt.APPROVER = #{departmentId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.ROLE.code+" AND trt.APPROVER = #{roleId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.GROUP.code+" AND trt.APPROVER = #{groupId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.PERSON.code+" AND trt.APPROVER = #{approver}) ");
                 con.append(")");
             }else if(TaskListEnum.ACTIVE.type.equals(type)){
                 con.append(" AND trt.STATUS IN ("+ TaskStatusEnum.BEFORESIGN.status+","+TaskStatusEnum.OPEN.status+") ");
                 con.append(" AND (");
-                con.append(" (trt.APPROVER_TYPE="+AssignType.DEPARTMENT.code+" AND trt.APPROVER LIKE #{departmentId}) ");
-                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.ROLE.code+" AND trt.APPROVER LIKE #{roleId}) ");
-                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.GROUP.code+" AND trt.APPROVER LIKE #{groupId}) ");
-                con.append(" OR (trt.APPROVER LIKE #{approver}) ");
+                con.append(" (trt.APPROVER_TYPE="+AssignType.DEPARTMENT.code+" AND trt.APPROVER = #{departmentId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.ROLE.code+" AND trt.APPROVER = #{roleId}) ");
+                con.append(" OR (trt.APPROVER_TYPE ="+AssignType.GROUP.code+" AND trt.APPROVER = #{groupId}) ");
+                con.append(" OR (trt.APPROVER = #{approver}) ");
                 con.append(")");
             }else{
                 con.append(" AND trt.STATUS="+TaskStatusEnum.OPEN.status);
@@ -1101,10 +1103,10 @@ public class WorkflowServiceImpl implements WorkflowService {
                     .parameter("title", "%" + taskQueryParam.getTitle() + "%")
                     .parameter("creater", taskQueryParam.getCreater())
                     .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
-                    .parameter("approver", "%" + taskQueryParam.getApprover() + "_%")
-                    .parameter("departmentId", "%" + departmentId + "%")
-                    .parameter("roleId", "%" + roleId + "%")
-                    .parameter("groupId","%" + groupId + "%");
+                    .parameter("approver", "%" + approver + "%")
+                    .parameter("departmentId", departmentId)
+                    .parameter("roleId", roleId)
+                    .parameter("groupId",groupId);
             List<HistoricTaskInstance> tasks = query.sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setTotal((int) query.sql(reC + sql).count());
             pageInfo.setRows(tasks);
@@ -1114,10 +1116,10 @@ public class WorkflowServiceImpl implements WorkflowService {
                     .parameter("title", "%" + taskQueryParam.getTitle() + "%")
                     .parameter("creater", taskQueryParam.getCreater())
                     .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
-                    .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
-                    .parameter("departmentId", "%" + departmentId + "%")
-                    .parameter("roleId", "%" + roleId + "%")
-                    .parameter("groupId","%" + groupId + "%");
+                    .parameter("approver", approver)
+                    .parameter("departmentId", departmentId)
+                    .parameter("roleId", roleId)
+                    .parameter("groupId",groupId);
             List<Task> tasks = query.sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setRows(tasks);
             pageInfo.setTotal((int) query.sql(reC + sql).count());
