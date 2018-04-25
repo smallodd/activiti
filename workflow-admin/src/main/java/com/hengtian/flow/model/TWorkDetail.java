@@ -25,7 +25,7 @@ public class TWorkDetail implements Serializable {
     /**
      * 流程实例ID
      */
-    @TableField(value = "process_instance_id")
+    @TableField(value = "proc_inst_id")
     private String processInstanceId;
 
     /**
