@@ -164,13 +164,13 @@
                 handler : function() {
                     parent.$.modalDialog.openner_dataGrid = taskDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
                     var f = parent.$.modalDialog.handler.find('#complateTaskForm');
-                    var op = parent.$.modalDialog.handler.find("#taskUser").val();
-                    if(op != null && op != ""){
-                        f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
+//                    var op = parent.$.modalDialog.handler.find("#taskUser").val();
+//                    if(op != null && op != ""){
+//                        f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
                         f.submit();
-                    }else{
-                        parent.$.messager.alert('提示', "没有审批人", 'info');
-                    }
+//                    }else{
+//                        parent.$.messager.alert('提示', "没有审批人", 'info');
+//                    }
                 }
             }]
         });
