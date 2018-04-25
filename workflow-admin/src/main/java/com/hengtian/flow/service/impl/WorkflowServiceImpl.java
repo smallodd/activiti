@@ -148,10 +148,12 @@ public class WorkflowServiceImpl implements WorkflowService {
             //查询创建完任务之后生成的任务信息
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
             //String aa=net.sf.json.JSONObject.fromObject(taskList);
+            String taskId="";
             if (!processParam.isCustomApprover()) {
                 log.info("工作流平台设置审批人");
                 for (int i = 0; i < taskList.size(); i++) {
                     Task task = taskList.get(0);
+                    taskId+=task.getId();
                     EntityWrapper entityWrapper = new EntityWrapper();
                     entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                     //查询当前任务任务节点信息
@@ -172,7 +174,15 @@ public class WorkflowServiceImpl implements WorkflowService {
                 result.setCode(Constant.SUCCESS);
                 result.setMsg("申请成功");
                 result.setObj(TaskNodeResult.toTaskNodeResultList(taskList));
+                //存储操作记录
+                TWorkDetail tWorkDetail=new TWorkDetail();
+                tWorkDetail.setCreateTime(new Date());
+                tWorkDetail.setDetail(processParam.getCreatorId()+"开启了"+processParam.getTitle()+"任务");
+                tWorkDetail.setProcessInstanceId(processInstance.getProcessInstanceId());
+                tWorkDetail.setOperator(processParam.getCreatorId());
+                tWorkDetail.setTaskId(taskId);
 
+                workDetailService.insert(tWorkDetail);
             } else {
                 log.info("业务平台设置审批人");
 //
@@ -181,6 +191,14 @@ public class WorkflowServiceImpl implements WorkflowService {
                 result.setMsg("申请成功");
                 result.setObj(TaskNodeResult.toTaskNodeResultList(taskList));
 
+                TWorkDetail tWorkDetail=new TWorkDetail();
+                tWorkDetail.setCreateTime(new Date());
+                tWorkDetail.setDetail(processParam.getCreatorId()+"开启了"+processParam.getTitle()+"任务");
+                tWorkDetail.setProcessInstanceId(processInstance.getProcessInstanceId());
+                tWorkDetail.setOperator(processParam.getCreatorId());
+                tWorkDetail.setTaskId(taskId);
+
+                workDetailService.insert(tWorkDetail);
             }
         }
         return result;
@@ -232,7 +250,7 @@ public class WorkflowServiceImpl implements WorkflowService {
                 }
                 tRuTask.setExpireTime(task.getDueDate());
                 tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
-
+                tRuTask.setProcInstId(task.getProcessInstanceId());
                 tRuTaskService.insert(tRuTask);
             }
 

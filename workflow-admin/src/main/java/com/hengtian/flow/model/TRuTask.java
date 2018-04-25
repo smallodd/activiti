@@ -36,6 +36,8 @@ public class TRuTask implements Serializable {
     private Integer appKey;
     @TableField(value = "approver_real")
     private String approverReal;
+    @TableField(value = "proc_inst_id")
+    private String procInstId;
 
     public String getId() {
         return id;
@@ -123,5 +125,13 @@ public class TRuTask implements Serializable {
 
     public void setApproverReal(String approverReal) {
         this.approverReal = approverReal;
+    }
+
+    public String getProcInstId() {
+        return procInstId;
+    }
+
+    public void setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
     }
 }
