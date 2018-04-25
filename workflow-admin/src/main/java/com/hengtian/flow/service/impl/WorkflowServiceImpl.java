@@ -88,13 +88,13 @@ public class WorkflowServiceImpl implements WorkflowService {
     private AppProcinstService appProcinstService;
 
     @Autowired
-    TUserTaskService tUserTaskService;
+    private TUserTaskService tUserTaskService;
 
     @Autowired
-    TRuTaskService tRuTaskService;
+    private TRuTaskService tRuTaskService;
 
     @Autowired
-    IdentityService identityService;
+    private IdentityService identityService;
 
     @Autowired
     TWorkDetailService workDetailService;
@@ -725,7 +725,19 @@ public class WorkflowServiceImpl implements WorkflowService {
      */
     @Override
     public Result taskCancel(String userId, String processInstanceId) {
-        return null;
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        if(historicProcessInstance != null){
+            String startUserId = historicProcessInstance.getStartUserId();
+            if(startUserId.equals(processInstanceId)){
+                runtimeService.deleteProcessInstance(processInstanceId, "");
+            }else{
+                return new Result(false,ResultEnum.PERMISSION_DENY.code,ResultEnum.PERMISSION_DENY.msg);
+            }
+        }else{
+            return new Result(false,ResultEnum.PROCINST_NOT_EXIT.code,ResultEnum.PROCINST_NOT_EXIT.msg);
+        }
+
+        return new Result(true,ResultEnum.SUCCESS.code,ResultEnum.SUCCESS.msg);
     }
 
     /**
