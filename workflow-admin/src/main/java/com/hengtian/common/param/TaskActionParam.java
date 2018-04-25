@@ -205,6 +205,7 @@ public class TaskActionParam {
         } else {
             result.setMsg("参数actionType不合法,actionType值只能为:" + TaskActionEnum.valuesToString());
         }
+        result.setSuccess(true);
         return result;
     }
 }
