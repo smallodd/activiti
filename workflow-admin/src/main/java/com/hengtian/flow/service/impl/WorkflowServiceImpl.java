@@ -1062,7 +1062,7 @@ public class WorkflowServiceImpl implements WorkflowService {
                 con.append(" AND tap.APP_KEY LIKE #{title} ");
             }
             if (StringUtils.isNotBlank(taskQueryParam.getCreater())) {
-                con.append(" AND art.START_USER_ID_ = #{creater} ");
+                con.append(" AND ahp.START_USER_ID_ = #{creater} ");
             }
         }
 

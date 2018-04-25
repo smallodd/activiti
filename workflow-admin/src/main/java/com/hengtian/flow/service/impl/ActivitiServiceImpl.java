@@ -440,6 +440,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 			ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl)this.repositoryService)
 					.getDeployedProcessDefinition(currentTaskEntity.getProcessDefinitionId());
 			ActivityImpl activity = (ActivityImpl) pde.findActivity(taskDefinitionKey);
+			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
 
 			Command<Void> deleteCmd = new DeleteActiveTaskCmd(currentTaskEntity, "jump", true);
 			Command<Void> StartCmd = new StartActivityCmd(currentTaskEntity.getExecutionId(), activity);
@@ -447,19 +448,19 @@ public class ActivitiServiceImpl implements ActivitiService {
 			managementService.executeCommand(StartCmd);
 			ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(pde.getKey()).singleResult();
 
-			Task task = taskService.createTaskQuery().processInstanceId(currentTaskEntity.getProcessInstanceId()).singleResult();
+
 
 			ProcessDefinition p=repositoryService.createProcessDefinitionQuery().processDefinitionId(task.getProcessDefinitionId()).singleResult();
 
 			int version = p.getVersion();
 			Map<String,String> mailParam = Maps.newHashMap();
-			mailParam.put("applyUserName",taskService.getVariable(task.getId(),"applyUserName")+"");
-			mailParam.put("ApplyTitle",taskService.getVariable(task.getId(),"ApplyTitle")+"");
+//			mailParam.put("applyUserName",taskService.getVariable(task.getId(),"applyUserName")+"");
+//			mailParam.put("ApplyTitle",taskService.getVariable(task.getId(),"ApplyTitle")+"");
 			initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,mailParam);
-			String assign = currentTaskEntity.getAssignee();
-			if(StringUtils.isNotBlank(assign)){
-				taskService.setOwner(task.getId(), assign);
-			}
+//			String assign = currentTaskEntity.getAssignee();
+//			if(StringUtils.isNotBlank(assign)){
+//				taskService.setOwner(task.getId(), assign);
+//			}
 		}else{
 			throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
 		}
