@@ -121,13 +121,13 @@ public interface WorkflowService {
     /**
      * 撤回
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param userId 操作人ID
+     * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskRevoke(String userId, String processInstanceId);
+    Result taskRevoke(String userId, String taskId);
 
     /**
      * 取消 只有流程发起人方可进行取消操作

@@ -18,6 +18,7 @@ public enum ResultEnum {
     BUSSINESSKEY_EXIST("1001","业务主键已经创建过任务"),
     RELATION_NOT_EXIT("1002","系统与流程定义之间关系不存在"),
     PROCINST_NOT_EXIT("1003","流程实例不存在"),
+    PROCESS_NOT_EXIT("1004","流程定义不存在"),
 
     /*********************任务（2***）********************/
     TASK_TYPE_ERROR("2001","任务类型不正确"),
