@@ -105,6 +105,8 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Autowired
     private ProcessEngine processEngine;
 
+
+
     @Override
     public Result startProcessInstance(ProcessParam processParam) {
         Result result = new Result();
@@ -184,7 +186,7 @@ public class WorkflowServiceImpl implements WorkflowService {
                 //存储操作记录
                 TWorkDetail tWorkDetail=new TWorkDetail();
                 tWorkDetail.setCreateTime(new Date());
-                tWorkDetail.setDetail(processParam.getCreatorId()+"开启了"+processParam.getTitle()+"任务");
+                tWorkDetail.setDetail("工号【"+processParam.getCreatorId()+"】开启了"+processParam.getTitle()+"任务");
                 tWorkDetail.setProcessInstanceId(processInstance.getProcessInstanceId());
                 tWorkDetail.setOperator(processParam.getCreatorId());
                 tWorkDetail.setTaskId(taskId);
@@ -200,7 +202,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
                 TWorkDetail tWorkDetail=new TWorkDetail();
                 tWorkDetail.setCreateTime(new Date());
-                tWorkDetail.setDetail(processParam.getCreatorId()+"开启了"+processParam.getTitle()+"任务");
+                tWorkDetail.setDetail("工号【"+processParam.getCreatorId()+"】开启了"+processParam.getTitle()+"任务");
                 tWorkDetail.setProcessInstanceId(processInstance.getProcessInstanceId());
                 tWorkDetail.setOperator(processParam.getCreatorId());
                 tWorkDetail.setTaskId(taskId);
@@ -228,11 +230,7 @@ public class WorkflowServiceImpl implements WorkflowService {
             List list = Arrays.asList(strs);
             Set set = new HashSet(list);
             String[] rid = (String[]) set.toArray(new String[0]);
-
-//taskService.setAssignee(task.getId(), approvers);
             TRuTask tRuTask = new TRuTask();
-
-            List<TRuTask> tRuTaskList = new ArrayList<>();
 
             //生成扩展任务信息
             for (String approver : rid) {
@@ -271,7 +269,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     /**
-     * 判断某个用户是否拥有审批某个角色的权限
+     * 审批任务
      *
      * @param task
      * @param taskParam
@@ -422,6 +420,13 @@ public class WorkflowServiceImpl implements WorkflowService {
                 }
             }
             result.setObj(TaskNodeResult.toTaskNodeResultList(taskList));
+            TWorkDetail tWorkDetail=new TWorkDetail();
+            tWorkDetail.setTaskId(task.getId());
+            tWorkDetail.setOperator(taskParam.getApprover());
+            tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
+            tWorkDetail.setCreateTime(new Date());
+            tWorkDetail.setDetail("工号【"+taskParam.getApprover()+"】审批了该任务，审批意见是【"+taskParam.getComment()+"】");
+            workDetailService.insert(tWorkDetail);
             return result;
         }
     }
