@@ -18,6 +18,7 @@ import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
+import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import com.hengtian.enquire.model.EnquireTask;
 import com.hengtian.enquire.service.EnquireService;
@@ -537,7 +538,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result taskJump(String userId, String taskId, String targetTaskDefKey) {
-        //查询任务
+        /*//查询任务
         TaskEntity taskEntity = (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
         if (taskEntity == null) {
             log.error("任务不存在taskId:{}", taskId);
@@ -567,7 +568,25 @@ public class WorkflowServiceImpl implements WorkflowService {
             taskService.setOwner(task.getId(), assignee);
         }
         //todo 初始化任务属性值
-        return new Result(true, "任务跳转成功");
+        return new Result(true, "任务跳转成功");*/
+
+        //根据要跳转的任务ID获取其任务
+        HistoricTaskInstance hisTask = historyService
+                .createHistoricTaskInstanceQuery().taskId(taskId)
+                .singleResult();
+        //进而获取流程实例
+        ProcessInstance instance = runtimeService
+                .createProcessInstanceQuery()
+                .processInstanceId(hisTask.getProcessInstanceId())
+                .singleResult();
+        //取得流程定义
+        ProcessDefinitionEntity definition = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(hisTask.getProcessDefinitionId());
+        //获取历史任务的Activity
+        ActivityImpl hisActivity = definition.findActivity(targetTaskDefKey);
+        //实现跳转
+        managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
+
+        return new Result();
     }
 
     /**

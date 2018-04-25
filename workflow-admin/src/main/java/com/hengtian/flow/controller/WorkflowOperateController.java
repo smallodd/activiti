@@ -536,7 +536,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("任务操作接口")
     @ApiOperation(httpMethod = "POST", value = "任务操作接口")
-    public Object taskAction(TaskActionParam taskActionParam) {
+    public Object taskAction(@ApiParam(name = "taskActionParam", required = true, value = "操作类型参数")@RequestBody TaskActionParam taskActionParam) {
         String actionType = taskActionParam.getActionType();
         if (StringUtils.isBlank(actionType)) {
             return renderError("操作类型不能为空");

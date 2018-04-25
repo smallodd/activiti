@@ -3,13 +3,15 @@ package com.hengtian.flow.extend;
 import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.utils.SpringBeanUtil;
 import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.service.impl.WorkflowServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.ContextLoader;
 
 public class TaskAdapter implements TaskManager {
 
-    @Autowired
-    private WorkflowService WorkflowService;
+    private WorkflowService WorkflowService = SpringBeanUtil.getBean(WorkflowServiceImpl.class);
 
     @Override
     public Result taskAction(TaskActionParam taskActionParam) {
