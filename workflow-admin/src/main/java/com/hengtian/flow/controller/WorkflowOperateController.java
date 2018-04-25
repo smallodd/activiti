@@ -87,8 +87,18 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
             return result;
         } else {
+            try {
 
-            return workflowService.startProcessInstance(processParam);
+
+                return workflowService.startProcessInstance(processParam);
+            }catch (Exception e){
+                logger.error("模拟提交失败",e);
+                result.setMsg("模拟开启失败，请联系管理员进行排查！");
+                result.setCode(Constant.FAIL);
+                result.setSuccess(false);
+                return result;
+
+            }
         }
 
     }
