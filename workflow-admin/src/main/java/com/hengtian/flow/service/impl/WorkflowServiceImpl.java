@@ -140,6 +140,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         } else {
             variables.put("customApprover", processParam.isCustomApprover());
             variables.put("appKey", processParam.getAppKey());
+            identityService.setAuthenticatedUserId(processParam.getCreatorId());
             //生成任务
             ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(processParam.getProcessDefinitionKey(), processParam.getBussinessKey(), variables);
 
@@ -149,7 +150,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
             //给对应实例生成标题
             runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());
-            identityService.setAuthenticatedUserId(processParam.getCreatorId());
+
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
             //查询创建完任务之后生成的任务信息
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
