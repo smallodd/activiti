@@ -317,6 +317,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "获取所有节点")
     public Object getNextTaskNode(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId")String taskId){
+
         Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
 
         if(task==null){

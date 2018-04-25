@@ -103,6 +103,9 @@ public class WorkflowServiceImpl implements WorkflowService {
     private IdentityService identityService;
 
     @Autowired
+    TWorkDetailService workDetailService;
+
+    @Autowired
     private ProcessEngine processEngine;
 
     @Override
