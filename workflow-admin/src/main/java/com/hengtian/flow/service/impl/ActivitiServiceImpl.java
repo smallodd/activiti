@@ -462,13 +462,15 @@ public class ActivitiServiceImpl implements ActivitiService {
 			//设置审批人
 			logger.info("工作流平台设置审批人");
 			for (int i = 0; i < tasks.size(); i++) {
-				Task task = tasks.get(0);
-				taskId += task.getId();
-				EntityWrapper entityWrapper = new EntityWrapper();
-				entityWrapper.where("proc_def_key={0}", task.getTaskDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
-				//查询当前任务任务节点信息
-				TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
-				boolean flag = setApprover(task, tUserTask);
+				Task task = tasks.get(i);
+				if(task.getTaskDefinitionKey().equals(taskDefinitionKey)){
+					taskId += task.getId();
+					EntityWrapper entityWrapper = new EntityWrapper();
+					entityWrapper.where("proc_def_key={0}", task.getTaskDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
+					//查询当前任务任务节点信息
+					TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+					boolean flag = setApprover(task, tUserTask);
+				}
 			}
 		}
 	}
