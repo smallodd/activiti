@@ -339,7 +339,7 @@ public class ActivitiController extends BaseController{
     @RequestMapping("/completeTask")
     @ResponseBody
     public Object completeTask( @RequestParam("taskId") String taskId,
-
+								@RequestParam(value = "jsonVariable",required = false) String jsonVariable,
 					    		@RequestParam("commentContent") String commentContent,
 					    		@RequestParam("commentResult") Integer commentResult){
 		Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
@@ -347,6 +347,13 @@ public class ActivitiController extends BaseController{
 		if(task==null){
 
 			return  renderError("任务不存在！", Constant.TASK_NOT_EXIT) ;
+		}
+		try {
+		if(StringUtils.isNotBlank(jsonVariable)) {
+			JSONObject.parseObject(jsonVariable);
+		}
+		}catch (Exception e){
+			return renderError("自定义参数格式不正确！",Constant.PARAM_ERROR);
 		}
 		EntityWrapper entityWrapper=new EntityWrapper();
 		entityWrapper.where("task_id={0}",taskId).andNew("status={0}",0).isNotNull("approver_real");
@@ -367,7 +374,7 @@ public class ActivitiController extends BaseController{
 		taskParam.setPass(commentResult);
 		taskParam.setTaskId(taskId);
 		taskParam.setTaskType(tRuTask.getTaskType());
-
+		taskParam.setJsonVariables(jsonVariable);
 		Object result=workflowService.approveTask(task,taskParam);
 		return JSONObject.toJSONString(result);
     }

@@ -17,10 +17,10 @@
                 	<%--<td>任务说明</td>--%>
                 	<%--<td><textarea style="width: 240px; height: 49px;" readonly="readonly">${task.description}</textarea></td>--%>
                 <%--</tr>--%>
-				<%--<tr>--%>
-					<%--<td>审批人</td>--%>
-					<%--<td><select id="taskUser" style="width:100px;"></select></td>--%>
-				<%--</tr>--%>
+				<tr>
+					<td>自定义参数（例子：{'a':'b'}）</td>
+					<td><input id="taskUser" name="jsonVariable" style="width:100px;"></td>
+				</tr>
                 <tr><td>意见列表</td><td><c:if test="${empty comments}">暂无意见 ！</c:if></td></tr>
                 <c:forEach var="comment" items="${comments}">
 					<tr>
