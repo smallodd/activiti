@@ -35,6 +35,10 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
 import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.*;
+import org.activiti.engine.impl.persistence.entity.CommentEntity;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
@@ -645,8 +649,24 @@ public class WorkflowServiceImpl implements WorkflowService {
         //获取历史任务的Activity
         ActivityImpl hisActivity = definition.findActivity(targetTaskDefKey);
         //实现跳转
-        managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
+        ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
 
+        boolean customApprover = (boolean)runtimeService.getVariable(instance.getProcessInstanceId(), "customApprover");
+
+        if (!customApprover) {
+            List<TaskEntity> tasks = e.getTasks();
+            //设置审批人
+            log.info("工作流平台设置审批人");
+            for (int i = 0; i < tasks.size(); i++) {
+                Task task = tasks.get(0);
+                taskId += task.getId();
+                EntityWrapper entityWrapper = new EntityWrapper();
+                entityWrapper.where("proc_def_key={0}", task.getTaskDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
+                //查询当前任务任务节点信息
+                TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+                boolean flag = setApprover(task, tUserTask);
+            }
+        }
         return new Result();
     }
 

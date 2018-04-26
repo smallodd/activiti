@@ -552,6 +552,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
         if (validate.isSuccess()) {
             TaskAdapter taskAdapter = new TaskAdapter();
             try {
+
+                beforeTaskDefinition(taskService.createTaskQuery().taskId(taskActionParam.getTaskId()).singleResult());
                 return taskAdapter.taskAction(taskActionParam);
             } catch (Exception e) {
                 logger.error("", e);

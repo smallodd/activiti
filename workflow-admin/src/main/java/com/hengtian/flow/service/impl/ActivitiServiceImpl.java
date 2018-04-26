@@ -1,6 +1,5 @@
 package com.hengtian.flow.service.impl;
 
-
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 
@@ -9,6 +8,7 @@ import com.google.common.collect.Maps;
 
 import com.hengtian.application.model.App;
 import com.hengtian.application.service.AppService;
+import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.enums.TaskVariable;
@@ -16,10 +16,13 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.*;
 import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
+import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import com.hengtian.common.workflow.exception.WorkFlowException;
+import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.ActivitiService;
+import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.vo.CommonVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
@@ -30,6 +33,7 @@ import org.activiti.engine.*;
 import org.activiti.engine.history.*;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.interceptor.Command;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
@@ -51,10 +55,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.InputStream;
 import java.util.*;
 
-
 @Service
 public class ActivitiServiceImpl implements ActivitiService {
-
 	
 	@Autowired
 	private RepositoryService repositoryService;
@@ -76,6 +78,9 @@ public class ActivitiServiceImpl implements ActivitiService {
 	ProcessEngineConfiguration processEngineConfiguration;
 	@Autowired
 	private SysUserService sysUserService;
+	@Autowired
+	private TRuTaskService tRuTaskService;
+
 	Logger logger = Logger.getLogger(ActivitiServiceImpl.class);
 	
 	@Override
@@ -434,35 +439,92 @@ public class ActivitiServiceImpl implements ActivitiService {
 	@Override
 	@Transactional(propagation= Propagation.REQUIRED,rollbackFor = Exception.class)
 	public void jumpTask(String taskId, String taskDefinitionKey) throws WorkFlowException {
-		TaskEntity currentTaskEntity = (TaskEntity) this.taskService.createTaskQuery().taskId(taskId).singleResult();
+		//根据要跳转的任务ID获取其任务
+		HistoricTaskInstance hisTask = historyService
+				.createHistoricTaskInstanceQuery().taskId(taskId)
+				.singleResult();
+		//进而获取流程实例
+		ProcessInstance instance = runtimeService
+				.createProcessInstanceQuery()
+				.processInstanceId(hisTask.getProcessInstanceId())
+				.singleResult();
+		//取得流程定义
+		ProcessDefinitionEntity definition = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(hisTask.getProcessDefinitionId());
+		//获取历史任务的Activity
+		ActivityImpl hisActivity = definition.findActivity(taskDefinitionKey);
+		//实现跳转
+		ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
 
-		if(currentTaskEntity != null){
-			ProcessDefinitionEntity pde = (ProcessDefinitionEntity) ((RepositoryServiceImpl)this.repositoryService)
-					.getDeployedProcessDefinition(currentTaskEntity.getProcessDefinitionId());
-			ActivityImpl activity = (ActivityImpl) pde.findActivity(taskDefinitionKey);
-			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+		boolean customApprover = (boolean)runtimeService.getVariable(instance.getProcessInstanceId(), "customApprover");
 
-			Command<Void> deleteCmd = new DeleteActiveTaskCmd(currentTaskEntity, "jump", true);
-			Command<Void> StartCmd = new StartActivityCmd(currentTaskEntity.getExecutionId(), activity);
-			managementService.executeCommand(deleteCmd);
-			managementService.executeCommand(StartCmd);
-			ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(pde.getKey()).singleResult();
+		if (!customApprover) {
+			List<TaskEntity> tasks = e.getTasks();
+			//设置审批人
+			logger.info("工作流平台设置审批人");
+			for (int i = 0; i < tasks.size(); i++) {
+				Task task = tasks.get(i);
+				if(task.getTaskDefinitionKey().equals(taskDefinitionKey)){
+					taskId += task.getId();
+					EntityWrapper entityWrapper = new EntityWrapper();
+					entityWrapper.where("proc_def_key={0}", task.getTaskDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
+					//查询当前任务任务节点信息
+					TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+					boolean flag = setApprover(task, tUserTask);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 设置审批人接口
+	 *
+	 * @param task
+	 * @param tUserTask
+	 */
+	public Boolean setApprover(Task task, TUserTask tUserTask) {
+		try {
+			//获取任务中的自定义参数
+			Map<String, Object> map = taskService.getVariables(task.getId());
+			String approvers = tUserTask.getCandidateIds();
+			String[] strs = approvers.split(",");
+			List list = Arrays.asList(strs);
+			Set set = new HashSet(list);
+			String[] rid = (String[]) set.toArray(new String[0]);
+			TRuTask tRuTask = new TRuTask();
+
+			//生成扩展任务信息
+			for (String approver : rid) {
+				tRuTask.setTaskId(task.getId());
+				tRuTask.setApprover(approver);
+				EntityWrapper entityWrapper = new EntityWrapper();
+				entityWrapper.where("task_id={0}", task.getId()).andNew("approver={0}", approver);
+				TRuTask tRu = tRuTaskService.selectOne(entityWrapper);
+				if (tRu != null) {
+					continue;
+				}
+				tRuTask.setApproverType(tUserTask.getAssignType());
+				tRuTask.setOwer(task.getOwner());
+
+				tRuTask.setTaskType(tUserTask.getTaskType());
+				//判断如果是非人员审批，需要认领之后才能审批
+				if (AssignType.ROLE.code.intValue() == tUserTask.getAssignType().intValue() || AssignType.GROUP.code.intValue() == tUserTask.getAssignType().intValue() || AssignType.DEPARTMENT.code.intValue() == tUserTask.getAssignType().intValue()) {
+					tRuTask.setStatus(-1);
+				} else {
+					tRuTask.setStatus(0);
+					tRuTask.setApproverReal(approver);
+				}
+				tRuTask.setExpireTime(task.getDueDate());
+				tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
+				tRuTask.setProcInstId(task.getProcessInstanceId());
+				tRuTaskService.insert(tRuTask);
+			}
 
 
-
-			ProcessDefinition p=repositoryService.createProcessDefinitionQuery().processDefinitionId(task.getProcessDefinitionId()).singleResult();
-
-			int version = p.getVersion();
-			Map<String,String> mailParam = Maps.newHashMap();
-//			mailParam.put("applyUserName",taskService.getVariable(task.getId(),"applyUserName")+"");
-//			mailParam.put("ApplyTitle",taskService.getVariable(task.getId(),"ApplyTitle")+"");
-			initTaskVariable(task.getProcessInstanceId(),processDefinition.getKey(),version,mailParam);
-//			String assign = currentTaskEntity.getAssignee();
-//			if(StringUtils.isNotBlank(assign)){
-//				taskService.setOwner(task.getId(), assign);
-//			}
-		}else{
-			throw new ActivitiObjectNotFoundException("任务不存在！", this.getClass());
+			logger.info("设置审批人结束");
+			return true;
+		} catch (Exception e) {
+			logger.error("设置审批人失败", e);
+			return false;
 		}
 	}
 

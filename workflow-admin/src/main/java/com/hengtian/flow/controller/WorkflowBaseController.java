@@ -1,6 +1,7 @@
 package com.hengtian.flow.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.collect.Lists;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskType;
@@ -59,7 +60,38 @@ public class WorkflowBaseController extends BaseController {
     @Autowired
     private TUserTaskService tUserTaskService;
 
+    /**
+     * 获取上一个节点信息
+     * @param task 任务
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/25 18:07
+     */
+    protected List<TaskDefinition> beforeTaskDefinition(Task task){
+        String processInstanceId = task.getProcessInstanceId();
+        //流程标示
+        String processDefinitionId = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult().getProcessDefinitionId();
+        ProcessDefinitionEntity pde = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(processDefinitionId);
+        //执行实例
+        ExecutionEntity execution = (ExecutionEntity) runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        String activityId = execution.getActivityId();
 
+        ProcessDefinitionEntity entity = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(processDefinitionId);
+        ActivityImpl actImpl = entity.getProcessDefinition().findActivity(activityId);
+        List<TaskDefinition> beforeTaskDefinition = Lists.newArrayList();
+        for(PvmTransition pt : actImpl.getIncomingTransitions()){
+            TaskDefinition taskDefinition = ((UserTaskActivityBehavior) ((ActivityImpl) pt).getActivityBehavior()).getTaskDefinition();
+            beforeTaskDefinition.add(taskDefinition);
+
+            /*PvmActivity inAct = pt.getSource();
+            String type = (String)inAct.getProperty("type");
+            if("exclusiveGateway".equals(type) || "parallelGateway".equals(type)){
+                beforeTaskDefinition = nextTaskDefinition((ActivityImpl) pt.getDestination(), activityId);
+                break;
+            }*/
+        }
+        return beforeTaskDefinition;
+    }
 
     /**
      * 根据实例编号获取下一个任务节点实例集合
@@ -100,7 +132,7 @@ public class WorkflowBaseController extends BaseController {
      * @author houjinrong@chtwm.com
      * date 2018/4/17 16:51
      */
-    protected List<TaskDefinition> nextTaskDefinition(ActivityImpl activityImpl, String activityId) {
+    public List<TaskDefinition> nextTaskDefinition(ActivityImpl activityImpl, String activityId) {
         //所有的任务实例
         List<TaskDefinition> taskDefinitionList = new ArrayList<TaskDefinition>();
         //逐个获取的任务实例
