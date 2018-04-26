@@ -182,7 +182,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "问询任务列表")
     @RequestMapping(value = "/rest/task/enquire/page", method = RequestMethod.POST)
-    public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskEnquireParam taskEnquireParam) {
+    public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody TaskEnquireParam taskEnquireParam) {
         return enquireService.enquireTaskList(taskEnquireParam);
     }
 
@@ -197,7 +197,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("被问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
     @RequestMapping(value = "/rest/task/enquired/page", method = RequestMethod.POST)
-    public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskEnquireParam taskEnquireParam) {
+    public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody TaskEnquireParam taskEnquireParam) {
         return enquireService.enquiredTaskList(taskEnquireParam);
     }
 
@@ -226,7 +226,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("操作流程详细信息")
     @ApiOperation(httpMethod = "POST", value = "操作流程详细信息")
     @RequestMapping(value = "/rest/task/operateDetailInfo", method = RequestMethod.POST)
-    public Object operateDetailInfo(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody WorkDetailParam workDetailParam) {
+    public Object operateDetailInfo(@ApiParam(value = "任务查询条件", name = "workDetailParam", required = true) @RequestBody WorkDetailParam workDetailParam) {
         return tWorkDetailService.operateDetailInfo(workDetailParam);
     }
 

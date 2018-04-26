@@ -59,10 +59,6 @@ public class WorkflowBaseController extends BaseController {
     private TRuTaskService tRuTaskService;
     @Autowired
     private TUserTaskService tUserTaskService;
-    @Autowired
-    EmpService empService;
-    @Autowired
-    RoleService roleService;
 
     /**
      * 获取上一个节点信息

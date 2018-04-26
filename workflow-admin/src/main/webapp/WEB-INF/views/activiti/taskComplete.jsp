@@ -11,15 +11,15 @@
     <div data-options="region:'center',border:false" style="overflow: auto;padding: 3px;" >
         <form id="complateTaskForm" method="post">
 			<input type="hidden" name="taskId" id="taskId" value="${task.id}">
-			<input type="hidden" name="userId" id="userId">
+
             <table class="grid">
                 <%--<tr>--%>
                 	<%--<td>任务说明</td>--%>
                 	<%--<td><textarea style="width: 240px; height: 49px;" readonly="readonly">${task.description}</textarea></td>--%>
                 <%--</tr>--%>
 				<tr>
-					<td>审批人</td>
-					<td><select id="taskUser" style="width:100px;"></select></td>
+					<td>自定义参数（例子：{'a':'b'}）</td>
+					<td><input id="taskUser" name="jsonVariable" style="width:100px;"></td>
 				</tr>
                 <tr><td>意见列表</td><td><c:if test="${empty comments}">暂无意见 ！</c:if></td></tr>
                 <c:forEach var="comment" items="${comments}">
@@ -34,8 +34,8 @@
                  <tr>
                  	<td>是否同意</td>
                  	<td>
-                 		<input type="radio" name="commentResult" style="cursor:pointer;" value=2 checked="checked">同意</input>
-                 		<input type="radio" name="commentResult" style="cursor:pointer;" value=3 >不同意</input>
+                 		<input type="radio" name="commentResult" style="cursor:pointer;" value=1 checked="checked">同意</input>
+                 		<input type="radio" name="commentResult" style="cursor:pointer;" value=2 >不同意</input>
                  	</td>
                  </tr>
             </table>
@@ -44,25 +44,6 @@
 </div>
 <script type="text/javascript">
     var taskId = $("#taskId").val();
-    if(taskId != undefined && taskId != ""){
-        $.ajax({
-            type: 'POST',
-            dataType : 'json',
-            url: '${ctx}/activiti/getTaskUserWithEnd',
-            data: {"taskId":taskId},
-            success: function(json){
-                if(json.success == false){
-                    return;
-				}
-                var option = "";
-                $.each(json,function(i,obj){
-                    option = option + "<option value='"+obj.id+"'>"+obj.userName+"</option>";
-                })
-                $("#taskUser").html(option);
-                $("#taskUser").combobox({});
-            }
-        });
-    }
 
     $(function() {
         $('#complateTaskForm').form({

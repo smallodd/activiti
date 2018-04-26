@@ -15,6 +15,8 @@ import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskParam;
+import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.ConstantUtils;
@@ -23,11 +25,9 @@ import com.hengtian.common.utils.MailTemplateUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.model.TMailLog;
+import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
-import com.hengtian.flow.service.ActivitiService;
-import com.hengtian.flow.service.TMailLogService;
-import com.hengtian.flow.service.TUserTaskService;
-import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
 import com.hengtian.flow.vo.TaskVo;
@@ -38,6 +38,7 @@ import com.hengtian.system.service.SysUserService;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.*;
+import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
@@ -102,6 +103,9 @@ public class ActivitiController extends BaseController{
 	WorkflowService workflowService;
 	@Autowired
 	AppModelService appModelService;
+
+	@Autowired
+	TRuTaskService tRuTaskService;
 	/**
      * 部署流程定义页
      * @return
@@ -319,12 +323,8 @@ public class ActivitiController extends BaseController{
 		model.addAttribute("task", task);
 		model.addAttribute("comments", comments);
 		
-    	String taskKey = task.getTaskDefinitionKey();
-    	if(StringUtils.contains("SVacation_Modify", taskKey)){
-    		return "application/tVacationModify";
-    	}else if(StringUtils.contains("SVacation_Terminate", taskKey)){
-    		return "application/tVacationTerminate";
-    	}
+
+
         return "activiti/taskComplete";
     }
     
@@ -339,10 +339,43 @@ public class ActivitiController extends BaseController{
     @RequestMapping("/completeTask")
     @ResponseBody
     public Object completeTask( @RequestParam("taskId") String taskId,
-								@RequestParam("userId") String userId,
+								@RequestParam(value = "jsonVariable",required = false) String jsonVariable,
 					    		@RequestParam("commentContent") String commentContent,
 					    		@RequestParam("commentResult") Integer commentResult){
-		Result result= activitiService.completeTask(taskId,userId,commentContent,commentResult);
+		Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
+		TaskParam taskParam=new TaskParam();
+		if(task==null){
+
+			return  renderError("任务不存在！", Constant.TASK_NOT_EXIT) ;
+		}
+		try {
+		if(StringUtils.isNotBlank(jsonVariable)) {
+			JSONObject.parseObject(jsonVariable);
+		}
+		}catch (Exception e){
+			return renderError("自定义参数格式不正确！",Constant.PARAM_ERROR);
+		}
+		EntityWrapper entityWrapper=new EntityWrapper();
+		entityWrapper.where("task_id={0}",taskId).andNew("status={0}",0).isNotNull("approver_real");
+
+		List<TRuTask> list=tRuTaskService.selectList(entityWrapper);
+		if(list==null||list.size()==0){
+			return renderError("任务没有审批人，请将任务转办给审批人！",Constant.FAIL);
+		}
+		TRuTask tRuTask=list.get(0);
+		taskParam.setApprover(tRuTask.getApproverReal());
+		taskParam.setAssignType(tRuTask.getApproverType());
+		ShiroUser user = getShiroUser();
+		if(user.getLoginName().equals("admin")) {
+			taskParam.setComment("【管理员代办】"+commentContent);
+		}else{
+			taskParam.setComment(commentContent);
+		}
+		taskParam.setPass(commentResult);
+		taskParam.setTaskId(taskId);
+		taskParam.setTaskType(tRuTask.getTaskType());
+		taskParam.setJsonVariables(jsonVariable);
+		Object result=workflowService.approveTask(task,taskParam);
 		return JSONObject.toJSONString(result);
     }
 

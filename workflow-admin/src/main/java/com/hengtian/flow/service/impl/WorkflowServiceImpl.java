@@ -28,10 +28,12 @@ import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysUserService;
 import org.activiti.engine.*;
+import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
 import org.activiti.engine.impl.interceptor.Command;
+import org.activiti.engine.impl.persistence.entity.*;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -42,6 +44,7 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.NativeTaskQuery;
@@ -106,7 +109,6 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Autowired
     private ProcessEngine processEngine;
-
 
 
     @Override
@@ -282,7 +284,6 @@ public class WorkflowServiceImpl implements WorkflowService {
         log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         result.setCode(Constant.SUCCESS);
-        result.setMsg("审批完成");
         EntityWrapper entityWrapper = new EntityWrapper();
         entityWrapper.where("task_id={0}", task.getId());
         entityWrapper.like("approver_real", "%" + taskParam.getApprover() + "%");
@@ -322,7 +323,9 @@ public class WorkflowServiceImpl implements WorkflowService {
             wrapper.where("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion()).andNew("proc_def_key={0}", processDefinition.getKey());
 
             TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
+            identityService.setAuthenticatedUserId(taskParam.getApprover());
             taskService.addComment(taskParam.getTaskId(), task.getProcessInstanceId(), taskParam.getComment());
+
             if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())) {
 
 
@@ -353,19 +356,37 @@ public class WorkflowServiceImpl implements WorkflowService {
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(1);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id", t.getId());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("approver_real={0}",taskParam.getApprover());
                     tRuTaskService.update(tRuTask, truWrapper);
-
+                    EntityWrapper wra=new EntityWrapper();
+                    wra.where("task_id={0}",t.getId()).andNew("status={0}",0);
+                    tRuTask.setStatus(3);
+                    tRuTaskService.update(tRuTask, wra);
+                    result.setSuccess(true);
 
                 } else if (not_pass_per > 1 - tUserTask.getUserCountNeed()) {
                     taskService.deleteTask(task.getId(), "任务没有达到通过率");
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(2);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id", t.getId());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("approver_real={0}",taskParam.getApprover());
                     tRuTaskService.update(tRuTask, truWrapper);
+
+                    EntityWrapper wra=new EntityWrapper();
+                    wra.where("task_id={0}",t.getId()).andNew("status={0}",0);
+                    tRuTask.setStatus(3);
+                    tRuTaskService.update(tRuTask, wra);
                     result.setMsg("任务已经拒绝！");
                     result.setCode(Constant.SUCCESS);
+                    result.setSuccess(true);
+
+                    TWorkDetail tWorkDetail=new TWorkDetail();
+                    tWorkDetail.setTaskId(task.getId());
+                    tWorkDetail.setOperator(taskParam.getApprover());
+                    tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
+                    tWorkDetail.setCreateTime(new Date());
+                    tWorkDetail.setDetail("工号【"+taskParam.getApprover()+"】审批了该任务，审批意见是【"+taskParam.getComment()+"】");
+                    workDetailService.insert(tWorkDetail);
                     return result;
                 }
 
@@ -377,20 +398,32 @@ public class WorkflowServiceImpl implements WorkflowService {
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(1);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id", t.getId());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("approver_real={0}",taskParam.getApprover());;
                     tRuTaskService.update(tRuTask, truWrapper);
+                    result.setSuccess(true);
 
                 } else if (taskParam.getPass() == 2) {
                     //拒绝任务
                     taskService.setAssignee(task.getId(), taskParam.getApprover() + "_N");
-                    taskService.deleteTask(t.getId(), "拒绝此任务");
+                    runtimeService.deleteProcessInstance(task.getProcessInstanceId(),taskParam.getComment());
+                    //taskService.deleteTask(t.getId(), "拒绝此任务");
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(2);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id", t.getId());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("approver_real={0}",taskParam.getApprover());
                     tRuTaskService.update(tRuTask, truWrapper);
                     result.setMsg("任务已经拒绝！");
                     result.setCode(Constant.SUCCESS);
+                    result.setSuccess(true);
+
+
+                    TWorkDetail tWorkDetail=new TWorkDetail();
+                    tWorkDetail.setTaskId(task.getId());
+                    tWorkDetail.setOperator(taskParam.getApprover());
+                    tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
+                    tWorkDetail.setCreateTime(new Date());
+                    tWorkDetail.setDetail("工号【"+taskParam.getApprover()+"】审批了该任务，审批意见是【"+taskParam.getComment()+"】");
+                    workDetailService.insert(tWorkDetail);
                     return result;
 
                 } else {
@@ -401,7 +434,11 @@ public class WorkflowServiceImpl implements WorkflowService {
 //                    result.setSuccess(false);
                 }
             }
+
+
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
+
+
             if (!Boolean.valueOf(map.get("customApprover").toString())) {
                 for (Task task1 : taskList) {
                     EntityWrapper tuserWrapper = new EntityWrapper();
