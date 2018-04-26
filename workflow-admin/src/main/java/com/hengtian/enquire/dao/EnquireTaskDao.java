@@ -3,7 +3,6 @@ package com.hengtian.enquire.dao;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.hengtian.common.param.TaskEnquireParam;
-import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.enquire.model.EnquireTask;
 
 import java.util.List;
