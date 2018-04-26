@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
@@ -161,7 +162,7 @@ public class WorkflowServiceImpl implements WorkflowService {
             if (!processParam.isCustomApprover()) {
                 log.info("工作流平台设置审批人");
                 for (int i = 0; i < taskList.size(); i++) {
-                    Task task = taskList.get(0);
+                    Task task = taskList.get(i);
                     taskId+=task.getId();
                     EntityWrapper entityWrapper = new EntityWrapper();
                     entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
@@ -433,10 +434,34 @@ public class WorkflowServiceImpl implements WorkflowService {
 
 
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
+        //处理删除由于跳转/拿回产生冗余的数据
+            for  (int i=0;i<taskList.size();i++){
+                Task tas=taskList.get(i);
+                List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().executionId(tas.getExecutionId()).unfinished().orderByTaskCreateTime().desc().list();
+//                List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(tas.getProcessInstanceId()).activityId(tas.getTaskDefinitionKey()).list();
+                if(list.size()>1){
 
+                    TaskEntity resus= (TaskEntity) taskService.createTaskQuery().taskId(list.get(0).getId()).singleResult();
 
+                    resus.setExecutionId(null);
+                    taskService.saveTask(resus);
+                    taskService.deleteTask(resus.getId(),true);
+                    taskList.removeIf(new java.util.function.Predicate<Task>() {
+                        @Override
+                        public boolean test(Task task) {
+                            if(resus.getId().equals(task.getId())){
+                                return true;
+                            }
+                            return false;
+                        }
+                    });
+
+                }
+            }
+            List<Task> resultList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
+            //设置审批人处理逻辑
             if (!Boolean.valueOf(map.get("customApprover").toString())) {
-                for (Task task1 : taskList) {
+                for (Task task1 : resultList) {
                     EntityWrapper tuserWrapper = new EntityWrapper();
                     tuserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                     //查询当前任务任务节点信息
@@ -454,6 +479,8 @@ public class WorkflowServiceImpl implements WorkflowService {
                     }
                 }
             }
+
+            //设置操作的明细备注
             result.setObj(TaskNodeResult.toTaskNodeResultList(taskList));
             TWorkDetail tWorkDetail=new TWorkDetail();
             tWorkDetail.setTaskId(task.getId());
