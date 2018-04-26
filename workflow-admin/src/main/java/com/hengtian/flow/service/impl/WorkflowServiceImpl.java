@@ -658,10 +658,10 @@ public class WorkflowServiceImpl implements WorkflowService {
             //设置审批人
             log.info("工作流平台设置审批人");
             for (int i = 0; i < tasks.size(); i++) {
-                Task task = tasks.get(0);
+                Task task = tasks.get(i);
                 taskId += task.getId();
                 EntityWrapper entityWrapper = new EntityWrapper();
-                entityWrapper.where("proc_def_key={0}", task.getTaskDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
+                entityWrapper.where("proc_def_key={0}", definition.getKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
                 //查询当前任务任务节点信息
                 TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
                 boolean flag = setApprover(task, tUserTask);
