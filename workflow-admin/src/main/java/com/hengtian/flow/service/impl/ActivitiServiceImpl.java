@@ -24,6 +24,7 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.ActivitiService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.CommonVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
 import com.hengtian.flow.vo.TaskVo;
@@ -77,7 +78,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 	@Autowired
 	ProcessEngineConfiguration processEngineConfiguration;
 	@Autowired
-	private SysUserService sysUserService;
+	private WorkflowService workflowService;
 	@Autowired
 	private TRuTaskService tRuTaskService;
 
@@ -466,65 +467,12 @@ public class ActivitiServiceImpl implements ActivitiService {
 				if(task.getTaskDefinitionKey().equals(taskDefinitionKey)){
 					taskId += task.getId();
 					EntityWrapper entityWrapper = new EntityWrapper();
-					entityWrapper.where("proc_def_key={0}", task.getTaskDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
+					entityWrapper.where("proc_def_key={0}", definition.getKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
 					//查询当前任务任务节点信息
 					TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
-					boolean flag = setApprover(task, tUserTask);
+					boolean flag = workflowService.setApprover(task, tUserTask);
 				}
 			}
-		}
-	}
-
-	/**
-	 * 设置审批人接口
-	 *
-	 * @param task
-	 * @param tUserTask
-	 */
-	public Boolean setApprover(Task task, TUserTask tUserTask) {
-		try {
-			//获取任务中的自定义参数
-			Map<String, Object> map = taskService.getVariables(task.getId());
-			String approvers = tUserTask.getCandidateIds();
-			String[] strs = approvers.split(",");
-			List list = Arrays.asList(strs);
-			Set set = new HashSet(list);
-			String[] rid = (String[]) set.toArray(new String[0]);
-			TRuTask tRuTask = new TRuTask();
-
-			//生成扩展任务信息
-			for (String approver : rid) {
-				tRuTask.setTaskId(task.getId());
-				tRuTask.setApprover(approver);
-				EntityWrapper entityWrapper = new EntityWrapper();
-				entityWrapper.where("task_id={0}", task.getId()).andNew("approver={0}", approver);
-				TRuTask tRu = tRuTaskService.selectOne(entityWrapper);
-				if (tRu != null) {
-					continue;
-				}
-				tRuTask.setApproverType(tUserTask.getAssignType());
-				tRuTask.setOwer(task.getOwner());
-
-				tRuTask.setTaskType(tUserTask.getTaskType());
-				//判断如果是非人员审批，需要认领之后才能审批
-				if (AssignType.ROLE.code.intValue() == tUserTask.getAssignType().intValue() || AssignType.GROUP.code.intValue() == tUserTask.getAssignType().intValue() || AssignType.DEPARTMENT.code.intValue() == tUserTask.getAssignType().intValue()) {
-					tRuTask.setStatus(-1);
-				} else {
-					tRuTask.setStatus(0);
-					tRuTask.setApproverReal(approver);
-				}
-				tRuTask.setExpireTime(task.getDueDate());
-				tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
-				tRuTask.setProcInstId(task.getProcessInstanceId());
-				tRuTaskService.insert(tRuTask);
-			}
-
-
-			logger.info("设置审批人结束");
-			return true;
-		} catch (Exception e) {
-			logger.error("设置审批人失败", e);
-			return false;
 		}
 	}
 
