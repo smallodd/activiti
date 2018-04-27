@@ -124,6 +124,10 @@
                             str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                             str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-jumpTask" data-options="plain:true,iconCls:\'fi-share icon-yellow\'" onclick="jumpTaskFun(\'{0}\');" >跳转</a>', row.id);
                         </shiro:hasPermission>
+                    <shiro:hasPermission name="/ask/comment">
+                    str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askTask" data-options="plain:true,iconCls:\'fi-share icon-green\'" onclick="askTaskFun(\'{0}\');" >问询</a>', row.id);
+                    </shiro:hasPermission>
                     <shiro:hasPermission name="/activiti/adminShowTask">
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                         str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-taskProgress" data-options="plain:true,iconCls:\'fi-arrow-right icon-grey\'" onclick="showTaskFun(\'{0}\');" >进度</a>', row.processInstanceId);
@@ -138,6 +142,7 @@
                 $('.task-easyui-linkbutton-transferTask').linkbutton({text:'转办'});
                 $('.task-easyui-linkbutton-jumpTask').linkbutton({text:'跳转'});
                 $('.task-easyui-linkbutton-taskProgress').linkbutton({text:'进度'});
+                $('.task-easyui-linkbutton-askTask').linkbutton({text:'问询'});
             },
             toolbar : '#taskToolbar'
         });
@@ -258,6 +263,27 @@
             height : 200,
             modal : true,
             href :  '${ctx}/activiti/taskJump?taskId='+id,
+            buttons : [ {
+                text : '确定',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = taskDataGrid;
+                    var f = parent.$.modalDialog.handler.find('#taskJumpForm');
+                    f.submit();
+                }
+            }]
+        });
+    }
+
+    /**
+     *问询
+     */
+    function askTaskFun(id){
+        parent.$.modalDialog({
+            title : '问询',
+            width : 500,
+            height : 400,
+            modal : true,
+            href :  '${ctx}/ask/comment?taskId='+id,
             buttons : [ {
                 text : '确定',
                 handler : function() {

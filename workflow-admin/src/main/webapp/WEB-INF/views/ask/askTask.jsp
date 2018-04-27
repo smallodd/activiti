@@ -3,8 +3,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>列表</title>
+	<meta charset="UTF-8">
+	<title>列表</title>
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
@@ -12,8 +12,8 @@
         <form id="taskSearchForm">
             <table>
                 <tr>
-                    <th>问询人:</th>
-                    <td><input name="createId" placeholder="问询人"/></td>
+                    <th>被问询人:</th>
+                    <td><input name="askUserId" placeholder="被问询人"/></td>
                     <th>问询任务节点key:</th>
                     <td><input name="currentTaskKey" placeholder="问询任务节点key"/></td>
                     <th>被问询任务节点key:</th>
@@ -25,8 +25,8 @@
                 </tr>
             </table>
         </form>
-    </div>
-
+     </div>
+ 
     <div data-options="region:'center',border:false">
         <table id="taskDataGrid" data-options="fit:true,border:false"></table>
     </div>
@@ -38,7 +38,7 @@
     var taskDataGrid;
     $(function() {
         taskDataGrid = $('#taskDataGrid').datagrid({
-            url : '${ctx}/enquire/enquiredTaskDataGrid',
+            url : '${ctx}/ask/askTaskDataGrid',
             striped : true,
             rownumbers : true,
             pagination : true,
@@ -60,10 +60,10 @@
                 field : 'isAskEnd',
                 formatter : function(value, row, index) {
                     switch (value) {
-                        case '0':
-                            return '否';
-                        case '1':
-                            return '是';
+                    case '0':
+                        return '否';
+                    case '1':
+                        return '是';
                     }
                 }
             }, {
@@ -99,12 +99,12 @@
                 title : '操作',
                 width : 350,
                 formatter : function(value, row, index) {
-                    var str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-enquireComment" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="enquireComment(\'{0}\');" >问询详情</a>', row.taskId);
+                      var str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="askComment(\'{0}\');" >问询详情</a>', row.taskId);
                     return str;
                 }
             } ] ],
             onLoadSuccess:function(data){
-                $('.task-easyui-linkbutton-enquireComment').linkbutton({text:'问询详情'});
+                $('.task-easyui-linkbutton-askComment').linkbutton({text:'问询详情'});
             },
             toolbar : '#taskToolbar'
         });
@@ -114,7 +114,7 @@
     /**
      * 问询详情
      */
-    function enquireComment(taskId) {
+    function askComment(taskId) {
 
     }
 
@@ -125,12 +125,12 @@
         $('#taskSearchForm input').val('');
         taskDataGrid.datagrid('load', {});
     }-
-        /**
-         * 搜索
-         */
-        function taskSearchFun() {
-            taskDataGrid.datagrid('load', $.serializeObject($('#taskSearchForm')));
-        }
+    /**
+     * 搜索
+     */
+    function taskSearchFun() {
+         taskDataGrid.datagrid('load', $.serializeObject($('#taskSearchForm')));
+    }
 </script>
 </body>
 </html>
