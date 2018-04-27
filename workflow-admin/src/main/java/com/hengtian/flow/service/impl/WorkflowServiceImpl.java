@@ -59,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -436,16 +437,34 @@ public class WorkflowServiceImpl implements WorkflowService {
                 }
             }
 
-
+            String notDelete="";
+            Task ts=null;
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
         //处理删除由于跳转/拿回产生冗余的数据
+            EntityWrapper ew=new EntityWrapper();
+            ew.where("status={0}",-2).groupBy("task_id");
+            TRuTask tRuTask=tRuTaskService.selectOne(ew);
+            if(tRuTask!=null) {
+                HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tRuTask.getTaskId()).singleResult();
+                List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().executionId(taskInstance.getExecutionId()).orderByTaskCreateTime().asc().list();
+                notDelete = list.get(0).getTaskDefinitionKey();
+                ts   =taskService.createTaskQuery().taskDefinitionKey(notDelete).processInstanceId(list.get(0).getProcessInstanceId()).active().singleResult();
+
+            }
+
             for  (int i=0;i<taskList.size();i++){
                 Task tas=taskList.get(i);
-                List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().executionId(tas.getExecutionId()).unfinished().orderByTaskCreateTime().desc().list();
-//                List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(tas.getProcessInstanceId()).activityId(tas.getTaskDefinitionKey()).list();
-                if(list.size()>1){
+//                List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().executionId(tas.getExecutionId()).unfinished().orderByTaskCreateTime().desc().list();
 
-                    TaskEntity resus= (TaskEntity) taskService.createTaskQuery().taskId(list.get(0).getId()).singleResult();
+
+//                List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(tas.getProcessInstanceId()).activityId(tas.getTaskDefinitionKey()).list();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String olde=sdf.format(tas.getCreateTime());
+
+                String  newDate=(ts==null?"":sdf.format(ts.getCreateTime()));
+                if(!notDelete.contains(tas.getTaskDefinitionKey())&&tRuTask!=null&&olde.equals(newDate)){
+
+                    TaskEntity resus= (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
 
                     resus.setExecutionId(null);
                     taskService.saveTask(resus);
@@ -459,8 +478,12 @@ public class WorkflowServiceImpl implements WorkflowService {
                             return false;
                         }
                     });
+                    EntityWrapper ewe=new EntityWrapper();
+                    ewe.where("task_id={0}",tRuTask.getTaskId()).andNew("status={0}",-2);
+                    tRuTaskService.delete(ewe);
 
                 }
+
             }
             List<Task> resultList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
             //设置审批人处理逻辑
@@ -650,6 +673,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         ActivityImpl hisActivity = definition.findActivity(targetTaskDefKey);
         //实现跳转
         ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
+
 
         boolean customApprover = (boolean)runtimeService.getVariable(instance.getProcessInstanceId(), "customApprover");
 
