@@ -1,4 +1,4 @@
-package com.hengtian.enquire.vo;
+package com.hengtian.flow.vo;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -6,7 +6,7 @@ import java.util.Date;
 /**
  * @author chenzhangyan  on 2018/4/25.
  */
-public class EnquireTaskVo implements Serializable {
+public class AskTaskVo implements Serializable {
 
     /**
      * 主键

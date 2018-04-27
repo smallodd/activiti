@@ -1,19 +1,20 @@
-package com.hengtian.enquire.controller;
+package com.hengtian.flow.controller;
 
 import com.hengtian.common.base.BaseController;
-import com.hengtian.common.operlog.SysLog;
-import com.hengtian.common.param.TaskEnquireParam;
+import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
-import com.hengtian.enquire.service.EnquireService;
+import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 
 /**
  * 问询
@@ -22,9 +23,9 @@ import javax.validation.Valid;
  */
 @RequestMapping("enquire")
 @Controller
-public class EnquireController extends BaseController {
+public class AskController extends BaseController {
     @Autowired
-    private EnquireService enquireService;
+    private TAskTaskService tAskTaskService;
 
     @Autowired
     private WorkflowService workflowService;
@@ -70,27 +71,27 @@ public class EnquireController extends BaseController {
      */
     @ResponseBody
     @PostMapping(value = "enquireTaskDataGrid")
-    public PageInfo enquireTaskDataGrid(TaskEnquireParam taskEnquireParam, Integer page, Integer rows) {
-        taskEnquireParam.setPageNum(page);
-        taskEnquireParam.setPageSize(rows);
-        taskEnquireParam.setCreateId(getUserId());
-        return enquireService.enquireTaskList(taskEnquireParam);
+    public PageInfo enquireTaskDataGrid(AskTaskParam askTaskParam, Integer page, Integer rows) {
+        askTaskParam.setPageNum(page);
+        askTaskParam.setPageSize(rows);
+        askTaskParam.setCreateId(getUserId());
+        return tAskTaskService.enquireTaskList(askTaskParam);
     }
 
 
     /**
      * 被问询任务列表
      *
-     * @param taskEnquireParam 任务查询条件实体类
+     * @param askTaskParam 任务查询条件实体类
      * @return
      */
     @ResponseBody
     @PostMapping(value = "enquiredTaskDataGrid")
-    public PageInfo enquiredTaskDataGrid(TaskEnquireParam taskEnquireParam, Integer page, Integer rows) {
-        taskEnquireParam.setPageNum(page);
-        taskEnquireParam.setPageSize(rows);
-        taskEnquireParam.setAskUserId(getUserId());
-        return enquireService.enquiredTaskList(taskEnquireParam);
+    public PageInfo enquiredTaskDataGrid(AskTaskParam askTaskParam, Integer page, Integer rows) {
+        askTaskParam.setPageNum(page);
+        askTaskParam.setPageSize(rows);
+        askTaskParam.setAskUserId(getUserId());
+        return tAskTaskService.enquiredTaskList(askTaskParam);
     }
 
     /**
