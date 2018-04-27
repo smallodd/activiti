@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
  *
  * @author chenzhangyan  on 2018/4/24.
  */
-public class TaskEnquireParam {
+public class AskTaskParam {
 
     //当前问询的任务节点key
     @ApiModelProperty(value = "问询所在任务节点key", example = "问询所在任务节点key")

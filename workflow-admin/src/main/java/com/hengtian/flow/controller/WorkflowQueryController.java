@@ -2,12 +2,12 @@ package com.hengtian.flow.controller;
 
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.operlog.SysLog;
-import com.hengtian.common.param.TaskEnquireParam;
+import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.param.WorkDetailParam;
-import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.service.RemindTaskService;
+import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TWorkDetailService;
 import com.hengtian.flow.service.WorkflowService;
 import io.swagger.annotations.ApiOperation;
@@ -18,11 +18,9 @@ import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
@@ -50,16 +48,13 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @Autowired
     private RemindTaskService remindTaskService;
     @Autowired
-    private EnquireService enquireService;
+    private TAskTaskService tAskTaskService;
 
     @Autowired
     private WorkflowService workflowService;
 
     @Autowired
     private HistoryService historyService;
-
-    @Autowired
-    private RuntimeService runtimeService;
 
     @Autowired
     private RepositoryService repositoryService;
@@ -182,8 +177,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "问询任务列表")
     @RequestMapping(value = "/rest/task/enquire/page", method = RequestMethod.POST)
-    public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody TaskEnquireParam taskEnquireParam) {
-        return enquireService.enquireTaskList(taskEnquireParam);
+    public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
+        return tAskTaskService.enquireTaskList(taskEnquireParam);
     }
 
 
@@ -197,8 +192,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("被问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
     @RequestMapping(value = "/rest/task/enquired/page", method = RequestMethod.POST)
-    public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody TaskEnquireParam taskEnquireParam) {
-        return enquireService.enquiredTaskList(taskEnquireParam);
+    public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
+        return tAskTaskService.enquiredTaskList(taskEnquireParam);
     }
 
     /**
@@ -344,19 +339,20 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 跳转可到达的任务节点
+     *
      * @param userId 用户ID
      * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/26 13:48
      */
-    public Object jumpAccessibleTaskNodes(String userId, String taskId){
-        if(StringUtils.isBlank(userId) || StringUtils.isBlank(userId)){
-            return renderError(ResultEnum.PARAM_ERROR.code,ResultEnum.PARAM_ERROR.msg);
+    public Object jumpAccessibleTaskNodes(String userId, String taskId) {
+        if (StringUtils.isBlank(userId) || StringUtils.isBlank(userId)) {
+            return renderError(ResultEnum.PARAM_ERROR.code, ResultEnum.PARAM_ERROR.msg);
         }
 
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(task == null){
+        if (task == null) {
             renderError(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
 

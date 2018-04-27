@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
@@ -18,23 +17,16 @@ import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.PageInfo;
-import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.JumpCmd;
-import com.hengtian.common.workflow.cmd.StartActivityCmd;
-import com.hengtian.enquire.model.EnquireTask;
-import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysUserService;
 import org.activiti.engine.*;
-import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
-import org.activiti.engine.impl.interceptor.Command;
-import org.activiti.engine.impl.persistence.entity.*;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -45,13 +37,11 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.NativeTaskQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +76,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     private RemindTaskService remindTaskService;
 
     @Autowired
-    private EnquireService enquireService;
+    private TAskTaskService tAskTaskService;
 
     @Autowired
     private SysUserService sysUserService;
@@ -159,7 +149,7 @@ public class WorkflowServiceImpl implements WorkflowService {
             //给对应实例生成标题
             runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());
 
-            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().latestVersion().singleResult();
+            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(processParam.getProcessDefinitionKey()).latestVersion().singleResult();
             //查询创建完任务之后生成的任务信息
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
             //String aa=net.sf.json.JSONObject.fromObject(taskList);
@@ -800,7 +790,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (StringUtils.isNotBlank(commentResult)) {
             taskService.addComment(task.getId(), task.getProcessInstanceId(), commentResult);
         }
-        EnquireTask enquireTask = new EnquireTask();
+        TAskTask enquireTask = new TAskTask();
         enquireTask.setProcInstId(task.getProcessInstanceId());
         enquireTask.setCurrentTaskId(taskId);
         enquireTask.setCurrentTaskKey(task.getTaskDefinitionKey());
@@ -811,7 +801,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         enquireTask.setCreateId(userId);
         enquireTask.setUpdateId(userId);
         enquireTask.setAskUserId(userId);
-        boolean success = enquireService.insert(enquireTask);
+        boolean success = tAskTaskService.insert(enquireTask);
         if (!success) {
             return new Result(false, "问询失败");
         }
@@ -834,14 +824,14 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        EntityWrapper<EnquireTask> wrapper = new EntityWrapper<>();
+        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("`ask_user_id`={0}", userId)
                 .and("is_ask_end={0}", 0)
                 .and("ask_task_key={0}", task.getTaskDefinitionKey());
-        EnquireTask enquireTask = enquireService.selectOne(wrapper);
-        enquireTask.setUpdateTime(new Date());
-        enquireTask.setIsAskEnd(1);
-        boolean success = enquireService.updateById(enquireTask);
+        TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
+        tAskTask.setUpdateTime(new Date());
+        tAskTask.setIsAskEnd(1);
+        boolean success = tAskTaskService.updateById(tAskTask);
         if (!success) {
             return new Result(false, "问询确认失败");
         }

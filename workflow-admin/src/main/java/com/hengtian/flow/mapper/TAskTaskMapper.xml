@@ -2,5 +2,35 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.hengtian.flow.dao.TAskTaskDao">
 
+    <select id="enquireTaskList" parameterType="com.hengtian.common.param.AskTaskParam"
+            resultType="com.hengtian.flow.model.TAskTask">
+        SELECT tet.*
+        FROM t_ask_task tet
+        WHERE tet.create_id = #{createId}
+        <if test="currentTaskKey!=null">
+            AND tet.current_task_key = #{currentTaskKey}
+        </if>
+        <if test="askTaskKey!=null">
+            AND tet.ask_task_key = #{askTaskKey}
+        </if>
+        <if test="isAskEnd!=null">
+            AND tet.is_ask_end = #{isAskEnd}
+        </if>
+    </select>
 
+    <select id="enquiredTaskList" parameterType="com.hengtian.common.param.AskTaskParam"
+            resultType="com.hengtian.flow.model.TAskTask">
+        SELECT tet.*
+        FROM t_ask_task tet
+        WHERE tet.ask_user_id = #{askUserId}
+        <if test="currentTaskKey!=null">
+            AND tet.current_task_key = #{currentTaskKey}
+        </if>
+        <if test="askTaskKey!=null">
+            AND tet.ask_task_key = #{askTaskKey}
+        </if>
+        <if test="isAskEnd!=null">
+            AND tet.is_ask_end = #{isAskEnd}
+        </if>
+    </select>
 </mapper>

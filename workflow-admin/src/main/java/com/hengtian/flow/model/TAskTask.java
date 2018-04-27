@@ -13,7 +13,7 @@ import java.util.Date;
  */
 @TableName("t_ask_task")
 public class TAskTask {
-    @TableId(value="id",type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     @TableField(value = "proc_inst_id")
     private String procInstId;
@@ -33,6 +33,8 @@ public class TAskTask {
     private String createId;
     @TableField(value = "update_id")
     private String updateId;
+    @TableField(value = "ask_user_id")
+    private String askUserId;
 
     public Integer getId() {
         return id;
@@ -112,5 +114,30 @@ public class TAskTask {
 
     public void setUpdateId(String updateId) {
         this.updateId = updateId;
+    }
+
+    public String getAskUserId() {
+        return askUserId;
+    }
+
+    public void setAskUserId(String askUserId) {
+        this.askUserId = askUserId;
+    }
+
+    @Override
+    public String toString() {
+        return "TAskTask{" +
+                "id=" + id +
+                ", procInstId='" + procInstId + '\'' +
+                ", currentTaskId='" + currentTaskId + '\'' +
+                ", currentTaskKey='" + currentTaskKey + '\'' +
+                ", askTaskKey='" + askTaskKey + '\'' +
+                ", isAskEnd=" + isAskEnd +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", createId='" + createId + '\'' +
+                ", updateId='" + updateId + '\'' +
+                ", askUserId='" + askUserId + '\'' +
+                '}';
     }
 }
