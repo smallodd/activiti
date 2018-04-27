@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
@@ -18,23 +17,16 @@ import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.PageInfo;
-import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.JumpCmd;
-import com.hengtian.common.workflow.cmd.StartActivityCmd;
-import com.hengtian.enquire.model.EnquireTask;
-import com.hengtian.enquire.service.EnquireService;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysUserService;
 import org.activiti.engine.*;
-import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
-import org.activiti.engine.impl.interceptor.Command;
-import org.activiti.engine.impl.persistence.entity.*;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -45,13 +37,11 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.NativeTaskQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -85,7 +76,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     private RemindTaskService remindTaskService;
 
     @Autowired
-    private EnquireService enquireService;
+    private TAskTaskService tAskTaskService;
 
     @Autowired
     private SysUserService sysUserService;
@@ -436,16 +427,34 @@ public class WorkflowServiceImpl implements WorkflowService {
                 }
             }
 
-
+            String notDelete="";
+            Task ts=null;
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
         //处理删除由于跳转/拿回产生冗余的数据
+            EntityWrapper ew=new EntityWrapper();
+            ew.where("status={0}",-2).groupBy("task_id");
+            TRuTask tRuTask=tRuTaskService.selectOne(ew);
+            if(tRuTask!=null) {
+                HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tRuTask.getTaskId()).singleResult();
+                List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().executionId(taskInstance.getExecutionId()).orderByTaskCreateTime().asc().list();
+                notDelete = list.get(0).getTaskDefinitionKey();
+                ts   =taskService.createTaskQuery().taskDefinitionKey(notDelete).processInstanceId(list.get(0).getProcessInstanceId()).active().singleResult();
+
+            }
+
             for  (int i=0;i<taskList.size();i++){
                 Task tas=taskList.get(i);
-                List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().executionId(tas.getExecutionId()).unfinished().orderByTaskCreateTime().desc().list();
-//                List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(tas.getProcessInstanceId()).activityId(tas.getTaskDefinitionKey()).list();
-                if(list.size()>1){
+//                List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().executionId(tas.getExecutionId()).unfinished().orderByTaskCreateTime().desc().list();
 
-                    TaskEntity resus= (TaskEntity) taskService.createTaskQuery().taskId(list.get(0).getId()).singleResult();
+
+//                List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(tas.getProcessInstanceId()).activityId(tas.getTaskDefinitionKey()).list();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String olde=sdf.format(tas.getCreateTime());
+
+                String  newDate=(ts==null?"":sdf.format(ts.getCreateTime()));
+                if(!notDelete.contains(tas.getTaskDefinitionKey())&&tRuTask!=null&&olde.equals(newDate)){
+
+                    TaskEntity resus= (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
 
                     resus.setExecutionId(null);
                     taskService.saveTask(resus);
@@ -459,8 +468,12 @@ public class WorkflowServiceImpl implements WorkflowService {
                             return false;
                         }
                     });
+                    EntityWrapper ewe=new EntityWrapper();
+                    ewe.where("task_id={0}",tRuTask.getTaskId()).andNew("status={0}",-2);
+                    tRuTaskService.delete(ewe);
 
                 }
+
             }
             List<Task> resultList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
             //设置审批人处理逻辑
@@ -651,6 +664,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         //实现跳转
         ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
 
+
         boolean customApprover = (boolean)runtimeService.getVariable(instance.getProcessInstanceId(), "customApprover");
 
         if (!customApprover) {
@@ -776,7 +790,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (StringUtils.isNotBlank(commentResult)) {
             taskService.addComment(task.getId(), task.getProcessInstanceId(), commentResult);
         }
-        EnquireTask enquireTask = new EnquireTask();
+        TAskTask enquireTask = new TAskTask();
         enquireTask.setProcInstId(task.getProcessInstanceId());
         enquireTask.setCurrentTaskId(taskId);
         enquireTask.setCurrentTaskKey(task.getTaskDefinitionKey());
@@ -787,7 +801,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         enquireTask.setCreateId(userId);
         enquireTask.setUpdateId(userId);
         enquireTask.setAskUserId(userId);
-        boolean success = enquireService.insert(enquireTask);
+        boolean success = tAskTaskService.insert(enquireTask);
         if (!success) {
             return new Result(false, "问询失败");
         }
@@ -810,14 +824,14 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        EntityWrapper<EnquireTask> wrapper = new EntityWrapper<>();
+        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("`ask_user_id`={0}", userId)
                 .and("is_ask_end={0}", 0)
                 .and("ask_task_key={0}", task.getTaskDefinitionKey());
-        EnquireTask enquireTask = enquireService.selectOne(wrapper);
-        enquireTask.setUpdateTime(new Date());
-        enquireTask.setIsAskEnd(1);
-        boolean success = enquireService.updateById(enquireTask);
+        TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
+        tAskTask.setUpdateTime(new Date());
+        tAskTask.setIsAskEnd(1);
+        boolean success = tAskTaskService.updateById(tAskTask);
         if (!success) {
             return new Result(false, "问询确认失败");
         }
