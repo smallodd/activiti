@@ -49,7 +49,7 @@ public class SysOperLogAspect {
 	public void after(JoinPoint joinPoint, Object rvt) {
 		try {
 			ShiroUser loginUser = (ShiroUser) SecurityUtils.getSubject().getPrincipal();
-			if(loginUser==null&&request.getRequestURI().contains("/rest/flow")){
+			if(loginUser==null&&!request.getRequestURI().contains("/rest")){
 				logger.error("系统没有认证信息!");
 				return;
 			}
@@ -81,8 +81,14 @@ public class SysOperLogAspect {
 				operLog.setOperUserName(loginUser.getName());
 				operLog.setOperStatus(ConstantUtils.operStatus.SUCCESS.getValue());
 			} else {
-				operLog.setOperUserName(loginUser.getName());
-				operLog.setOperUserId(loginUser.getId());
+				if(loginUser==null){
+					operLog.setOperUserName("interface");
+					operLog.setOperUserId("interface");
+				}else {
+					operLog.setOperUserName(loginUser.getName());
+					operLog.setOperUserId(loginUser.getId());
+				}
+
 				operLog.setOperStatus(ConstantUtils.operStatus.SUCCESS.getValue());
 			}
 			
