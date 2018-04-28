@@ -15,19 +15,21 @@
         tat.update_time updateTime,
         tat.create_id createId,
         tat.update_id updateId,
-        tat.ask_user_id askUserId
+        tat.ask_user_id askUserId,
+        tat.ask_comment askComment,
+        tat.answer_comment answerComment
         FROM t_ask_task tat
         WHERE tat.create_id = #{createId}
-        <if test="currentTaskKey!=null">
+        <if test="askUserId!=null and askUserId!=''">
+            AND tat.ask_user_id = #{askUserId}
+        </if>
+        <if test="currentTaskKey!=null and currentTaskKey!=''">
             AND tat.current_task_key = #{currentTaskKey}
         </if>
-        <if test="currentTaskKey!=null">
-            AND tat.current_task_key = #{currentTaskKey}
-        </if>
-        <if test="askTaskKey!=null">
+        <if test="askTaskKey!=null and askTaskKey!=''">
             AND tat.ask_task_key = #{askTaskKey}
         </if>
-        <if test="isAskEnd!=null">
+        <if test="isAskEnd!=null and isAskEnd!=''">
             AND tat.is_ask_end = #{isAskEnd}
         </if>
     </select>
@@ -45,16 +47,21 @@
         tat.update_time updateTime,
         tat.create_id createId,
         tat.update_id updateId,
-        tat.ask_user_id askUserId
+        tat.ask_user_id askUserId,
+        tat.ask_comment askComment,
+        tat.answer_comment answerComment
         FROM t_ask_task tat
         WHERE tat.ask_user_id = #{askUserId}
-        <if test="currentTaskKey!=null">
+        <if test="createId!=null and createId!=''">
+            AND tat.create_id = #{createId}
+        </if>
+        <if test="currentTaskKey!=null and currentTaskKey!=''">
             AND tat.current_task_key = #{currentTaskKey}
         </if>
-        <if test="askTaskKey!=null">
+        <if test="askTaskKey!=null and askTaskKey!=''">
             AND tat.ask_task_key = #{askTaskKey}
         </if>
-        <if test="isAskEnd!=null">
+        <if test="isAskEnd!=null and isAskEnd!=''">
             AND tat.is_ask_end = #{isAskEnd}
         </if>
     </select>

@@ -2,6 +2,8 @@ package com.hengtian.flow.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
+import com.hengtian.common.enums.TaskActionEnum;
+import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.result.Result;
@@ -10,6 +12,7 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
@@ -71,7 +74,7 @@ public class AskController extends BaseController {
      * @return
      */
     @GetMapping("comment")
-    public String comment(HttpServletRequest request, String taskId) {
+    public String comment(HttpServletRequest request, @RequestParam String taskId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         //查询流程定义
         ProcessDefinition pd = repositoryService.createProcessDefinitionQuery()
@@ -96,6 +99,21 @@ public class AskController extends BaseController {
         return "ask/comment";
     }
 
+    /**
+     * 问询意见查询接口
+     *
+     * @param taskId 任务id
+     * @return
+     */
+    @GetMapping("detail")
+    public String detail(@RequestParam String taskId, HttpServletRequest request) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task != null) {
+            Result askComment = workflowService.askComment(getUserId(), task.getProcessInstanceId(), task.getTaskDefinitionKey());
+            request.setAttribute("askComment", askComment);
+        }
+        return "ask/detail";
+    }
 
     /**
      * 问询任务列表
@@ -128,27 +146,10 @@ public class AskController extends BaseController {
     }
 
     /**
-     * 问询意见查询接口
-     *
-     * @param taskId 任务ID
-     * @return
-     */
-    @ResponseBody
-    @PostMapping(value = "askCommentData")
-    public Result askCommentData(@ApiParam(value = "任务ID", name = "taskId", required = true) String taskId) {
-        try {
-            return workflowService.askComment(getUserId(), taskId);
-        } catch (Exception e) {
-            log.error("", e);
-            return new Result(false, "查询失败");
-        }
-    }
-
-    /**
      * 问询
      *
-     * @param processInstanceId        流程实例ID
-     * @param commentResult            问询详情
+     * @param processInstanceId 流程实例ID
+     * @param commentResult     问询详情
      * @param currentTaskDefKey 当前任务节点KEY
      * @param targetTaskDefKey  目标任务节点KEY
      * @return
@@ -166,6 +167,32 @@ public class AskController extends BaseController {
             Result validate = taskActionParam.validate();
             if (validate.isSuccess()) {
                 return workflowService.taskEnquire(getUserId(), processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult);
+            }
+            return validate;
+        } catch (Exception e) {
+            log.error("", e);
+            return new Result(false, "操作失败");
+        }
+    }
+
+
+    /**
+     * 确认问询
+     *
+     * @param processInstanceId 任务流程ID
+     * @return
+     */
+    @RequestMapping(value = "askComment", method = RequestMethod.POST)
+    @ResponseBody
+    public Result askComment(String processInstanceId, String taskDefKey) {
+        try {
+            TaskActionParam taskActionParam = new TaskActionParam();
+            taskActionParam.setProcessInstanceId(processInstanceId);
+            taskActionParam.setTargetTaskDefKey(taskDefKey);
+            //参数校验
+            Result validate = taskActionParam.validate();
+            if (validate.isSuccess()) {
+                return workflowService.taskConfirmEnquire(getUserId(), processInstanceId, taskDefKey);
             }
             return validate;
         } catch (Exception e) {

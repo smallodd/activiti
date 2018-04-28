@@ -19,7 +19,7 @@ public class AskTaskParam {
 
     //问询是否结束
     @ApiModelProperty(value = "问询是否结束", example = "0,1")
-    private int isAskEnd;
+    private Integer isAskEnd;
 
     //问询人id
     @ApiModelProperty(value = "被问询的人id", example = "H00001")
@@ -33,12 +33,12 @@ public class AskTaskParam {
      * 分页-当前页
      */
     @ApiModelProperty(value = "当前页", required = true, example = "1")
-    private int pageNum;
+    private int pageNum = 1;
     /**
      * 分页-每页条数
      */
     @ApiModelProperty(value = "每页条数", required = true, example = "10")
-    private int pageSize;
+    private int pageSize = 10;
 
     public String getCurrentTaskKey() {
         return currentTaskKey;
@@ -56,11 +56,11 @@ public class AskTaskParam {
         this.askTaskKey = askTaskKey;
     }
 
-    public int getIsAskEnd() {
+    public Integer getIsAskEnd() {
         return isAskEnd;
     }
 
-    public void setIsAskEnd(int isAskEnd) {
+    public void setIsAskEnd(Integer isAskEnd) {
         this.isAskEnd = isAskEnd;
     }
 
@@ -98,7 +98,7 @@ public class AskTaskParam {
 
     @Override
     public String toString() {
-        return "TaskEnquireParam{" +
+        return "AskTaskParam{" +
                 "currentTaskKey='" + currentTaskKey + '\'' +
                 ", askTaskKey='" + askTaskKey + '\'' +
                 ", isAskEnd=" + isAskEnd +

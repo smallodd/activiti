@@ -35,6 +35,10 @@ public class TAskTask {
     private String updateId;
     @TableField(value = "ask_user_id")
     private String askUserId;
+    @TableField(value = "ask_comment")
+    private String askComment;
+    @TableField(value = "answer_comment")
+    private String answerComment;
 
     public Integer getId() {
         return id;
@@ -124,6 +128,22 @@ public class TAskTask {
         this.askUserId = askUserId;
     }
 
+    public String getAskComment() {
+        return askComment;
+    }
+
+    public void setAskComment(String askComment) {
+        this.askComment = askComment;
+    }
+
+    public String getAnswerComment() {
+        return answerComment;
+    }
+
+    public void setAnswerComment(String answerComment) {
+        this.answerComment = answerComment;
+    }
+
     @Override
     public String toString() {
         return "TAskTask{" +
@@ -138,6 +158,8 @@ public class TAskTask {
                 ", createId='" + createId + '\'' +
                 ", updateId='" + updateId + '\'' +
                 ", askUserId='" + askUserId + '\'' +
+                ", askComment='" + askComment + '\'' +
+                ", answerComment='" + answerComment + '\'' +
                 '}';
     }
 }
