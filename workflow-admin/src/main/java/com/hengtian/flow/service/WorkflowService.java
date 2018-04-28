@@ -169,7 +169,7 @@ public interface WorkflowService {
      * @param taskId 任务ID
      * @return
      */
-    Result enquireComment(String userId, String taskId);
+    Result askComment(String userId, String taskId);
 
     /**
      * 未办任务列表

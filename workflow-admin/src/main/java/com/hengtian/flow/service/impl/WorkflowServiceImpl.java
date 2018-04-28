@@ -616,38 +616,6 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result taskJump(String userId, String taskId, String targetTaskDefKey) {
-        /*//查询任务
-        TaskEntity taskEntity = (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
-        if (taskEntity == null) {
-            log.error("任务不存在taskId:{}", taskId);
-            return new Result(false, "任务跳转失败");
-        }
-        //并行分支校验,不允许跳出分支
-        List<Task> list = taskService.createTaskQuery().processInstanceId(taskEntity.getProcessInstanceId()).list();
-        if (CollectionUtils.isNotEmpty(list) && list.size() > 1) {
-            log.error("并行分支,不允许跳出分支 taskId:{}", taskId);
-            return new Result(false, "并行分支,不允许跳出分支");
-        }
-
-        //跳转前终止原任务流程
-        Command<Void> deleteCmd = new DeleteActiveTaskCmd(taskEntity, "jump", true);
-        managementService.executeCommand(deleteCmd);
-
-        //查询流程实例
-        ProcessDefinitionEntity processDefinitionEntity = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(taskEntity.getProcessDefinitionId());
-        //查询任务节点
-        ActivityImpl activity = processDefinitionEntity.findActivity(targetTaskDefKey);
-        //从跳转目标节点开启新的任务流程
-        Command<Void> startCmd = new StartActivityCmd(taskEntity.getExecutionId(), activity);
-        managementService.executeCommand(startCmd);
-        String assignee = taskEntity.getAssignee();
-        if (StringUtils.isNotBlank(assignee)) {
-            Task task = taskService.createTaskQuery().processInstanceId(taskEntity.getProcessInstanceId()).singleResult();
-            taskService.setOwner(task.getId(), assignee);
-        }
-        //todo 初始化任务属性值
-        return new Result(true, "任务跳转成功");*/
-
         //根据要跳转的任务ID获取其任务
         HistoricTaskInstance hisTask = historyService
                 .createHistoricTaskInstanceQuery().taskId(taskId)
@@ -989,7 +957,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @return
      */
     @Override
-    public Result enquireComment(String userId, String taskId) {
+    public Result askComment(String userId, String taskId) {
         List<Comment> commentList = taskService.getTaskComments(taskId);
         List<CommentVo> comments = new ArrayList<>();
         commentList.forEach(comment -> {

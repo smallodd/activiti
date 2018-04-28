@@ -72,6 +72,8 @@ public class WorkflowBaseController extends BaseController {
         //流程标示
         String processDefinitionId = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult().getProcessDefinitionId();
         ProcessDefinitionEntity pde = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(processDefinitionId);
+
+        List<ActivityImpl> activitiList = pde.getActivities();
         //执行实例
         ExecutionEntity execution = (ExecutionEntity) runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         String activityId = execution.getActivityId();
@@ -82,7 +84,6 @@ public class WorkflowBaseController extends BaseController {
         for(PvmTransition pt : actImpl.getIncomingTransitions()){
             TaskDefinition taskDefinition = ((UserTaskActivityBehavior) ((ActivityImpl) pt).getActivityBehavior()).getTaskDefinition();
             beforeTaskDefinition.add(taskDefinition);
-
             /*PvmActivity inAct = pt.getSource();
             String type = (String)inAct.getProperty("type");
             if("exclusiveGateway".equals(type) || "parallelGateway".equals(type)){
