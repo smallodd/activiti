@@ -194,8 +194,8 @@ public class TaskActionParam {
                 }
             } else if (TaskActionEnum.REVOKE.value.equals(actionType)) {
                 //撤回-参数校验
-                if (StringUtils.isBlank(getProcessInstanceId())) {
-                    result.setMsg("参数processInstanceId不能为空");
+                if (StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetTaskDefKey())) {
+                    result.setMsg("参数taskId，targetTaskDefKey不能为空");
                 }
             } else if (TaskActionEnum.CANCEL.value.equals(actionType)) {
                 //取消-参数校验
