@@ -758,18 +758,18 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (StringUtils.isNotBlank(commentResult)) {
             taskService.addComment(task.getId(), task.getProcessInstanceId(), commentResult);
         }
-        TAskTask enquireTask = new TAskTask();
-        enquireTask.setProcInstId(task.getProcessInstanceId());
-        enquireTask.setCurrentTaskId(taskId);
-        enquireTask.setCurrentTaskKey(task.getTaskDefinitionKey());
-        enquireTask.setIsAskEnd(0);
-        enquireTask.setAskTaskKey(targetTaskDefKey);
-        enquireTask.setCreateTime(new Date());
-        enquireTask.setUpdateTime(new Date());
-        enquireTask.setCreateId(userId);
-        enquireTask.setUpdateId(userId);
-        enquireTask.setAskUserId(userId);
-        boolean success = tAskTaskService.insert(enquireTask);
+        TAskTask askTask = new TAskTask();
+        askTask.setProcInstId(task.getProcessInstanceId());
+        askTask.setCurrentTaskId(taskId);
+        askTask.setCurrentTaskKey(task.getTaskDefinitionKey());
+        askTask.setIsAskEnd(0);
+        askTask.setAskTaskKey(targetTaskDefKey);
+        askTask.setCreateTime(new Date());
+        askTask.setUpdateTime(new Date());
+        askTask.setCreateId(userId);
+        askTask.setUpdateId(userId);
+        askTask.setAskUserId(userId);
+        boolean success = tAskTaskService.insert(askTask);
         if (!success) {
             return new Result(false, "问询失败");
         }

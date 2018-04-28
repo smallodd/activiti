@@ -147,16 +147,16 @@ public class AskController extends BaseController {
     /**
      * 问询
      *
-     * @param processInstanceId 流程实例ID
+     * @param taskId            任务ID
      * @param commentResult     问询详情
      * @param taskDefinitionKey 任务节点KEY
      * @return
      */
     @RequestMapping(value = "askTask")
     @ResponseBody
-    public Result askTask(String processInstanceId, String commentResult, String taskDefinitionKey) {
+    public Result askTask(String taskId, String commentResult, String taskDefinitionKey) {
         try {
-            return workflowService.taskEnquire(getUserId(), processInstanceId, taskDefinitionKey, commentResult);
+            return workflowService.taskEnquire(getUserId(), taskId, taskDefinitionKey, commentResult);
         } catch (Exception e) {
             log.error("", e);
             return new Result(false, "操作失败");
