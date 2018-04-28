@@ -2,7 +2,6 @@ package com.hengtian.flow.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
-import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.result.Result;
@@ -92,7 +91,8 @@ public class AskController extends BaseController {
         List<TUserTask> tasks = tUserTaskService.selectList(wrapper);
         request.setAttribute("tasks", tasks);
 //        }
-        request.setAttribute("taskId", taskId);
+        request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
+        request.setAttribute("processInstanceId", task.getProcessInstanceId());
         return "ask/comment";
     }
 
@@ -147,16 +147,27 @@ public class AskController extends BaseController {
     /**
      * 问询
      *
-     * @param taskId            任务ID
-     * @param commentResult     问询详情
-     * @param taskDefinitionKey 任务节点KEY
+     * @param processInstanceId        流程实例ID
+     * @param commentResult            问询详情
+     * @param currentTaskDefKey 当前任务节点KEY
+     * @param targetTaskDefKey  目标任务节点KEY
      * @return
      */
     @RequestMapping(value = "askTask")
     @ResponseBody
-    public Result askTask(String taskId, String commentResult, String taskDefinitionKey) {
+    public Result askTask(String processInstanceId, String currentTaskDefKey, String commentResult, String targetTaskDefKey) {
         try {
-            return workflowService.taskEnquire(getUserId(), taskId, taskDefinitionKey, commentResult);
+            TaskActionParam taskActionParam = new TaskActionParam();
+            taskActionParam.setProcessInstanceId(processInstanceId);
+            taskActionParam.setCurrentTaskDefKey(currentTaskDefKey);
+            taskActionParam.setCommentResult(commentResult);
+            taskActionParam.setTargetTaskDefKey(targetTaskDefKey);
+            //参数校验
+            Result validate = taskActionParam.validate();
+            if (validate.isSuccess()) {
+                return workflowService.taskEnquire(getUserId(), processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult);
+            }
+            return validate;
         } catch (Exception e) {
             log.error("", e);
             return new Result(false, "操作失败");

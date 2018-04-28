@@ -97,15 +97,16 @@ public interface WorkflowService {
     /**
      * 问询
      *
-     * @param userId           操作人ID
-     * @param taskId           任务ID
-     * @param targetTaskDefKey 问询任务节点KEY
-     * @param commentResult    意见
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @param currentTaskDefKey 问询任务节点KEY
+     * @param targetTaskDefKey  问询任务节点KEY
+     * @param commentResult     意见
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskEnquire(String userId, String taskId, String targetTaskDefKey, String commentResult);
+    Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult);
 
     /**
      * 问询确认

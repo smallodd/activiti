@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>列表</title>
+    <title>被问询列表</title>
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
@@ -14,9 +14,9 @@
                 <tr>
                     <th>问询人:</th>
                     <td><input name="createId" placeholder="问询人"/></td>
-                    <th>问询任务节点key:</th>
+                    <th>问询任务节点:</th>
                     <td><input name="currentTaskKey" placeholder="问询任务节点key"/></td>
-                    <th>被问询任务节点key:</th>
+                    <th>被问询任务节点:</th>
                     <td><input name="askTaskKey" placeholder="被问询任务节点key"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="taskSearchFun();">查询</a>
@@ -55,27 +55,23 @@
                 field : 'id',
                 hidden:true
             }, {
-                width : '100',
+                width : '80',
                 title : '问询是否结束',
                 field : 'isAskEnd',
                 formatter : function(value, row, index) {
                     switch (value) {
-                        case '0':
+                        case 0:
                             return '否';
-                        case '1':
+                        case 1:
                             return '是';
                     }
                 }
             }, {
-                width : '100',
+                width : 200,
                 title : '流程实例名称',
                 field : 'procInstName'
             },{
-                width : '350',
-                title : '问询任务节点key',
-                field : 'currentTaskKey'
-            },{
-                width : '140',
+                width : 200,
                 title : '问询任务节点名称',
                 field : 'currentTaskName'
             },{
@@ -87,17 +83,13 @@
                 title : '被问询人',
                 field : 'askUserId'
             }, {
-                width : '140',
-                title : '被问询任务节点key',
-                field : 'askTaskKey'
-            },{
-                width : '140',
+                width : 200,
                 title : '被问询任务节点名称',
                 field : 'askTaskName'
             }, {
                 field : 'action',
                 title : '操作',
-                width : 350,
+                width : 200,
                 formatter : function(value, row, index) {
                     var str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="askComment(\'{0}\');" >问询详情</a>', row.taskId);
                     return str;

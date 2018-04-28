@@ -4,33 +4,58 @@
 
     <select id="enquireTaskList" parameterType="com.hengtian.common.param.AskTaskParam"
             resultType="com.hengtian.flow.model.TAskTask">
-        SELECT tet.*
-        FROM t_ask_task tet
-        WHERE tet.create_id = #{createId}
+        SELECT
+        tat.id id,
+        tat.proc_inst_id procInstId,
+        tat.current_task_id currentTaskId ,
+        tat.current_task_key currentTaskKey,
+        tat.ask_task_key askTaskKey,
+        tat.is_ask_end isAskEnd,
+        tat.create_time createTime,
+        tat.update_time updateTime,
+        tat.create_id createId,
+        tat.update_id updateId,
+        tat.ask_user_id askUserId
+        FROM t_ask_task tat
+        WHERE tat.create_id = #{createId}
         <if test="currentTaskKey!=null">
-            AND tet.current_task_key = #{currentTaskKey}
+            AND tat.current_task_key = #{currentTaskKey}
+        </if>
+        <if test="currentTaskKey!=null">
+            AND tat.current_task_key = #{currentTaskKey}
         </if>
         <if test="askTaskKey!=null">
-            AND tet.ask_task_key = #{askTaskKey}
+            AND tat.ask_task_key = #{askTaskKey}
         </if>
         <if test="isAskEnd!=null">
-            AND tet.is_ask_end = #{isAskEnd}
+            AND tat.is_ask_end = #{isAskEnd}
         </if>
     </select>
 
     <select id="enquiredTaskList" parameterType="com.hengtian.common.param.AskTaskParam"
             resultType="com.hengtian.flow.model.TAskTask">
-        SELECT tet.*
-        FROM t_ask_task tet
-        WHERE tet.ask_user_id = #{askUserId}
+        SELECT
+        tat.id id,
+        tat.proc_inst_id procInstId,
+        tat.current_task_id currentTaskId ,
+        tat.current_task_key currentTaskKey,
+        tat.ask_task_key askTaskKey,
+        tat.is_ask_end isAskEnd,
+        tat.create_time createTime,
+        tat.update_time updateTime,
+        tat.create_id createId,
+        tat.update_id updateId,
+        tat.ask_user_id askUserId
+        FROM t_ask_task tat
+        WHERE tat.ask_user_id = #{askUserId}
         <if test="currentTaskKey!=null">
-            AND tet.current_task_key = #{currentTaskKey}
+            AND tat.current_task_key = #{currentTaskKey}
         </if>
         <if test="askTaskKey!=null">
-            AND tet.ask_task_key = #{askTaskKey}
+            AND tat.ask_task_key = #{askTaskKey}
         </if>
         <if test="isAskEnd!=null">
-            AND tet.is_ask_end = #{isAskEnd}
+            AND tat.is_ask_end = #{isAskEnd}
         </if>
     </select>
 </mapper>

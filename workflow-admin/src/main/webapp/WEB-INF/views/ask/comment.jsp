@@ -11,8 +11,9 @@
 	<div data-options="region:'center',border:false" style="overflow:auto;padding-top:30px;text-align:center">
         <form id="taskJumpForm" method="post">
             <span style="padding-right: 30px">问询节点</span>
-            <input type="hidden" name="taskId" id="taskId" value="${taskId}"/>
-			 <select name="taskDefinitionKey" id="taskDefinitionKey" class="easyui-combobox" data-options="width:240,height:29,panelHeight:'auto'">
+            <input type="hidden" name="currentTaskDefKey" id="currentTaskDefKey" value="${currentTaskDefKey}"/>
+            <input type="hidden" name="processInstanceId" id="processInstanceId" value="${processInstanceId}"/>
+			 <select name="targetTaskDefKey" id="targetTaskDefKey" class="easyui-combobox" data-options="width:240,height:29,panelHeight:'auto'">
 				 <c:forEach items="${tasks}" var="task">
 					<option value="${task.taskDefKey}">${task.taskName}</option>
 				 </c:forEach>
