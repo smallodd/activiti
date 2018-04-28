@@ -37,9 +37,9 @@ public class TAskTaskServiceImpl extends ServiceImpl<TAskTaskDao, TAskTask> impl
      * 问询任务列表
      *
      * @param askTaskParam 查询参数
-     *                         createId   操作人ID
-     *                         pageNum 当前页数
-     *                         pageSize 每页条数
+     *                     createId   操作人ID
+     *                     pageNum 当前页数
+     *                     pageSize 每页条数
      * @return
      */
     @Override
@@ -53,17 +53,17 @@ public class TAskTaskServiceImpl extends ServiceImpl<TAskTaskDao, TAskTask> impl
 
     private void fillEnquireVoList(PageInfo pageInfo, Page<TAskTask> page, List<TAskTask> list) {
         List<AskTaskVo> voList = new ArrayList<>();
-        for (TAskTask enquireTask : list) {
+        for (TAskTask tAskTask : list) {
 
             AskTaskVo vo = new AskTaskVo();
-            BeanUtils.copy(enquireTask, vo);
+            BeanUtils.copy(tAskTask, vo);
 
             String currentTaskKey = vo.getCurrentTaskKey();
-            TaskEntity currentTask = (TaskEntity) taskService.createTaskQuery().taskDefinitionKey(currentTaskKey).singleResult();
+            TaskEntity currentTask = (TaskEntity) taskService.createTaskQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(currentTaskKey).singleResult();
             vo.setCurrentTaskName(currentTask.getName());
 
             String askTaskKey = vo.getAskTaskKey();
-            TaskEntity askTask = (TaskEntity) taskService.createTaskQuery().taskDefinitionKey(askTaskKey).singleResult();
+            TaskEntity askTask = (TaskEntity) taskService.createTaskQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(askTaskKey).singleResult();
             vo.setAskTaskName(askTask.getName());
 
             String procInstId = vo.getProcInstId();

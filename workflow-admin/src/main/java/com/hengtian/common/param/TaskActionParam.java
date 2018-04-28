@@ -54,6 +54,12 @@ public class TaskActionParam {
     /**
      * 目标任务节点KEY
      */
+    @ApiModelProperty(value = "当前任务节点KEY", required = false, example = "targetTaskDefKey")
+    private String currentTaskDefKey;
+
+    /**
+     * 目标任务节点KEY
+     */
     @ApiModelProperty(value = "目标任务节点KEY", required = false, example = "targetTaskDefKey")
     private String targetTaskDefKey;
     /**
@@ -108,6 +114,14 @@ public class TaskActionParam {
 
     public void setTargetUserId(String targetUserId) {
         this.targetUserId = targetUserId;
+    }
+
+    public String getCurrentTaskDefKey() {
+        return currentTaskDefKey;
+    }
+
+    public void setCurrentTaskDefKey(String currentTaskDefKey) {
+        this.currentTaskDefKey = currentTaskDefKey;
     }
 
     public String getTargetTaskDefKey() {
@@ -170,8 +184,8 @@ public class TaskActionParam {
                 }
             } else if (TaskActionEnum.ENQUIRE.value.equals(actionType)) {
                 //问询-参数校验
-                if (StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetTaskDefKey())) {
-                    result.setMsg("参数taskId，targetTaskDefKey都不能为空");
+                if (StringUtils.isBlank(getProcessInstanceId()) || StringUtils.isBlank(getCurrentTaskDefKey()) || StringUtils.isBlank(getTargetTaskDefKey()) || StringUtils.isBlank(getCommentResult())) {
+                    result.setMsg("参数processInstanceId，currentTaskDefKey, targetTaskDefKey , commentResult 都不能为空");
                 }
             } else if (TaskActionEnum.CONFIRMENQUIRE.value.equals(actionType)) {
                 //问询确认-参数校验

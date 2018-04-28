@@ -68,6 +68,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     TRuTaskService tRuTaskService;
     @Autowired
     TUserTaskService tUserTaskService;
+
     /**
      * 任务创建接口
      *
@@ -91,8 +92,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
 
                 return workflowService.startProcessInstance(processParam);
-            }catch (Exception e){
-                logger.error("模拟提交失败",e);
+            } catch (Exception e) {
+                logger.error("模拟提交失败", e);
                 result.setMsg("模拟开启失败，请联系管理员进行排查！");
                 result.setCode(Constant.FAIL);
                 result.setSuccess(false);
@@ -252,6 +253,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
     /**
      * 获取任务节点信息
+     *
      * @param taskId
      * @return
      */
@@ -259,16 +261,17 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "taskNodeDetail", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "获取任务节点信息")
-    public Object taskNodeDetail(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId")String taskId){
-        Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(task==null){
-            return renderError("任务不存在！",Constant.TASK_NOT_EXIT);
+    public Object taskNodeDetail(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
         }
         return renderSuccess(TaskNodeResult.toTaskNodeResult(task));
     }
 
     /**
      * 获取任务自定义信息或流程实例自定义信息
+     *
      * @param taskId
      * @param type
      * @return
@@ -277,77 +280,78 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "getVariables", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "获取任务自定义信息或流程实例自定义信息")
-    public Object getVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId")String taskId,@ApiParam(value = "类型是流程实例的还是任务的", name = "taskId", required = true,example = "1是流程实例，2是任务的") @RequestParam("type")Integer type){
+    public Object getVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId, @ApiParam(value = "类型是流程实例的还是任务的", name = "taskId", required = true, example = "1是流程实例，2是任务的") @RequestParam("type") Integer type) {
 
-        if(type==null||(type!=1&&type!=2)){
-            return  renderError("参数不正确，类型不存在！",Constant.PARAM_ERROR);
+        if (type == null || (type != 1 && type != 2)) {
+            return renderError("参数不正确，类型不存在！", Constant.PARAM_ERROR);
         }
-        Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(task==null){
-            return renderError("参数不正确，任务不存在！",Constant.TASK_NOT_EXIT);
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return renderError("参数不正确，任务不存在！", Constant.TASK_NOT_EXIT);
         }
-        Map map=new HashMap();
-        if(type==1){
-            map =taskService.getVariables(taskId);
-        }else{
-            map=taskService.getVariablesLocal(taskId);
+        Map map = new HashMap();
+        if (type == 1) {
+            map = taskService.getVariables(taskId);
+        } else {
+            map = taskService.getVariablesLocal(taskId);
         }
 
-        return resultSuccess("操作成功",map);
+        return resultSuccess("操作成功", map);
     }
 
     /**
      * 设置自定义参数
-     * @param taskId  任务id
-
+     *
+     * @param taskId 任务id
      * @return
      */
     @SysLog(value = "设置自定义参数")
     @RequestMapping(value = "setVariables", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "设置自定义参数")
-    public Object setVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId,@ApiParam(value = "自定义参数的json串", name = "jsonMap", required = true) @RequestParam("jsonMap")String jsonMap,@ApiParam(value = "类型", name = "type", required = true) @RequestParam("type")Integer type){
-        if(StringUtils.isBlank(jsonMap)||type==null||(type!=1&&type!=2)){
-            return renderError("参数错误",Constant.PARAM_ERROR);
+    public Object setVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId, @ApiParam(value = "自定义参数的json串", name = "jsonMap", required = true) @RequestParam("jsonMap") String jsonMap, @ApiParam(value = "类型", name = "type", required = true) @RequestParam("type") Integer type) {
+        if (StringUtils.isBlank(jsonMap) || type == null || (type != 1 && type != 2)) {
+            return renderError("参数错误", Constant.PARAM_ERROR);
         }
         try {
-            Map map=JSONObject.parseObject(jsonMap);
-            if(type==1) {
+            Map map = JSONObject.parseObject(jsonMap);
+            if (type == 1) {
                 taskService.setVariables(taskId, map);
-            }else{
-                taskService.setVariablesLocal(taskId,map);
+            } else {
+                taskService.setVariablesLocal(taskId, map);
             }
-        }catch (Exception e){
-            return renderError("jsonMap参数错误！",Constant.PARAM_ERROR);
+        } catch (Exception e) {
+            return renderError("jsonMap参数错误！", Constant.PARAM_ERROR);
         }
-       return renderSuccess();
+        return renderSuccess();
     }
+
     @SysLog(value = "获取下一节点信息")
     @RequestMapping(value = "getNextTaskNode", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "获取所有节点")
-    public Object getNextTaskNode(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId")String taskId){
+    public Object getNextTaskNode(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId) {
 
-        Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
 
-        if(task==null){
-            return renderError("查询失败，任务不存在",Constant.PARAM_ERROR);
+        if (task == null) {
+            return renderError("查询失败，任务不存在", Constant.PARAM_ERROR);
         }
-        List<TaskNodeResult> taskNodeResults=new ArrayList<>();
-       List<TaskDefinition> list=getTaskDefinitionList(task.getProcessInstanceId());
-        for(TaskDefinition taskDefinition:list){
-            TaskNodeResult taskNodeResult=new TaskNodeResult();
-            if(taskDefinition.getFormKeyExpression()!=null){
+        List<TaskNodeResult> taskNodeResults = new ArrayList<>();
+        List<TaskDefinition> list = getTaskDefinitionList(task.getProcessInstanceId());
+        for (TaskDefinition taskDefinition : list) {
+            TaskNodeResult taskNodeResult = new TaskNodeResult();
+            if (taskDefinition.getFormKeyExpression() != null) {
 
                 taskNodeResult.setFormKey(taskDefinition.getFormKeyExpression().getExpressionText());
 
             }
             taskNodeResult.setName(taskDefinition.getNameExpression().getExpressionText());
             taskNodeResult.setTaskDefinedKey(taskDefinition.getKey());
-            EntityWrapper entityWrapper =new EntityWrapper();
-            entityWrapper.where("task_def_key={0}",taskDefinition.getKey());
-            TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
-            if(tUserTask!=null&&StringUtils.isNotBlank(tUserTask.getCandidateIds())){
+            EntityWrapper entityWrapper = new EntityWrapper();
+            entityWrapper.where("task_def_key={0}", taskDefinition.getKey());
+            TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+            if (tUserTask != null && StringUtils.isNotBlank(tUserTask.getCandidateIds())) {
 
                 taskNodeResult.setApprover(tUserTask.getCandidateIds());
                 taskNodeResult.setAssignType(tUserTask.getAssignType());
@@ -355,13 +359,15 @@ public class WorkflowOperateController extends WorkflowBaseController {
             taskNodeResults.add(taskNodeResult);
 
         }
-        return resultSuccess("成功",taskNodeResults);
+        return resultSuccess("成功", taskNodeResults);
     }
+
     /**
      * 获取代办任务总数
+     *
      * @return
      */
-    public Object taskCount(){
+    public Object taskCount() {
 
         return null;
     }
@@ -415,7 +421,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     /**
      * 问询
      *
-     * @param processInstanceId 流程实例ID
+     * @param taskId            任务ID
      * @param userId            用户ID
      * @param taskDefinitionKey 任务节点KEY
      * @return
@@ -424,13 +430,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "enquire", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "问询接口")
-    public Object enquire(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
+    public Object enquire(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
                           @ApiParam(name = "userId", required = true, value = "用户ID") String userId,
                           @ApiParam(name = "taskDefinitionKey", required = true, value = "任务节点KEY") String taskDefinitionKey) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ENQUIRE.value);
         taskActionParam.setUserId(userId);
-        taskActionParam.setProcessInstanceId(processInstanceId);
+        taskActionParam.setTaskId(taskId);
         taskActionParam.setTargetTaskDefKey(taskDefinitionKey);
         return taskAction(taskActionParam);
     }
@@ -536,7 +542,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("任务操作接口")
     @ApiOperation(httpMethod = "POST", value = "任务操作接口")
-    public Object taskAction(@ApiParam(name = "taskActionParam", required = true, value = "操作类型参数")@RequestBody TaskActionParam taskActionParam) {
+    public Object taskAction(@ApiParam(name = "taskActionParam", required = true, value = "操作类型参数") @RequestBody TaskActionParam taskActionParam) {
         String actionType = taskActionParam.getActionType();
         if (StringUtils.isBlank(actionType)) {
             return renderError("操作类型不能为空");
