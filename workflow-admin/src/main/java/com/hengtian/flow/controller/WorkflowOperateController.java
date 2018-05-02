@@ -21,21 +21,9 @@ import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.WorkflowService;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FlowElement;
-import org.activiti.bpmn.model.ValuedDataObject;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.engine.impl.pvm.PvmActivity;
-import org.activiti.engine.impl.pvm.PvmTransition;
-import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
@@ -444,20 +432,20 @@ public class WorkflowOperateController extends WorkflowBaseController {
     /**
      * 确认问询
      *
-     * @param processInstanceId 任务ID
-     * @param userId            用户ID
+     * @param taskId 任务ID
+     * @param userId 用户ID
      * @return
      */
     @SysLog(value = "确认问询")
     @RequestMapping(value = "confirmEnquiries", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "确认问询接口")
-    public Object confirmEnquiries(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
+    public Object confirmEnquiries(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
                                    @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.CONFIRMENQUIRE.value);
         taskActionParam.setUserId(userId);
-        taskActionParam.setProcessInstanceId(processInstanceId);
+        taskActionParam.setTaskId(taskId);
         return taskAction(taskActionParam);
     }
 

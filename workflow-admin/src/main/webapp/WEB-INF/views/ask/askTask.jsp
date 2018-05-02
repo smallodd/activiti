@@ -86,29 +86,12 @@
                 width : 200,
                 title : '被问询任务节点名称',
                 field : 'askTaskName'
-            }, {
-                field : 'action',
-                title : '操作',
-                width : 200,
-                formatter : function(value, row, index) {
-                      var str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="askComment(\'{0}\');" >问询详情</a>', row.taskId);
-                    return str;
-                }
             } ] ],
             onLoadSuccess:function(data){
-                $('.task-easyui-linkbutton-askComment').linkbutton({text:'问询详情'});
             },
             toolbar : '#taskToolbar'
         });
     });
-
-
-    /**
-     * 问询详情
-     */
-    function askComment(taskId) {
-
-    }
 
     /**
      * 清除
@@ -116,7 +99,7 @@
     function taskCleanFun() {
         $('#taskSearchForm input').val('');
         taskDataGrid.datagrid('load', {});
-    }-
+    }
     /**
      * 搜索
      */

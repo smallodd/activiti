@@ -111,13 +111,14 @@ public interface WorkflowService {
     /**
      * 问询确认
      *
-     * @param userId 操作人ID
-     * @param taskId 需问询确认的任务ID
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @param taskDefKey        需问询确认的任务key
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskConfirmEnquire(String userId, String taskId);
+    Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey);
 
     /**
      * 撤回
@@ -167,11 +168,12 @@ public interface WorkflowService {
     /**
      * 问询意见查询接口
      *
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @param taskDefKey        任务key
      * @return
      */
-    Result askComment(String userId, String taskId);
+    Result askComment(String userId, String processInstanceId, String taskDefKey);
 
     /**
      * 未办任务列表

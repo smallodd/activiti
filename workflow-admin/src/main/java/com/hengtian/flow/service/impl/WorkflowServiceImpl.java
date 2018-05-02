@@ -22,6 +22,7 @@ import com.hengtian.common.workflow.cmd.CreateHisTaskCmd;
 import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
+import com.hengtian.flow.vo.AskCommentDetailVo;
 import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysUserService;
@@ -84,9 +85,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
     @Autowired
     private TAskTaskService tAskTaskService;
-
-    @Autowired
-    private SysUserService sysUserService;
 
     @Autowired
     private AppModelService appModelService;
@@ -769,7 +767,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //todo 可询问节点 应限制只能为上级节点  ,已有询问的不能在询问
 
 
-
         taskService.addComment(task.getId(), task.getProcessInstanceId(), commentResult);
         TAskTask askTask = new TAskTask();
         askTask.setProcInstId(task.getProcessInstanceId());
@@ -792,16 +789,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 问询确认
      *
-     * @param userId 操作人ID
-     * @param taskId 需问询确认的任务ID
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @param taskDefKey        需问询确认的任务key
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result taskConfirmEnquire(String userId, String taskId) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+    public Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey) {
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
@@ -993,10 +991,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public Result processSuspend(String userId, String processInstanceId) {
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
-        if (task == null) {
-            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
-        }
         runtimeService.suspendProcessInstanceById(processInstanceId);
         return new Result(true, "挂起流程成功");
     }
@@ -1012,10 +1006,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public Result processActivate(String userId, String processInstanceId) {
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
-        if (task == null) {
-            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
-        }
         runtimeService.activateProcessInstanceById(processInstanceId);
         return new Result(true, "激活流程成功");
     }
@@ -1023,25 +1013,28 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 问询意见查询接口
      *
-     * @param userId 操作人ID
-     * @param taskId 流程实例ID
+     * @param userId            操作人ID
+     * @param processInstanceId 流程实例ID
+     * @param taskDefKey        任务key
      * @return
      */
     @Override
-    public Result askComment(String userId, String taskId) {
-        List<Comment> commentList = taskService.getTaskComments(taskId);
-        List<CommentVo> comments = new ArrayList<>();
-        commentList.forEach(comment -> {
-            CommentEntity entity = (CommentEntity) comment;
-            SysUser user = sysUserService.selectById(comment.getUserId());
-            CommentVo vo = new CommentVo();
-            vo.setCommentUser(user.getUserName());
-            vo.setCommentTime(DateUtils.formatDateToString(comment.getTime()));
-            vo.setCommentContent(entity.getMessage());
-            comments.add(vo);
-        });
+    public Result askComment(String userId, String processInstanceId, String taskDefKey) {
+        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
+        if (task == null) {
+            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+        }
         Result result = new Result(true, "查询成功");
-        result.setObj(comments);
+        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
+        wrapper.where("proc_inst_id={0}", processInstanceId);
+        wrapper.where("current_task_key={0}", taskDefKey);
+        TAskTask askTask = tAskTaskService.selectOne(wrapper);
+        AskCommentDetailVo detailVo = new AskCommentDetailVo();
+        detailVo.setAskComment(askTask.getAskComment());
+        detailVo.setAnswerComment(askTask.getAnswerComment());
+        detailVo.setProcInstId(askTask.getProcInstId());
+        detailVo.setCurrentTaskKey(askTask.getCurrentTaskKey());
+        result.setObj(askTask.getAskComment());
         return result;
     }
 

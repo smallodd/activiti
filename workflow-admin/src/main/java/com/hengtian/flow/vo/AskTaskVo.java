@@ -64,6 +64,14 @@ public class AskTaskVo implements Serializable {
      * 问询是否结束
      */
     private int isAskEnd;
+    /**
+     * 问询详情
+     */
+    private String askComment;
+    /**
+     * 回复详情
+     */
+    private String answerComment;
 
     public long getId() {
         return id;
@@ -177,9 +185,25 @@ public class AskTaskVo implements Serializable {
         this.isAskEnd = isAskEnd;
     }
 
+    public String getAskComment() {
+        return askComment;
+    }
+
+    public void setAskComment(String askComment) {
+        this.askComment = askComment;
+    }
+
+    public String getAnswerComment() {
+        return answerComment;
+    }
+
+    public void setAnswerComment(String answerComment) {
+        this.answerComment = answerComment;
+    }
+
     @Override
     public String toString() {
-        return "EnquireTaskVo{" +
+        return "AskTaskVo{" +
                 "id=" + id +
                 ", procInstId='" + procInstId + '\'' +
                 ", procInstName='" + procInstName + '\'' +
@@ -194,6 +218,8 @@ public class AskTaskVo implements Serializable {
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", isAskEnd=" + isAskEnd +
+                ", askComment='" + askComment + '\'' +
+                ", answerComment='" + answerComment + '\'' +
                 '}';
     }
 }

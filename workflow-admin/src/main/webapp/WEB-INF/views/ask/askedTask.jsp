@@ -91,7 +91,8 @@
                 title : '操作',
                 width : 200,
                 formatter : function(value, row, index) {
-                    var str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="askComment(\'{0}\');" >问询详情</a>', row.taskId);
+                    console.log(row)
+                    var str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="askComment(\'{0}\');" >问询详情</a>', row.id);
                     return str;
                 }
             } ] ],
@@ -107,7 +108,21 @@
      * 问询详情
      */
     function askComment(taskId) {
-
+        parent.$.modalDialog({
+            title : '问询详情',
+            width : 500,
+            height : 400,
+            modal : true,
+            href :  '${ctx}/ask/detail?taskId='+taskId,
+            buttons : [ {
+                text : '确定问询',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = taskDataGrid;
+                    var f = parent.$.modalDialog.handler.find('#taskJumpForm');
+                    f.submit();
+                }
+            }]
+        });
     }
 
     /**
@@ -116,7 +131,7 @@
     function taskCleanFun() {
         $('#taskSearchForm input').val('');
         taskDataGrid.datagrid('load', {});
-    }-
+    }
         /**
          * 搜索
          */
