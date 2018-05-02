@@ -155,62 +155,74 @@ public class TaskActionParam {
     public Result validate() {
         Result result = new Result();
         result.setCode(Constant.PARAM_ERROR);
+        boolean success = true;
         String actionType = this.getActionType();
         if (TaskActionEnum.contains(actionType)) {
             if (TaskActionEnum.CLAIM.value.equals(actionType)) {
                 //认领-参数校验
                 if (StringUtils.isBlank(getTaskId())) {
                     result.setMsg("参数taskId不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.UNCLAIM.value.equals(actionType)) {
                 //取消认领-参数校验
                 if (StringUtils.isBlank(getTaskId())) {
                     result.setMsg("参数taskId不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.JUMP.value.equals(actionType)) {
                 //跳转-参数校验
                 if (StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetTaskDefKey())) {
                     result.setMsg("参数taskId，targetTaskDefKey都不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.TRANSFER.value.equals(actionType)) {
                 //转办-参数校验
                 if (StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetUserId())) {
                     result.setMsg("参数taskId，targetUserId都不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.REMIND.value.equals(actionType)) {
                 //催办-参数校验
                 if (StringUtils.isBlank(getTaskId())) {
                     result.setMsg("参数processInstanceId，targetTaskDefKey都不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.ENQUIRE.value.equals(actionType)) {
                 //问询-参数校验
                 if (StringUtils.isBlank(getProcessInstanceId()) || StringUtils.isBlank(getCurrentTaskDefKey()) || StringUtils.isBlank(getTargetTaskDefKey()) || StringUtils.isBlank(getCommentResult())) {
                     result.setMsg("参数processInstanceId，currentTaskDefKey, targetTaskDefKey , commentResult 都不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.CONFIRMENQUIRE.value.equals(actionType)) {
                 //问询确认-参数校验
                 if (StringUtils.isBlank(getProcessInstanceId()) || StringUtils.isBlank(getTargetTaskDefKey())) {
                     result.setMsg("参数processInstanceId , targetTaskDefKey 不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.REVOKE.value.equals(actionType)) {
                 //撤回-参数校验
                 if (StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetTaskDefKey())) {
                     result.setMsg("参数taskId，targetTaskDefKey不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.CANCEL.value.equals(actionType)) {
                 //取消-参数校验
                 if (StringUtils.isBlank(getProcessInstanceId())) {
                     result.setMsg("参数processInstanceId不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.SUSPEND.value.equals(actionType)) {
                 //挂起流程-参数校验
                 if (StringUtils.isBlank(getProcessInstanceId())) {
                     result.setMsg("参数processInstanceId不能为空");
+                    success = false;
                 }
             } else if (TaskActionEnum.ACTIVATE.value.equals(actionType)) {
                 //激活流程-参数校验
                 if (StringUtils.isBlank(getProcessInstanceId())) {
                     result.setMsg("参数processInstanceId不能为空");
+                    success = false;
                 }
             } else {
                 result.setCode(Constant.SUCCESS);
@@ -218,8 +230,9 @@ public class TaskActionParam {
             }
         } else {
             result.setMsg("参数actionType不合法,actionType值只能为:" + TaskActionEnum.valuesToString());
+            success = false;
         }
-        result.setSuccess(true);
+        result.setSuccess(success);
         return result;
     }
 }
