@@ -19,7 +19,7 @@ public class AskTaskParam {
 
     //问询是否结束
     @ApiModelProperty(value = "问询是否结束", example = "0,1")
-    private Integer isAskEnd;
+    private Integer askEnd;
 
     //问询人id
     @ApiModelProperty(value = "被问询的人id", example = "H00001")
@@ -56,12 +56,12 @@ public class AskTaskParam {
         this.askTaskKey = askTaskKey;
     }
 
-    public Integer getIsAskEnd() {
-        return isAskEnd;
+    public Integer getAskEnd() {
+        return askEnd;
     }
 
-    public void setIsAskEnd(Integer isAskEnd) {
-        this.isAskEnd = isAskEnd;
+    public void setAskEnd(Integer askEnd) {
+        this.askEnd = askEnd;
     }
 
     public String getAskUserId() {
@@ -101,7 +101,7 @@ public class AskTaskParam {
         return "AskTaskParam{" +
                 "currentTaskKey='" + currentTaskKey + '\'' +
                 ", askTaskKey='" + askTaskKey + '\'' +
-                ", isAskEnd=" + isAskEnd +
+                ", askEnd=" + askEnd +
                 ", askUserId='" + askUserId + '\'' +
                 ", createId='" + createId + '\'' +
                 ", pageNum=" + pageNum +

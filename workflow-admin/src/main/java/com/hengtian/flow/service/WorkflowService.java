@@ -114,17 +114,18 @@ public interface WorkflowService {
      * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
      * @param taskDefKey        需问询确认的任务key
+     * @param answerComment     确认信息
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey);
+    Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey, String answerComment);
 
     /**
      * 撤回
      *
-     * @param userId 操作人ID
-     * @param taskId 任务ID
+     * @param userId        操作人ID
+     * @param taskId        任务ID
      * @param targetTaskKey 要撤回到的任务节点key
      * @return
      * @author houjinrong@chtwm.com
@@ -170,10 +171,10 @@ public interface WorkflowService {
      *
      * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
-     * @param taskDefKey        任务key
+     * @param askTaskKey        任务key
      * @return
      */
-    Result askComment(String userId, String processInstanceId, String taskDefKey);
+    Result askComment(String userId, String processInstanceId, String askTaskKey);
 
     /**
      * 未办任务列表

@@ -635,7 +635,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.info("工作流平台设置审批人");
             for (int i = 0; i < tasks.size(); i++) {
                 Task task = tasks.get(i);
-                if(task.getTaskDefinitionKey().equals(targetTaskDefKey)){
+                if (task.getTaskDefinitionKey().equals(targetTaskDefKey)) {
                     taskId += task.getId();
                     EntityWrapper entityWrapper = new EntityWrapper();
                     entityWrapper.where("proc_def_key={0}", definition.getKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
@@ -754,8 +754,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         //todo 可询问节点 应限制只能为上级节点  ,已有询问的不能在询问
 
-
-        taskService.addComment(task.getId(), task.getProcessInstanceId(), commentResult);
         TAskTask askTask = new TAskTask();
         askTask.setProcInstId(task.getProcessInstanceId());
         askTask.setCurrentTaskId(task.getId());
@@ -767,6 +765,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         askTask.setCreateId(userId);
         askTask.setUpdateId(userId);
         askTask.setAskUserId(userId);
+        askTask.setAskComment(commentResult);
         boolean success = tAskTaskService.insert(askTask);
         if (!success) {
             return new Result(false, "问询失败");
@@ -780,14 +779,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
      * @param taskDefKey        需问询确认的任务key
+     * @param answerComment     确认信息
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey) {
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
+    public Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey, String answerComment) {
+        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
@@ -797,6 +797,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 .and("ask_task_key={0}", task.getTaskDefinitionKey());
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         tAskTask.setUpdateTime(new Date());
+        tAskTask.setAnswerComment(answerComment);
         tAskTask.setIsAskEnd(1);
         boolean success = tAskTaskService.updateById(tAskTask);
         if (!success) {
@@ -886,17 +887,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 任务撤回
      *
-     * @param userId 用户ID
-     * @param taskId 任务ID
+     * @param userId        用户ID
+     * @param taskId        任务ID
      * @param targetTaskKey 要撤回到的任务节点key
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/27 17:03
      */
     @Override
-    public Result taskRevoke(String userId, String taskId, String targetTaskKey){
+    public Result taskRevoke(String userId, String taskId, String targetTaskKey) {
         TaskEntity taskEntity = (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(!isAllowRollback(taskEntity)){
+        if (!isAllowRollback(taskEntity)) {
             return new Result();
         }
         /*//查询任务
@@ -1003,26 +1004,27 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      *
      * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
-     * @param taskDefKey        任务key
+     * @param askTaskKey        任务key
      * @return
      */
     @Override
-    public Result askComment(String userId, String processInstanceId, String taskDefKey) {
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
+    public Result askComment(String userId, String processInstanceId, String askTaskKey) {
+        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(askTaskKey).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
         Result result = new Result(true, "查询成功");
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("proc_inst_id={0}", processInstanceId);
-        wrapper.where("current_task_key={0}", taskDefKey);
+        wrapper.where("ask_task_key={0}", askTaskKey);
         TAskTask askTask = tAskTaskService.selectOne(wrapper);
         AskCommentDetailVo detailVo = new AskCommentDetailVo();
         detailVo.setAskComment(askTask.getAskComment());
         detailVo.setAnswerComment(askTask.getAnswerComment());
         detailVo.setProcInstId(askTask.getProcInstId());
         detailVo.setCurrentTaskKey(askTask.getCurrentTaskKey());
-        result.setObj(askTask.getAskComment());
+        detailVo.setAskTaskKey(askTask.getAskTaskKey());
+        result.setObj(detailVo);
         return result;
     }
 
