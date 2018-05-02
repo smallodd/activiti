@@ -157,6 +157,7 @@ public class AskController extends BaseController {
     public Result askTask(String processInstanceId, String currentTaskDefKey, String commentResult, String targetTaskDefKey) {
         try {
             TaskActionParam taskActionParam = new TaskActionParam();
+            taskActionParam.setActionType(TaskActionEnum.ENQUIRE.value);
             taskActionParam.setProcessInstanceId(processInstanceId);
             taskActionParam.setCurrentTaskDefKey(currentTaskDefKey);
             taskActionParam.setCommentResult(commentResult);
@@ -185,6 +186,7 @@ public class AskController extends BaseController {
     public Result askComment(String processInstanceId, String taskDefKey) {
         try {
             TaskActionParam taskActionParam = new TaskActionParam();
+            taskActionParam.setActionType(TaskActionEnum.CONFIRMENQUIRE.value);
             taskActionParam.setProcessInstanceId(processInstanceId);
             taskActionParam.setTargetTaskDefKey(taskDefKey);
             //参数校验

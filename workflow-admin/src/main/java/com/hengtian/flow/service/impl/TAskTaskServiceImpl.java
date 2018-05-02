@@ -9,8 +9,11 @@ import com.hengtian.flow.dao.TAskTaskDao;
 import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.vo.AskTaskVo;
+import org.activiti.engine.HistoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,8 @@ import java.util.List;
 public class TAskTaskServiceImpl extends ServiceImpl<TAskTaskDao, TAskTask> implements TAskTaskService {
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private HistoryService historyService;
 
     @Autowired
     private RuntimeService runtimeService;
@@ -59,16 +64,22 @@ public class TAskTaskServiceImpl extends ServiceImpl<TAskTaskDao, TAskTask> impl
             BeanUtils.copy(tAskTask, vo);
 
             String currentTaskKey = vo.getCurrentTaskKey();
-            TaskEntity currentTask = (TaskEntity) taskService.createTaskQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(currentTaskKey).singleResult();
-            vo.setCurrentTaskName(currentTask.getName());
+            HistoricTaskInstance currentTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(currentTaskKey).singleResult();
+            if (currentTask != null) {
+                vo.setCurrentTaskName(currentTask.getName());
+            }
 
             String askTaskKey = vo.getAskTaskKey();
-            TaskEntity askTask = (TaskEntity) taskService.createTaskQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(askTaskKey).singleResult();
-            vo.setAskTaskName(askTask.getName());
+            HistoricTaskInstance askTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(askTaskKey).singleResult();
+            if (askTask != null) {
+                vo.setAskTaskName(askTask.getName());
+            }
 
             String procInstId = vo.getProcInstId();
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(procInstId).singleResult();
-            vo.setProcInstName(processInstance.getName());
+            HistoricProcessInstance processInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(procInstId).singleResult();
+            if (processInstance != null) {
+                vo.setProcInstName(processInstance.getName());
+            }
             voList.add(vo);
         }
         pageInfo.setRows(voList);
