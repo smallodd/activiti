@@ -28,13 +28,7 @@ import java.util.List;
 @Service
 public class TAskTaskServiceImpl extends ServiceImpl<TAskTaskDao, TAskTask> implements TAskTaskService {
     @Autowired
-    private TaskService taskService;
-    @Autowired
     private HistoryService historyService;
-
-    @Autowired
-    private RuntimeService runtimeService;
-
     @Autowired
     private TAskTaskDao tAskTaskDao;
 

@@ -18,7 +18,7 @@
 					<option value="${task.taskDefKey}">${task.taskName}</option>
 				 </c:forEach>
 			 </select>
-            <textarea  style="margin-top: 20px;width: 325px; height: 200px;" placeholder="问询内容" name="commentResult"></textarea>
+            <textarea  style="margin-top: 20px;width: 325px; height: 200px;white-space: normal" placeholder="问询内容" name="commentResult"></textarea>
 		</form>
     </div>
 </div>

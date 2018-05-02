@@ -93,7 +93,7 @@
                 formatter : function(value, row, index) {
                     var str = "";
                     if (row.isAskEnd == 0) {
-                        <shiro:hasPermission name="/ask/detail">
+                        <shiro:hasPermission name="/ask/askConfirm">
                          str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="askComment(\'{0}\',\'{1}\');" >问询详情</a>', row.procInstId,row.askTaskKey);
                         </shiro:hasPermission>
                     }
