@@ -102,16 +102,14 @@ public class AskController extends BaseController {
     /**
      * 问询意见查询接口
      *
-     * @param taskId 任务id
+     * @param procInstId 流程实例id
+     * @param askTaskKey 任务key
      * @return
      */
     @GetMapping("detail")
-    public String detail(@RequestParam String taskId, HttpServletRequest request) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if (task != null) {
-            Result askComment = workflowService.askComment(getUserId(), task.getProcessInstanceId(), task.getTaskDefinitionKey());
-            request.setAttribute("askComment", askComment);
-        }
+    public String detail(@RequestParam String procInstId, @RequestParam String askTaskKey, HttpServletRequest request) {
+        Result askComment = workflowService.askComment(getUserId(), procInstId, askTaskKey);
+        request.setAttribute("askComment", askComment.getObj());
         return "ask/detail";
     }
 

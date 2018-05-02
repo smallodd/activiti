@@ -10,11 +10,11 @@
 <div class="easyui-layout" data-options="fit:true,border:false">
 	<div data-options="region:'center',border:false" style="overflow:auto;padding-top:30px;text-align:center">
         <form id="taskJumpForm" method="post">
-            <span style="padding-right: 30px">问询节点</span>
-            <input type="hidden" name="currentTaskDefKey" id="currentTaskDefKey" value="${askComment.currentTaskDefKey}"/>
-            <input type="hidden" name="processInstanceId" id="processInstanceId" value="${askComment.processInstanceId}"/>
-            <textarea  style="margin-top: 20px;width: 325px; height: 200px;" placeholder="问询内容" >${askComment.askComment}</textarea>
-            <textarea  style="margin-top: 20px;width: 325px; height: 200px;" placeholder="回复内容" name="answerComment">${askComment.answerComment}</textarea>
+            <input type="hidden" name="currentTaskDefKey" id="currentTaskDefKey" value="${askComment.currentTaskKey}"/>
+            <input type="hidden" name="processInstanceId" id="processInstanceId" value="${askComment.procInstId}"/>
+            <span style="padding-right: 30px">问询内容</span>
+            <span style="width: 80%;min-width: 80%">${askComment.askComment}</span>
+            <textarea  style="margin-top: 20px;width: 80%; height: 200px;" placeholder="回复内容" name="answerComment">${askComment.answerComment}</textarea>
 		</form>
     </div>
 </div>

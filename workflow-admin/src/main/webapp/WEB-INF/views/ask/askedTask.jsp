@@ -91,8 +91,11 @@
                 title : '操作',
                 width : 200,
                 formatter : function(value, row, index) {
-                    console.log(row)
-                    var str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="askComment(\'{0}\');" >问询详情</a>', row.id);
+                    var str = "";
+                    console.log()
+                    <shiro:hasPermission name="/ask/detail">
+                     str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="askComment(\'{0}\',\'{1}\');" >问询详情</a>', row.procInstId,row.askTaskKey);
+                    </shiro:hasPermission>
                     return str;
                 }
             } ] ],
@@ -107,13 +110,13 @@
     /**
      * 问询详情
      */
-    function askComment(taskId) {
+    function askComment(procInstId,askTaskKey) {
         parent.$.modalDialog({
             title : '问询详情',
-            width : 500,
-            height : 400,
+            width : 800,
+            height : 600,
             modal : true,
-            href :  '${ctx}/ask/detail?taskId='+taskId,
+            href :  '${ctx}/ask/detail?procInstId='+procInstId+"&askTaskKey="+askTaskKey,
             buttons : [ {
                 text : '确定问询',
                 handler : function() {
