@@ -326,7 +326,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return renderError("查询失败，任务不存在", Constant.PARAM_ERROR);
         }
         List<TaskNodeResult> taskNodeResults = new ArrayList<>();
-        List<TaskDefinition> list = getTaskDefinitionList(task.getProcessInstanceId());
+        //List<TaskDefinition> list = getTaskDefinitionList(task.getProcessInstanceId());
+        List<TaskDefinition> list = null;
         for (TaskDefinition taskDefinition : list) {
             TaskNodeResult taskNodeResult = new TaskNodeResult();
             if (taskDefinition.getFormKeyExpression() != null) {

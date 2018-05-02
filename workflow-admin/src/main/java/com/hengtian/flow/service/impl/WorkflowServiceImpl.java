@@ -265,6 +265,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public Object approveTask(Task task, TaskParam taskParam) {
+        List<String> nextTaskDefinitionKeys = getNextTaskDefinitionKeys(task, false);
         log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         result.setCode(Constant.SUCCESS);
