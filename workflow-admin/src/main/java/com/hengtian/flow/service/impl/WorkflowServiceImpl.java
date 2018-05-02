@@ -786,7 +786,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey, String answerComment) {
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
+        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
@@ -1003,25 +1003,26 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      *
      * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
-     * @param taskDefKey        任务key
+     * @param askTaskKey        任务key
      * @return
      */
     @Override
-    public Result askComment(String userId, String processInstanceId, String taskDefKey) {
-        Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
+    public Result askComment(String userId, String processInstanceId, String askTaskKey) {
+        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(askTaskKey).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
         Result result = new Result(true, "查询成功");
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("proc_inst_id={0}", processInstanceId);
-        wrapper.where("current_task_key={0}", taskDefKey);
+        wrapper.where("ask_task_key={0}", askTaskKey);
         TAskTask askTask = tAskTaskService.selectOne(wrapper);
         AskCommentDetailVo detailVo = new AskCommentDetailVo();
         detailVo.setAskComment(askTask.getAskComment());
         detailVo.setAnswerComment(askTask.getAnswerComment());
         detailVo.setProcInstId(askTask.getProcInstId());
         detailVo.setCurrentTaskKey(askTask.getCurrentTaskKey());
+        detailVo.setAskTaskKey(askTask.getAskTaskKey());
         result.setObj(detailVo);
         return result;
     }

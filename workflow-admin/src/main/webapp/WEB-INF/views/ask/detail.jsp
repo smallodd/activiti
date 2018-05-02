@@ -10,11 +10,18 @@
 <div class="easyui-layout" data-options="fit:true,border:false">
 	<div data-options="region:'center',border:false" style="overflow:auto;padding-top:30px;text-align:center">
         <form id="taskJumpForm" method="post">
-            <input type="hidden" name="taskDefKey" id="taskDefKey" value="${askComment.currentTaskKey}"/>
+                <dl>
+                    <dt>
+                    <dd style="float:left;" >问询内容:</dd>
+                    <dd><div style="width: 200px;height: auto;margin-left: 40%">${askComment.askComment}</div></dd>
+                    </dt>
+                    <dt style="margin-top: 30px">
+                    <dd style="float:left;">回复内容:</dd>
+                    <dd><textarea style="width: 200px;height: 150px;white-space: normal;overflow: scroll" cols="20" rows="20" placeholder="回复内容" name="commentResult">${askComment.answerComment}</textarea></dd>
+                    </dt>
+                </dl>
+            <input type="hidden" name="askTaskKey" id="askTaskKey" value="${askComment.askTaskKey}"/>
             <input type="hidden" name="processInstanceId" id="processInstanceId" value="${askComment.procInstId}"/>
-            <span style="padding-right: 30px">问询内容</span>
-            <span style="width: 80%;min-width: 80%">${askComment.askComment}</span>
-            <textarea  style="margin-top: 20px;width: 80%; height: 200px;" placeholder="回复内容" name="answerComment">${askComment.answerComment}</textarea>
 		</form>
     </div>
 </div>
@@ -22,7 +29,7 @@
 <script type="text/javascript">
     $(function() {
         $('#taskJumpForm').form({
-            url : '${ctx}/ask/askComment',
+            url : '${ctx}/ask/askConfirm',
             success : function(result) {
                 result = $.parseJSON(result);
                 progressClose();

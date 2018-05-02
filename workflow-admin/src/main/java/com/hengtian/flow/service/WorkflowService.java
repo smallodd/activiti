@@ -171,10 +171,10 @@ public interface WorkflowService {
      *
      * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
-     * @param taskDefKey        任务key
+     * @param askTaskKey        任务key
      * @return
      */
-    Result askComment(String userId, String processInstanceId, String taskDefKey);
+    Result askComment(String userId, String processInstanceId, String askTaskKey);
 
     /**
      * 未办任务列表

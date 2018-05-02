@@ -2,18 +2,13 @@ package com.hengtian.flow.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
-import com.hengtian.common.enums.TaskActionEnum;
-import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.AskTaskParam;
-import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.WorkflowService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.ProcessDefinition;
@@ -114,6 +109,20 @@ public class AskController extends BaseController {
     }
 
     /**
+     * 回复意见查询接口
+     *
+     * @param procInstId 流程实例id
+     * @param askTaskKey 任务key
+     * @return
+     */
+    @GetMapping("answer")
+    public String answer(@RequestParam String procInstId, @RequestParam String askTaskKey, HttpServletRequest request) {
+        Result askComment = workflowService.askComment(getUserId(), procInstId, askTaskKey);
+        request.setAttribute("askComment", askComment.getObj());
+        return "ask/answer";
+    }
+
+    /**
      * 问询任务列表
      *
      * @return
@@ -124,7 +133,6 @@ public class AskController extends BaseController {
         askTaskParam.setPageNum(page);
         askTaskParam.setPageSize(rows);
         askTaskParam.setCreateId(getUserId());
-        askTaskParam.setAskEnd(1);
         return tAskTaskService.enquireTaskList(askTaskParam);
     }
 
@@ -141,7 +149,6 @@ public class AskController extends BaseController {
         askTaskParam.setPageNum(page);
         askTaskParam.setPageSize(rows);
         askTaskParam.setAskUserId(getUserId());
-        askTaskParam.setAskEnd(0);
         return tAskTaskService.enquiredTaskList(askTaskParam);
     }
 
@@ -156,20 +163,9 @@ public class AskController extends BaseController {
      */
     @RequestMapping(value = "askTask")
     @ResponseBody
-    public Result askTask(String processInstanceId, String currentTaskDefKey, String commentResult, String targetTaskDefKey) {
+    public Result askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey) {
         try {
-            TaskActionParam taskActionParam = new TaskActionParam();
-            taskActionParam.setActionType(TaskActionEnum.ENQUIRE.value);
-            taskActionParam.setProcessInstanceId(processInstanceId);
-            taskActionParam.setCurrentTaskDefKey(currentTaskDefKey);
-            taskActionParam.setCommentResult(commentResult);
-            taskActionParam.setTargetTaskDefKey(targetTaskDefKey);
-            //参数校验
-            Result validate = taskActionParam.validate();
-            if (validate.isSuccess()) {
-                return workflowService.taskEnquire(getUserId(), processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult);
-            }
-            return validate;
+            return workflowService.taskEnquire(getUserId(), processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult);
         } catch (Exception e) {
             log.error("", e);
             return new Result(false, "操作失败");
@@ -181,25 +177,15 @@ public class AskController extends BaseController {
      * 确认问询
      *
      * @param processInstanceId 任务流程ID
-     * @param taskDefKey        任务key
+     * @param askTaskKey        任务key
      * @param commentResult     回复
      * @return
      */
-    @RequestMapping(value = "askComment", method = RequestMethod.POST)
+    @RequestMapping(value = "askConfirm", method = RequestMethod.POST)
     @ResponseBody
-    public Result askComment(String processInstanceId, String taskDefKey, String commentResult) {
+    public Result askConfirm(@RequestParam String processInstanceId, @RequestParam String askTaskKey, @RequestParam String commentResult) {
         try {
-            TaskActionParam taskActionParam = new TaskActionParam();
-            taskActionParam.setActionType(TaskActionEnum.CONFIRMENQUIRE.value);
-            taskActionParam.setProcessInstanceId(processInstanceId);
-            taskActionParam.setTargetTaskDefKey(taskDefKey);
-            taskActionParam.setCommentResult(commentResult);
-            //参数校验
-            Result validate = taskActionParam.validate();
-            if (validate.isSuccess()) {
-                return workflowService.taskConfirmEnquire(getUserId(), processInstanceId, taskDefKey, commentResult);
-            }
-            return validate;
+            return workflowService.taskConfirmEnquire(getUserId(), processInstanceId, askTaskKey, commentResult);
         } catch (Exception e) {
             log.error("", e);
             return new Result(false, "操作失败");

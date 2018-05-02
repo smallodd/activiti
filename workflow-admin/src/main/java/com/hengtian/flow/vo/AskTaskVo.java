@@ -11,7 +11,7 @@ public class AskTaskVo implements Serializable {
     /**
      * 主键
      */
-    private long id;
+    private Integer id;
     /**
      * 流程实例ID
      */
@@ -63,7 +63,7 @@ public class AskTaskVo implements Serializable {
     /**
      * 问询是否结束
      */
-    private int isAskEnd;
+    private Integer isAskEnd;
     /**
      * 问询详情
      */
@@ -73,11 +73,11 @@ public class AskTaskVo implements Serializable {
      */
     private String answerComment;
 
-    public long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -177,11 +177,11 @@ public class AskTaskVo implements Serializable {
         this.updateTime = updateTime;
     }
 
-    public int getIsAskEnd() {
+    public Integer getIsAskEnd() {
         return isAskEnd;
     }
 
-    public void setIsAskEnd(int isAskEnd) {
+    public void setIsAskEnd(Integer isAskEnd) {
         this.isAskEnd = isAskEnd;
     }
 

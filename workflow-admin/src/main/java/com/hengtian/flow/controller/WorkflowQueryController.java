@@ -201,17 +201,17 @@ public class WorkflowQueryController extends WorkflowBaseController {
      *
      * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
-     * @param taskDefKey        任务key
+     * @param askTaskKey        任务key
      * @return
      */
     @ResponseBody
     @SysLog("问询意见查询接口")
     @ApiOperation(httpMethod = "POST", value = "问询意见查询接口")
     @RequestMapping(value = "/rest/task/enquire/comment", method = RequestMethod.POST)
-    public Object enquireComment(@ApiParam(value = "操作人ID", name = "userId", required = true) String userId,
-                                 @ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) String processInstanceId,
-                                 @ApiParam(value = "任务key", name = "taskDefKey", required = true) String taskDefKey) {
-        return workflowService.askComment(userId, processInstanceId, taskDefKey);
+    public Object enquireComment(@ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
+                                 @ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @RequestParam String processInstanceId,
+                                 @ApiParam(value = "任务key", name = "taskDefKey", required = true) @RequestParam String askTaskKey) {
+        return workflowService.askComment(userId, processInstanceId, askTaskKey);
     }
 
     /**

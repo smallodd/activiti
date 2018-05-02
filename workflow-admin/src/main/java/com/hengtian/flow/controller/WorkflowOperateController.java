@@ -372,9 +372,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "jumpTask", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "任务跳转接口")
-    public Object jumpTask(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
-                           @ApiParam(name = "userId", required = true, value = "任务原所属用户ID") String userId,
-                           @ApiParam(name = "taskDefinitionKey", required = true, value = "任务节点KEY") String taskDefinitionKey) {
+    public Object jumpTask(@ApiParam(name = "taskId", required = true, value = "任务ID") @RequestParam String taskId,
+                           @ApiParam(name = "userId", required = true, value = "任务原所属用户ID") @RequestParam String userId,
+                           @ApiParam(name = "taskDefinitionKey", required = true, value = "任务节点KEY") @RequestParam String taskDefinitionKey) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.JUMP.value);
         taskActionParam.setUserId(userId);
@@ -395,9 +395,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "transferTask", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "任务转办接口")
-    public Object transferTask(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
-                               @ApiParam(name = "userId", required = true, value = "任务原所属用户ID") String userId,
-                               @ApiParam(name = "transferUserId", required = true, value = "任务要转办用户ID") String transferUserId) {
+    public Object transferTask(@ApiParam(name = "taskId", required = true, value = "任务ID") @RequestParam String taskId,
+                               @ApiParam(name = "userId", required = true, value = "任务原所属用户ID") @RequestParam String userId,
+                               @ApiParam(name = "transferUserId", required = true, value = "任务要转办用户ID") @RequestParam String transferUserId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.TRANSFER.value);
         taskActionParam.setUserId(userId);
@@ -420,11 +420,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "enquire", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "问询接口")
-    public Object enquire(@ApiParam(name = "processInstanceId", required = true, value = "任务ID") String processInstanceId,
-                          @ApiParam(name = "commentResult", required = true, value = "问询详情") String commentResult,
-                          @ApiParam(name = "currentTaskDefKey", required = true, value = "当前任务节点KEY") String currentTaskDefKey,
-                          @ApiParam(name = "targetTaskDefKey", required = true, value = "目标任务节点KEY") String targetTaskDefKey,
-                          @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
+    public Object enquire(@ApiParam(name = "processInstanceId", required = true, value = "任务ID") @RequestParam String processInstanceId,
+                          @ApiParam(name = "commentResult", required = true, value = "问询详情") @RequestParam String commentResult,
+                          @ApiParam(name = "currentTaskDefKey", required = true, value = "当前任务节点KEY") @RequestParam String currentTaskDefKey,
+                          @ApiParam(name = "targetTaskDefKey", required = true, value = "目标任务节点KEY") @RequestParam String targetTaskDefKey,
+                          @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ENQUIRE.value);
         taskActionParam.setUserId(userId);
@@ -448,10 +448,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "confirmEnquiries", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "确认问询接口")
-    public Object confirmEnquiries(@ApiParam(name = "processInstanceId", required = true, value = "任务ID") String processInstanceId,
-                                   @ApiParam(name = "commentResult", required = true, value = "问询详情") String commentResult,
-                                   @ApiParam(name = "targetTaskDefKey", required = true, value = "目标任务节点KEY") String targetTaskDefKey,
-                                   @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
+    public Object confirmEnquiries(@ApiParam(name = "processInstanceId", required = true, value = "任务ID") @RequestParam String processInstanceId,
+                                   @ApiParam(name = "commentResult", required = true, value = "问询详情") @RequestParam String commentResult,
+                                   @ApiParam(name = "targetTaskDefKey", required = true, value = "目标任务节点KEY") @RequestParam String targetTaskDefKey,
+                                   @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.CONFIRMENQUIRE.value);
         taskActionParam.setProcessInstanceId(processInstanceId);
@@ -472,8 +472,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "revokeProcessInstance", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "任务撤办接口")
-    public Object revokeProcessInstance(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
-                                        @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
+    public Object revokeProcessInstance(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
+                                        @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.REVOKE.value);
         taskActionParam.setUserId(userId);
@@ -492,8 +492,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "suspendProcess", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "挂起流程接口")
-    public Object suspendProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
-                                 @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
+    public Object suspendProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
+                                 @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
         taskActionParam.setUserId(userId);
@@ -512,8 +512,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "activateProcess", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "激活流程接口")
-    public Object activateProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") String processInstanceId,
-                                  @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
+    public Object activateProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
+                                  @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
         taskActionParam.setUserId(userId);

@@ -15,6 +15,10 @@ public class AskCommentDetailVo {
      */
     private String currentTaskKey;
     /**
+     * 问询所在任务节点key
+     */
+    private String askTaskKey;
+    /**
      * 问询详情
      */
     private String askComment;
@@ -39,6 +43,14 @@ public class AskCommentDetailVo {
         this.currentTaskKey = currentTaskKey;
     }
 
+    public String getAskTaskKey() {
+        return askTaskKey;
+    }
+
+    public void setAskTaskKey(String askTaskKey) {
+        this.askTaskKey = askTaskKey;
+    }
+
     public String getAskComment() {
         return askComment;
     }
@@ -60,6 +72,7 @@ public class AskCommentDetailVo {
         return "AskCommentDetailVo{" +
                 "procInstId='" + procInstId + '\'' +
                 ", currentTaskKey='" + currentTaskKey + '\'' +
+                ", askTaskKey='" + askTaskKey + '\'' +
                 ", askComment='" + askComment + '\'' +
                 ", answerComment='" + answerComment + '\'' +
                 '}';
