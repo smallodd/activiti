@@ -409,43 +409,55 @@ public class WorkflowOperateController extends WorkflowBaseController {
     /**
      * 问询
      *
-     * @param taskId            任务ID
+     * @param processInstanceId 流程实例ID
+     * @param commentResult     问询详情
+     * @param currentTaskDefKey 当前任务节点KEY
+     * @param targetTaskDefKey  目标任务节点KEY
      * @param userId            用户ID
-     * @param taskDefinitionKey 任务节点KEY
      * @return
      */
     @SysLog(value = "问询")
     @RequestMapping(value = "enquire", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "问询接口")
-    public Object enquire(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
-                          @ApiParam(name = "userId", required = true, value = "用户ID") String userId,
-                          @ApiParam(name = "taskDefinitionKey", required = true, value = "任务节点KEY") String taskDefinitionKey) {
+    public Object enquire(@ApiParam(name = "processInstanceId", required = true, value = "任务ID") String processInstanceId,
+                          @ApiParam(name = "commentResult", required = true, value = "问询详情") String commentResult,
+                          @ApiParam(name = "currentTaskDefKey", required = true, value = "当前任务节点KEY") String currentTaskDefKey,
+                          @ApiParam(name = "targetTaskDefKey", required = true, value = "目标任务节点KEY") String targetTaskDefKey,
+                          @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ENQUIRE.value);
         taskActionParam.setUserId(userId);
-        taskActionParam.setTaskId(taskId);
-        taskActionParam.setTargetTaskDefKey(taskDefinitionKey);
+        taskActionParam.setProcessInstanceId(processInstanceId);
+        taskActionParam.setCommentResult(commentResult);
+        taskActionParam.setCurrentTaskDefKey(currentTaskDefKey);
+        taskActionParam.setTargetTaskDefKey(targetTaskDefKey);
         return taskAction(taskActionParam);
     }
 
     /**
      * 确认问询
      *
-     * @param taskId 任务ID
-     * @param userId 用户ID
+     * @param processInstanceId 流程实例ID
+     * @param commentResult     问询详情
+     * @param targetTaskDefKey  目标任务节点KEY
+     * @param userId            用户ID
      * @return
      */
     @SysLog(value = "确认问询")
     @RequestMapping(value = "confirmEnquiries", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "确认问询接口")
-    public Object confirmEnquiries(@ApiParam(name = "taskId", required = true, value = "任务ID") String taskId,
+    public Object confirmEnquiries(@ApiParam(name = "processInstanceId", required = true, value = "任务ID") String processInstanceId,
+                                   @ApiParam(name = "commentResult", required = true, value = "问询详情") String commentResult,
+                                   @ApiParam(name = "targetTaskDefKey", required = true, value = "目标任务节点KEY") String targetTaskDefKey,
                                    @ApiParam(name = "userId", required = true, value = "用户ID") String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.CONFIRMENQUIRE.value);
+        taskActionParam.setProcessInstanceId(processInstanceId);
+        taskActionParam.setCommentResult(commentResult);
+        taskActionParam.setTargetTaskDefKey(targetTaskDefKey);
         taskActionParam.setUserId(userId);
-        taskActionParam.setTaskId(taskId);
         return taskAction(taskActionParam);
     }
 

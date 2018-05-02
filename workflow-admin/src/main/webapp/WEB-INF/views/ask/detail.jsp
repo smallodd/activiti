@@ -10,7 +10,7 @@
 <div class="easyui-layout" data-options="fit:true,border:false">
 	<div data-options="region:'center',border:false" style="overflow:auto;padding-top:30px;text-align:center">
         <form id="taskJumpForm" method="post">
-            <input type="hidden" name="currentTaskDefKey" id="currentTaskDefKey" value="${askComment.currentTaskKey}"/>
+            <input type="hidden" name="taskDefKey" id="taskDefKey" value="${askComment.currentTaskKey}"/>
             <input type="hidden" name="processInstanceId" id="processInstanceId" value="${askComment.procInstId}"/>
             <span style="padding-right: 30px">问询内容</span>
             <span style="width: 80%;min-width: 80%">${askComment.askComment}</span>

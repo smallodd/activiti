@@ -124,6 +124,7 @@ public class AskController extends BaseController {
         askTaskParam.setPageNum(page);
         askTaskParam.setPageSize(rows);
         askTaskParam.setCreateId(getUserId());
+        askTaskParam.setAskEnd(1);
         return tAskTaskService.enquireTaskList(askTaskParam);
     }
 
@@ -140,6 +141,7 @@ public class AskController extends BaseController {
         askTaskParam.setPageNum(page);
         askTaskParam.setPageSize(rows);
         askTaskParam.setAskUserId(getUserId());
+        askTaskParam.setAskEnd(0);
         return tAskTaskService.enquiredTaskList(askTaskParam);
     }
 
@@ -179,20 +181,23 @@ public class AskController extends BaseController {
      * 确认问询
      *
      * @param processInstanceId 任务流程ID
+     * @param taskDefKey        任务key
+     * @param commentResult     回复
      * @return
      */
     @RequestMapping(value = "askComment", method = RequestMethod.POST)
     @ResponseBody
-    public Result askComment(String processInstanceId, String taskDefKey) {
+    public Result askComment(String processInstanceId, String taskDefKey, String commentResult) {
         try {
             TaskActionParam taskActionParam = new TaskActionParam();
             taskActionParam.setActionType(TaskActionEnum.CONFIRMENQUIRE.value);
             taskActionParam.setProcessInstanceId(processInstanceId);
             taskActionParam.setTargetTaskDefKey(taskDefKey);
+            taskActionParam.setCommentResult(commentResult);
             //参数校验
             Result validate = taskActionParam.validate();
             if (validate.isSuccess()) {
-                return workflowService.taskConfirmEnquire(getUserId(), processInstanceId, taskDefKey);
+                return workflowService.taskConfirmEnquire(getUserId(), processInstanceId, taskDefKey, commentResult);
             }
             return validate;
         } catch (Exception e) {

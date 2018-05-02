@@ -29,8 +29,8 @@
         <if test="askTaskKey!=null and askTaskKey!=''">
             AND tat.ask_task_key = #{askTaskKey}
         </if>
-        <if test="isAskEnd!=null and isAskEnd!=''">
-            AND tat.is_ask_end = #{isAskEnd}
+        <if test="askEnd!=null">
+            AND tat.is_ask_end = #{askEnd}
         </if>
     </select>
 
@@ -61,8 +61,8 @@
         <if test="askTaskKey!=null and askTaskKey!=''">
             AND tat.ask_task_key = #{askTaskKey}
         </if>
-        <if test="isAskEnd!=null and isAskEnd!=''">
-            AND tat.is_ask_end = #{isAskEnd}
+        <if test="askEnd!=null">
+            AND tat.is_ask_end = #{askEnd}
         </if>
     </select>
 </mapper>
