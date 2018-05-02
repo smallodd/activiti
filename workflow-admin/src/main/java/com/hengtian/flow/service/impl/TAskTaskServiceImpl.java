@@ -16,6 +16,7 @@ import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -58,13 +59,15 @@ public class TAskTaskServiceImpl extends ServiceImpl<TAskTaskDao, TAskTask> impl
             BeanUtils.copy(tAskTask, vo);
 
             String currentTaskKey = vo.getCurrentTaskKey();
-            HistoricTaskInstance currentTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(currentTaskKey).singleResult();
+            String executionId = tAskTask.getExecutionId();
+
+            HistoricTaskInstance currentTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(currentTaskKey).executionId(executionId).singleResult();
             if (currentTask != null) {
                 vo.setCurrentTaskName(currentTask.getName());
             }
 
             String askTaskKey = vo.getAskTaskKey();
-            HistoricTaskInstance askTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(askTaskKey).singleResult();
+            HistoricTaskInstance askTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(askTaskKey).executionId(executionId).singleResult();
             if (askTask != null) {
                 vo.setAskTaskName(askTask.getName());
             }

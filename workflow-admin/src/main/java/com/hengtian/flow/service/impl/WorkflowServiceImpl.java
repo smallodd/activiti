@@ -37,6 +37,7 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.NativeTaskQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -751,7 +752,32 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        //todo 可询问节点 应限制只能为上级节点  ,已有询问的不能在询问
+
+        //校验是否是上级节点 todo
+        List<HistoricTaskInstance> tasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).orderByTaskId().asc().list();
+        Iterator<HistoricTaskInstance> iterator = tasks.iterator();
+        boolean valid = false;
+        while (iterator.hasNext()) {
+            HistoricTaskInstance instance = iterator.next();
+            if (Long.parseLong(instance.getId()) < Long.parseLong(task.getId())) {
+                valid = true;
+                break;
+            }
+        }
+        if (!valid) {
+            return new Result(false, "无权问询该节点");
+        }
+
+        //校验是否已有问询
+        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
+        wrapper.where("proc_inst_id={0}", processInstanceId)
+                .where("current_task_key={0}", currentTaskDefKey)
+                .where("ask_task_key={0}", targetTaskDefKey)
+                .where("is_ask_end=0");
+        List<TAskTask> list = tAskTaskService.selectList(wrapper);
+        if (CollectionUtils.isNotEmpty(list)) {
+            return new Result(false, "已存在问询任务");
+        }
 
         TAskTask askTask = new TAskTask();
         askTask.setProcInstId(task.getProcessInstanceId());

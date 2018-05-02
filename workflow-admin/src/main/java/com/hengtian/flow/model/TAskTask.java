@@ -17,6 +17,8 @@ public class TAskTask {
     private Integer id;
     @TableField(value = "proc_inst_id")
     private String procInstId;
+    @TableField(value = "execution_id")
+    private String executionId;
     @TableField(value = "current_task_id")
     private String currentTaskId;
     @TableField(value = "current_task_key")
@@ -54,6 +56,14 @@ public class TAskTask {
 
     public void setProcInstId(String procInstId) {
         this.procInstId = procInstId;
+    }
+
+    public String getExecutionId() {
+        return executionId;
+    }
+
+    public void setExecutionId(String executionId) {
+        this.executionId = executionId;
     }
 
     public String getCurrentTaskId() {
