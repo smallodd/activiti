@@ -1,9 +1,9 @@
 package com.hengtian.flow.service.impl;
 
 import com.google.common.collect.Lists;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
+import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.result.Result;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
@@ -12,8 +12,12 @@ import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.delegate.ActivityBehavior;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
+import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.runtime.Execution;
+import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /**
@@ -40,6 +45,10 @@ public class ActivitiUtilServiceImpl {
     private RepositoryService repositoryService;
     @Autowired
     private RuntimeService runtimeService;
+    @Autowired
+    private TaskService taskService;
+    @Autowired
+    private ProcessEngine processEngine;
 
     /**
      * 获取当前历史任务节点
@@ -48,8 +57,8 @@ public class ActivitiUtilServiceImpl {
      * @author houjinrong@chtwm.com
      * date 2018/4/28 15:09
      */
-    private List<String> getHisTaskDefKeys(String processInstaceId){
-        List<HistoricTaskInstance> hisTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstaceId).orderByTaskDefinitionKey().asc().list();
+    protected List<String> getHisTaskDefKeys(String processInstaceId){
+        List<HistoricTaskInstance> hisTask = historyService.createHistoricTaskInstanceQuery().orderByTaskCreateTime().asc().list();
         if(CollectionUtils.isEmpty(hisTask)){
             return null;
         }
@@ -471,5 +480,83 @@ public class ActivitiUtilServiceImpl {
             }
         }
         return taskDefinitionList;
+    }
+
+    /**
+     * 任务驳回
+     *
+     * @param userId 操作人ID
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:01
+     */
+    public Result taskRollback1(String userId, String taskId) {
+        try {
+            Map<String, Object> variables;
+            // 取得当前任务
+            HistoricTaskInstance currTask = historyService
+                    .createHistoricTaskInstanceQuery().taskId(taskId)
+                    .singleResult();
+            // 取得流程实例
+            ProcessInstance instance = runtimeService
+                    .createProcessInstanceQuery()
+                    .processInstanceId(currTask.getProcessInstanceId())
+                    .singleResult();
+            if (instance == null) {
+                //流程结束
+                return new Result(ResultEnum.PROCINST_NOT_EXIT.code, ResultEnum.PROCINST_NOT_EXIT.msg);
+            }
+            variables = instance.getProcessVariables();
+            // 取得流程定义
+            ProcessDefinitionEntity definition = (ProcessDefinitionEntity) (processEngine.getRepositoryService().getProcessDefinition(currTask
+                    .getProcessDefinitionId()));
+
+            if (definition == null) {
+                //log.error("流程定义未找到");
+                return new Result(ResultEnum.PROCESS_NOT_EXIT.code, ResultEnum.PROCESS_NOT_EXIT.msg);
+            }
+            // 取得上一步活动
+            ActivityImpl currActivity = ((ProcessDefinitionImpl) definition).findActivity(currTask.getTaskDefinitionKey());
+            List<PvmTransition> nextTransitionList = currActivity.getIncomingTransitions();
+            // 清除当前活动的出口
+            List<PvmTransition> oriPvmTransitionList = new ArrayList<PvmTransition>();
+            List<PvmTransition> pvmTransitionList = currActivity.getOutgoingTransitions();
+            for (PvmTransition pvmTransition : pvmTransitionList) {
+                oriPvmTransitionList.add(pvmTransition);
+            }
+            pvmTransitionList.clear();
+
+            // 建立新出口
+            List<TransitionImpl> newTransitions = new ArrayList<TransitionImpl>();
+            for (PvmTransition nextTransition : nextTransitionList) {
+                PvmActivity nextActivity = nextTransition.getSource();
+                ActivityImpl nextActivityImpl = ((ProcessDefinitionImpl) definition)
+                        .findActivity(nextActivity.getId());
+                TransitionImpl newTransition = currActivity
+                        .createOutgoingTransition();
+                newTransition.setDestination(nextActivityImpl);
+                newTransitions.add(newTransition);
+            }
+            // 完成任务
+            List<Task> tasks = taskService.createTaskQuery()
+                    .processInstanceId(instance.getId())
+                    .taskDefinitionKey(currTask.getTaskDefinitionKey()).list();
+            for (Task task : tasks) {
+                taskService.complete(task.getId(), variables);
+                historyService.deleteHistoricTaskInstance(task.getId());
+            }
+            // 恢复方向
+            for (TransitionImpl transitionImpl : newTransitions) {
+                currActivity.getOutgoingTransitions().remove(transitionImpl);
+            }
+            for (PvmTransition pvmTransition : oriPvmTransitionList) {
+                pvmTransitionList.add(pvmTransition);
+            }
+        } catch (Exception e) {
+            return new Result(ResultEnum.FAIL.code, ResultEnum.FAIL.msg);
+        }
+
+        return new Result(true, "撤回成功");
     }
 }
