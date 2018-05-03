@@ -820,8 +820,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("`ask_user_id`={0}", userId)
-                .and("is_ask_end={0}", 0)
-                .and("ask_task_key={0}", task.getTaskDefinitionKey());
+                .where("execution_id={0}", task.getExecutionId())
+                .where("is_ask_end={0}", 0)
+                .where("ask_task_key={0}", task.getTaskDefinitionKey());
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         tAskTask.setUpdateTime(new Date());
         tAskTask.setAnswerComment(answerComment);
@@ -1043,6 +1044,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Result result = new Result(true, "查询成功");
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("proc_inst_id={0}", processInstanceId);
+        wrapper.where("execution_id={0}", task.getExecutionId());
         wrapper.where("ask_task_key={0}", askTaskKey);
         TAskTask askTask = tAskTaskService.selectOne(wrapper);
         AskCommentDetailVo detailVo = new AskCommentDetailVo();
