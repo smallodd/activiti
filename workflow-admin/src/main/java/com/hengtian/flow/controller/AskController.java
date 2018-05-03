@@ -1,19 +1,14 @@
 package com.hengtian.flow.controller;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
-import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TAskTaskService;
-import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import org.activiti.engine.HistoryService;
-import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +76,8 @@ public class AskController extends BaseController {
             }
         }
         request.setAttribute("tasks", tasks);
-        request.setAttribute("taskId", taskId);
+        request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
+        request.setAttribute("processInstanceId", task.getProcessInstanceId());
         return "ask/comment";
     }
 
