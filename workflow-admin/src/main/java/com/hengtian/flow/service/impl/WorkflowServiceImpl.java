@@ -1030,23 +1030,23 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 问询意见查询接口
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
-     * @param askTaskKey        任务key
+     * @param userId 操作人ID
+     * @param askId  问询id
      * @return
      */
     @Override
-    public Result askComment(String userId, String processInstanceId, String askTaskKey) {
-        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(askTaskKey).singleResult();
+    public Result askComment(String userId, String askId) {
+        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
+        wrapper.where("id={0}", askId);
+        TAskTask askTask = tAskTaskService.selectOne(wrapper);
+        if (askTask == null) {
+            return new Result(false, "问询不存在");
+        }
+        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(askTask.getProcInstId()).taskDefinitionKey(askTask.getAskTaskKey()).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
         Result result = new Result(true, "查询成功");
-        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
-        wrapper.where("proc_inst_id={0}", processInstanceId);
-        wrapper.where("execution_id={0}", task.getExecutionId());
-        wrapper.where("ask_task_key={0}", askTaskKey);
-        TAskTask askTask = tAskTaskService.selectOne(wrapper);
         AskCommentDetailVo detailVo = new AskCommentDetailVo();
         detailVo.setAskComment(askTask.getAskComment());
         detailVo.setAnswerComment(askTask.getAnswerComment());

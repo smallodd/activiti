@@ -39,11 +39,7 @@ public class AskController extends BaseController {
     @Autowired
     private WorkflowService workflowService;
     @Autowired
-    private RepositoryService repositoryService;
-    @Autowired
     private TaskService taskService;
-    @Autowired
-    private TUserTaskService tUserTaskService;
     @Autowired
     private HistoryService historyService;
 
@@ -85,21 +81,19 @@ public class AskController extends BaseController {
             }
         }
         request.setAttribute("tasks", tasks);
-        request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
-        request.setAttribute("processInstanceId", task.getProcessInstanceId());
+        request.setAttribute("taskId", taskId);
         return "ask/comment";
     }
 
     /**
      * 问询意见查询接口
      *
-     * @param procInstId 流程实例id
-     * @param askTaskKey 任务key
+     * @param askId 问询id
      * @return
      */
     @GetMapping("detail")
-    public String detail(@RequestParam String procInstId, @RequestParam String askTaskKey, HttpServletRequest request) {
-        Result askComment = workflowService.askComment(getUserId(), procInstId, askTaskKey);
+    public String detail(@RequestParam String askId, HttpServletRequest request) {
+        Result askComment = workflowService.askComment(getUserId(), askId);
         request.setAttribute("askComment", askComment.getObj());
         return "ask/detail";
     }
@@ -107,13 +101,12 @@ public class AskController extends BaseController {
     /**
      * 回复意见查询接口
      *
-     * @param procInstId 流程实例id
-     * @param askTaskKey 任务key
+     * @param askId 问询id
      * @return
      */
     @GetMapping("answer")
-    public String answer(@RequestParam String procInstId, @RequestParam String askTaskKey, HttpServletRequest request) {
-        Result askComment = workflowService.askComment(getUserId(), procInstId, askTaskKey);
+    public String answer(@RequestParam String askId, HttpServletRequest request) {
+        Result askComment = workflowService.askComment(getUserId(), askId);
         request.setAttribute("askComment", askComment.getObj());
         return "ask/answer";
     }

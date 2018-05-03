@@ -13,8 +13,8 @@ import java.util.Date;
  */
 @TableName("t_ask_task")
 public class TAskTask {
-    @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    @TableId(value = "id", type = IdType.UUID)
+    private String id;
     @TableField(value = "proc_inst_id")
     private String procInstId;
     @TableField(value = "execution_id")
@@ -42,11 +42,11 @@ public class TAskTask {
     @TableField(value = "answer_comment")
     private String answerComment;
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -157,8 +157,9 @@ public class TAskTask {
     @Override
     public String toString() {
         return "TAskTask{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", procInstId='" + procInstId + '\'' +
+                ", executionId='" + executionId + '\'' +
                 ", currentTaskId='" + currentTaskId + '\'' +
                 ", currentTaskKey='" + currentTaskKey + '\'' +
                 ", askTaskKey='" + askTaskKey + '\'' +

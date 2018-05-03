@@ -169,12 +169,11 @@ public interface WorkflowService {
     /**
      * 问询意见查询接口
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
-     * @param askTaskKey        任务key
+     * @param userId 操作人ID
+     * @param askId  问询id
      * @return
      */
-    Result askComment(String userId, String processInstanceId, String askTaskKey);
+    Result askComment(String userId, String askId);
 
     /**
      * 未办任务列表

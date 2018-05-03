@@ -94,7 +94,7 @@
                     var str = "";
                     if (row.isAskEnd == 1) {
                         <shiro:hasPermission name="/ask/answer">
-                        str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-answerComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="answerComment(\'{0}\',\'{1}\');" >回复详情</a>', row.procInstId,row.askTaskKey);
+                        str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-answerComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="answerComment(\'{0}\');" >回复详情</a>', row.id);
                         </shiro:hasPermission>
                     }
                     return str;
@@ -110,13 +110,13 @@
     /**
      * 回复详情
      */
-    function answerComment(procInstId,askTaskKey) {
+    function answerComment(askId) {
         parent.$.modalDialog({
             title : '回复详情',
             width : 800,
             height : 600,
             modal : true,
-            href :  '${ctx}/ask/answer?procInstId='+procInstId+"&askTaskKey="+askTaskKey
+            href :  '${ctx}/ask/answer?askId='+askId
         });
     }
 
