@@ -354,7 +354,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
-            renderError(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+            renderError(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
 
 

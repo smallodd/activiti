@@ -417,54 +417,21 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }
             }
 
-            String notDelete = "";
-            Task ts = null;
-            List<Task> taskList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
-            //处理删除由于跳转/拿回产生冗余的数据
-            EntityWrapper ew = new EntityWrapper();
-            ew.where("status={0}", -2).andNew("proc_inst_id={0}", taskList.get(0).getProcessInstanceId());
-            TRuTask tRuTask = tRuTaskService.selectOne(ew);
-            if (tRuTask != null) {
-                HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tRuTask.getTaskId()).singleResult();
-                List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().executionId(taskInstance.getExecutionId()).orderByTaskCreateTime().asc().list();
-                notDelete = list.get(0).getTaskDefinitionKey();
-                ts = taskService.createTaskQuery().taskDefinitionKey(notDelete).processInstanceId(list.get(0).getProcessInstanceId()).active().singleResult();
 
-            }
+            List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
+            List<Task> tasks = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
+            for (Task tk : tasks) {
+                if (taskKeys.contains(tk.getTaskDefinitionKey())) {
 
-            for (int i = 0; i < taskList.size(); i++) {
-                Task tas = taskList.get(i);
-//                List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().executionId(tas.getExecutionId()).unfinished().orderByTaskCreateTime().desc().list();
-
-
-//                List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(tas.getProcessInstanceId()).activityId(tas.getTaskDefinitionKey()).list();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String olde = sdf.format(tas.getCreateTime());
-
-                String newDate = (ts == null ? "" : sdf.format(ts.getCreateTime()));
-                if (!notDelete.contains(tas.getTaskDefinitionKey()) && tRuTask != null && olde.equals(newDate)) {
-
-                    TaskEntity resus = (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
-
-                    resus.setExecutionId(null);
-                    taskService.saveTask(resus);
-                    taskService.deleteTask(resus.getId(), true);
-                    taskList.removeIf(new java.util.function.Predicate<Task>() {
-                        @Override
-                        public boolean test(Task task) {
-                            if (resus.getId().equals(task.getId())) {
-                                return true;
-                            }
-                            return false;
-                        }
-                    });
-                    EntityWrapper ewe = new EntityWrapper();
-                    ewe.where("task_id={0}", tRuTask.getTaskId()).andNew("status={0}", -2);
-                    tRuTaskService.delete(ewe);
-
+                    continue;
+                } else {
+                    managementService.executeCommand(new JumpCmd(tk.getExecutionId(), tk.getTaskDefinitionKey()));
                 }
-
             }
+
+            deleteUnUsedTask(t.getProcessInstanceId());
+
+
             List<Task> resultList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
             //设置审批人处理逻辑
             if (!Boolean.valueOf(map.get("customApprover").toString())) {
@@ -488,7 +455,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
 
             //设置操作的明细备注
-            result.setObj(TaskNodeResult.toTaskNodeResultList(taskList));
+            result.setObj(TaskNodeResult.toTaskNodeResultList(resultList));
             TWorkDetail tWorkDetail = new TWorkDetail();
             tWorkDetail.setTaskId(task.getId());
             tWorkDetail.setOperator(taskParam.getApprover());
@@ -498,6 +465,55 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             workDetailService.insert(tWorkDetail);
             return result;
         }
+    }
+
+    public void deleteUnUsedTask(String processInstanceId) {
+        String notDelete = "";
+        Task ts = null;
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        //处理删除由于跳转/拿回产生冗余的数据
+        EntityWrapper ew = new EntityWrapper();
+        ew.where("status={0}", -2).andNew("proc_inst_id={0}", taskList.get(0).getProcessInstanceId());
+        TRuTask tRuTask = tRuTaskService.selectOne(ew);
+        if (tRuTask != null) {
+            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tRuTask.getTaskId()).singleResult();
+            List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().executionId(taskInstance.getExecutionId()).orderByTaskCreateTime().asc().list();
+            notDelete = list.get(0).getTaskDefinitionKey();
+            ts = taskService.createTaskQuery().taskDefinitionKey(notDelete).processInstanceId(list.get(0).getProcessInstanceId()).active().singleResult();
+
+        }
+        for (int i = 0; i < taskList.size(); i++) {
+            Task tas = taskList.get(i);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String olde = sdf.format(tas.getCreateTime());
+
+            String newDate = (ts == null ? "" : sdf.format(ts.getCreateTime()));
+            if (!notDelete.contains(tas.getTaskDefinitionKey()) && tRuTask != null && olde.equals(newDate)) {
+
+                TaskEntity resus = (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
+
+                resus.setExecutionId(null);
+                taskService.saveTask(resus);
+                taskService.deleteTask(resus.getId(), true);
+                taskList.removeIf(new java.util.function.Predicate<Task>() {
+                    @Override
+                    public boolean test(Task task) {
+                        if (resus.getId().equals(task.getId())) {
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                EntityWrapper ewe = new EntityWrapper();
+                ewe.where("task_id={0}", tRuTask.getTaskId()).andNew("status={0}", -2);
+                tRuTaskService.delete(ewe);
+
+            }
+
+        }
+
+
     }
 
     /**
@@ -534,7 +550,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskClaim(String userId, String taskId, String workId) {
         TRuTask tRuTask = tRuTaskService.selectById(workId);
         if (tRuTask == null || !StringUtils.equals(taskId, tRuTask.getTaskId())) {
-            return new Result(false, ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+            return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         String assignee = tRuTask.getApproverReal();
         if (StringUtils.isNotBlank(assignee)) {
@@ -567,11 +583,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskUnclaim(String userId, String taskId, String workId) {
         TRuTask tRuTask = tRuTaskService.selectById(workId);
         if (tRuTask == null || !StringUtils.equals(taskId, tRuTask.getTaskId())) {
-            return new Result(false, ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+            return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         String assignee = tRuTask.getApproverReal();
         if (StringUtils.isBlank(assignee)) {
-            return new Result(false, ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+            return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         } else if (StringUtils.contains(assignee, userId)) {
             List<String> list = Arrays.asList(StringUtils.split(","));
             if (list.contains(userId)) {
@@ -660,7 +676,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskTransfer(String userId, String taskId, String targetUserId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
-            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         //用户组权限判断
         if (!ConstantUtils.ADMIN_ID.equals(userId) && !userId.equals(task.getOwner())) {
@@ -710,7 +726,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskRemind(String userId, String taskId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
-            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
 
         RemindTask remindTask = new RemindTask();
@@ -746,7 +762,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult) {
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
         if (task == null) {
-            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
 
         //校验是否是上级节点 todo
@@ -810,7 +826,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Transactional(rollbackFor = Exception.class)
     public Result taskConfirmEnquire(String userId, String askId, String answerComment) {
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
-        //todo admin是否可用代办
         wrapper.where("`ask_user_id`={0}", userId)
                 .where("id={0}", askId)
                 .where("is_ask_end={0}", 0);
@@ -820,7 +835,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).singleResult();
         if (task == null) {
-            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         tAskTask.setUpdateTime(new Date());
         tAskTask.setAnswerComment(answerComment);
@@ -844,12 +859,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskRollback(String userId, String taskId) {
         List<String> taskDefKeysForRollback = getTaskDefKeysForRollback(taskId);
         if (CollectionUtils.isEmpty(taskDefKeysForRollback)) {
-            return new Result(false, "撤回成功");
+            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
         }
         for (String taskDefKey : taskDefKeysForRollback) {
             taskJump(userId, taskId, taskDefKey);
         }
-        return new Result(true, "撤回成功");
+        return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
     }
 
     /**
@@ -866,49 +881,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskRevoke(String userId, String taskId, String targetTaskKey) {
         TaskEntity taskEntity = (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
         if (!isAllowRollback(taskEntity)) {
-            return new Result();
+            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
         }
-        /*//查询任务
-        HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        TaskEntity taskEntity = (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
-        List<TaskDefinition> taskDefinitions = getBeforeTaskDefinitions(historicTaskInstance, false);
-        //查询流程实例
-        ProcessDefinitionEntity processDefinitionEntity = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(historicTaskInstance.getProcessDefinitionId());
-        //跳转前终止原任务流程
-        *//*Command<Void> deleteCmd = new DeleteActiveTaskCmd(taskEntity, "jump", true);
-        managementService.executeCommand(deleteCmd);*//*
-
-        List<String> freeTaskDefKeys = Lists.newArrayList();
-        //开启上一部节点任务
-        for(TaskDefinition def : taskDefinitions){
-            if(!def.getKey().equals(targetTaskKey)){
-                freeTaskDefKeys.add(def.getKey());
-                Command<Void> cmd = new CreateHisTaskCmd(taskEntity.getExecutionId());
-                managementService.executeCommand(cmd);
-            }else{
-                //查询任务节点
-                //ActivityImpl activity = processDefinitionEntity.findActivity(def.getKey());
-                //从跳转目标节点开启新的任务流程
-                //Command<Void> startCmd = new StartActivityCmd(taskEntity.getExecutionId(), activity);
-                //managementService.executeCommand(startCmd);
-                taskJump(userId, taskId, targetTaskKey);
-            }
-        }
-
-        ExecutionEntity execution = (ExecutionEntity)runtimeService.createExecutionQuery().executionId(taskEntity.getExecutionId()).singleResult();
-
-        //如果是并行任务自动办理其他分支任务
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(taskEntity.getProcessInstanceId()).list();
-
-
-        for(Task t : taskList){
-            if(freeTaskDefKeys.contains(t.getTaskDefinitionKey())){
-                //taskService.setAssignee(t.getId(), "AUTO_FREE");
-                taskService.complete(t.getId());
-
-            }
-        }*/
-
         return taskJump(userId, taskId, targetTaskKey);
     }
 
@@ -932,7 +906,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 return new Result(false, ResultEnum.PERMISSION_DENY.code, ResultEnum.PERMISSION_DENY.msg);
             }
         } else {
-            return new Result(false, ResultEnum.PROCINST_NOT_EXIT.code, ResultEnum.PROCINST_NOT_EXIT.msg);
+            return new Result(false, ResultEnum.PROCINST_NOT_EXIST.code, ResultEnum.PROCINST_NOT_EXIST.msg);
         }
 
         return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
@@ -985,7 +959,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(askTask.getProcInstId()).taskDefinitionKey(askTask.getAskTaskKey()).singleResult();
         if (task == null) {
-            return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         Result result = new Result(true, "查询成功");
         AskCommentDetailVo detailVo = new AskCommentDetailVo();
