@@ -61,15 +61,15 @@ public class TAskTaskServiceImpl extends ServiceImpl<TAskTaskDao, TAskTask> impl
             String currentTaskKey = vo.getCurrentTaskKey();
             String executionId = tAskTask.getExecutionId();
 
-            HistoricTaskInstance currentTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(currentTaskKey).executionId(executionId).singleResult();
-            if (currentTask != null) {
-                vo.setCurrentTaskName(currentTask.getName());
+            List<HistoricTaskInstance> currentTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(currentTaskKey).executionId(executionId).list();
+            if (CollectionUtils.isNotEmpty(currentTaskInstances)) {
+                vo.setCurrentTaskName(currentTaskInstances.get(0).getName());
             }
 
             String askTaskKey = vo.getAskTaskKey();
-            HistoricTaskInstance askTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(askTaskKey).executionId(executionId).singleResult();
-            if (askTask != null) {
-                vo.setAskTaskName(askTask.getName());
+            List<HistoricTaskInstance> askTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(askTaskKey).executionId(executionId).list();
+            if (CollectionUtils.isNotEmpty(askTaskInstances)) {
+                vo.setAskTaskName(askTaskInstances.get(0).getName());
             }
 
             String procInstId = vo.getProcInstId();
