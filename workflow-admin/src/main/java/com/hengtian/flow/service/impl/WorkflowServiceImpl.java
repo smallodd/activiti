@@ -940,8 +940,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/4/18 16:03
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result processSuspend(String userId, String processInstanceId) {
         runtimeService.suspendProcessInstanceById(processInstanceId);
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setProcessInstanceId(processInstanceId);
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号【" + userId + "】挂起了该流程");
+        workDetailService.insert(tWorkDetail);
         return new Result(true, "挂起流程成功");
     }
 
@@ -955,8 +962,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/4/18 16:03
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result processActivate(String userId, String processInstanceId) {
         runtimeService.activateProcessInstanceById(processInstanceId);
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setProcessInstanceId(processInstanceId);
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号【" + userId + "】激活了该流程");
+        workDetailService.insert(tWorkDetail);
         return new Result(true, "激活流程成功");
     }
 
