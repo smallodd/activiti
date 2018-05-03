@@ -812,6 +812,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!success) {
             return new Result(false, "问询失败");
         }
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setTaskId(task.getId());
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号【" + userId + "】问询了该任务，问询内容是【" + commentResult + "】");
+        workDetailService.insert(tWorkDetail);
         return new Result(true, "问询成功");
     }
 
@@ -847,6 +854,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!success) {
             return new Result(false, "问询确认失败");
         }
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setTaskId(tAskTask.getCurrentTaskId());
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setProcessInstanceId(tAskTask.getProcInstId());
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号【" + userId + "】回复了该问询，回复内容是【" + answerComment + "】");
+        workDetailService.insert(tWorkDetail);
         return new Result(true, "问询确认成功");
     }
 
