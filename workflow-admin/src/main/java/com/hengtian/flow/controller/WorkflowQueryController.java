@@ -6,6 +6,7 @@ import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.param.WorkDetailParam;
+import com.hengtian.common.result.Result;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TWorkDetailService;
@@ -178,6 +179,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "问询任务列表")
     @RequestMapping(value = "/rest/task/enquire/page", method = RequestMethod.POST)
     public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
+        if (StringUtils.isBlank(taskEnquireParam.getCreateId())) {
+            return new Result(false, "createId不能为空");
+        }
         return tAskTaskService.enquireTaskList(taskEnquireParam);
     }
 
@@ -193,6 +197,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
     @RequestMapping(value = "/rest/task/enquired/page", method = RequestMethod.POST)
     public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
+        if (StringUtils.isBlank(taskEnquireParam.getAskUserId())) {
+            return new Result(false, "askUserId不能为空");
+        }
         return tAskTaskService.enquiredTaskList(taskEnquireParam);
     }
 
