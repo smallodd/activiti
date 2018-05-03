@@ -467,7 +467,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //第一步 添加缺失的节点
         String processInstanceId = t.getProcessInstanceId();
         List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
-        if(CollectionUtils.isNotEmpty(taskKeys)){
+        if (CollectionUtils.isNotEmpty(taskKeys)) {
             List<Task> tasks = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
             for (Task tk : tasks) {
                 if (taskKeys.contains(tk.getTaskDefinitionKey())) {
@@ -483,7 +483,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Task ts = null;
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         //处理删除由于跳转/拿回产生冗余的数据
-        if(CollectionUtils.isNotEmpty(taskList)){
+        if (CollectionUtils.isNotEmpty(taskList)) {
             EntityWrapper ew = new EntityWrapper();
             ew.where("status={0}", -2).andNew("proc_inst_id={0}", taskList.get(0).getProcessInstanceId());
             TRuTask tRuTask = tRuTaskService.selectOne(ew);
@@ -778,7 +778,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             return new Result(ResultEnum.PERMISSION_DENY.code, ResultEnum.PERMISSION_DENY.msg);
         }
         //校验是否是上级节点
-        List<String> parentNodes = getTaskDefKeysForJump(task.getId());
+        List<String> parentNodes = getBeforeTaskDefinitionKeys(task, true);
         if (!parentNodes.contains(task.getTaskDefinitionKey())) {
             return new Result(false, "无权问询该节点");
         }
@@ -1232,7 +1232,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (task == null) {
             return new ArrayList<>();
         }
-        List<String> taskDefKeys = getTaskDefKeysForJump(taskId);
+        List<String> taskDefKeys = getBeforeTaskDefinitionKeys(task, true);
         if (CollectionUtils.isNotEmpty(taskDefKeys)) {
             List<HistoricTaskInstance> list = new ArrayList<>();
             for (String taskDefKey : taskDefKeys) {
