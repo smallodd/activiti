@@ -418,14 +418,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
 
 
-            List<String> taskKeys=getNextTaskDefinitionKeys(t,false);
+            List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
             List<Task> tasks = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
-            for(Task tk:tasks){
-                if( taskKeys.contains(tk.getTaskDefinitionKey())) {
+            for (Task tk : tasks) {
+                if (taskKeys.contains(tk.getTaskDefinitionKey())) {
 
                     continue;
-                }else{
-                    managementService.executeCommand(new JumpCmd(tk.getExecutionId(),tk.getTaskDefinitionKey()));
+                } else {
+                    managementService.executeCommand(new JumpCmd(tk.getExecutionId(), tk.getTaskDefinitionKey()));
                 }
             }
 
@@ -467,7 +467,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
     }
 
-    public void deleteUnUsedTask(String processInstanceId){
+    public void deleteUnUsedTask(String processInstanceId) {
         String notDelete = "";
         Task ts = null;
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
@@ -514,8 +514,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
 
-
     }
+
     /**
      * 校验业务主键是否已经生成过任务
      *
@@ -815,27 +815,28 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 问询确认
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
-     * @param taskDefKey        需问询确认的任务key
-     * @param answerComment     确认信息
+     * @param userId        操作人ID
+     * @param askId         问询
+     * @param answerComment 确认信息
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey, String answerComment) {
-        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
+    public Result taskConfirmEnquire(String userId, String askId, String answerComment) {
+        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
+        wrapper.where("`ask_user_id`={0}", userId)
+                .where("id={0}", askId)
+                .where("is_ask_end={0}", 0);
+        TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
+        if (tAskTask == null) {
+            return new Result(false, "问询确认失败");
+        }
+        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
-        wrapper.where("`ask_user_id`={0}", userId)
-                .where("execution_id={0}", task.getExecutionId())
-                .where("is_ask_end={0}", 0)
-                .where("ask_task_key={0}", task.getTaskDefinitionKey());
-        TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         tAskTask.setUpdateTime(new Date());
         tAskTask.setAnswerComment(answerComment);
         tAskTask.setIsAskEnd(1);
@@ -858,13 +859,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public Result taskRollback(String userId, String taskId) {
         List<String> taskDefKeysForRollback = getTaskDefKeysForRollback(taskId);
-        if(CollectionUtils.isEmpty(taskDefKeysForRollback)){
-            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code,ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
+        if (CollectionUtils.isEmpty(taskDefKeysForRollback)) {
+            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
         }
-        for(String taskDefKey : taskDefKeysForRollback){
+        for (String taskDefKey : taskDefKeysForRollback) {
             taskJump(userId, taskId, taskDefKey);
         }
-        return new Result(true, ResultEnum.SUCCESS.code,ResultEnum.SUCCESS.msg);
+        return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
     }
 
     /**
@@ -881,7 +882,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskRevoke(String userId, String taskId, String targetTaskKey) {
         TaskEntity taskEntity = (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
         if (!isAllowRollback(taskEntity)) {
-            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code,ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
+            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
         }
         return taskJump(userId, taskId, targetTaskKey);
     }

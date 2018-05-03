@@ -161,16 +161,15 @@ public class AskController extends BaseController {
     /**
      * 确认问询
      *
-     * @param processInstanceId 任务流程ID
-     * @param askTaskKey        任务key
-     * @param commentResult     回复
+     * @param askId         问询ID
+     * @param commentResult 回复
      * @return
      */
     @RequestMapping(value = "askConfirm", method = RequestMethod.POST)
     @ResponseBody
-    public Result askConfirm(@RequestParam String processInstanceId, @RequestParam String askTaskKey, @RequestParam String commentResult) {
+    public Result askConfirm(@RequestParam String askId, @RequestParam String commentResult) {
         try {
-            return workflowService.taskConfirmEnquire(getUserId(), processInstanceId, askTaskKey, commentResult);
+            return workflowService.taskConfirmEnquire(getUserId(), askId, commentResult);
         } catch (Exception e) {
             log.error("", e);
             return new Result(false, "操作失败");

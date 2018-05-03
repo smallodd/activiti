@@ -111,15 +111,14 @@ public interface WorkflowService {
     /**
      * 问询确认
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
-     * @param taskDefKey        需问询确认的任务key
-     * @param answerComment     确认信息
+     * @param userId        操作人ID
+     * @param askId         问询id
+     * @param answerComment 确认信息
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey, String answerComment);
+    Result taskConfirmEnquire(String userId, String askId, String answerComment);
 
     /**
      * 驳回
