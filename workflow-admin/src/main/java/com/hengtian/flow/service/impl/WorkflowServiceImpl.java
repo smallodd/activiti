@@ -768,19 +768,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!userId.equals(task.getAssignee()) && StringUtils.isNotBlank(task.getAssignee())) {
             return new Result(ResultEnum.PERMISSION_DENY.code, ResultEnum.PERMISSION_DENY.msg);
         }
-
-        //校验是否是上级节点 todo
-        List<HistoricTaskInstance> tasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).orderByTaskId().asc().list();
-        Iterator<HistoricTaskInstance> iterator = tasks.iterator();
-        boolean valid = false;
-        while (iterator.hasNext()) {
-            HistoricTaskInstance instance = iterator.next();
-            if (Long.parseLong(instance.getId()) < Long.parseLong(task.getId())) {
-                valid = true;
-                break;
-            }
-        }
-        if (!valid) {
+        //校验是否是上级节点
+        List<String> parentNodes = getTaskDefKeysForJump(task.getId());
+        if (!parentNodes.contains(task.getTaskDefinitionKey())) {
             return new Result(false, "无权问询该节点");
         }
 
@@ -1219,5 +1209,31 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         return pageInfo;
+    }
+
+    /**
+     * 获取可跳转到的任务节点
+     *
+     * @param taskId 任务节点id
+     * @return
+     */
+    @Override
+    public List<HistoricTaskInstance> getTaskForJump(String taskId) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            return new ArrayList<>();
+        }
+        List<String> taskDefKeys = getTaskDefKeysForJump(taskId);
+        if (CollectionUtils.isNotEmpty(taskDefKeys)) {
+            List<HistoricTaskInstance> list = new ArrayList<>();
+            for (String taskDefKey : taskDefKeys) {
+                List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list();
+                if (CollectionUtils.isNotEmpty(instances)) {
+                    list.add(instances.get(0));
+                }
+            }
+            return list;
+        }
+        return new ArrayList<>();
     }
 }

@@ -6,7 +6,10 @@ import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TUserTask;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
+
+import java.util.List;
 
 public interface WorkflowService {
     /**
@@ -123,8 +126,8 @@ public interface WorkflowService {
     /**
      * 驳回
      *
-     * @param userId        操作人ID
-     * @param taskId        任务ID
+     * @param userId 操作人ID
+     * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
@@ -224,4 +227,13 @@ public interface WorkflowService {
      * date 2018/4/23 15:59
      */
     PageInfo claimTaskList(TaskQueryParam taskQueryParam);
+
+
+    /**
+     * 获取可跳转到的任务节点
+     *
+     * @param taskId 任务节点id
+     * @return
+     */
+    List<HistoricTaskInstance> getTaskForJump(String taskId);
 }

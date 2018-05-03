@@ -10,6 +10,7 @@ import org.activiti.engine.HistoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -67,17 +67,12 @@ public class AskController extends BaseController {
     @GetMapping("comment")
     public String comment(HttpServletRequest request, @RequestParam String taskId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        List<HistoricTaskInstance> tasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).executionId(task.getExecutionId()).orderByTaskId().asc().list();
-        Iterator<HistoricTaskInstance> iterator = tasks.iterator();
-        while (iterator.hasNext()) {
-            HistoricTaskInstance instance = iterator.next();
-            if (Long.parseLong(instance.getId()) >= Long.parseLong(taskId)) {
-                iterator.remove();
-            }
+        if (task != null) {
+            request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
+            request.setAttribute("processInstanceId", task.getProcessInstanceId());
         }
+        List<HistoricTaskInstance> tasks = workflowService.getTaskForJump(taskId);
         request.setAttribute("tasks", tasks);
-        request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
-        request.setAttribute("processInstanceId", task.getProcessInstanceId());
         return "ask/comment";
     }
 
