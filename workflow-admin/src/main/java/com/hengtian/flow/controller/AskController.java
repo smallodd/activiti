@@ -91,6 +91,7 @@ public class AskController extends BaseController {
     public String detail(@RequestParam String askId, HttpServletRequest request) {
         Result askComment = workflowService.askComment(getUserId(), askId);
         request.setAttribute("askComment", askComment.getObj());
+        request.setAttribute("askId", askId);
         return "ask/detail";
     }
 
