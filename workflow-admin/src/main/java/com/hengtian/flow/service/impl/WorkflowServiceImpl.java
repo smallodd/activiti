@@ -773,6 +773,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
+        //设定审批人的需要是审批人本身问询
+        if (!userId.equals(task.getAssignee()) && StringUtils.isNotBlank(task.getAssignee())) {
+            return new Result(ResultEnum.PERMISSION_DENY.code, ResultEnum.PERMISSION_DENY.msg);
+        }
 
         //校验是否是上级节点 todo
         List<HistoricTaskInstance> tasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).orderByTaskId().asc().list();
