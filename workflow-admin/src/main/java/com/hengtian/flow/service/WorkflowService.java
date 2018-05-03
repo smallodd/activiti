@@ -122,6 +122,17 @@ public interface WorkflowService {
     Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey, String answerComment);
 
     /**
+     * 驳回
+     *
+     * @param userId        操作人ID
+     * @param taskId        任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:01
+     */
+    Result taskRollback(String userId, String taskId);
+
+    /**
      * 撤回
      *
      * @param userId        操作人ID

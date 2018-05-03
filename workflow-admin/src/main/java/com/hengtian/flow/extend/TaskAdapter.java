@@ -40,6 +40,9 @@ public class TaskAdapter implements TaskManager {
         } else if (TaskActionEnum.REVOKE.value.equals(actionType)) {
             //撤回
             return WorkflowService.taskRevoke(taskActionParam.getUserId(), taskActionParam.getTaskId(), taskActionParam.getTargetTaskDefKey());
+        } else if (TaskActionEnum.ROLLBACK.value.equals(actionType)) {
+            //驳回
+            return WorkflowService.taskRollback(taskActionParam.getUserId(), taskActionParam.getTaskId());
         } else if (TaskActionEnum.CANCEL.value.equals(actionType)) {
             //取消
             return WorkflowService.taskCancel(taskActionParam.getUserId(), taskActionParam.getProcessInstanceId());

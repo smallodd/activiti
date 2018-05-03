@@ -19,6 +19,7 @@ public enum TaskActionEnum {
     ENQUIRE("enquire","问询"),
     CONFIRMENQUIRE("confirmEnquire","确认问询"),
     REVOKE("revoke","撤回"),
+    ROLLBACK("rollback","撤回"),
     CANCEL("cancel","取消"),
     SUSPEND("suspend","挂起"),
     ACTIVATE("activate","激活");
