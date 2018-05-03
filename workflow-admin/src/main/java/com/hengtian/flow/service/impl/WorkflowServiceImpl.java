@@ -799,27 +799,29 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 问询确认
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
-     * @param taskDefKey        需问询确认的任务key
-     * @param answerComment     确认信息
+     * @param userId        操作人ID
+     * @param askId         问询
+     * @param answerComment 确认信息
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result taskConfirmEnquire(String userId, String processInstanceId, String taskDefKey, String answerComment) {
-        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefKey).singleResult();
+    public Result taskConfirmEnquire(String userId, String askId, String answerComment) {
+        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
+        //todo admin是否可用代办
+        wrapper.where("`ask_user_id`={0}", userId)
+                .where("id={0}", askId)
+                .where("is_ask_end={0}", 0);
+        TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
+        if (tAskTask == null) {
+            return new Result(false, "问询确认失败");
+        }
+        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
-        wrapper.where("`ask_user_id`={0}", userId)
-                .where("execution_id={0}", task.getExecutionId())
-                .where("is_ask_end={0}", 0)
-                .where("ask_task_key={0}", task.getTaskDefinitionKey());
-        TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         tAskTask.setUpdateTime(new Date());
         tAskTask.setAnswerComment(answerComment);
         tAskTask.setIsAskEnd(1);
@@ -841,10 +843,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     public Result taskRollback(String userId, String taskId) {
         List<String> taskDefKeysForRollback = getTaskDefKeysForRollback(taskId);
-        if(CollectionUtils.isEmpty(taskDefKeysForRollback)){
+        if (CollectionUtils.isEmpty(taskDefKeysForRollback)) {
             return new Result(false, "撤回成功");
         }
-        for(String taskDefKey : taskDefKeysForRollback){
+        for (String taskDefKey : taskDefKeysForRollback) {
             taskJump(userId, taskId, taskDefKey);
         }
         return new Result(true, "撤回成功");
