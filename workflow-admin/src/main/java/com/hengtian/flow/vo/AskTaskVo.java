@@ -16,6 +16,7 @@ public class AskTaskVo implements Serializable {
      * 流程实例ID
      */
     private String procInstId;
+    private String executionId;
     /**
      * 流程实例名称
      */
@@ -79,6 +80,14 @@ public class AskTaskVo implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getExecutionId() {
+        return executionId;
+    }
+
+    public void setExecutionId(String executionId) {
+        this.executionId = executionId;
     }
 
     public String getProcInstId() {
@@ -206,6 +215,7 @@ public class AskTaskVo implements Serializable {
         return "AskTaskVo{" +
                 "id='" + id + '\'' +
                 ", procInstId='" + procInstId + '\'' +
+                ", executionId='" + executionId + '\'' +
                 ", procInstName='" + procInstName + '\'' +
                 ", currentTaskId='" + currentTaskId + '\'' +
                 ", currentTaskKey='" + currentTaskKey + '\'' +
