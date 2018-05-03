@@ -49,7 +49,7 @@ public class ActivitiUtilServiceImpl {
      * date 2018/4/28 15:09
      */
     private List<String> getHisTaskDefKeys(String processInstaceId){
-        List<HistoricTaskInstance> hisTask = historyService.createHistoricTaskInstanceQuery().orderByTaskDefinitionKey().list();
+        List<HistoricTaskInstance> hisTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstaceId).orderByTaskDefinitionKey().asc().list();
         if(CollectionUtils.isEmpty(hisTask)){
             return null;
         }

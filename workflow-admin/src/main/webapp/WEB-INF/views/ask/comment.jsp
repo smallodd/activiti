@@ -11,14 +11,13 @@
 	<div data-options="region:'center',border:false" style="overflow:auto;padding-top:30px;text-align:center">
         <form id="taskJumpForm" method="post">
             <span style="padding-right: 30px">问询节点</span>
-            <input type="hidden" name="currentTaskDefKey" id="currentTaskDefKey" value="${currentTaskDefKey}"/>
-            <input type="hidden" name="processInstanceId" id="processInstanceId" value="${processInstanceId}"/>
+            <input type="hidden" name="askId" id="askId" value="${askId}"/>
 			 <select name="targetTaskDefKey" id="targetTaskDefKey" class="easyui-combobox" data-options="width:240,height:29,panelHeight:'auto'">
 				 <c:forEach items="${tasks}" var="task">
-					<option value="${task.taskDefKey}">${task.taskName}</option>
+					<option value="${task.taskDefinitionKey}">${task.name}</option>
 				 </c:forEach>
 			 </select>
-            <textarea  style="margin-top: 20px;width: 325px; height: 200px;" placeholder="问询内容" name="commentResult"></textarea>
+            <textarea  style="margin-top: 20px;width: 325px; height: 200px;white-space: normal" placeholder="问询内容" name="commentResult"></textarea>
 		</form>
     </div>
 </div>
