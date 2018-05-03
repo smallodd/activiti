@@ -779,7 +779,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         //校验是否是上级节点
         List<String> parentNodes = getBeforeTaskDefinitionKeys(task, true);
-        if (!parentNodes.contains(task.getTaskDefinitionKey())) {
+        if (!parentNodes.contains(targetTaskDefKey)) {
             return new Result(false, "无权问询该节点");
         }
 
