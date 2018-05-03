@@ -35,8 +35,6 @@ public class AskController extends BaseController {
     private WorkflowService workflowService;
     @Autowired
     private TaskService taskService;
-    @Autowired
-    private HistoryService historyService;
 
     /**
      * 问询列表
