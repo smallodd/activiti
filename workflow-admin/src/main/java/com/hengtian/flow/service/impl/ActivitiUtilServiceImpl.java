@@ -505,7 +505,7 @@ public class ActivitiUtilServiceImpl {
                     .singleResult();
             if (instance == null) {
                 //流程结束
-                return new Result(ResultEnum.PROCINST_NOT_EXIT.code, ResultEnum.PROCINST_NOT_EXIT.msg);
+                return new Result(ResultEnum.PROCINST_NOT_EXIST.code, ResultEnum.PROCINST_NOT_EXIST.msg);
             }
             variables = instance.getProcessVariables();
             // 取得流程定义
@@ -514,7 +514,7 @@ public class ActivitiUtilServiceImpl {
 
             if (definition == null) {
                 //log.error("流程定义未找到");
-                return new Result(ResultEnum.PROCESS_NOT_EXIT.code, ResultEnum.PROCESS_NOT_EXIT.msg);
+                return new Result(ResultEnum.PROCESS_NOT_EXIST.code, ResultEnum.PROCESS_NOT_EXIST.msg);
             }
             // 取得上一步活动
             ActivityImpl currActivity = ((ProcessDefinitionImpl) definition).findActivity(currTask.getTaskDefinitionKey());
