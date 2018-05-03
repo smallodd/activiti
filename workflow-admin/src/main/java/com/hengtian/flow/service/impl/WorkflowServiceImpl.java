@@ -771,6 +771,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //校验是否已有问询
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("proc_inst_id={0}", processInstanceId)
+                .where("execution_id={0}", task.getExecutionId())
                 .where("current_task_key={0}", currentTaskDefKey)
                 .where("ask_task_key={0}", targetTaskDefKey)
                 .where("is_ask_end=0");
@@ -783,6 +784,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         askTask.setProcInstId(task.getProcessInstanceId());
         askTask.setCurrentTaskId(task.getId());
         askTask.setCurrentTaskKey(task.getTaskDefinitionKey());
+        askTask.setExecutionId(task.getExecutionId());
         askTask.setIsAskEnd(0);
         askTask.setAskTaskKey(targetTaskDefKey);
         askTask.setCreateTime(new Date());
