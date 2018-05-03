@@ -836,8 +836,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (tAskTask == null) {
             return new Result(false, "问询确认失败");
         }
-        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).singleResult();
-        if (task == null) {
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).list();
+        if (CollectionUtils.isEmpty(list)) {
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         tAskTask.setUpdateTime(new Date());
