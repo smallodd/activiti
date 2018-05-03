@@ -20,8 +20,7 @@
                     <dd><textarea style="width: 200px;height: 150px;white-space: normal;overflow: scroll" cols="20" rows="20" placeholder="回复内容" name="commentResult">${askComment.answerComment}</textarea></dd>
                     </dt>
                 </dl>
-            <input type="hidden" name="askTaskKey" id="askTaskKey" value="${askComment.askTaskKey}"/>
-            <input type="hidden" name="processInstanceId" id="processInstanceId" value="${askComment.procInstId}"/>
+            <input type="hidden" name="askId" id="askId" value="${askId}"/>
 		</form>
     </div>
 </div>

@@ -93,8 +93,8 @@
                 formatter : function(value, row, index) {
                     var str = "";
                     if (row.isAskEnd == 0) {
-                        <shiro:hasPermission name="/ask/detail">
-                         str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="askComment(\'{0}\',\'{1}\');" >问询详情</a>', row.procInstId,row.askTaskKey);
+                        <shiro:hasPermission name="/ask/askConfirm">
+                         str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="askComment(\'{0}\');" >问询详情</a>', row.id);
                         </shiro:hasPermission>
                     }
                     return str;
@@ -111,13 +111,13 @@
     /**
      * 问询详情
      */
-    function askComment(procInstId,askTaskKey) {
+    function askComment(askId) {
         parent.$.modalDialog({
             title : '问询详情',
             width : 800,
             height : 600,
             modal : true,
-            href :  '${ctx}/ask/detail?procInstId='+procInstId+"&askTaskKey="+askTaskKey,
+            href :  '${ctx}/ask/detail?askId='+askId,
             buttons : [ {
                 text : '确定问询',
                 handler : function() {

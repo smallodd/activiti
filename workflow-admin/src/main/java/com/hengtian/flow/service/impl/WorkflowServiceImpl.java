@@ -27,17 +27,14 @@ import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
-import org.activiti.engine.impl.pvm.PvmActivity;
-import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
-import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.NativeTaskQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
 import org.activiti.engine.task.TaskQuery;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -768,12 +765,39 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
-        //todo 可询问节点 应限制只能为上级节点  ,已有询问的不能在询问
+
+        //校验是否是上级节点 todo
+        List<HistoricTaskInstance> tasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).orderByTaskId().asc().list();
+        Iterator<HistoricTaskInstance> iterator = tasks.iterator();
+        boolean valid = false;
+        while (iterator.hasNext()) {
+            HistoricTaskInstance instance = iterator.next();
+            if (Long.parseLong(instance.getId()) < Long.parseLong(task.getId())) {
+                valid = true;
+                break;
+            }
+        }
+        if (!valid) {
+            return new Result(false, "无权问询该节点");
+        }
+
+        //校验是否已有问询
+        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
+        wrapper.where("proc_inst_id={0}", processInstanceId)
+                .where("execution_id={0}", task.getExecutionId())
+                .where("current_task_key={0}", currentTaskDefKey)
+                .where("ask_task_key={0}", targetTaskDefKey)
+                .where("is_ask_end=0");
+        List<TAskTask> list = tAskTaskService.selectList(wrapper);
+        if (CollectionUtils.isNotEmpty(list)) {
+            return new Result(false, "已存在问询任务");
+        }
 
         TAskTask askTask = new TAskTask();
         askTask.setProcInstId(task.getProcessInstanceId());
         askTask.setCurrentTaskId(task.getId());
         askTask.setCurrentTaskKey(task.getTaskDefinitionKey());
+        askTask.setExecutionId(task.getExecutionId());
         askTask.setIsAskEnd(0);
         askTask.setAskTaskKey(targetTaskDefKey);
         askTask.setCreateTime(new Date());
@@ -809,8 +833,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("`ask_user_id`={0}", userId)
-                .and("is_ask_end={0}", 0)
-                .and("ask_task_key={0}", task.getTaskDefinitionKey());
+                .where("execution_id={0}", task.getExecutionId())
+                .where("is_ask_end={0}", 0)
+                .where("ask_task_key={0}", task.getTaskDefinitionKey());
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         tAskTask.setUpdateTime(new Date());
         tAskTask.setAnswerComment(answerComment);
@@ -832,71 +857,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/4/18 16:01
      */
     public Result taskRollback(String userId, String taskId) {
-        try {
-            Map<String, Object> variables;
-            // 取得当前任务
-            HistoricTaskInstance currTask = historyService
-                    .createHistoricTaskInstanceQuery().taskId(taskId)
-                    .singleResult();
-            // 取得流程实例
-            ProcessInstance instance = runtimeService
-                    .createProcessInstanceQuery()
-                    .processInstanceId(currTask.getProcessInstanceId())
-                    .singleResult();
-            if (instance == null) {
-                //流程结束
-                return new Result(ResultEnum.PROCINST_NOT_EXIT.code, ResultEnum.PROCINST_NOT_EXIT.msg);
-            }
-            variables = instance.getProcessVariables();
-            // 取得流程定义
-            ProcessDefinitionEntity definition = (ProcessDefinitionEntity) (processEngine.getRepositoryService().getProcessDefinition(currTask
-                    .getProcessDefinitionId()));
-
-            if (definition == null) {
-                //log.error("流程定义未找到");
-                return new Result(ResultEnum.PROCESS_NOT_EXIT.code, ResultEnum.PROCESS_NOT_EXIT.msg);
-            }
-            // 取得上一步活动
-            ActivityImpl currActivity = ((ProcessDefinitionImpl) definition).findActivity(currTask.getTaskDefinitionKey());
-            List<PvmTransition> nextTransitionList = currActivity.getIncomingTransitions();
-            // 清除当前活动的出口
-            List<PvmTransition> oriPvmTransitionList = new ArrayList<PvmTransition>();
-            List<PvmTransition> pvmTransitionList = currActivity.getOutgoingTransitions();
-            for (PvmTransition pvmTransition : pvmTransitionList) {
-                oriPvmTransitionList.add(pvmTransition);
-            }
-            pvmTransitionList.clear();
-
-            // 建立新出口
-            List<TransitionImpl> newTransitions = new ArrayList<TransitionImpl>();
-            for (PvmTransition nextTransition : nextTransitionList) {
-                PvmActivity nextActivity = nextTransition.getSource();
-                ActivityImpl nextActivityImpl = ((ProcessDefinitionImpl) definition)
-                        .findActivity(nextActivity.getId());
-                TransitionImpl newTransition = currActivity
-                        .createOutgoingTransition();
-                newTransition.setDestination(nextActivityImpl);
-                newTransitions.add(newTransition);
-            }
-            // 完成任务
-            List<Task> tasks = taskService.createTaskQuery()
-                    .processInstanceId(instance.getId())
-                    .taskDefinitionKey(currTask.getTaskDefinitionKey()).list();
-            for (Task task : tasks) {
-                taskService.complete(task.getId(), variables);
-                historyService.deleteHistoricTaskInstance(task.getId());
-            }
-            // 恢复方向
-            for (TransitionImpl transitionImpl : newTransitions) {
-                currActivity.getOutgoingTransitions().remove(transitionImpl);
-            }
-            for (PvmTransition pvmTransition : oriPvmTransitionList) {
-                pvmTransitionList.add(pvmTransition);
-            }
-        } catch (Exception e) {
-            return new Result(ResultEnum.FAIL.code, ResultEnum.FAIL.msg);
+        List<String> taskDefKeysForRollback = getTaskDefKeysForRollback(taskId);
+        if(CollectionUtils.isEmpty(taskDefKeysForRollback)){
+            return new Result(false, "撤回成功");
         }
-
+        for(String taskDefKey : taskDefKeysForRollback){
+            taskJump(userId, taskId, taskDefKey);
+        }
         return new Result(true, "撤回成功");
     }
 
@@ -956,7 +923,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
             }
         }*/
-        return new Result();
+
+        return taskJump(userId, taskId, targetTaskKey);
     }
 
     /**
@@ -1018,22 +986,23 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 问询意见查询接口
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
-     * @param askTaskKey        任务key
+     * @param userId 操作人ID
+     * @param askId  问询id
      * @return
      */
     @Override
-    public Result askComment(String userId, String processInstanceId, String askTaskKey) {
-        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(askTaskKey).singleResult();
+    public Result askComment(String userId, String askId) {
+        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
+        wrapper.where("id={0}", askId);
+        TAskTask askTask = tAskTaskService.selectOne(wrapper);
+        if (askTask == null) {
+            return new Result(false, "问询不存在");
+        }
+        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(askTask.getProcInstId()).taskDefinitionKey(askTask.getAskTaskKey()).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIT.code, ResultEnum.TASK_NOT_EXIT.msg);
         }
         Result result = new Result(true, "查询成功");
-        EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
-        wrapper.where("proc_inst_id={0}", processInstanceId);
-        wrapper.where("ask_task_key={0}", askTaskKey);
-        TAskTask askTask = tAskTaskService.selectOne(wrapper);
         AskCommentDetailVo detailVo = new AskCommentDetailVo();
         detailVo.setAskComment(askTask.getAskComment());
         detailVo.setAnswerComment(askTask.getAnswerComment());

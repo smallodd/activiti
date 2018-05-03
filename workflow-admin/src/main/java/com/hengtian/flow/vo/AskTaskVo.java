@@ -11,7 +11,7 @@ public class AskTaskVo implements Serializable {
     /**
      * 主键
      */
-    private Integer id;
+    private String id;
     /**
      * 流程实例ID
      */
@@ -73,11 +73,11 @@ public class AskTaskVo implements Serializable {
      */
     private String answerComment;
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -204,7 +204,7 @@ public class AskTaskVo implements Serializable {
     @Override
     public String toString() {
         return "AskTaskVo{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", procInstId='" + procInstId + '\'' +
                 ", procInstName='" + procInstName + '\'' +
                 ", currentTaskId='" + currentTaskId + '\'' +

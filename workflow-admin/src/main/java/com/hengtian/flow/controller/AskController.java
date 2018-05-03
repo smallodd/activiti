@@ -1,17 +1,14 @@
 package com.hengtian.flow.controller;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
-import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TAskTaskService;
-import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.WorkflowService;
-import org.activiti.engine.RepositoryService;
+import org.activiti.engine.HistoryService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -36,11 +34,9 @@ public class AskController extends BaseController {
     @Autowired
     private WorkflowService workflowService;
     @Autowired
-    private RepositoryService repositoryService;
-    @Autowired
     private TaskService taskService;
     @Autowired
-    private TUserTaskService tUserTaskService;
+    private HistoryService historyService;
 
     /**
      * 问询列表
@@ -71,24 +67,15 @@ public class AskController extends BaseController {
     @GetMapping("comment")
     public String comment(HttpServletRequest request, @RequestParam String taskId) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        //查询流程定义
-        ProcessDefinition pd = repositoryService.createProcessDefinitionQuery()
-                .processDefinitionId(task.getProcessDefinitionId()).singleResult();
-//        EntityWrapper<TUserTask> entityWrapper = new EntityWrapper<>();
-//        entityWrapper.where("proc_def_key = {0}", pd.getKey())
-//                .where("task_def_key={0}", task.getTaskDefinitionKey())
-//                .andNew("version_={0}", pd.getVersion());
-//        TUserTask userTask = tUserTaskService.selectOne(entityWrapper);
-        //todo 可询问节点 应限制只能为上级节点
-//        if (userTask != null) {
-        //根据流程定义KEY查询用户任务
-        EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-        wrapper.where("proc_def_key = {0}", pd.getKey()).and("version_={0}", pd.getVersion());
-//            wrapper.lt("order_num", userTask.getOrderNum());
-        wrapper.orderBy("order_num", true);
-        List<TUserTask> tasks = tUserTaskService.selectList(wrapper);
+        List<HistoricTaskInstance> tasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).executionId(task.getExecutionId()).orderByTaskId().asc().list();
+        Iterator<HistoricTaskInstance> iterator = tasks.iterator();
+        while (iterator.hasNext()) {
+            HistoricTaskInstance instance = iterator.next();
+            if (Long.parseLong(instance.getId()) >= Long.parseLong(taskId)) {
+                iterator.remove();
+            }
+        }
         request.setAttribute("tasks", tasks);
-//        }
         request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
         request.setAttribute("processInstanceId", task.getProcessInstanceId());
         return "ask/comment";
@@ -97,13 +84,12 @@ public class AskController extends BaseController {
     /**
      * 问询意见查询接口
      *
-     * @param procInstId 流程实例id
-     * @param askTaskKey 任务key
+     * @param askId 问询id
      * @return
      */
     @GetMapping("detail")
-    public String detail(@RequestParam String procInstId, @RequestParam String askTaskKey, HttpServletRequest request) {
-        Result askComment = workflowService.askComment(getUserId(), procInstId, askTaskKey);
+    public String detail(@RequestParam String askId, HttpServletRequest request) {
+        Result askComment = workflowService.askComment(getUserId(), askId);
         request.setAttribute("askComment", askComment.getObj());
         return "ask/detail";
     }
@@ -111,13 +97,12 @@ public class AskController extends BaseController {
     /**
      * 回复意见查询接口
      *
-     * @param procInstId 流程实例id
-     * @param askTaskKey 任务key
+     * @param askId 问询id
      * @return
      */
     @GetMapping("answer")
-    public String answer(@RequestParam String procInstId, @RequestParam String askTaskKey, HttpServletRequest request) {
-        Result askComment = workflowService.askComment(getUserId(), procInstId, askTaskKey);
+    public String answer(@RequestParam String askId, HttpServletRequest request) {
+        Result askComment = workflowService.askComment(getUserId(), askId);
         request.setAttribute("askComment", askComment.getObj());
         return "ask/answer";
     }

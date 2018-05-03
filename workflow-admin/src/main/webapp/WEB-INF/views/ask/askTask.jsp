@@ -94,29 +94,29 @@
                     var str = "";
                     if (row.isAskEnd == 1) {
                         <shiro:hasPermission name="/ask/answer">
-                        str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="askComment(\'{0}\',\'{1}\');" >回复详情</a>', row.procInstId,row.askTaskKey);
+                        str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-answerComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="answerComment(\'{0}\');" >回复详情</a>', row.id);
                         </shiro:hasPermission>
                     }
                     return str;
                 }
             } ] ],
             onLoadSuccess:function(data){
-                $('.task-easyui-linkbutton-askComment').linkbutton({text:'问询详情'});
+                $('.task-easyui-linkbutton-answerComment').linkbutton({text:'回复详情'});
             },
             toolbar : '#taskToolbar'
         });
     });
 
     /**
-     * 问询详情
+     * 回复详情
      */
-    function askComment(procInstId,askTaskKey) {
+    function answerComment(askId) {
         parent.$.modalDialog({
-            title : '问询详情',
+            title : '回复详情',
             width : 800,
             height : 600,
             modal : true,
-            href :  '${ctx}/ask/detail?procInstId='+procInstId+"&askTaskKey="+askTaskKey
+            href :  '${ctx}/ask/answer?askId='+askId
         });
     }
 
