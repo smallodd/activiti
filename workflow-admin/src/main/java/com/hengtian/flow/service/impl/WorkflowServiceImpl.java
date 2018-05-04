@@ -771,10 +771,20 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult) {
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
         if (task == null) {
+            log.error("问询的任务不存在 processInstanceId:{},taskDefinitionKey:{}", processInstanceId, currentTaskDefKey);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        //设定审批人的需要是审批人本身问询
-        if (!userId.equals(task.getAssignee()) && StringUtils.isNotBlank(task.getAssignee())) {
+        EntityWrapper<TUserTask> entityWrapper = new EntityWrapper<>();
+        entityWrapper.where("proc_def_key={0}", task.getProcessDefinitionId());
+        entityWrapper.where("task_def_key={0}", task.getTaskDefinitionKey());
+        TUserTask userTask = tUserTaskService.selectOne(entityWrapper);
+        if (userTask == null) {
+            log.error("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
+        }
+        //todo candidate_ids 格式
+        if (StringUtils.isNotBlank(userTask.getCandidateIds()) && !userTask.getCandidateIds().contains(userId)) {
+            log.error("无权限问询该节点");
             return new Result(ResultEnum.PERMISSION_DENY.code, ResultEnum.PERMISSION_DENY.msg);
         }
         //校验是否是上级节点
@@ -841,10 +851,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 .where("is_ask_end={0}", 0);
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         if (tAskTask == null) {
+            log.error("问询不存在或状态为已确认 askId:{}", askId);
             return new Result(false, "问询确认失败");
         }
         List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).list();
         if (CollectionUtils.isEmpty(list)) {
+            log.error("确认问询的任务不存在 askId:{}", askId);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         tAskTask.setUpdateTime(new Date());
