@@ -26,7 +26,6 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.model.TMailLog;
 import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
@@ -38,9 +37,9 @@ import com.hengtian.system.service.SysUserService;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.*;
-import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
@@ -80,13 +79,7 @@ public class ActivitiController extends BaseController{
 	@Autowired
 	private TaskService taskService;
 	@Autowired
-	private RuntimeService runtimeService;
-	@Autowired
-	private IdentityService identityService;
-	@Autowired
     private SysUserService sysUserService;
-	@Autowired
-    private TUserTaskService tUserTaskService;
 	@Autowired
 	private TMailLogService tMailLogService;
 	@Autowired
@@ -97,8 +90,6 @@ public class ActivitiController extends BaseController{
 	ProcessEngineConfiguration processEngineConfiguration;
 	@Autowired
 	ProcessEngineFactoryBean processEngine;
-	@Autowired
-	private ObjectMapper objectMapper;
 	@Autowired
 	WorkflowService workflowService;
 	@Autowired
@@ -571,16 +562,8 @@ public class ActivitiController extends BaseController{
      */
     @GetMapping("/taskJump")
     public String taskJump(Model model,@RequestParam("taskId") String taskId) {
-    	Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-    	//查询流程定义
-    	ProcessDefinition pd= repositoryService.createProcessDefinitionQuery()
-    	.processDefinitionId(task.getProcessDefinitionId()).singleResult();
-    	//根据流程定义KEY查询用户任务
-    	EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-		wrapper.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
-		wrapper.orderBy("order_num",true);
-		List<TUserTask> tasks= tUserTaskService.selectList(wrapper);
-    	model.addAttribute("tasks",tasks);
+        List<HistoricTaskInstance> tasks = workflowService.getTaskForJump(taskId);
+        model.addAttribute("tasks", tasks);
 		model.addAttribute("taskId",taskId);
         return "activiti/taskJump";
     }
