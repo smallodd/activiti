@@ -356,13 +356,10 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("获取父级任务节点")
     @ApiOperation(httpMethod = "POST", value = "获取父级任务节点")
     @RequestMapping(value = "/rest/parentTask", method = RequestMethod.POST)
-    public Object getTaskForJump(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
-                                 @ApiParam(value = "是否递归获取父级节点", name = "isAll", required = true) @RequestParam(defaultValue = "0") Integer isAll) {
+    public Object getTaskForJump(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId, @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
+                                 @ApiParam(value = "是否递归获取父级节点", name = "isAll", required = true) @RequestParam(defaultValue = "1") Integer isAll) {
         logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", taskId);
-        if (StringUtils.isBlank(taskId)) {
-            return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
-        }
-        return renderSuccess(workflowService.getParentTasks(taskId, isAll != 0));
+        return renderSuccess(workflowService.getParentTasks(taskId, userId, isAll != 0));
     }
 
     /**

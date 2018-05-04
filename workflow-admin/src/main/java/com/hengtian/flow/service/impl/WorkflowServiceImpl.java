@@ -775,10 +775,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.error("问询的任务不存在 processInstanceId:{},taskDefinitionKey:{}", processInstanceId, currentTaskDefKey);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        EntityWrapper<TUserTask> entityWrapper = new EntityWrapper<>();
-        entityWrapper.where("proc_def_key={0}", task.getProcessDefinitionId());
-        entityWrapper.where("task_def_key={0}", task.getTaskDefinitionKey());
-        TUserTask userTask = tUserTaskService.selectOne(entityWrapper);
+        TUserTask userTask = getUserTask(task);
         if (userTask == null) {
             log.error("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
@@ -831,6 +828,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setDetail("工号【" + userId + "】问询了该任务，问询内容是【" + commentResult + "】");
         workDetailService.insert(tWorkDetail);
         return new Result(true, "问询成功");
+    }
+
+    /**
+     * 查询用户任务
+     *
+     * @param task
+     * @return
+     */
+    private TUserTask getUserTask(Task task) {
+        EntityWrapper<TUserTask> entityWrapper = new EntityWrapper<>();
+        entityWrapper.where("proc_def_key={0}", task.getProcessDefinitionId());
+        entityWrapper.where("task_def_key={0}", task.getTaskDefinitionKey());
+        return tUserTaskService.selectOne(entityWrapper);
     }
 
     /**
@@ -1269,10 +1279,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @return
      */
     @Override
-    public List<TaskVo> getParentTasks(String taskId, boolean isAll) {
+    public Result getParentTasks(String taskId, String userId, boolean isAll) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
-            return new ArrayList<>();
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
+        }
+        TUserTask userTask = getUserTask(task);
+        if (userTask == null) {
+            log.error("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         List<String> taskDefKeys = getBeforeTaskDefinitionKeys(task, isAll);
         if (CollectionUtils.isNotEmpty(taskDefKeys)) {
@@ -1290,8 +1305,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     list.add(taskVo);
                 }
             }
-            return list;
+            Result result = new Result(true, "查询成功");
+            result.setObj(list);
+            return result;
         }
-        return new ArrayList<>();
+        return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
     }
 }

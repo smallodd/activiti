@@ -561,8 +561,8 @@ public class ActivitiController extends BaseController{
      */
     @GetMapping("/taskJump")
     public String taskJump(Model model,@RequestParam("taskId") String taskId) {
-        List<TaskVo> tasks = workflowService.getParentTasks(taskId, true);
-        model.addAttribute("tasks", tasks);
+        Result result = workflowService.getParentTasks(taskId, getUserId(),true);
+        model.addAttribute("tasks", result.getObj());
 		model.addAttribute("taskId",taskId);
         return "activiti/taskJump";
     }

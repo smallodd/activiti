@@ -234,8 +234,9 @@ public interface WorkflowService {
      * 获取父级任务节点
      *
      * @param taskId 当前任务节点id
+     * @param userId 操作人ID
      * @param isAll  是否递归获取全部父节点
      * @return
      */
-    List<TaskVo> getParentTasks(String taskId, boolean isAll);
+    Result getParentTasks(String taskId, String userId, boolean isAll);
 }
