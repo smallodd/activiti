@@ -6,7 +6,6 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.WorkflowService;
-import com.hengtian.flow.vo.TaskVo;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * 问询
