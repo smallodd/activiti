@@ -15,7 +15,7 @@
             <input type="hidden" name="processInstanceId" id="processInstanceId" value="${processInstanceId}"/>
 			 <select name="targetTaskDefKey" id="targetTaskDefKey" class="easyui-combobox" data-options="width:240,height:29,panelHeight:'auto'">
 				 <c:forEach items="${tasks}" var="task">
-					<option value="${task.taskDefinitionKey}">${task.taskName}</option>
+                     <option value="${task.id}">${task.name}</option>
 				 </c:forEach>
 			 </select>
             <textarea  style="margin-top: 20px;width: 325px; height: 200px;white-space: normal" placeholder="问询内容" name="commentResult"></textarea>

@@ -238,5 +238,5 @@ public interface WorkflowService {
      * @param isAll  是否递归获取全部父节点
      * @return
      */
-    Result getParentTasks(String taskId, String userId, boolean isAll);
+    Result getParentNodes(String taskId, String userId, boolean isAll);
 }
