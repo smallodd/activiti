@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
@@ -21,6 +22,7 @@ import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
 import com.hengtian.flow.vo.TaskVo;
+import org.activiti.bpmn.model.FlowNode;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -1302,30 +1304,25 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.warn("任务不存在 taskId {}", taskId);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        TUserTask userTask = getUserTask(task);
-        if (userTask == null) {
-            log.warn("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
-            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
-        }
-        List<String> taskDefKeys = getBeforeTaskDefinitionKeys(task, isAll);
-        if (CollectionUtils.isNotEmpty(taskDefKeys)) {
-            List<TaskVo> list = new ArrayList<>();
-            for (String taskDefKey : taskDefKeys) {
-                List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list();
-                if (CollectionUtils.isNotEmpty(instances)) {
-                    TaskVo taskVo = new TaskVo();
-                    HistoricTaskInstance history = instances.get(0);
-                    taskVo.setTaskName(history.getName());
-                    taskVo.setProcessDefinitionKey(history.getProcessDefinitionId());
-                    taskVo.setProcessDefinitionId(history.getProcessDefinitionId());
-                    taskVo.setId(history.getId());
 
-                    list.add(taskVo);
-                }
+        try {
+            Map<String, FlowNode> beforeTask = findBeforeTask(taskId, true);
+            Iterator<Map.Entry<String, FlowNode>> iterator = beforeTask.entrySet().iterator();
+            List<TaskVo> taskList = Lists.newArrayList();
+            while(iterator.hasNext()){
+                Map.Entry<String, FlowNode> next = iterator.next();
+                FlowNode node = next.getValue();
+                TaskVo taskVo = new TaskVo();
+                taskVo.setTaskDefinitionKey(node.getId());
+                taskVo.setTaskName(node.getName());
+
+                taskList.add(taskVo);
             }
             Result result = new Result(true, "查询成功");
-            result.setObj(list);
+            result.setObj(taskList);
             return result;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
     }
