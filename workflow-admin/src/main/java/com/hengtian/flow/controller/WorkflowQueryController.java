@@ -6,6 +6,7 @@ import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.param.WorkDetailParam;
+import com.hengtian.common.result.Result;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TWorkDetailService;
@@ -178,6 +179,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "问询任务列表")
     @RequestMapping(value = "/rest/task/enquire/page", method = RequestMethod.POST)
     public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
+        if (StringUtils.isBlank(taskEnquireParam.getCreateId())) {
+            return new Result(false, "createId不能为空");
+        }
         return tAskTaskService.enquireTaskList(taskEnquireParam);
     }
 
@@ -193,6 +197,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
     @RequestMapping(value = "/rest/task/enquired/page", method = RequestMethod.POST)
     public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
+        if (StringUtils.isBlank(taskEnquireParam.getAskUserId())) {
+            return new Result(false, "askUserId不能为空");
+        }
         return tAskTaskService.enquiredTaskList(taskEnquireParam);
     }
 
@@ -336,6 +343,23 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }
         List<Comment> commentList = taskService.getTaskComments(taskId);
         return renderSuccess(commentList);
+    }
+
+
+    /**
+     * 获取父级任务节点
+     *
+     * @param taskId 任务ID
+     * @return
+     */
+    @ResponseBody
+    @SysLog("获取父级任务节点")
+    @ApiOperation(httpMethod = "POST", value = "获取父级任务节点")
+    @RequestMapping(value = "/rest/parentTask", method = RequestMethod.POST)
+    public Object getTaskForJump(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId, @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
+                                 @ApiParam(value = "是否递归获取父级节点", name = "isAll", required = true) @RequestParam(defaultValue = "1") Integer isAll) {
+        logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", taskId);
+        return renderSuccess(workflowService.getParentTasks(taskId, userId, isAll != 0));
     }
 
     /**

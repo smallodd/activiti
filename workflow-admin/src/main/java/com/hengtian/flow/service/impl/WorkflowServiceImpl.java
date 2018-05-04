@@ -22,6 +22,7 @@ import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
+import com.hengtian.flow.vo.TaskVo;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -467,6 +468,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         String processInstanceId = t.getProcessInstanceId();
         /*List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
         if(CollectionUtils.isNotEmpty(taskKeys)){
+        List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
+        if (CollectionUtils.isNotEmpty(taskKeys)) {
             List<Task> tasks = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
             List<String> currTaskDefKey = Lists.newArrayList();
             for (Task tk : tasks) {
@@ -500,7 +503,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Task ts = null;
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         //处理删除由于跳转/拿回产生冗余的数据
-        if(CollectionUtils.isNotEmpty(taskList)){
+        if (CollectionUtils.isNotEmpty(taskList)) {
             EntityWrapper ew = new EntityWrapper();
             ew.where("status={0}", -2).andNew("proc_inst_id={0}", taskList.get(0).getProcessInstanceId());
             TRuTask tRuTask = tRuTaskService.selectOne(ew);
@@ -788,25 +791,22 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult) {
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
         if (task == null) {
+            log.error("问询的任务不存在 processInstanceId:{},taskDefinitionKey:{}", processInstanceId, currentTaskDefKey);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        //设定审批人的需要是审批人本身问询
-        if (!userId.equals(task.getAssignee()) && StringUtils.isNotBlank(task.getAssignee())) {
+        TUserTask userTask = getUserTask(task);
+        if (userTask == null) {
+            log.error("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
+        }
+        //todo candidate_ids 格式
+        if (StringUtils.isNotBlank(userTask.getCandidateIds()) && !userTask.getCandidateIds().contains(userId)) {
+            log.error("无权限问询该节点");
             return new Result(ResultEnum.PERMISSION_DENY.code, ResultEnum.PERMISSION_DENY.msg);
         }
-
-        //校验是否是上级节点 todo
-        List<HistoricTaskInstance> tasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).orderByTaskId().asc().list();
-        Iterator<HistoricTaskInstance> iterator = tasks.iterator();
-        boolean valid = false;
-        while (iterator.hasNext()) {
-            HistoricTaskInstance instance = iterator.next();
-            if (Long.parseLong(instance.getId()) < Long.parseLong(task.getId())) {
-                valid = true;
-                break;
-            }
-        }
-        if (!valid) {
+        //校验是否是上级节点
+        List<String> parentNodes = getBeforeTaskDefinitionKeys(task, true);
+        if (!parentNodes.contains(targetTaskDefKey)) {
             return new Result(false, "无权问询该节点");
         }
 
@@ -839,7 +839,27 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!success) {
             return new Result(false, "问询失败");
         }
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setTaskId(task.getId());
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号【" + userId + "】问询了该任务，问询内容是【" + commentResult + "】");
+        workDetailService.insert(tWorkDetail);
         return new Result(true, "问询成功");
+    }
+
+    /**
+     * 查询用户任务
+     *
+     * @param task
+     * @return
+     */
+    private TUserTask getUserTask(Task task) {
+        EntityWrapper<TUserTask> entityWrapper = new EntityWrapper<>();
+        entityWrapper.where("proc_def_key={0}", task.getProcessDefinitionId());
+        entityWrapper.where("task_def_key={0}", task.getTaskDefinitionKey());
+        return tUserTaskService.selectOne(entityWrapper);
     }
 
     /**
@@ -861,10 +881,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 .where("is_ask_end={0}", 0);
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         if (tAskTask == null) {
+            log.error("问询不存在或状态为已确认 askId:{}", askId);
             return new Result(false, "问询确认失败");
         }
-        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).singleResult();
-        if (task == null) {
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).list();
+        if (CollectionUtils.isEmpty(list)) {
+            log.error("确认问询的任务不存在 askId:{}", askId);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         tAskTask.setUpdateTime(new Date());
@@ -874,6 +896,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!success) {
             return new Result(false, "问询确认失败");
         }
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setTaskId(tAskTask.getCurrentTaskId());
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setProcessInstanceId(tAskTask.getProcInstId());
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号【" + userId + "】回复了该问询，回复内容是【" + answerComment + "】");
+        workDetailService.insert(tWorkDetail);
         return new Result(true, "问询确认成功");
     }
 
@@ -953,8 +982,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/4/18 16:03
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result processSuspend(String userId, String processInstanceId) {
         runtimeService.suspendProcessInstanceById(processInstanceId);
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setProcessInstanceId(processInstanceId);
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号【" + userId + "】挂起了该流程");
+        workDetailService.insert(tWorkDetail);
         return new Result(true, "挂起流程成功");
     }
 
@@ -968,8 +1004,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/4/18 16:03
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result processActivate(String userId, String processInstanceId) {
         runtimeService.activateProcessInstanceById(processInstanceId);
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setProcessInstanceId(processInstanceId);
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号【" + userId + "】激活了该流程");
+        workDetailService.insert(tWorkDetail);
         return new Result(true, "激活流程成功");
     }
 
@@ -1245,5 +1288,47 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         return pageInfo;
+    }
+
+    /**
+     * 获取父级任务节点
+     *
+     * @param taskId 当前任务节点id
+     * @param isAll  是否递归获取全部父节点
+     * @return
+     */
+    @Override
+    public Result getParentTasks(String taskId, String userId, boolean isAll) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (task == null) {
+            log.warn("任务不存在 taskId {}", taskId);
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
+        }
+        TUserTask userTask = getUserTask(task);
+        if (userTask == null) {
+            log.warn("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
+        }
+        List<String> taskDefKeys = getBeforeTaskDefinitionKeys(task, isAll);
+        if (CollectionUtils.isNotEmpty(taskDefKeys)) {
+            List<TaskVo> list = new ArrayList<>();
+            for (String taskDefKey : taskDefKeys) {
+                List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list();
+                if (CollectionUtils.isNotEmpty(instances)) {
+                    TaskVo taskVo = new TaskVo();
+                    HistoricTaskInstance history = instances.get(0);
+                    taskVo.setTaskName(history.getName());
+                    taskVo.setProcessDefinitionKey(history.getProcessDefinitionId());
+                    taskVo.setProcessDefinitionId(history.getProcessDefinitionId());
+                    taskVo.setId(history.getId());
+
+                    list.add(taskVo);
+                }
+            }
+            Result result = new Result(true, "查询成功");
+            result.setObj(list);
+            return result;
+        }
+        return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
     }
 }
