@@ -1278,7 +1278,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @return
      */
     @Override
-    public Result getParentTasks(String taskId, String userId, boolean isAll) {
+    public Result getParentNodes(String taskId, String userId, boolean isAll) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
             log.warn("任务不存在 taskId {}", taskId);
