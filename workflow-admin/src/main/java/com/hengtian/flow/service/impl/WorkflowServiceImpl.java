@@ -21,6 +21,7 @@ import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
+import com.hengtian.flow.vo.TaskVo;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -1261,24 +1262,32 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     }
 
     /**
-     * 获取可跳转到的任务节点
+     * 获取父级任务节点
      *
-     * @param taskId 任务节点id
+     * @param taskId 当前任务节点id
+     * @param isAll  是否递归获取全部父节点
      * @return
      */
     @Override
-    public List<HistoricTaskInstance> getTaskForJump(String taskId) {
+    public List<TaskVo> getParentTasks(String taskId, boolean isAll) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
             return new ArrayList<>();
         }
-        List<String> taskDefKeys = getBeforeTaskDefinitionKeys(task, true);
+        List<String> taskDefKeys = getBeforeTaskDefinitionKeys(task, isAll);
         if (CollectionUtils.isNotEmpty(taskDefKeys)) {
-            List<HistoricTaskInstance> list = new ArrayList<>();
+            List<TaskVo> list = new ArrayList<>();
             for (String taskDefKey : taskDefKeys) {
                 List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list();
                 if (CollectionUtils.isNotEmpty(instances)) {
-                    list.add(instances.get(0));
+                    TaskVo taskVo = new TaskVo();
+                    HistoricTaskInstance history = instances.get(0);
+                    taskVo.setTaskName(history.getName());
+                    taskVo.setProcessDefinitionKey(history.getProcessDefinitionId());
+                    taskVo.setProcessDefinitionId(history.getProcessDefinitionId());
+                    taskVo.setId(history.getId());
+
+                    list.add(taskVo);
                 }
             }
             return list;

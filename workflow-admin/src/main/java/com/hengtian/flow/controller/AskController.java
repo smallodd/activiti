@@ -6,11 +6,9 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.WorkflowService;
-import org.activiti.engine.HistoryService;
+import com.hengtian.flow.vo.TaskVo;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +67,7 @@ public class AskController extends BaseController {
             request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
             request.setAttribute("processInstanceId", task.getProcessInstanceId());
         }
-        List<HistoricTaskInstance> tasks = workflowService.getTaskForJump(taskId);
+        List<TaskVo> tasks = workflowService.getParentTasks(taskId, true);
         request.setAttribute("tasks", tasks);
         return "ask/comment";
     }

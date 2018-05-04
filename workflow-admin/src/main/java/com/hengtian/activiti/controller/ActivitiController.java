@@ -39,7 +39,6 @@ import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
@@ -562,7 +561,7 @@ public class ActivitiController extends BaseController{
      */
     @GetMapping("/taskJump")
     public String taskJump(Model model,@RequestParam("taskId") String taskId) {
-        List<HistoricTaskInstance> tasks = workflowService.getTaskForJump(taskId);
+        List<TaskVo> tasks = workflowService.getParentTasks(taskId, true);
         model.addAttribute("tasks", tasks);
 		model.addAttribute("taskId",taskId);
         return "activiti/taskJump";
