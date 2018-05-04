@@ -1282,11 +1282,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result getParentTasks(String taskId, String userId, boolean isAll) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
+            log.warn("任务不存在 taskId {}", taskId);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         TUserTask userTask = getUserTask(task);
         if (userTask == null) {
-            log.error("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+            log.warn("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         List<String> taskDefKeys = getBeforeTaskDefinitionKeys(task, isAll);
