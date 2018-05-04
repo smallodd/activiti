@@ -1284,7 +1284,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         try {
-            Map<String, FlowNode> beforeTask = findBeforeTask(taskId, true);
+            Map<String, FlowNode> beforeTask = findBeforeTask(taskId, isAll);
             Iterator<Map.Entry<String, FlowNode>> iterator = beforeTask.entrySet().iterator();
             List<FlowNode> list = new ArrayList<>();
             while (iterator.hasNext()) {
