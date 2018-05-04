@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
@@ -263,7 +264,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public Object approveTask(Task task, TaskParam taskParam) {
-        List<String> taskKeys = getNextTaskDefinitionKeys(task, false);
         log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         result.setCode(Constant.SUCCESS);
@@ -421,7 +421,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
             repairNextTaskNode(t);
 
-
             List<Task> resultList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
             //设置审批人处理逻辑
             if (!Boolean.valueOf(map.get("customApprover").toString())) {
@@ -466,17 +465,35 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public void repairNextTaskNode(Task t) {
         //第一步 添加缺失的节点
         String processInstanceId = t.getProcessInstanceId();
-        List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
+        /*List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
         if(CollectionUtils.isNotEmpty(taskKeys)){
             List<Task> tasks = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
+            List<String> currTaskDefKey = Lists.newArrayList();
             for (Task tk : tasks) {
-                if (taskKeys.contains(tk.getTaskDefinitionKey())) {
+                currTaskDefKey.add(tk.getTaskDefinitionKey());
+            }
+            for(String tk : taskKeys){
+                if (currTaskDefKey.contains(tk)) {
                     continue;
                 } else {
-                    managementService.executeCommand(new CreateCmd(tk.getExecutionId(), tk.getTaskDefinitionKey()));
+                    boolean b = true;
+                    TaskEntity te = new TaskEntity();
+                    te.setProcessDefinitionId(t.getProcessDefinitionId());
+                    te.setProcessInstanceId(t.getProcessInstanceId());
+                    te.setTaskDefinitionKey(taskKeys.get(0));
+                    List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(te, true);
+                    for(Task ts : tasks){
+                        if(beforeTaskDefKeys.contains(ts.getTaskDefinitionKey())){
+                            b = false;
+                            break;
+                        }
+                    }
+                    if(b){
+                        managementService.executeCommand(new CreateCmd(t.getExecutionId(), tk));
+                    }
                 }
             }
-        }
+        }*/
 
         //第二步 删除多余节点
         String notDelete = "";
