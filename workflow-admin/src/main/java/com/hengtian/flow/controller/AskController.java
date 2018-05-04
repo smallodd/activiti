@@ -65,7 +65,7 @@ public class AskController extends BaseController {
             request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
             request.setAttribute("processInstanceId", task.getProcessInstanceId());
         }
-        Result result = workflowService.getParentTasks(taskId, getUserId(), true);
+        Result result = workflowService.getParentNodes(taskId, getUserId(), true);
         request.setAttribute("tasks", result.getObj());
         return "ask/comment";
     }

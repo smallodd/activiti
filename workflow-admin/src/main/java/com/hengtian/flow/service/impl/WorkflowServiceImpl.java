@@ -21,6 +21,7 @@ import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
 import com.hengtian.flow.vo.TaskVo;
+import org.activiti.bpmn.model.FlowNode;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -792,16 +793,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.error("问询的任务不存在 processInstanceId:{},taskDefinitionKey:{}", processInstanceId, currentTaskDefKey);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        TUserTask userTask = getUserTask(task);
-        if (userTask == null) {
-            log.error("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
-            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
-        }
-        //todo candidate_ids 格式
-        if (StringUtils.isNotBlank(userTask.getCandidateIds()) && !userTask.getCandidateIds().contains(userId)) {
-            log.error("无权限问询该节点");
-            return new Result(ResultEnum.PERMISSION_DENY.code, ResultEnum.PERMISSION_DENY.msg);
-        }
+        //todo
+
+
         //校验是否是上级节点
         List<String> parentNodes = getBeforeTaskDefinitionKeys(task, true);
         if (!parentNodes.contains(targetTaskDefKey)) {
@@ -845,19 +839,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setDetail("工号【" + userId + "】问询了该任务，问询内容是【" + commentResult + "】");
         workDetailService.insert(tWorkDetail);
         return new Result(true, "问询成功");
-    }
-
-    /**
-     * 查询用户任务
-     *
-     * @param task
-     * @return
-     */
-    private TUserTask getUserTask(Task task) {
-        EntityWrapper<TUserTask> entityWrapper = new EntityWrapper<>();
-        entityWrapper.where("proc_def_key={0}", task.getProcessDefinitionId());
-        entityWrapper.where("task_def_key={0}", task.getTaskDefinitionKey());
-        return tUserTaskService.selectOne(entityWrapper);
     }
 
     /**
@@ -1296,37 +1277,27 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @return
      */
     @Override
-    public Result getParentTasks(String taskId, String userId, boolean isAll) {
+    public Result getParentNodes(String taskId, String userId, boolean isAll) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
             log.warn("任务不存在 taskId {}", taskId);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        TUserTask userTask = getUserTask(task);
-        if (userTask == null) {
-            log.warn("用户任务不存在 proc_def_key:{},task_def_key:{}", task.getProcessDefinitionId(), task.getTaskDefinitionKey());
-            return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
-        }
-        List<String> taskDefKeys = getBeforeTaskDefinitionKeys(task, isAll);
-        if (CollectionUtils.isNotEmpty(taskDefKeys)) {
-            List<TaskVo> list = new ArrayList<>();
-            for (String taskDefKey : taskDefKeys) {
-                List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list();
-                if (CollectionUtils.isNotEmpty(instances)) {
-                    TaskVo taskVo = new TaskVo();
-                    HistoricTaskInstance history = instances.get(0);
-                    taskVo.setTaskName(history.getName());
-                    taskVo.setProcessDefinitionKey(history.getProcessDefinitionId());
-                    taskVo.setProcessDefinitionId(history.getProcessDefinitionId());
-                    taskVo.setId(history.getId());
-
-                    list.add(taskVo);
-                }
+        try {
+            Map<String, FlowNode> beforeTask = findBeforeTask(taskId, true);
+            Iterator<Map.Entry<String, FlowNode>> iterator = beforeTask.entrySet().iterator();
+            List<FlowNode> list = new ArrayList<>();
+            while (iterator.hasNext()) {
+                Map.Entry<String, FlowNode> next = iterator.next();
+                FlowNode value = next.getValue();
+                list.add(value);
             }
             Result result = new Result(true, "查询成功");
             result.setObj(list);
             return result;
+        } catch (Exception e) {
+            log.error("", e);
+            return new Result(false, "查询失败");
         }
-        return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
     }
 }
