@@ -17,6 +17,7 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.workflow.cmd.CreateCmd;
 import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
@@ -466,8 +467,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public void repairNextTaskNode(Task t) {
         //第一步 添加缺失的节点
         String processInstanceId = t.getProcessInstanceId();
-        /*List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
-        if(CollectionUtils.isNotEmpty(taskKeys)){
         List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
         if (CollectionUtils.isNotEmpty(taskKeys)) {
             List<Task> tasks = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
@@ -496,7 +495,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     }
                 }
             }
-        }*/
+        }
 
         //第二步 删除多余节点
         String notDelete = "";
@@ -528,7 +527,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     resus.setExecutionId(null);
                     taskService.saveTask(resus);
                     taskService.deleteTask(resus.getId(), true);
-                    taskList.removeIf(new java.util.function.Predicate<Task>() {
+                    /*taskList.removeIf(new java.util.function.Predicate<Task>() {
                         @Override
                         public boolean test(Task task) {
                             if (resus.getId().equals(task.getId())) {
@@ -536,7 +535,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             }
                             return false;
                         }
-                    });
+                    });*/
                     EntityWrapper ewe = new EntityWrapper();
                     ewe.where("task_id={0}", tRuTask.getTaskId()).andNew("status={0}", -2);
                     tRuTaskService.delete(ewe);
