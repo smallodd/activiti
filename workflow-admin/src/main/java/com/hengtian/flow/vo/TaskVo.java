@@ -141,7 +141,7 @@ public class TaskVo implements Serializable{
 		return taskDefinitionKey;
 	}
 	public void setTaskDefinitionKey(String taskDefinitionKey) {
-		this.taskDefinitionKey = processInstanceId;
+		this.taskDefinitionKey = taskDefinitionKey;
 	}
 	public String getProcessInstanceId() {
 		return processInstanceId;
