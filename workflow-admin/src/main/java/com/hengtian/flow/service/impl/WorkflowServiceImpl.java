@@ -21,6 +21,7 @@ import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
+import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -30,6 +31,7 @@ import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.NativeTaskQuery;
 import org.activiti.engine.task.Task;
@@ -263,7 +265,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public Object approveTask(Task task, TaskParam taskParam) {
-        List<String> taskKeys = getNextTaskDefinitionKeys(task, false);
+
         log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         result.setCode(Constant.SUCCESS);
@@ -272,6 +274,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         entityWrapper.like("approver_real", "%" + taskParam.getApprover() + "%");
         //查询流程定义信息
         ProcessDefinition processDefinition = repositoryService.getProcessDefinition(task.getProcessDefinitionId());
+
         String jsonVariables = taskParam.getJsonVariables();
         Map<String, Object> variables = new HashMap<>();
         if (StringUtils.isNotBlank(jsonVariables)) {
@@ -302,6 +305,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 return result;
             }
             Task t = taskService.createTaskQuery().taskId(task.getId()).singleResult();
+            //查询审批时该节点的执行execition
+            ExecutionEntity execution= (ExecutionEntity) runtimeService.createExecutionQuery().executionId(t.getExecutionId()).singleResult();
             EntityWrapper wrapper = new EntityWrapper();
             wrapper.where("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion()).andNew("proc_def_key={0}", processDefinition.getKey());
 
@@ -419,7 +424,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }
             }
 
-            repairNextTaskNode(t);
+            repairNextTaskNode(t,execution);
 
 
             List<Task> resultList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
@@ -463,67 +468,92 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @author houjinrong@chtwm.com
      * date 2018/5/3 16:49
      */
-    public void repairNextTaskNode(Task t) {
-        //第一步 添加缺失的节点
-        String processInstanceId = t.getProcessInstanceId();
-        List<String> taskKeys = getNextTaskDefinitionKeys(t, false);
-        if (CollectionUtils.isNotEmpty(taskKeys)) {
-            List<Task> tasks = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
-            for (Task tk : tasks) {
-                if (taskKeys.contains(tk.getTaskDefinitionKey())) {
-                    continue;
-                } else {
-                    managementService.executeCommand(new CreateCmd(tk.getExecutionId(), tk.getTaskDefinitionKey()));
-                }
-            }
+    public void repairNextTaskNode(Task t,Execution execution) {
+        EntityWrapper ew = new EntityWrapper();
+        ew.where("status={0}", -2).andNew("proc_inst_id={0}", t.getProcessInstanceId());
+        TRuTask tRuTask = tRuTaskService.selectOne(ew);
+
+         // historyService.createHistoricTaskInstanceQuery().executionId(execution.getParentId()).list();
+//
+//        Map map=getFlowNodeRel(t.getProcessDefinitionId());
+//
+
+//        //第一步 添加缺失的节点
+//        String processInstanceId = t.getProcessInstanceId();
+//        List<String> taskKeys = new ArrayList<>();
+//        for (Object o : map.keySet()) {
+//            if(map.get(o) instanceof UserTask){continue;}
+//            String s=o.toString();
+//            if(s.contains(t.getTaskDefinitionKey()+"#")){
+//                taskKeys.add(s.split("#")[1]);
+//            }
+//        }
+//
+//
+//        if (CollectionUtils.isNotEmpty(taskKeys)) {
+//            List<Task> tasks = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
+//            for (Task tk : tasks) {
+//                if (taskKeys.contains(tk.getTaskDefinitionKey())) {
+//                    continue;
+//                } else {
+//                    long count=historyService.createHistoricTaskInstanceQuery().processInstanceId(tk.getProcessInstanceId()).taskDefinitionKey(tk.getTaskDefinitionKey()).finished().count();
+//                    if(count>=1) {
+//                        managementService.executeCommand(new CreateCmd(tk.getExecutionId(), tk.getTaskDefinitionKey()));
+//                    }
+//                }
+//            }
+//        }
+//
+//        //第二步 删除多余节点
+        String notDelete = "";
+
+        List <Execution> exlist=null;
+        if(execution==null||StringUtils.isBlank(execution.getParentId())){
+
+        }else{
+            exlist = runtimeService.createExecutionQuery().parentId(execution.getParentId()).list();
         }
 
-        //第二步 删除多余节点
-        String notDelete = "";
-        Task ts = null;
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         //处理删除由于跳转/拿回产生冗余的数据
-        if (CollectionUtils.isNotEmpty(taskList)) {
-            EntityWrapper ew = new EntityWrapper();
-            ew.where("status={0}", -2).andNew("proc_inst_id={0}", taskList.get(0).getProcessInstanceId());
-            TRuTask tRuTask = tRuTaskService.selectOne(ew);
+        if (CollectionUtils.isNotEmpty(exlist)) {
+
             if (tRuTask != null) {
                 HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tRuTask.getTaskId()).singleResult();
                 List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().executionId(taskInstance.getExecutionId()).orderByTaskCreateTime().asc().list();
                 notDelete = list.get(0).getTaskDefinitionKey();
-                ts = taskService.createTaskQuery().taskDefinitionKey(notDelete).processInstanceId(list.get(0).getProcessInstanceId()).active().singleResult();
 
-            }
-            for (int i = 0; i < taskList.size(); i++) {
-                Task tas = taskList.get(i);
+                //查询审批的那条任务之后生成的任务
+                Task task=taskService.createTaskQuery().executionId(execution.getId()).singleResult();
 
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String olde = sdf.format(tas.getCreateTime());
+                for (int i = 0; i < exlist.size(); i++) {
+                    //查询当前任务中每个任务信息
+                    Task tas = taskService.createTaskQuery().executionId(exlist.get(i).getId()).singleResult();
+                    if(tas==null){
+                        continue;
+                    }
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String olde = sdf.format(tas.getCreateTime());
 
-                String newDate = (ts == null ? "" : sdf.format(ts.getCreateTime()));
-                if (!notDelete.contains(tas.getTaskDefinitionKey()) && tRuTask != null && olde.equals(newDate)) {
+                    String newDate = (task == null ? "" : sdf.format(task.getCreateTime()));
+                    if (notDelete.contains(tas.getTaskDefinitionKey()) ){
+                        continue;
+                    }else if(tRuTask != null && olde.equals(newDate)) {
 
-                    TaskEntity resus = (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
+                        TaskEntity resus = (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
 
-                    resus.setExecutionId(null);
-                    taskService.saveTask(resus);
-                    taskService.deleteTask(resus.getId(), true);
-                    taskList.removeIf(new java.util.function.Predicate<Task>() {
-                        @Override
-                        public boolean test(Task task) {
-                            if (resus.getId().equals(task.getId())) {
-                                return true;
-                            }
-                            return false;
-                        }
-                    });
-                    EntityWrapper ewe = new EntityWrapper();
-                    ewe.where("task_id={0}", tRuTask.getTaskId()).andNew("status={0}", -2);
-                    tRuTaskService.delete(ewe);
+                        resus.setExecutionId(null);
+                        taskService.saveTask(resus);
+                        taskService.deleteTask(resus.getId(), true);
 
+                        EntityWrapper ewe = new EntityWrapper();
+                        ewe.where("task_id={0}", tRuTask.getTaskId()).andNew("status={0}", -2);
+                        tRuTaskService.delete(ewe);
+
+                    }
                 }
             }
         }
+
     }
 
     /**
