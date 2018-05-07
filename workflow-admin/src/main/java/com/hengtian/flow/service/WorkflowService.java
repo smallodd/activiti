@@ -6,6 +6,7 @@ import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.vo.TaskVo;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 
@@ -230,10 +231,12 @@ public interface WorkflowService {
 
 
     /**
-     * 获取可跳转到的任务节点
+     * 获取父级任务节点
      *
-     * @param taskId 任务节点id
+     * @param taskId 当前任务节点id
+     * @param userId 操作人ID
+     * @param isAll  是否递归获取全部父节点
      * @return
      */
-    List<HistoricTaskInstance> getTaskForJump(String taskId);
+    Result getParentNodes(String taskId, String userId, boolean isAll);
 }

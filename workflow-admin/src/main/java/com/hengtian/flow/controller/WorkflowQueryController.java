@@ -345,6 +345,23 @@ public class WorkflowQueryController extends WorkflowBaseController {
         return renderSuccess(commentList);
     }
 
+
+    /**
+     * 获取父级任务节点
+     *
+     * @param taskId 任务ID
+     * @return
+     */
+    @ResponseBody
+    @SysLog("获取父级任务节点")
+    @ApiOperation(httpMethod = "POST", value = "获取父级任务节点")
+    @RequestMapping(value = "/rest/parentNode", method = RequestMethod.POST)
+    public Object getParentNodes(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId, @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
+                                 @ApiParam(value = "是否递归获取父级节点", name = "isAll", required = true) @RequestParam(defaultValue = "1") Integer isAll) {
+        logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", taskId);
+        return renderSuccess(workflowService.getParentNodes(taskId, userId, isAll != 0));
+    }
+
     /**
      * 跳转可到达的任务节点
      *
