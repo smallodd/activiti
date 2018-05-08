@@ -23,6 +23,7 @@ public class CreateCmd implements Command<ExecutionEntity> {
         ProcessDefinitionImpl processDefinition = executionEntity.getProcessDefinition();
         ActivityImpl activity = processDefinition.findActivity(activityId);
         executionEntity.executeActivity(activity);
+        executionEntity.setActive(true);
 
         return executionEntity;
     }

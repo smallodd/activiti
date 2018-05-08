@@ -19,6 +19,7 @@ public class JumpCmd implements Command<ExecutionEntity> {
 
     @Override
     public ExecutionEntity execute(CommandContext commandContext) {
+
         ExecutionEntity executionEntity = commandContext.getExecutionEntityManager().findExecutionById(executionId);
 
         executionEntity.destroyScope(REASION_DELETE);
