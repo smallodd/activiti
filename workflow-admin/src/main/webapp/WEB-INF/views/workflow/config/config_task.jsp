@@ -180,7 +180,6 @@
                 buttons : [ {
                     text : '确定',
                     handler : function() {
-                        var userCount = 0;
                         //给输入框赋人员名称的值
                         var taskJsonStr = $("#taskJsonSelect").val();
                         if(taskJsonStr == undefined || taskJsonStr == ""){
@@ -191,7 +190,6 @@
                         for(var i=0;i<taskJsonVal.length;i++){
                             if(taskJsonVal[i].taskDefKey===taskDefKey){
                                 if(taskJsonVal[i].code != undefined){
-                                    userCount = taskJsonVal[i].code.split(",").length;
                                     $("#taskUser"+taskDefKey).val(taskJsonVal[i].name);
                                     if(taskJsonVal[i].name){
                                         $("#taskUser"+taskDefKey).attr("title",taskJsonVal[i].name.replace(/,/g,"\n"));
@@ -200,19 +198,6 @@
                             }
                         }
 
-                        var dataList = [];
-                        if(taskType==="counterSign"){
-                            for(var i=1;i<userCount+1;i++){
-                                dataList.push({"value": i,"text":i});
-                            }
-                        }else{
-                            dataList.push({"value": 1,"text":1});
-                        }
-
-                        if(dataList.length > 0){
-                            $("#userCount"+taskDefKey).combobox("loadData",dataList);
-                            $("#userCount"+taskDefKey).combobox("select",dataList.length);
-                        }
                         $("#taskJson").val($("#taskJsonSelect").val());
                         $("#taskJsonSelect").val("");
                         $("#configRoleDialog").dialog('close');
