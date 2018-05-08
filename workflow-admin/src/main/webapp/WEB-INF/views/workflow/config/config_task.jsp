@@ -131,7 +131,6 @@
     
     //配置人员
     function configAssignee(taskDefKey){
-        debugger;
         $("#taskKey").val(taskDefKey);
 
     	var taskType = $(document.getElementById("taskType"+taskDefKey)).val();
@@ -140,14 +139,13 @@
         if(assignType === "1"){
             //部门设置
             $("#configDepartmentDialog").dialog({
-                title : '选择人员',
+                title : '选择部门',
                 width : 500,
                 height : 450,
                 href :  '${ctx}/assignee/select/department',
                 buttons : [ {
                     text : '确定',
                     handler : function() {
-                        var userCount = 0;
                         //给输入框赋人员名称的值
                         var taskJsonStr = $("#taskJsonSelect").val();
                         if(taskJsonStr == undefined || taskJsonStr == ""){
@@ -156,9 +154,8 @@
                         }
                         var taskJsonVal = JSON.parse(taskJsonStr);
                         for(var i=0;i<taskJsonVal.length;i++){
-                            if(taskJsonVal[i].key===taskDefKey){
-                                if(taskJsonVal[i].value != undefined){
-                                    userCount = taskJsonVal[i].value.split(",").length;
+                            if(taskJsonVal[i].taskDefKey===taskDefKey){
+                                if(taskJsonVal[i].code != undefined){
                                     $("#taskUser"+taskDefKey).val(taskJsonVal[i].name);
                                     if(taskJsonVal[i].name){
                                         $("#taskUser"+taskDefKey).attr("title",taskJsonVal[i].name.replace(/,/g,"\n"));
@@ -167,19 +164,6 @@
                             }
                         }
 
-                        var dataList = [];
-                        if(taskType==="counterSign"){
-                            for(var i=1;i<userCount+1;i++){
-                                dataList.push({"value": i,"text":i});
-                            }
-                        }else{
-                            dataList.push({"value": 1,"text":1});
-                        }
-
-                        if(dataList.length > 0){
-                            $("#userCount"+taskDefKey).combobox("loadData",dataList);
-                            $("#userCount"+taskDefKey).combobox("select",dataList.length);
-                        }
                         $("#taskJson").val($("#taskJsonSelect").val());
                         $("#taskJsonSelect").val("");
                         $("#configDepartmentDialog").dialog('close');
@@ -189,7 +173,7 @@
         }else if(assignType === "2"){
             //角色设置
             $("#configRoleDialog").dialog({
-                title : '选择人员',
+                title : '选择角色',
                 width : 500,
                 height : 450,
                 href :  '${ctx}/assignee/select/role',
@@ -205,9 +189,9 @@
                         }
                         var taskJsonVal = JSON.parse(taskJsonStr);
                         for(var i=0;i<taskJsonVal.length;i++){
-                            if(taskJsonVal[i].key===taskDefKey){
-                                if(taskJsonVal[i].value != undefined){
-                                    userCount = taskJsonVal[i].value.split(",").length;
+                            if(taskJsonVal[i].taskDefKey===taskDefKey){
+                                if(taskJsonVal[i].code != undefined){
+                                    userCount = taskJsonVal[i].code.split(",").length;
                                     $("#taskUser"+taskDefKey).val(taskJsonVal[i].name);
                                     if(taskJsonVal[i].name){
                                         $("#taskUser"+taskDefKey).attr("title",taskJsonVal[i].name.replace(/,/g,"\n"));
@@ -245,7 +229,6 @@
                 buttons : [ {
                     text : '确定',
                     handler : function() {
-                        var userCount = 0;
                         //给输入框赋人员名称的值
                         var taskJsonStr = $("#taskJsonSelect").val();
                         if(taskJsonStr == undefined || taskJsonStr == ""){
@@ -256,7 +239,6 @@
                         for(var i=0;i<taskJsonVal.length;i++){
                             if(taskJsonVal[i].taskDefKey===taskDefKey){
                                 if(taskJsonVal[i].code != undefined){
-                                    userCount = taskJsonVal[i].code.split(",").length;
                                     $("#taskUser"+taskDefKey).val(taskJsonVal[i].name);
                                     if(taskJsonVal[i].name){
                                         $("#taskUser"+taskDefKey).attr("title",taskJsonVal[i].name.replace(/,/g,"\n"));
@@ -265,19 +247,6 @@
                             }
                         }
 
-                        var dataList = [];
-                        if(taskType==="counterSign"){
-                            for(var i=1;i<userCount+1;i++){
-                                dataList.push({"value": i,"text":i});
-                            }
-                        }else{
-                            dataList.push({"value": 1,"text":1});
-                        }
-
-                        if(dataList.length > 0){
-                            $("#userCount"+taskDefKey).combobox("loadData",dataList);
-                            $("#userCount"+taskDefKey).combobox("select",dataList.length);
-                        }
                         $("#taskJson").val($("#taskJsonSelect").val());
                         $("#taskJsonSelect").val("");
                         $("#configUserDialog").dialog('close');

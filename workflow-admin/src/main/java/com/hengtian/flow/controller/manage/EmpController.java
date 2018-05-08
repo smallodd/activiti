@@ -55,18 +55,10 @@ public class EmpController {
         name = StringUtils.isBlank(name)?null:name.trim();
         com.github.pagehelper.PageInfo<RbacUser> userPageInfo = userService.getUserPageInfo(page, rows, code, null, name, null);
         PageInfo pageInfo = new PageInfo();
-        if(userPageInfo != null){
-            pageInfo.setTotal((int)userPageInfo.getTotal());
-            pageInfo.setRows(userPageInfo.getList());
-            pageInfo.setNowpage(page);
-            pageInfo.setPagesize(rows);
-            pageInfo.setSize(rows);
-            pageInfo.setFrom(userPageInfo.getStartRow());
-            Map<String,Object> condition = Maps.newHashMap();
-            condition.put("code",code);
-            condition.put("name",name);
-            pageInfo.setCondition(condition);
-        }
+        Map<String,Object> condition = Maps.newHashMap();
+        condition.put("code",code);
+        condition.put("name",name);
+        transferPageInfo(userPageInfo, pageInfo, condition);
 
         return pageInfo;
     }
@@ -74,7 +66,7 @@ public class EmpController {
     /**
      * 获取部门列表-分页
      * @param code 部门编号
-     * @param orgName 部门名称
+     * @param name 部门名称
      * @param page 起始页
      * @param rows 每页条目数
      * @return 分页数据
@@ -83,8 +75,15 @@ public class EmpController {
      */
     @RequestMapping("/department")
     @ResponseBody
-    public Object queryDepartment(String code, String orgName, Integer page, Integer rows){
-        com.github.pagehelper.PageInfo<Org> pageInfo = orgService.getOrgPageInfo(page, rows, code, orgName);
+    public Object queryDepartment(String code, String name, Integer page, Integer rows){
+        code = StringUtils.isBlank(code)?null:code.trim();
+        name = StringUtils.isBlank(name)?null:name.trim();
+        com.github.pagehelper.PageInfo<Org> deptPageInfo = orgService.getOrgPageInfo(page, rows, code, name);
+        PageInfo pageInfo = new PageInfo();
+        Map<String,Object> condition = Maps.newHashMap();
+        condition.put("code",code);
+        condition.put("name",name);
+        transferPageInfo(deptPageInfo, pageInfo, condition);
         return pageInfo;
     }
 
@@ -101,5 +100,17 @@ public class EmpController {
     public Object queryRole(Integer system){
         List<RbacRole> allRoleBySystem = privilegeService.getAllRoleBySystem(system);
         return allRoleBySystem;
+    }
+
+    private <T> void transferPageInfo(com.github.pagehelper.PageInfo<T> githubPageInfo, PageInfo pageInfo, Map<String,Object> condition){
+        if(githubPageInfo != null){
+            pageInfo.setTotal((int)githubPageInfo.getTotal());
+            pageInfo.setRows(githubPageInfo.getList());
+            pageInfo.setNowpage(githubPageInfo.getPageNum());
+            pageInfo.setPagesize(githubPageInfo.getPageSize());
+            pageInfo.setSize(githubPageInfo.getSize());
+            pageInfo.setFrom(githubPageInfo.getStartRow());
+            pageInfo.setCondition(condition);
+        }
     }
 }

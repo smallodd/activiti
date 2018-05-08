@@ -7,7 +7,7 @@
 	<title>用户管理</title>
 </head>
 <body>
-	<div data-options="region:'north',border:false" style="height: 30px; overflow: hidden;background-color: #fff;" id="tb1">
+	<div data-options="region:'north',border:false" style="height: 30px; overflow: hidden;background-color: #fff;" id="tb_user">
 		<form id="candidateUserSearchForm">
 			<table>
 				<tr>
@@ -209,7 +209,7 @@
                         })
 					}
                 },
-                toolbar : '#tb1'
+                toolbar : '#tb_user'
             });
         });
 

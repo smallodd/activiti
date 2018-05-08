@@ -143,11 +143,13 @@ public class UserTaskController extends BaseController{
     	Iterator<Object> it= array.iterator();
     	while(it.hasNext()){
     		JSONObject obj= (JSONObject)it.next();
-    		String taskId= obj.get("id").toString();
+    		String taskId= obj.getString("id");
     		TUserTask tUserTask= tUserTaskService.selectById(taskId);
 
-			tUserTask.setTaskType(obj.get("taskType").toString());
-    		if(TaskType.COUNTERSIGN.value.equals(obj.get("taskType").toString())){
+			tUserTask.setTaskType(obj.getString("taskType"));
+			tUserTask.setAssignType(obj.getInteger("assignType"));
+
+    		if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType").toString())){
 				if(obj.getString("code").toString().split(",").length == 1){
 					//会签时，任务节点审核人只有一个时转为普通任务
 					tUserTask.setTaskType(TaskType.ASSIGNEE.value);
