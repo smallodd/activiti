@@ -250,7 +250,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuTaskService.insert(tRuTask);
             }
 
-
             log.info("设置审批人结束");
             return true;
 

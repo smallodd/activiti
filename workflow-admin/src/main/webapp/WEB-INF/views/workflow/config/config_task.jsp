@@ -39,7 +39,7 @@
                     <td><input id="taskUser${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configAssignee('${ut.taskDefKey}')"/></td>
 				    <td style="width: 160px;"><span>444</span></td>
                     <td>
-                        <input id="percentage${ut.taskDefKey}" value="${ut.percentage}" placeholder="范围0-1" data-options="required:true" style="width:66px;height:29px">
+                        <input class="easyui-numberbox" id="percentage${ut.taskDefKey}" value="${ut.percentage}" placeholder="范围0-1" data-options="required:true,min:0.01,max:1,precision:2" style="width:66px;height:29px">
                     </td>
                 </tr>
 			</c:forEach>
