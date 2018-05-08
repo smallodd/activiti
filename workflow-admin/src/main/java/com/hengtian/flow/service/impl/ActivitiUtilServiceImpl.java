@@ -1,10 +1,15 @@
 package com.hengtian.flow.service.impl;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.flow.model.TTaskButton;
+import com.hengtian.flow.service.TButtonService;
+import com.hengtian.flow.service.TTaskButtonService;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.engine.*;
@@ -60,6 +65,30 @@ public class ActivitiUtilServiceImpl {
     @Autowired
     private ProcessEngine processEngine;
 
+    @Autowired
+    private TButtonService tButtonService;
+
+    @Autowired
+    private TTaskButtonService tTaskButtonService;
+
+
+    public List<TaskNodeResult>  setButtons( List<TaskNodeResult> list){
+        if(list!=null&&list.size()>0) {
+            String id=list.get(0).getProcessInstanceId();
+            ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
+            for (TaskNodeResult taskNodeResult : list) {
+                EntityWrapper entityWrapper = new EntityWrapper();
+                entityWrapper.where("proc_def_key={0}", processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}", taskNodeResult.getTaskDefinedKey());
+                List<TTaskButton> tTaskButtons=tTaskButtonService.selectList(entityWrapper);
+                List<String> li=new ArrayList<>();
+                for(TTaskButton tTaskButton:tTaskButtons){
+                    li.add(tTaskButton.getButtonKey());
+                }
+                taskNodeResult.setButtonKeys(li);
+            }
+        }
+        return  list;
+    }
     /**
      * 获取当前历史任务节点
      * @param processInstaceId 流程实例ID
@@ -303,10 +332,10 @@ public class ActivitiUtilServiceImpl {
      * @author houjinrong@chtwm.com
      * date 2018/4/27 17:05
      */
-    protected List<String> getNextTaskDefinitionKeys(TaskInfo task){
+    protected List<String> getNextTaskDefinitionKeys(TaskInfo task,boolean isAll){
         List<String > nextTaskDefinitionKeys = Lists.newArrayList();
         try {
-            Map<String, FlowNode> nextTask = findNextTask(task);
+            Map<String, FlowNode> nextTask = findNextTask(task,isAll);
             if(nextTask != null){
                 for (String s : nextTask.keySet()) {
                     nextTaskDefinitionKeys.add(s);
@@ -533,7 +562,7 @@ public class ActivitiUtilServiceImpl {
      * @return
      * @throws Exception
      */
-    public Map<String, FlowNode> findNextTask(TaskInfo task){
+    public Map<String, FlowNode> findNextTask(TaskInfo task,boolean isAll){
         Map<String, FlowNode> nodeMap = Maps.newHashMap();
         //查询流程定义。
         BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
@@ -543,7 +572,7 @@ public class ActivitiUtilServiceImpl {
         FlowNode sourceFlowElement = ( FlowNode) process.getFlowElement(task.getTaskDefinitionKey());
         //找到当前任务的流程变量
         List<HistoricVariableInstance> listVar=historyService.createHistoricVariableInstanceQuery().processInstanceId(task.getProcessInstanceId()).list() ;
-        iteratorNextNodes(process, sourceFlowElement, nodeMap , listVar);
+        iteratorNextNodes(process, sourceFlowElement, nodeMap , listVar,isAll);
         return nodeMap;
     }
 
@@ -589,6 +618,37 @@ public class ActivitiUtilServiceImpl {
         return findBeforeTask(hisTask, isAll);
     }
 
+    /**
+     * 通过任务节点key查询上个节点的信息
+     * @param taskKey   任务节点的key
+     * @param processInstanceId   流程实例id
+     * @param processDefinitionId 流程定义id
+     * @param isAll
+     * @return
+     * @throws Exception
+     */
+    protected List <String> findBeforeTask(String taskKey,String processInstanceId ,String processDefinitionId ,boolean isAll) {
+        Map<String, FlowNode> nodeMap = Maps.newHashMap();
+        //查询流程定义。
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
+        List<Process> processList = bpmnModel.getProcesses();
+        Process process = processList.get(0);
+        //当前节点流定义
+        FlowNode sourceFlowElement = ( FlowNode) process.getFlowElement(taskKey);
+        //找到当前任务的流程变量
+        List<HistoricVariableInstance> listVar = historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list() ;
+        for(SequenceFlow sf : sourceFlowElement.getIncomingFlows()){
+            sourceFlowElement = (FlowNode) process.getFlowElement(sf.getTargetRef());
+            iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
+        }
+        List<String> beforeTaskDefKeys = null;
+
+        if(nodeMap != null && nodeMap.size() > 0){
+            beforeTaskDefKeys = Lists.newArrayList();
+            beforeTaskDefKeys.addAll(nodeMap.keySet());
+        }
+        return beforeTaskDefKeys;
+    }
     /**
      * 获取上步节点
      * @param task
@@ -656,9 +716,9 @@ public class ActivitiUtilServiceImpl {
      * @return
      * @throws Exception
      */
-    public Map<String, FlowNode> findNextTask(String taskId) throws Exception{
+    public Map<String, FlowNode> findNextTask(String taskId,boolean isAll) {
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        return findNextTask(hisTask);
+        return findNextTask(hisTask,isAll);
     }
 
     /**
@@ -669,17 +729,20 @@ public class ActivitiUtilServiceImpl {
      * @param listVar
      * @throws Exception
      */
-    private void iteratorNextNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar) {
+    private void iteratorNextNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar,Boolean isAll) {
         List<SequenceFlow> list = sourceFlowElement.getOutgoingFlows();
         for (SequenceFlow sf : list) {
             sourceFlowElement = (FlowNode) process.getFlowElement(sf.getTargetRef());
             if((filterExpression(sf.getConditionExpression(), listVar))){
                 if (sourceFlowElement instanceof UserTask) {
+                    if(isAll && sf.getSourceRef() != null){
+                        iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
+                    }
                     nodeMap.put(sourceFlowElement.getId(), sourceFlowElement);
                 }else if (sourceFlowElement instanceof ExclusiveGateway) {
-                    iteratorNextNodes(process, sourceFlowElement, nodeMap,listVar);
+                    iteratorNextNodes(process, sourceFlowElement, nodeMap,listVar,isAll);
                 }else if (sourceFlowElement instanceof ParallelGateway){
-                    iteratorNextNodes(process, sourceFlowElement, nodeMap,listVar);
+                    iteratorNextNodes(process, sourceFlowElement, nodeMap,listVar,isAll);
                 }
             }
         }
