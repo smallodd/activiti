@@ -25,6 +25,10 @@ public class TaskNodeResult implements Serializable {
 
     private Integer assignType;
 
+    private String processInstanceId;
+
+    private List<String> buttonKeys;
+
     public Integer getAssignType() {
         return assignType;
     }
@@ -73,6 +77,22 @@ public class TaskNodeResult implements Serializable {
         this.name = name;
     }
 
+    public String getProcessInstanceId() {
+        return processInstanceId;
+    }
+
+    public void setProcessInstanceId(String processInstanceId) {
+        this.processInstanceId = processInstanceId;
+    }
+
+    public List<String> getButtonKeys() {
+        return buttonKeys;
+    }
+
+    public void setButtonKeys(List<String> buttonKeys) {
+        this.buttonKeys = buttonKeys;
+    }
+
     /**
      * 将任务列表转换成返回出参任务列表
      *
@@ -103,6 +123,8 @@ public class TaskNodeResult implements Serializable {
         taskNodeResult.setTaskDefinedKey(task.getTaskDefinitionKey());
         taskNodeResult.setFormKey(task.getFormKey());
         taskNodeResult.setName(task.getName());
+        taskNodeResult.setProcessInstanceId(task.getProcessInstanceId());
+
         return taskNodeResult;
     }
 

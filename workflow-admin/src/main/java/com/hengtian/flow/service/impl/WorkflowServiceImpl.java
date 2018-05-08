@@ -173,7 +173,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
                 result.setMsg("申请成功");
-                result.setObj(TaskNodeResult.toTaskNodeResultList(taskList));
+                result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(taskList)));
                 //存储操作记录
                 TWorkDetail tWorkDetail = new TWorkDetail();
                 tWorkDetail.setCreateTime(new Date());
@@ -189,7 +189,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
                 result.setMsg("申请成功");
-                result.setObj(TaskNodeResult.toTaskNodeResultList(taskList));
+                result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(taskList)));
 
                 TWorkDetail tWorkDetail = new TWorkDetail();
                 tWorkDetail.setCreateTime(new Date());
@@ -213,7 +213,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public Boolean setApprover(Task task, TUserTask tUserTask) {
         log.info("进入设置审批人接口,tUserTask参数{}", JSONObject.toJSONString(tUserTask));
-        try {
+
             //获取任务中的自定义参数
             Map<String, Object> map = taskService.getVariables(task.getId());
             String approvers = tUserTask.getCandidateIds();
@@ -253,10 +253,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
             log.info("设置审批人结束");
             return true;
-        } catch (Exception e) {
-            log.error("设置审批人失败", e);
-            return false;
-        }
+
     }
 
     /**
@@ -438,21 +435,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     //查询当前任务任务节点信息
                     TUserTask tUserTask1 = tUserTaskService.selectOne(tuserWrapper);
                     boolean flag = setApprover(task1, tUserTask1);
-                    if (!flag) {
-                        taskService.addComment(task1.getId(), t.getProcessInstanceId(), "生成扩展任务时失败，删除任务！");//备注
-                        runtimeService.deleteProcessInstance(t.getProcessInstanceId(), "");
-                        historyService.deleteHistoricProcessInstance(t.getProcessInstanceId());//(顺序不能换)
 
-                        result.setSuccess(false);
-                        result.setCode(Constant.FAIL);
-                        result.setMsg("生成扩展任务失败，删除其他信息");
-                        return result;
-                    }
                 }
             }
 
             //设置操作的明细备注
-            result.setObj(TaskNodeResult.toTaskNodeResultList(resultList));
+            result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
             TWorkDetail tWorkDetail = new TWorkDetail();
             tWorkDetail.setTaskId(task.getId());
             tWorkDetail.setOperator(taskParam.getApprover());
@@ -475,12 +463,24 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         ew.where("status={0}", -2).andNew("proc_inst_id={0}", t.getProcessInstanceId());
         TRuTask tRuTask = tRuTaskService.selectOne(ew);
         String notDelete = "";
-        List<String> talist= getNextTaskDefinitionKeys(t);
+        List<String> talist= getNextTaskDefinitionKeys(t,false);
 
         if(talist.size()==1){
             String s=talist.get(0);
             List <Task> tasks=taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).taskDefinitionKey(s).orderByTaskCreateTime().desc().list();
-            if(tasks==null||tasks.size()==0) {
+            //
+            List<String> list=findBeforeTask(s,t.getProcessInstanceId(),t.getProcessDefinitionId(),true);
+            boolean isCraete=true;
+            if(list!=null&&list.size()>0){
+                for(String key:list){
+                    Task task=taskService.createTaskQuery().taskDefinitionKey(key).processInstanceId(t.getProcessInstanceId()).singleResult();
+                    if(task!=null){
+                        isCraete=false;
+                        break;
+                    }
+                }
+            }
+            if((tasks==null||tasks.size()==0)&&isCraete) {
                 long count = historyService.createHistoricActivityInstanceQuery().processInstanceId(t.getProcessInstanceId()).activityId(s).finished().count();
                 if (count >= 1) {
                     managementService.executeCommand(new CreateCmd(t.getExecutionId(), s));
@@ -490,37 +490,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         }
 
-        // historyService.createHistoricTaskInstanceQuery().executionId(execution.getParentId()).list();
-//
-//        Map map=getFlowNodeRel(t.getProcessDefinitionId());
-//
 
-//        //第一步 添加缺失的节点
-//        String processInstanceId = t.getProcessInstanceId();
-//        List<String> taskKeys = new ArrayList<>();
-//        for (Object o : map.keySet()) {
-//            if(map.get(o) instanceof UserTask){continue;}
-//            String s=o.toString();
-//            if(s.contains(t.getTaskDefinitionKey()+"#")){
-//                taskKeys.add(s.split("#")[1]);
-//            }
-//        }
-//
-//
-//        if (CollectionUtils.isNotEmpty(taskKeys)) {
-//            List<Task> tasks = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
-//            for (Task tk : tasks) {
-//                if (taskKeys.contains(tk.getTaskDefinitionKey())) {
-//                    continue;
-//                } else {
-//                    long count=historyService.createHistoricTaskInstanceQuery().processInstanceId(tk.getProcessInstanceId()).taskDefinitionKey(tk.getTaskDefinitionKey()).finished().count();
-//                    if(count>=1) {
-//                        managementService.executeCommand(new CreateCmd(tk.getExecutionId(), tk.getTaskDefinitionKey()));
-//                    }
-//                }
-//            }
-//        }
-//
 //        //第二步 删除多余节点
 
 
