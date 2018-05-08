@@ -453,9 +453,16 @@ public class ActivitiServiceImpl implements ActivitiService {
 		ProcessDefinitionEntity definition = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(hisTask.getProcessDefinitionId());
 		//获取历史任务的Activity
 		ActivityImpl hisActivity = definition.findActivity(taskDefinitionKey);
+
 		//实现跳转
 		ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
+
+
 		TRuTask tRuTask=new TRuTask();
+		EntityWrapper en=new EntityWrapper();
+		en.where("status={0}",-2).andNew("proc_inst_id={0}",instance.getId());
+		tRuTaskService.delete(en);
+
 		tRuTask.setStatus(-2);
 		EntityWrapper entityWrapper1=new EntityWrapper();
 		entityWrapper1.where("task_id={0}",taskId);

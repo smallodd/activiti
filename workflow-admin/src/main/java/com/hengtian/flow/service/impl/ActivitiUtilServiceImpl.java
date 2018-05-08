@@ -303,7 +303,7 @@ public class ActivitiUtilServiceImpl {
      * @author houjinrong@chtwm.com
      * date 2018/4/27 17:05
      */
-    protected List<String> getNextTaskDefinitionKeys(TaskInfo task, boolean isAll){
+    protected List<String> getNextTaskDefinitionKeys(TaskInfo task){
         List<String > nextTaskDefinitionKeys = Lists.newArrayList();
         try {
             Map<String, FlowNode> nextTask = findNextTask(task);
@@ -533,7 +533,7 @@ public class ActivitiUtilServiceImpl {
      * @return
      * @throws Exception
      */
-    public Map<String, FlowNode> findNextTask(TaskInfo task) throws Exception{
+    public Map<String, FlowNode> findNextTask(TaskInfo task){
         Map<String, FlowNode> nodeMap = Maps.newHashMap();
         //查询流程定义。
         BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
@@ -669,7 +669,7 @@ public class ActivitiUtilServiceImpl {
      * @param listVar
      * @throws Exception
      */
-    private void iteratorNextNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar) throws Exception {
+    private void iteratorNextNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar) {
         List<SequenceFlow> list = sourceFlowElement.getOutgoingFlows();
         for (SequenceFlow sf : list) {
             sourceFlowElement = (FlowNode) process.getFlowElement(sf.getTargetRef());
