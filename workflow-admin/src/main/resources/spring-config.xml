@@ -9,7 +9,7 @@
        http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd"
        default-autowire="byName">
-    <task:annotation-driven />
+    <task:annotation-driven/>
 
     <!-- 自动扫描的包名 -->
 
@@ -25,8 +25,8 @@
     <context:annotation-config/>
     <context:component-scan base-package="com.hengtian"/>
 
-	<import resource="classpath*:activiti-context.xml"/>
-   <import resource="classpath*:spring-mybatis.xml"/>
+    <import resource="classpath*:activiti-context.xml"/>
+    <import resource="classpath*:spring-mybatis.xml"/>
     <import resource="classpath*:spring-shiro.xml"/>
-   <!--<import resource="dubbo-server-consumer.xml"/>-->
+    <import resource="dubbo-server-consumer.xml"/>
 </beans>

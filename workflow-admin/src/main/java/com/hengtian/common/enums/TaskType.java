@@ -1,16 +1,18 @@
 package com.hengtian.common.enums;
 
+import com.google.common.collect.Maps;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public enum TaskType {
     //审核人
-    ASSIGNEE("assignee","审批人"),
+    ASSIGNEE("assignee","审批"),
     //会签
-    COUNTERSIGN("counterSign","会签人"),
+    COUNTERSIGN("counterSign","会签"),
     //候选人
-    CANDIDATEUSER("candidateUser","候选人"),
+    CANDIDATEUSER("candidateUser","候选"),
     //候选组
     CANDIDATEGROUP("candidateGroup","候选组");
 
@@ -38,7 +40,6 @@ public enum TaskType {
     public void setName(String name) {
         this.name = name;
     }
-
 
     public static String getValue(String name) {
         for (TaskType c : TaskType.values()) {
@@ -73,5 +74,13 @@ public enum TaskType {
           taskTypes.add(c);
         }
         return taskTypes;
+    }
+
+    public static Map<String, String> getTaskTypeMap(){
+        Map<String,String> map = Maps.newLinkedHashMap();
+        for (TaskType c : TaskType.values()) {
+            map.put(c.value,c.name);
+        }
+        return map;
     }
 }

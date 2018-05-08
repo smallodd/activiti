@@ -236,7 +236,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
                 tRuTask.setTaskType(tUserTask.getTaskType());
                 //判断如果是非人员审批，需要认领之后才能审批
-                if (AssignType.ROLE.code.intValue() == tUserTask.getAssignType().intValue() || AssignType.GROUP.code.intValue() == tUserTask.getAssignType().intValue() || AssignType.DEPARTMENT.code.intValue() == tUserTask.getAssignType().intValue()) {
+                if (AssignType.ROLE.code.intValue() == tUserTask.getAssignType().intValue() || AssignType.DEPARTMENT.code.intValue() == tUserTask.getAssignType().intValue()) {
                     tRuTask.setStatus(-1);
                 } else {
                     tRuTask.setStatus(0);
@@ -1219,7 +1219,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 con.append(" AND (");
                 con.append(" (trt.APPROVER_TYPE=" + AssignType.DEPARTMENT.code + " AND trt.APPROVER = #{departmentId}) ");
                 con.append(" OR (trt.APPROVER_TYPE =" + AssignType.ROLE.code + " AND trt.APPROVER = #{roleId}) ");
-                con.append(" OR (trt.APPROVER_TYPE =" + AssignType.GROUP.code + " AND trt.APPROVER = #{groupId}) ");
                 con.append(" OR (trt.APPROVER_TYPE =" + AssignType.PERSON.code + " AND trt.APPROVER = #{approver}) ");
                 con.append(")");
             } else if (TaskListEnum.ACTIVE.type.equals(type)) {
@@ -1227,7 +1226,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 con.append(" AND (");
                 con.append(" (trt.APPROVER_TYPE=" + AssignType.DEPARTMENT.code + " AND trt.APPROVER = #{departmentId}) ");
                 con.append(" OR (trt.APPROVER_TYPE =" + AssignType.ROLE.code + " AND trt.APPROVER = #{roleId}) ");
-                con.append(" OR (trt.APPROVER_TYPE =" + AssignType.GROUP.code + " AND trt.APPROVER = #{groupId}) ");
                 con.append(" OR (trt.APPROVER = #{approver}) ");
                 con.append(")");
             } else {

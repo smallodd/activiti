@@ -1,16 +1,18 @@
 package com.hengtian.common.enums;
 
+import com.google.common.collect.Maps;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ma on 2018/4/18.
  */
 public enum AssignType {
-    DEPARTMENT(1,"部门"),
-    ROLE(2,"角色"),
     PERSON(3,"人员"),
-    GROUP(4,"组");
+    DEPARTMENT(1,"部门"),
+    ROLE(2,"角色");
     public Integer code;
 
     public String name;
@@ -69,5 +71,13 @@ public enum AssignType {
             }
         }
         return false;
+    }
+
+    public static Map<Integer, String> getAssignpeMap(){
+        Map<Integer,String> map = Maps.newLinkedHashMap();
+        for (AssignType c : AssignType.values()) {
+            map.put(c.code,c.name);
+        }
+        return map;
     }
 }

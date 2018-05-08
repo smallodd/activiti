@@ -84,6 +84,14 @@ public class TUserTask implements Serializable {
      */
     @TableField(value = "assign_type")
     private Integer assignType= AssignType.PERSON.code;
+    /**
+     * 完成百分比，小数0-1
+     */
+    @TableField(value = "percentage")
+    private Double percentage;
+    /**
+     * 表达式
+     */
     @TableField(value = "expr")
     private String expr;
 
@@ -197,5 +205,13 @@ public class TUserTask implements Serializable {
 
     public void setExpr(String expr) {
         this.expr = expr;
+    }
+
+    public Double getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(Double percentage) {
+        this.percentage = percentage;
     }
 }
