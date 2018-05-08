@@ -221,10 +221,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             List list = Arrays.asList(strs);
             Set set = new HashSet(list);
             String[] rid = (String[]) set.toArray(new String[0]);
-            TRuTask tRuTask = new TRuTask();
 
             //生成扩展任务信息
             for (String approver : rid) {
+                TRuTask tRuTask = new TRuTask();
                 tRuTask.setTaskId(task.getId());
                 tRuTask.setApprover(approver);
                 EntityWrapper entityWrapper = new EntityWrapper();
