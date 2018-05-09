@@ -10,11 +10,11 @@ import com.hengtian.common.enums.TaskType;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TUserTaskService;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.SequenceFlow;
 import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,6 +34,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/assignee")
 public class UserTaskController extends BaseController{
+
+	Logger logger = Logger.getLogger(getClass());
     
     @Autowired 
     private TUserTaskService tUserTaskService;
@@ -82,6 +84,7 @@ public class UserTaskController extends BaseController{
 			for(TUserTask ut : uTasks){
 				JSONObject obj = new JSONObject();
 				obj.put("id", ut.getId());
+				obj.put("procDefKey", ut.getProcDefKey());
 				obj.put("taskDefKey", ut.getTaskDefKey());
 				obj.put("taskType", ut.getTaskType());
 				obj.put("assignType", ut.getAssignType());
@@ -131,43 +134,18 @@ public class UserTaskController extends BaseController{
     }
 
     /**
-     * 配置用户
+     * 任务节点配置（包括审批人，权限按钮）
      * @param taskJson
      * @return
      */
     @RequestMapping("/config")
     @ResponseBody
     public Object config(String taskJson) {
-    	String tasks =taskJson.replaceAll("&quot;", "'");
-    	JSONArray array= JSONObject.parseArray(tasks);
-    	Iterator<Object> it= array.iterator();
-    	while(it.hasNext()){
-    		JSONObject obj= (JSONObject)it.next();
-    		String taskId= obj.getString("id");
-    		TUserTask tUserTask= tUserTaskService.selectById(taskId);
-
-			tUserTask.setTaskType(obj.getString("taskType"));
-			tUserTask.setAssignType(obj.getInteger("assignType"));
-
-    		if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType").toString())){
-				if(obj.getString("code").toString().split(",").length == 1){
-					//会签时，任务节点审核人只有一个时转为普通任务
-					tUserTask.setTaskType(TaskType.ASSIGNEE.value);
-				}
-			}
-    		tUserTask.setCandidateIds(obj.getString("code"));
-    		tUserTask.setCandidateName(obj.getString("name"));
-
-			Double percentage = obj.getDouble("percentage");
-			if(percentage == null || percentage > 1 || percentage < 0){
-				percentage = 1d;
-			}
-    		tUserTask.setPercentage(percentage);
-    		boolean b = tUserTaskService.updateById(tUserTask);
-    		if(!b){
-    			return renderError("配置失败！");
-    		}
-    	}
-    	return renderSuccess("配置成功！");
-    }
+		try {
+			return tUserTaskService.config(taskJson);
+		} catch (Exception e) {
+			logger.error("任务节点配置失败", e);
+			return renderError("任务节点配置");
+		}
+	}
 }

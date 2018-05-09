@@ -1,19 +1,9 @@
 package com.hengtian.flow.controller;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.hengtian.common.base.BaseController;
-import com.hengtian.common.enums.AssignType;
-import com.hengtian.common.enums.TaskType;
-import com.hengtian.common.result.TaskNodeResult;
-import com.hengtian.common.param.TaskParam;
-import com.hengtian.common.result.Constant;
-import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
-import com.rbac.service.RoleService;
-import com.user.service.emp.EmpService;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
@@ -22,19 +12,16 @@ import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.activiti.spring.ProcessEngineFactoryBean;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorkflowBaseController extends BaseController {
 

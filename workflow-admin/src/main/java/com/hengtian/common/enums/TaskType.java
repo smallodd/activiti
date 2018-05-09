@@ -12,9 +12,7 @@ public enum TaskType {
     //会签
     COUNTERSIGN("counterSign","会签"),
     //候选人
-    CANDIDATEUSER("candidateUser","候选"),
-    //候选组
-    CANDIDATEGROUP("candidateGroup","候选组");
+    CANDIDATEUSER("candidateUser","候选");
 
     public String value;
 

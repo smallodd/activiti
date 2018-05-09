@@ -677,10 +677,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 					variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
 					variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
 
-					if (TaskType.CANDIDATEGROUP.value.equals(tUserTask.getTaskType())) {
-						//组
-						taskService.addCandidateGroup(task.getId(), tUserTask.getCandidateIds());
-					} else if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
+					if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
 						//候选人
 						for(String candidateId : candidateIds.split(",")){
 							variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
