@@ -46,8 +46,8 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
     @Override
     public Result config(String configJsonStr){
         String tasks = configJsonStr.replaceAll("&quot;", "'");
-        JSONArray array= JSONObject.parseArray(tasks);
-        Iterator<Object> it= array.iterator();
+        JSONArray array = JSONObject.parseArray(tasks);
+        Iterator<Object> it = array.iterator();
         List<TTaskButton> buttonList = Lists.newArrayList();
         while(it.hasNext()){
             JSONObject obj = (JSONObject)it.next();
@@ -77,7 +77,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
             }
 
             //权限按钮配置
-            String button = obj.getString("button");
+            String button = obj.getString("buttonKey");
             if(StringUtils.isNotBlank(button)){
                 String[] buttonArray = button.split(",");
                 for(String buttonKey : buttonArray){
@@ -88,14 +88,13 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
                     buttonList.add(tb);
                 }
             }
-            if(CollectionUtils.isNotEmpty(buttonList)){
-                Map<String,Object> map = Maps.newHashMap();
-                map.put("proc_def_key", buttonList.get(0).getProcDefKey());
-                boolean b = tTaskButtonService.deleteByMap(map);
-                if(!b){
-                    tTaskButtonService.insertBatch(buttonList);
-                }
-            }
+        }
+        if(CollectionUtils.isNotEmpty(buttonList)){
+            //先删除，后增加
+            Map<String,Object> map = Maps.newHashMap();
+            map.put("proc_def_key", buttonList.get(0).getProcDefKey());
+            tTaskButtonService.deleteByMap(map);
+            tTaskButtonService.insertBatch(buttonList);
         }
         return new Result(true, "配置成功！");
     }

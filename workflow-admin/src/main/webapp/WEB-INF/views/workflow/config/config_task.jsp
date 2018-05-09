@@ -37,7 +37,7 @@
                         </select>
                     </td>
                     <td><input id="taskUser${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configAssignee('${ut.taskDefKey}')"/></td>
-				    <td style="width: 160px;"><span>444</span></td>
+				    <td><input id="taskButton${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configButton('${ut.taskDefKey}')"/></td>
                     <td>
                         <input class="easyui-numberbox" id="percentage${ut.taskDefKey}" value="${ut.percentage}" placeholder="范围0-1" data-options="required:true,min:0.01,max:1,precision:2" style="width:66px;height:29px">
                     </td>
@@ -50,6 +50,7 @@
 <div id="configDepartmentDialog"></div>
 <div id="configRoleDialog"></div>
 <div id="configUserDialog"></div>
+<div id="configButtonDialog"></div>
 <input type="hidden" id="taskKey"/>
 <script type="text/javascript">
     $(function() {
@@ -63,8 +64,11 @@
         		if(taskJsonArray[i].name){
                     $("#taskUser"+taskDefKey).attr("title",taskJsonArray[i].name.replace(/,/g,"\n"));
                 }
-        		$("#taskType"+taskDefKey).val(taskJsonArray[i].taskType);
-                $("#assignType"+taskDefKey).val(taskJsonArray[i].assignType);
+
+                $("#taskButton"+taskDefKey).val(taskJsonArray[i].buttonName);
+                if(taskJsonArray[i].buttonKey){
+                    $("#taskButton"+taskDefKey).attr("title",taskJsonArray[i].buttonName.replace(/,/g,"\n"));
+                }
         	}
     	}
     	
@@ -239,6 +243,46 @@
                 }]
             });
         }
+    }
+
+    /**
+     * 权限按钮设置
+     * @param taskDefKey 任务定义key
+     */
+    function configButton(taskDefKey){
+        $("#taskKey").val(taskDefKey);
+        $("#configButtonDialog").dialog({
+            title : '选择按钮',
+            width : 500,
+            height : 450,
+            href :  '${ctx}/button/select',
+            buttons : [ {
+                text : '确定',
+                handler : function() {
+                    //给输入框赋人员名称的值
+                    var taskJsonStr = $("#taskJsonSelect").val();
+                    if(taskJsonStr == undefined || taskJsonStr == ""){
+                        $("#configButtonDialog").dialog('close');
+                        return;
+                    }
+                    var taskJsonVal = JSON.parse(taskJsonStr);
+                    for(var i=0;i<taskJsonVal.length;i++){
+                        if(taskJsonVal[i].taskDefKey===taskDefKey){
+                            if(taskJsonVal[i].buttonName != undefined){
+                                $("#taskButton"+taskDefKey).val(taskJsonVal[i].buttonName);
+                                if(taskJsonVal[i].buttonName){
+                                    $("#taskButton"+taskDefKey).attr("title",taskJsonVal[i].buttonName.replace(/,/g,"\n"));
+                                }
+                            }
+                        }
+                    }
+
+                    $("#taskJson").val($("#taskJsonSelect").val());
+                    $("#taskJsonSelect").val("");
+                    $("#configButtonDialog").dialog('close');
+                }
+            }]
+        });
     }
 </script>
 </body>

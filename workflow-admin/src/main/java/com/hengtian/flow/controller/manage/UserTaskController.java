@@ -8,6 +8,7 @@ import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskType;
 import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.TButtonService;
 import com.hengtian.flow.service.TUserTaskService;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.UserTask;
@@ -41,6 +42,8 @@ public class UserTaskController extends BaseController{
     private TUserTaskService tUserTaskService;
     @Autowired
     private RepositoryService repositoryService;
+	@Autowired
+	private TButtonService tButtonService;
 
 	/**
 	 * 设定人员页面
@@ -80,6 +83,7 @@ public class UserTaskController extends BaseController{
 			}
 		}
 		if(CollectionUtils.isNotEmpty(uTasks)){
+			JSONObject configButton = tButtonService.getConfigButton(pd.getKey());
 			JSONArray array = new JSONArray();
 			for(TUserTask ut : uTasks){
 				JSONObject obj = new JSONObject();
@@ -90,6 +94,11 @@ public class UserTaskController extends BaseController{
 				obj.put("assignType", ut.getAssignType());
 				obj.put("name", ut.getCandidateName());
 				obj.put("code", ut.getCandidateIds());
+				if(configButton != null && configButton.containsKey(ut.getTaskDefKey())){
+					obj.put("buttonKey",configButton.getJSONObject(ut.getTaskDefKey()).getString("buttonKey"));
+					obj.put("buttonName",configButton.getJSONObject(ut.getTaskDefKey()).getString("buttonName"));
+				}
+
 				array.add(obj);
 			}
 			String taskJson = array.toJSONString().replaceAll("\"", "&quot;");

@@ -14,12 +14,16 @@ import java.io.Serializable;
 public class TButton implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
+    @TableId(value = "name")
+    private String name;
     @TableField(value="button_key")
     private String buttonKey;
     @TableField(value="class_name")
     private String className;
     @TableField(value="desc")
     private String desc;
+    @TableField(value="status")
+    private Integer status;
 
     public Long getId() {
         return id;
@@ -27,6 +31,14 @@ public class TButton implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getButtonKey() {
@@ -51,5 +63,13 @@ public class TButton implements Serializable {
 
     public void setDesc(String desc) {
         this.desc = desc;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }
