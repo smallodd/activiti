@@ -8,7 +8,6 @@ import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.model.TTaskButton;
-import com.hengtian.flow.service.TButtonService;
 import com.hengtian.flow.service.TTaskButtonService;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
@@ -64,13 +63,8 @@ public class ActivitiUtilServiceImpl {
     private TaskService taskService;
     @Autowired
     private ProcessEngine processEngine;
-
-    @Autowired
-    private TButtonService tButtonService;
-
     @Autowired
     private TTaskButtonService tTaskButtonService;
-
 
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list){
         if(list!=null&&list.size()>0) {
