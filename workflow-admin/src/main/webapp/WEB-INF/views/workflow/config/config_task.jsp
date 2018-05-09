@@ -23,14 +23,14 @@
             <c:forEach var="ut" items="${uTasks}">
 				<tr>
 					<td>[${ut.taskName}]</td>
-					<td style="width: 220px;" data-key="${ut.taskDefKey}">
+					<td style="width: 150px;" data-key="${ut.taskDefKey}">
 						<input id="taskId${ut.taskDefKey}" type="hidden" value="${ut.id}"/>
-						<select id="taskType${ut.taskDefKey}" class="easyui-combobox selectConfigType" data-options="width:100,height:29,panelHeight:'auto'">
+						<select id="taskType${ut.taskDefKey}" class="easyui-combobox selectConfigType" data-options="width:66,height:29,panelHeight:'auto'">
                             <c:forEach var="taskType" items="${taskType}">
                                 <option value="${taskType.key}" <c:if test="${taskType.key == ut.taskType}">selected="selected"</c:if>>${taskType.value}</option>
                             </c:forEach>
                         </select>
-                        <select id="assignType${ut.taskDefKey}" class="easyui-combobox selectConfigType" data-options="width:100,height:29,panelHeight:'auto'">
+                        <select id="assignType${ut.taskDefKey}" class="easyui-combobox selectConfigType" data-options="width:66,height:29,panelHeight:'auto'">
                             <c:forEach var="assignType" items="${assignType}">
                                 <option value="${assignType.key}" <c:if test="${assignType.key == ut.assignType}">selected="selected"</c:if>>${assignType.value}</option>
                             </c:forEach>

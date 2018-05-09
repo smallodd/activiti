@@ -92,7 +92,7 @@
                                 b = true;
                                 var user = taskArray[i];
                                 if(user.code){
-                                    if($.inArray(rowData.id, user.code.split(",")) < 0){
+                                    if($.inArray(rowData.id+"", user.code.split(",")) < 0){
                                         user.name = ((user.name=="")?"":(user.name + ",")) + rowData.roleName;
                                         user.code = (user.code==""?"":(user.code + ",")) + rowData.id;
                                         user.taskType = taskType;
@@ -143,14 +143,14 @@
                 for(var i=0;i<taskArray.length;i++){
                     if(taskArray[i].taskDefKey == taskDefKey){
                         var user  = taskArray[i];
-                        var name =  user.roleName;
-                        var code = user.id;
+                        var name =  user.name;
+                        var code = user.code;
 
                         var nameArray = name.split(",");
                         var valueArray = code.split(",");
 
                         nameArray.splice($.inArray(rowData.roleName, nameArray), 1)
-                        valueArray.splice($.inArray(rowData.id, valueArray), 1)
+                        valueArray.splice($.inArray(rowData.id+"", valueArray), 1)
 
                         user.name = nameArray.join(",");
                         user.code = valueArray.join(",");
@@ -176,33 +176,17 @@
                         return false;
                     }
                 })
-                if(checkedUser != undefined && checkedUser.id != undefined){
-                    var checkedUserArray = checkedUser.id.split(",");
+                if(checkedUser != undefined && checkedUser.code != undefined){
+                    var checkedUserArray = checkedUser.code.split(",");
                     $.each(data.rows,function(i,obj){
-                        if($.inArray(obj.id, checkedUserArray) >= 0){
-                            $('#taskCandidateUserGrid').datagrid('selectRow',i);
+                        if($.inArray(obj.id+"", checkedUserArray) >= 0){
+                            $('#taskCandidateRoleGrid').datagrid('selectRow',i);
                         }
                     })
                 }
-            },
-            toolbar : '#tb_role'
+            }
         });
     });
-
-    /**
-     * 清除
-     */
-    function userCleanFun() {
-        $('#candidateUserSearchForm input').val('');
-        $("#taskCandidateUserGrid").datagrid('load', {});
-    }
-
-    /**
-     * 搜索
-     */
-    function userSearchFun() {
-        $("#taskCandidateUserGrid").datagrid('load', $.serializeObject($('#candidateUserSearchForm')));
-    }
 </script>
 </body>
 </html>

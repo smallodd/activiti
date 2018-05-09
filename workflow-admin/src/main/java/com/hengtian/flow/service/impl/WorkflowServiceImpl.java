@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.*;
@@ -22,7 +21,6 @@ import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
-import org.activiti.bpmn.model.UserTask;
 import com.hengtian.flow.vo.TaskVo;
 import org.activiti.bpmn.model.FlowNode;
 import org.activiti.engine.*;
@@ -703,38 +701,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
+
+        EntityWrapper<TRuTask> wrapper = new EntityWrapper<TRuTask>();
+        wrapper.where("task_id={0}", taskId);
+        wrapper.and("approver_real", userId);
+        TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
+
         //用户组权限判断
-        if (!ConstantUtils.ADMIN_ID.equals(userId) && !userId.equals(task.getOwner())) {
+        if (!ConstantUtils.ADMIN_ID.equals(userId) && tRuTask == null) {
             return new Result(false, "您所在的用户组没有权限进行该操作");
         }
-        String assignee = task.getAssignee();
-        String taskDefinitionKey = task.getTaskDefinitionKey();
-        //获取参数: 任务类型
-        String taskType = (String) taskService.getVariable(taskId, taskDefinitionKey + ":" + TaskVariable.TASKTYPE.value);
-        if (TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)) {
-            //会签 | 修改会签人
-            String candidateIds = taskService.getVariable(taskId, taskDefinitionKey + ":" + TaskVariable.TASKUSER.value) + "";
-            if (StringUtils.contains(candidateIds, targetUserId)) {
-                return new Result(false, "【" + targetUserId + "】已在当前任务中<br/>（同一任务节点同一个人最多可办理一次）");
-            }
-            taskService.setAssignee(taskId, assignee.replace(userId, targetUserId));
-            //修改会签人相关属性值
-            Map<String, Object> variable = Maps.newHashMap();
-            variable.put(taskDefinitionKey + ":" + userId, userId + ":" + TaskStatus.TRANSFER.value);
-            variable.put(taskDefinitionKey + ":" + targetUserId, targetUserId + ":" + TaskStatus.UNFINISHED.value);
-            variable.put(taskDefinitionKey + ":" + TaskVariable.TASKUSER.value, candidateIds.replace(userId, targetUserId));
-            taskService.setVariablesLocal(taskId, variable);
-        } else {
-            Map<String, Object> variable = Maps.newHashMap();
-            variable.put(taskDefinitionKey + ":" + userId, TaskStatus.TRANSFER.value);
-            variable.put(taskDefinitionKey + ":" + targetUserId, targetUserId + ":" + TaskStatus.UNFINISHED.value);
-            variable.put(taskDefinitionKey + ":" + TaskVariable.TASKUSER.value, targetUserId);
-            taskService.setVariablesLocal(taskId, variable);
-            taskService.setAssignee(taskId, targetUserId);
-            if (StringUtils.isNoneBlank(assignee)) {
-                taskService.setOwner(taskId, assignee);
-            }
-        }
+
+        tRuTask.setApproverReal(targetUserId);
+        tRuTaskService.updateById(tRuTask);
         return new Result(true, "转办任务成功");
     }
 
