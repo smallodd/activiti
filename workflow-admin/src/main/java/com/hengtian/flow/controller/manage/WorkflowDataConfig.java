@@ -12,6 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 工作流程相关-数据查询
+ * @author houjinrong@chtwm.com
+ * date 2018/5/9 17:41
+ */
 @RestController
 @RequestMapping("/workflow/data")
 public class WorkflowDataConfig {
