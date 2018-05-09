@@ -18,8 +18,8 @@
                 	<%--<td><textarea style="width: 240px; height: 49px;" readonly="readonly">${task.description}</textarea></td>--%>
                 <%--</tr>--%>
 				<tr>
-					<td>自定义参数（例子：{'a':'b'}）</td>
-					<td><input id="taskUser" name="jsonVariable" style="width:100px;"></td>
+					<td>自定义参数<br/>例子：{"a":"b"}</td>
+					<td><input class="easyui-textbox" data-options="multiline:true" id="taskUser" name="jsonVariable" style="width:260px;height: 50px;"></td>
 				</tr>
                 <tr><td>意见列表</td><td><c:if test="${empty comments}">暂无意见 ！</c:if></td></tr>
                 <c:forEach var="comment" items="${comments}">
@@ -29,7 +29,9 @@
 				</c:forEach>
 				<tr>
                 	<td>我的意见</td>
-                	<td colspan="3"><textarea name="commentContent" style="width: 240px; height: 49px;" required="required"></textarea></td>
+                	<td>
+						<input class="easyui-textbox" data-options="multiline:true" name="commentContent" name="jsonVariable" style="width:260px;height: 80px;">
+					</td>
                 </tr>
                  <tr>
                  	<td>是否同意</td>

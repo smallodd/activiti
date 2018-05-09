@@ -335,7 +335,6 @@ public class ActivitiController extends BaseController{
 		Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
 		TaskParam taskParam=new TaskParam();
 		if(task==null){
-
 			return  renderError("任务不存在！", Constant.TASK_NOT_EXIT) ;
 		}
 		try {
