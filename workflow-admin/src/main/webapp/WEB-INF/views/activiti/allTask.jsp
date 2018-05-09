@@ -161,7 +161,7 @@
         }
         parent.$.modalDialog({
             title : '办理',
-            width : 400,
+            width : 570,
             height : 450,
             href : '${ctx}/activiti/completeTaskPage?id='+id,
             buttons : [ {
