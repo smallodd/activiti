@@ -13,7 +13,7 @@
             <div data-options="region:'east',split:true" title="意见列表" style="width:180px;">
                 <c:if test="${empty comments}">暂无意见 ！</c:if>
                 <c:forEach var="comment" items="${comments}">
-                    <div class="easyui-panel" title="${comment.commentTime}" style="height:auto;padding:5px">
+                    <div class="easyui-panel" title="${comment.commentTime}" style="height:auto;padding:5px;background-color: #f7ecb5">
                         <a class="easyui-linkbutton" style="height: 25px;background-color: #282828;color: white">${comment.commentUser}</a>${comment.commentContent}
                     </div>
                 </c:forEach>
@@ -24,12 +24,12 @@
                     <table class="grid">
                         <tr>
                             <td>自定义参数<br/>例子：{"a":"b"}</td>
-                            <td><input class="easyui-textbox" data-options="multiline:true" id="taskUser" name="jsonVariable" style="width:260px;height: 100px;"></td>
+                            <td><input class="easyui-textbox" data-options="multiline:true" name="jsonVariable" style="width:260px;height: 100px;"></td>
                         </tr>
                         <tr>
                             <td>我的意见</td>
                             <td>
-                                <input class="easyui-textbox" data-options="multiline:true" name="commentContent" name="jsonVariable" style="width:260px;height: 150px;">
+                                <input class="easyui-textbox" data-options="multiline:true" name="commentContent" style="min-width:260px;height: 150px;">
                             </td>
                         </tr>
                         <tr>
