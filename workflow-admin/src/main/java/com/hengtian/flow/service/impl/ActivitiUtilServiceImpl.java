@@ -72,15 +72,15 @@ public class ActivitiUtilServiceImpl {
     private TTaskButtonService tTaskButtonService;
 
 
-    public List<TaskNodeResult>  setButtons( List<TaskNodeResult> list){
+    public List<TaskNodeResult> setButtons(List<TaskNodeResult> list){
         if(list!=null&&list.size()>0) {
             String id=list.get(0).getProcessInstanceId();
             ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
             for (TaskNodeResult taskNodeResult : list) {
                 EntityWrapper entityWrapper = new EntityWrapper();
                 entityWrapper.where("proc_def_key={0}", processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}", taskNodeResult.getTaskDefinedKey());
-                List<TTaskButton> tTaskButtons=tTaskButtonService.selectList(entityWrapper);
-                List<String> li=new ArrayList<>();
+                List<TTaskButton> tTaskButtons = tTaskButtonService.selectList(entityWrapper);
+                List<String> li = new ArrayList<>();
                 for(TTaskButton tTaskButton:tTaskButtons){
                     li.add(tTaskButton.getButtonKey());
                 }
