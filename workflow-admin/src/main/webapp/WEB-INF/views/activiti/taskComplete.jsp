@@ -13,7 +13,7 @@
             <div data-options="region:'east',split:true" title="意见列表" style="width:180px;">
                 <c:if test="${empty comments}">暂无意见 ！</c:if>
                 <c:forEach var="comment" items="${comments}">
-                    <div class="easyui-panel" title="${comment.commentTime}" style="height:auto;padding:5px;background-color: #f7ecb5">
+                    <div class="easyui-panel" title="${comment.commentTime}" style="height:auto;padding:5px;background-color: #fafbfd">
                         <a class="easyui-linkbutton" style="height: 25px;background-color: #282828;color: white">${comment.commentUser}</a>${comment.commentContent}
                     </div>
                 </c:forEach>
