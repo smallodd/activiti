@@ -30,7 +30,6 @@
 	<script>
         var taskDefKey = $("#taskKey").val();
         var taskType = $("#taskType"+taskDefKey).val();
-        var assignType = $("#assignType"+taskDefKey).val();
         var singleSelect = true;
         if(taskType==="candidateUser" || taskType==="counterSign"){
             singleSelect = false;
@@ -83,8 +82,6 @@
 
                         jsonObj.id = $("#taskId"+taskDefKey).val();
                         jsonObj.taskDefKey = taskDefKey;
-                        jsonObj.taskType = taskType;
-                        jsonObj.assignType = assignType;
                         jsonObj.name = rowData.name;
                         jsonObj.code = rowData.code;
                         taskArray.push(jsonObj);
@@ -99,10 +96,6 @@
                                     var user = taskArray[i];
                                     user.name = rowData.name;
                                     user.code = rowData.code;
-                                    user.taskType = taskType;
-                                    user.assignType = assignType;
-
-                                    taskArray[i] = user;
 
                                     var taskStr = JSON.stringify(taskArray);
                                     $("#taskJsonSelect").val(taskStr);
@@ -119,10 +112,6 @@
                                         if($.inArray(rowData.code, user.code.split(",")) < 0){
                                             user.name = ((user.name=="")?"":(user.name + ",")) + rowData.name;
                                             user.code = (user.code==""?"":(user.code + ",")) + rowData.code;
-                                            user.taskType = taskType;
-                                            user.assignType = assignType;
-
-                                            taskArray[i] = user;
 
                                             var taskStr = JSON.stringify(taskArray);
                                             $("#taskJsonSelect").val(taskStr);
@@ -131,9 +120,6 @@
                                     }else{
                                         user.name = ((user.name=="" || user.name == undefined)?"":(user.name + ",")) + rowData.name;
                                         user.code = ((user.code=="" || user.code == undefined)?"":(user.code + ",")) + rowData.code;
-                                        user.taskType = taskType;
-                                        user.assignType = assignType;
-                                        taskArray[i] = user;
 
                                         var taskStr = JSON.stringify(taskArray);
                                         $("#taskJsonSelect").val(taskStr);
@@ -146,8 +132,6 @@
 
                                 jsonObj.id = $("#taskId"+taskDefKey).val();
                                 jsonObj.taskDefKey = taskDefKey;
-                                jsonObj.taskType = taskType;
-                                jsonObj.assignType = assignType;
                                 jsonObj.name = rowData.name;
                                 jsonObj.code = rowData.code;
 
