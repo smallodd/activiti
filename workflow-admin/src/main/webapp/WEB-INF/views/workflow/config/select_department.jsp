@@ -8,7 +8,7 @@
 </head>
 <body>
 <div data-options="region:'north',border:false" style="height: 30px; overflow: hidden;background-color: #fff;" id="tb_dept">
-	<form id="candidateUserSearchForm">
+	<form id="candidateSearchForm">
 		<table>
 			<tr>
 				<th>编号</th>
@@ -194,15 +194,15 @@
      * 清除
      */
     function userCleanFun() {
-        $('#candidateUserSearchForm input').val('');
-        $("#taskCandidateUserGrid").datagrid('load', {});
+        $('#candidateSearchForm input').val('');
+        $("#taskCandidateDepartmentGrid").datagrid('load', {});
     }
 
     /**
      * 搜索
      */
     function userSearchFun() {
-        $("#taskCandidateUserGrid").datagrid('load', $.serializeObject($('#candidateUserSearchForm')));
+        $("#taskCandidateDepartmentGrid").datagrid('load', $.serializeObject($('#candidateSearchForm')));
     }
 </script>
 </body>
