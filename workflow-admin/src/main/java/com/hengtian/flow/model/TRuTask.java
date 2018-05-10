@@ -18,10 +18,10 @@ public class TRuTask implements Serializable {
     private String id;
     @TableField(value = "task_id")
     private String taskId;
-    @TableField(value = "approver")
-    private String approver;
-    @TableField(value = "approver_type")
-    private Integer approverType;
+    @TableField(value = "assignee")
+    private String assignee;
+    @TableField(value = "assignee_type")
+    private Integer assigneeType;
     @TableField(value = "task_type")
     private String taskType;
     @TableField(value = "owner")
@@ -34,8 +34,8 @@ public class TRuTask implements Serializable {
     private Integer status;
     @TableField(value = "app_key")
     private Integer appKey;
-    @TableField(value = "approver_real")
-    private String approverReal;
+    @TableField(value = "assignee_real")
+    private String assigneeReal;
     @TableField(value = "proc_inst_id")
     private String procInstId;
 
@@ -55,20 +55,28 @@ public class TRuTask implements Serializable {
         this.taskId = taskId;
     }
 
-    public String getApprover() {
-        return approver;
+    public String getAssignee() {
+        return assignee;
     }
 
-    public void setApprover(String approver) {
-        this.approver = approver;
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
     }
 
-    public Integer getApproverType() {
-        return approverType;
+    public Integer getAssigneeType() {
+        return assigneeType;
     }
 
-    public void setApproverType(Integer approverType) {
-        this.approverType = approverType;
+    public void setAssigneeType(Integer assigneeType) {
+        this.assigneeType = assigneeType;
+    }
+
+    public String getAssigneeReal() {
+        return assigneeReal;
+    }
+
+    public void setAssigneeReal(String assigneeReal) {
+        this.assigneeReal = assigneeReal;
     }
 
     public String getTaskType() {
@@ -117,14 +125,6 @@ public class TRuTask implements Serializable {
 
     public void setAppKey(Integer appKey) {
         this.appKey = appKey;
-    }
-
-    public String getApproverReal() {
-        return approverReal;
-    }
-
-    public void setApproverReal(String approverReal) {
-        this.approverReal = approverReal;
     }
 
     public String getProcInstId() {

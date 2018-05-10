@@ -9,6 +9,7 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.model.TTaskButton;
 import com.hengtian.flow.service.TTaskButtonService;
+import com.hengtian.flow.vo.TaskVo;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.engine.*;
@@ -742,6 +743,11 @@ public class ActivitiUtilServiceImpl {
         }
     }
 
+    /**
+     * 表达式校验，遍历节点时，根据表达式选择分支
+     * @author houjinrong@chtwm.com
+     * date 2018/5/10 14:30
+     */
     private boolean filterExpression(String conditionExpression, List<HistoricVariableInstance> listVar){
         if(StringUtils.isNotEmpty(conditionExpression)) {
             ExpressionFactory factory = new ExpressionFactoryImpl();
@@ -755,5 +761,52 @@ public class ActivitiUtilServiceImpl {
         }
 
         return true;
+    }
+
+    /**
+     * 将activiti任务对象转为本地定义的任务对象，解决无法转为json的问题
+     * @author houjinrong@chtwm.com
+     * date 2018/5/10 14:58
+     */
+    protected List<TaskVo> transferTask(List<Task> taskList){
+        List<TaskVo> taskVoList = Lists.newArrayList();
+        if(CollectionUtils.isNotEmpty(taskList)){
+            for (Task t : taskList){
+                TaskVo vo = new TaskVo();
+                transferTaskInfo(t, vo);
+                taskVoList.add(vo);
+            }
+        }
+        return taskVoList;
+    }
+
+    /**
+     * 将activiti任务对象转为本地定义的任务对象，解决无法转为json的问题
+     * @author houjinrong@chtwm.com
+     * date 2018/5/10 14:58
+     */
+    protected List<TaskVo> transferHisTask(List<HistoricTaskInstance> taskList){
+        List<TaskVo> taskVoList = Lists.newArrayList();
+        if(CollectionUtils.isNotEmpty(taskList)){
+            for (HistoricTaskInstance t : taskList){
+                TaskVo vo = new TaskVo();
+                transferTaskInfo(t, vo);
+                taskVoList.add(vo);
+            }
+        }
+        return taskVoList;
+    }
+
+    private void transferTaskInfo(TaskInfo task, TaskVo vo){
+        vo.setId(task.getId());
+        vo.setTaskName(task.getName());
+        vo.setProcessOwner(task.getOwner());
+        vo.setTaskCreateTime(task.getCreateTime());
+        vo.setBusinessName(task.getCategory());
+        vo.setBusinessKey(task.getDescription());
+        if(task instanceof Task){
+            vo.setTaskState(task.getPriority()+"");
+            vo.setTaskAssign(task.getAssignee());
+        }
     }
 }

@@ -13,12 +13,12 @@ public class TaskQueryParam {
      * 创建人id
      */
     @ApiModelProperty(value = "创建人id", example="H000000")
-    private String creater;
+    private String creator;
     /**
      * 审批人id
      */
     @ApiModelProperty(value = "审批人id", example="H000000")
-    private String approver;
+    private String assignee;
     /**
      * 创建任务的标题
      */
@@ -33,7 +33,12 @@ public class TaskQueryParam {
      * 系统定义的key
      */
     @ApiModelProperty(value = "系统定义的key", required = true, example="系统定义的key")
-    private String appKey;
+    private Integer appKey;
+    /**
+     * 业务系统主键
+     */
+    @ApiModelProperty(value = "业务系统主键", required = true, example="业务系统主键")
+    private String businessKey;
 
     /**
      * 分页-当前页
@@ -46,20 +51,20 @@ public class TaskQueryParam {
     @ApiModelProperty(value = "每页条数", required = true, example="10")
     private int pageSize;
 
-    public String getCreater() {
-        return creater;
+    public String getCreator() {
+        return creator;
     }
 
-    public void setCreater(String creater) {
-        this.creater = creater;
+    public void setCreator(String creator) {
+        this.creator = creator;
     }
 
-    public String getApprover() {
-        return approver;
+    public String getAssignee() {
+        return assignee;
     }
 
-    public void setApprover(String approver) {
-        this.approver = approver;
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
     }
 
     public String getTitle() {
@@ -78,12 +83,20 @@ public class TaskQueryParam {
         this.taskName = taskName;
     }
 
-    public String getAppKey() {
+    public Integer getAppKey() {
         return appKey;
     }
 
-    public void setAppKey(String appKey) {
+    public void setAppKey(Integer appKey) {
         this.appKey = appKey;
+    }
+
+    public String getBusinessKey() {
+        return businessKey;
+    }
+
+    public void setBusinessKey(String businessKey) {
+        this.businessKey = businessKey;
     }
 
     public int getPageNum() {

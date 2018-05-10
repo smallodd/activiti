@@ -22,6 +22,10 @@ import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
 import com.hengtian.flow.vo.TaskVo;
+import com.rbac.entity.RbacRole;
+import com.rbac.entity.RbacUser;
+import com.rbac.service.PrivilegeService;
+import com.rbac.service.UserService;
 import org.activiti.bpmn.model.FlowNode;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
@@ -93,8 +97,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     TWorkDetailService workDetailService;
 
     @Autowired
-    private ProcessEngine processEngine;
-
+    private UserService userService;
+    @Autowired
+    private PrivilegeService privilegeService;
 
     @Override
     public Result startProcessInstance(ProcessParam processParam) {
@@ -214,24 +219,24 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
             //获取任务中的自定义参数
             Map<String, Object> map = taskService.getVariables(task.getId());
-            String approvers = tUserTask.getCandidateIds();
-            String[] strs = approvers.split(",");
+            String assignees = tUserTask.getCandidateIds();
+            String[] strs = assignees.split(",");
             List list = Arrays.asList(strs);
             Set set = new HashSet(list);
             String[] rid = (String[]) set.toArray(new String[0]);
 
             //生成扩展任务信息
-            for (String approver : rid) {
+            for (String assignee : rid) {
                 TRuTask tRuTask = new TRuTask();
                 tRuTask.setTaskId(task.getId());
-                tRuTask.setApprover(approver);
+                tRuTask.setAssignee(assignee);
                 EntityWrapper entityWrapper = new EntityWrapper();
-                entityWrapper.where("task_id={0}", task.getId()).andNew("approver={0}", approver);
+                entityWrapper.where("task_id={0}", task.getId()).andNew("assignee={0}", assignee);
                 TRuTask tRu = tRuTaskService.selectOne(entityWrapper);
                 if (tRu != null) {
                     continue;
                 }
-                tRuTask.setApproverType(tUserTask.getAssignType());
+                tRuTask.setAssigneeType(tUserTask.getAssignType());
                 tRuTask.setOwer(task.getOwner());
 
                 tRuTask.setTaskType(tUserTask.getTaskType());
@@ -240,7 +245,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTask.setStatus(-1);
                 } else {
                     tRuTask.setStatus(0);
-                    tRuTask.setApproverReal(approver);
+                    tRuTask.setAssigneeReal(assignee);
                 }
                 tRuTask.setExpireTime(task.getDueDate());
                 tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
@@ -268,7 +273,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         result.setCode(Constant.SUCCESS);
         EntityWrapper entityWrapper = new EntityWrapper();
         entityWrapper.where("task_id={0}", task.getId());
-        entityWrapper.like("approver_real", "%" + taskParam.getApprover() + "%");
+        entityWrapper.like("assignee_real", "%" + taskParam.getApprover() + "%");
         //查询流程定义信息
         ProcessDefinition processDefinition = repositoryService.getProcessDefinition(task.getProcessDefinitionId());
 
@@ -286,7 +291,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             result.setCode(Constant.TASK_NOT_BELONG_USER);
             return result;
         } else {
-            if (ruTask.getApproverType() != taskParam.getAssignType()) {
+            if (ruTask.getAssigneeType() != taskParam.getAssignType()) {
                 result.setMsg("审批人类型参数错误！");
                 result.setCode(Constant.PARAM_ERROR);
                 return result;
@@ -341,7 +346,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(1);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id={0}", t.getId()).andNew("approver_real={0}", taskParam.getApprover());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
                     tRuTaskService.update(tRuTask, truWrapper);
                     EntityWrapper wra = new EntityWrapper();
                     wra.where("task_id={0}", t.getId()).andNew("status={0}", 0);
@@ -354,7 +359,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(2);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id={0}", t.getId()).andNew("approver_real={0}", taskParam.getApprover());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
                     tRuTaskService.update(tRuTask, truWrapper);
 
                     EntityWrapper wra = new EntityWrapper();
@@ -383,7 +388,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(1);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id={0}", t.getId()).andNew("approver_real={0}", taskParam.getApprover());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
                     ;
                     tRuTaskService.update(tRuTask, truWrapper);
                     result.setSuccess(true);
@@ -396,7 +401,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(2);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id={0}", t.getId()).andNew("approver_real={0}", taskParam.getApprover());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
                     tRuTaskService.update(tRuTask, truWrapper);
                     result.setMsg("任务已经拒绝！");
                     result.setCode(Constant.SUCCESS);
@@ -561,7 +566,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
     /**
      * 任务认领 部门，角色，组审批时，需具体人员认领任务
-     * 认领是需要将认领人放置到t_ru_task表的approver_real字段
+     * 认领是需要将认领人放置到t_ru_task表的assignee_real字段
      *
      * @param userId 认领人ID
      * @param taskId 任务ID
@@ -576,7 +581,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (tRuTask == null || !StringUtils.equals(taskId, tRuTask.getTaskId())) {
             return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        String assignee = tRuTask.getApproverReal();
+        String assignee = tRuTask.getAssigneeReal();
         if (StringUtils.isNotBlank(assignee)) {
             assignee = assignee + "," + userId;
         } else {
@@ -584,7 +589,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         tRuTask = new TRuTask();
         tRuTask.setId(workId);
-        tRuTask.setApproverReal(assignee);
+        tRuTask.setAssigneeReal(assignee);
         boolean updateFlag = tRuTaskService.updateById(tRuTask);
         if (updateFlag) {
             return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
@@ -609,7 +614,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (tRuTask == null || !StringUtils.equals(taskId, tRuTask.getTaskId())) {
             return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        String assignee = tRuTask.getApproverReal();
+        String assignee = tRuTask.getAssigneeReal();
         if (StringUtils.isBlank(assignee)) {
             return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         } else if (StringUtils.contains(assignee, userId)) {
@@ -623,7 +628,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         tRuTask = new TRuTask();
         tRuTask.setId(workId);
-        tRuTask.setApproverReal(assignee);
+        tRuTask.setAssigneeReal(assignee);
         boolean updateFlag = tRuTaskService.updateById(tRuTask);
         if (updateFlag) {
             return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
@@ -704,7 +709,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<TRuTask>();
         wrapper.where("task_id={0}", taskId);
-        wrapper.and("approver_real", userId);
+        wrapper.and("assignee_real", userId);
         TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
 
         //用户组权限判断
@@ -712,7 +717,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             return new Result(false, "您所在的用户组没有权限进行该操作");
         }
 
-        tRuTask.setApproverReal(targetUserId);
+        tRuTask.setAssigneeReal(targetUserId);
         tRuTaskService.updateById(tRuTask);
         return new Result(true, "转办任务成功");
     }
@@ -1011,51 +1016,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public PageInfo openTaskList(TaskQueryParam taskQueryParam) {
-        String con = " WHERE trt.STATUS = " + TaskStatusEnum.OPEN.status;
-        String re = "SELECT art.*";
-        String reC = "SELECT COUNT(*)";
-        StringBuffer sb = new StringBuffer();
-        sb.append(" FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
-        if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
-            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
-            con = con + " AND tap.APP_KEY LIKE #{appKey}";
-        }
-
-        if (StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())) {
-            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
-            if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
-                con = con + " AND tap.APP_KEY LIKE #{title} ";
-            }
-            if (StringUtils.isNotBlank(taskQueryParam.getCreater())) {
-                con = con + " AND art.START_USER_ID_ = #{creater} ";
-            }
-        }
-
-        if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
-            con = con + " AND art.NAME_ LIKE #{taskName} ";
-        }
-
-        if (StringUtils.isNotBlank(taskQueryParam.getApprover())) {
-            con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
-        }
-        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
-        String sql = sb.toString() + con;
-        List<Task> tasks = taskService.createNativeTaskQuery().sql(re + sql)
-                .parameter("appKey", taskQueryParam.getAppKey())
-                .parameter("title", "%" + taskQueryParam.getTitle() + "%")
-                .parameter("creater", taskQueryParam.getCreater())
-                .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
-                .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
-                .listPage(pageInfo.getFrom(), pageInfo.getSize());
-        pageInfo.setRows(tasks);
-        pageInfo.setTotal((int) taskService.createNativeTaskQuery().sql(reC + sql)
-                .parameter("appKey", taskQueryParam.getAppKey())
-                .parameter("title", "%" + taskQueryParam.getTitle() + "%")
-                .parameter("creater", taskQueryParam.getCreater())
-                .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
-                .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
-                .count());
-        return pageInfo;
+        return taskPage(taskQueryParam, TaskListEnum.OPEN.type);
     }
 
     /**
@@ -1068,54 +1029,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public PageInfo closeTaskList(TaskQueryParam taskQueryParam) {
-        String con = " WHERE trt.STATUS IN(" + TaskStatusEnum.getCloseStatus() + ") ";
-        String re = "SELECT art.*";
-        String reC = "SELECT COUNT(*)";
-        StringBuffer sb = new StringBuffer();
-        sb.append(" FROM act_hi_taskinst AS art ");
-        if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
-            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
-            con = con + " AND tap.APP_KEY LIKE #{appKey} ";
-        }
-
-        if (StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())) {
-            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
-            if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
-                con = con + " AND tap.APP_KEY LIKE #{title} ";
-            }
-            if (StringUtils.isNotBlank(taskQueryParam.getCreater())) {
-                con = con + " AND art.START_USER_ID_ = #{creater} ";
-            }
-        }
-
-        if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
-            con = con + " AND art.NAME_ LIKE #{taskName} ";
-        }
-
-        if (StringUtils.isNotBlank(taskQueryParam.getApprover())) {
-            con = con + " AND art.ASSIGNEE_ LIKE #{approver} ";
-        }
-        PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
-        String sql = sb.toString() + con;
-
-        List<HistoricTaskInstance> tasks = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql)
-                .parameter("appKey", taskQueryParam.getAppKey())
-                .parameter("title", "%" + taskQueryParam.getTitle() + "%")
-                .parameter("creater", taskQueryParam.getCreater())
-                .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
-                .parameter("approver", "%" + taskQueryParam.getApprover() + "_%")
-                .listPage(pageInfo.getFrom(), pageInfo.getSize());
-
-        pageInfo.setRows(tasks);
-
-        pageInfo.setTotal((int) historyService.createNativeHistoricTaskInstanceQuery().sql(reC + sql)
-                .parameter("appKey", taskQueryParam.getAppKey())
-                .parameter("title", "%" + taskQueryParam.getTitle() + "%")
-                .parameter("creater", taskQueryParam.getCreater())
-                .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
-                .parameter("approver", "%" + taskQueryParam.getApprover() + "%")
-                .count());
-        return pageInfo;
+        return taskPage(taskQueryParam, TaskListEnum.CLOSE.type);
     }
 
     /**
@@ -1155,89 +1069,111 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         StringBuffer sb = new StringBuffer();
         StringBuffer con = new StringBuffer();
         con.append(" WHERE 1=1 ");
-        String re = "SELECT art.*";
+        String re;
         String reC = "SELECT COUNT(*)";
 
-        String approver = taskQueryParam.getApprover();
-        String departmentId = null;
+        String assignee = taskQueryParam.getAssignee();
+        String departmentId =null;
         String roleId = null;
-        String groupId = null;
+        if(StringUtils.isNotBlank(assignee)){
+            RbacUser user = userService.getUserById(assignee);
+            List<RbacRole> roleList = privilegeService.getAllRoleByUserId(taskQueryParam.getAppKey(), assignee);
+            if(user != null){
+                departmentId = user.getDeptCode();
+            }
+            if(CollectionUtils.isNotEmpty(roleList)) {
+                roleId = StringUtils.join(roleList, ",");
+            }
+        }
+
         if (TaskListEnum.CLOSE.type.equals(type)) {
+            re = "SELECT ahp.START_USER_ID_ AS OWNER_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM act_hi_taskinst AS art ");
         } else {
+            re = "SELECT trt.assignee_real AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,trt.STATUS AS PRIORITY_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
         }
-        if (StringUtils.isNotBlank(taskQueryParam.getAppKey())) {
+        if (taskQueryParam.getAppKey() != null) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
             con.append(" AND tap.APP_KEY = #{appKey}");
         }
-
-        if (StringUtils.isNotBlank(taskQueryParam.getTitle()) || StringUtils.isNotBlank(taskQueryParam.getCreater())) {
-            sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
-            if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
-                con.append(" AND tap.APP_KEY LIKE #{title} ");
-            }
-            if (StringUtils.isNotBlank(taskQueryParam.getCreater())) {
-                con.append(" AND ahp.START_USER_ID_ = #{creater} ");
-            }
+        sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
+        if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
+            con.append(" AND tap.APP_KEY LIKE #{title} ");
+        }
+        if (StringUtils.isNotBlank(taskQueryParam.getCreator())) {
+            con.append(" AND ahp.START_USER_ID_ = #{creator} ");
+        }
+        if (StringUtils.isNotBlank(taskQueryParam.getBusinessKey())) {
+            con.append(" AND ahp.BUSINESS_KEY_ = #{businessKey} ");
         }
 
         if (StringUtils.isNotBlank(taskQueryParam.getTaskName())) {
             con.append(" AND art.NAME_ LIKE #{taskName} ");
         }
 
-        if (StringUtils.isNotBlank(taskQueryParam.getApprover())) {
-            if (TaskListEnum.CLOSE.type.equals(type)) {
-                con.append(" AND art.ASSIGNEE_ LIKE #{approver} ");
-                approver = approver + "_";
-            } else if (TaskListEnum.CLAIM.type.equals(type)) {
-                con.append(" AND trt.STATUS=" + TaskStatusEnum.BEFORESIGN.status);
+        if (TaskListEnum.CLOSE.type.equals(type)) {
+            con.append(" AND art.ASSIGNEE_ LIKE #{assignee} ");
+            assignee = assignee + "_";
+        } else if (TaskListEnum.CLAIM.type.equals(type)) {
+            con.append(" AND trt.STATUS=" + TaskStatusEnum.BEFORESIGN.status);
+            if (StringUtils.isNotBlank(assignee)) {
                 con.append(" AND (");
-                con.append(" (trt.APPROVER_TYPE=" + AssignType.DEPARTMENT.code + " AND trt.APPROVER = #{departmentId}) ");
-                con.append(" OR (trt.APPROVER_TYPE =" + AssignType.ROLE.code + " AND trt.APPROVER = #{roleId}) ");
-                con.append(" OR (trt.APPROVER_TYPE =" + AssignType.PERSON.code + " AND trt.APPROVER = #{approver}) ");
+                con.append(" (trt.ASSIGNEE_TYPE =" + AssignType.PERSON.code + " AND trt.ASSIGNEE = #{assignee}) ");
+                if(StringUtils.isNotBlank(departmentId)){
+                    con.append(" OR (trt.ASSIGNEE_TYPE =" + AssignType.DEPARTMENT.code + " AND trt.ASSIGNEE = #{departmentId}) ");
+                }
+                if(StringUtils.isNotBlank(roleId)){
+                    con.append(" OR (trt.ASSIGNEE_TYPE =" + AssignType.ROLE.code + " AND trt.ASSIGNEE IN (#{roleId})) ");
+                }
                 con.append(")");
-            } else if (TaskListEnum.ACTIVE.type.equals(type)) {
-                con.append(" AND trt.STATUS IN (" + TaskStatusEnum.BEFORESIGN.status + "," + TaskStatusEnum.OPEN.status + ") ");
+            }
+        } else if (TaskListEnum.ACTIVE.type.equals(type)) {
+            con.append(" AND trt.STATUS IN (" + TaskStatusEnum.BEFORESIGN.status + "," + TaskStatusEnum.OPEN.status + ") ");
+            if (StringUtils.isNotBlank(assignee)) {
                 con.append(" AND (");
-                con.append(" (trt.APPROVER_TYPE=" + AssignType.DEPARTMENT.code + " AND trt.APPROVER = #{departmentId}) ");
-                con.append(" OR (trt.APPROVER_TYPE =" + AssignType.ROLE.code + " AND trt.APPROVER = #{roleId}) ");
-                con.append(" OR (trt.APPROVER = #{approver}) ");
+                con.append(" (trt.ASSIGNEE = #{assignee}) ");
+                if(StringUtils.isNotBlank(departmentId)){
+                    con.append(" OR (trt.ASSIGNEE_TYPE =" + AssignType.DEPARTMENT.code + " AND trt.ASSIGNEE = #{departmentId}) ");
+                }
+                if(StringUtils.isNotBlank(roleId)){
+                    con.append(" OR (trt.ASSIGNEE_TYPE =" + AssignType.ROLE.code + " AND trt.ASSIGNEE IN (#{roleId})) ");
+                }
                 con.append(")");
-            } else {
-                con.append(" AND trt.STATUS=" + TaskStatusEnum.OPEN.status);
-                con.append(" AND trt.APPROVER_REAL LIKE #{approver} ");
+            }
+        } else {
+            con.append(" AND trt.STATUS=" + TaskStatusEnum.OPEN.status);
+            if (StringUtils.isNotBlank(assignee)) {
+                con.append(" AND trt.ASSIGNEE_REAL LIKE #{assignee} ");
             }
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPageNum(), taskQueryParam.getPageSize());
         String sql = sb.toString() + con.toString();
         if (TaskListEnum.CLOSE.type.equals(type)) {
-            NativeHistoricTaskInstanceQuery query = historyService.createNativeHistoricTaskInstanceQuery().sql(re + sql)
+            NativeHistoricTaskInstanceQuery query = historyService.createNativeHistoricTaskInstanceQuery()
                     .parameter("appKey", taskQueryParam.getAppKey())
                     .parameter("title", "%" + taskQueryParam.getTitle() + "%")
-                    .parameter("creater", taskQueryParam.getCreater())
+                    .parameter("creator", taskQueryParam.getCreator())
                     .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
-                    .parameter("approver", "%" + approver + "%")
+                    .parameter("assignee", "%" + assignee + "%")
                     .parameter("departmentId", departmentId)
-                    .parameter("roleId", roleId)
-                    .parameter("groupId", groupId);
+                    .parameter("roleId", roleId);
             List<HistoricTaskInstance> tasks = query.sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setTotal((int) query.sql(reC + sql).count());
-            pageInfo.setRows(tasks);
+            pageInfo.setRows(transferHisTask(tasks));
         } else {
             NativeTaskQuery query = taskService.createNativeTaskQuery()
                     .parameter("appKey", taskQueryParam.getAppKey())
                     .parameter("title", "%" + taskQueryParam.getTitle() + "%")
-                    .parameter("creater", taskQueryParam.getCreater())
+                    .parameter("creator", taskQueryParam.getCreator())
                     .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
-                    .parameter("approver", approver)
+                    .parameter("assignee", assignee)
                     .parameter("departmentId", departmentId)
-                    .parameter("roleId", roleId)
-                    .parameter("groupId", groupId);
+                    .parameter("roleId", roleId);
             List<Task> tasks = query.sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setRows(tasks);
             pageInfo.setTotal((int) query.sql(reC + sql).count());
-            pageInfo.setRows(tasks);
+            pageInfo.setRows(transferTask(tasks));
         }
 
         return pageInfo;

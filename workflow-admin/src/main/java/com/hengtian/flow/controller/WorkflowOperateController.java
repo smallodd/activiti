@@ -1,6 +1,5 @@
 package com.hengtian.flow.controller;
 
-
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.enums.AssignType;
@@ -33,7 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ma on 2018/4/12.
@@ -73,12 +75,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
         //校验参数是否合法
         Result result = processParam.validate();
         if (!result.isSuccess()) {
-
             return result;
         } else {
             try {
-
-
                 return workflowService.startProcessInstance(processParam);
             } catch (Exception e) {
                 logger.error("模拟提交失败", e);
@@ -150,7 +149,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
         } else {
             result.setMsg("设置失败，请联系管理员！");
             result.setCode(Constant.FAIL);
-
         }
         return result;
     }
@@ -177,14 +175,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
         //查询是否有正在问询的节点
         TAskTask tAskTask = tAskTaskService.selectOne(entityWrapper);
         if (tAskTask != null) {
-
             return renderError("您的问询信息还未得到响应，不能审批通过", Constant.ASK_TASK_EXIT);
         }
         //查询当前任务节点审批人是不是当前人
 
         return workflowService.approveTask(task, taskParam);
-
-
     }
 
     /**
@@ -233,7 +228,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 taskService.setAssignee(task.getId(), approver + "_F");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "流程流转");
                 taskService.complete(taskId, map);
-
             }
         }
         return result;

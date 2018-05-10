@@ -1,13 +1,12 @@
 package com.hengtian.flow.controller.manage;
 
+import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.service.ActivitiService;
+import com.hengtian.flow.service.WorkflowService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,10 +18,12 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/workflow/data")
-public class WorkflowDataConfig {
+public class WorkflowDataController {
 
     @Autowired
     private ActivitiService activitiService;
+    @Autowired
+    private WorkflowService workflowService;
 
     /**
      * 流程定义列表-分页
@@ -43,6 +44,21 @@ public class WorkflowDataConfig {
         }
         pageInfo.setCondition(params);
         activitiService.selectProcessDefinitionDataGrid(pageInfo);
+        return pageInfo;
+    }
+
+    /**
+     * 代办任务列表-页面
+     * @param taskQueryParam
+     * @author houjinrong@chtwm.com
+     * date 2018/5/10 13:29
+     */
+    @PostMapping("/task")
+    @ResponseBody
+    public Object task(TaskQueryParam taskQueryParam,Integer page, Integer rows){
+        taskQueryParam.setPageNum(page);
+        taskQueryParam.setPageSize(rows);
+        PageInfo pageInfo = workflowService.activeTaskList(taskQueryParam);
         return pageInfo;
     }
 }

@@ -14,14 +14,16 @@ import com.hengtian.flow.service.WorkflowService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.engine.*;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.ProcessEngineConfiguration;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.task.Comment;
-import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
@@ -360,28 +362,5 @@ public class WorkflowQueryController extends WorkflowBaseController {
                                  @ApiParam(value = "是否递归获取父级节点", name = "isAll", required = true) @RequestParam(defaultValue = "1") Integer isAll) {
         logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", taskId);
         return renderSuccess(workflowService.getParentNodes(taskId, userId, isAll != 0));
-    }
-
-    /**
-     * 跳转可到达的任务节点
-     *
-     * @param userId 用户ID
-     * @param taskId 任务ID
-     * @return
-     * @author houjinrong@chtwm.com
-     * date 2018/4/26 13:48
-     */
-    public Object jumpAccessibleTaskNodes(String userId, String taskId) {
-        if (StringUtils.isBlank(userId) || StringUtils.isBlank(userId)) {
-            return renderError(ResultEnum.PARAM_ERROR.code, ResultEnum.PARAM_ERROR.msg);
-        }
-
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if (task == null) {
-            renderError(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
-        }
-
-
-        return null;
     }
 }

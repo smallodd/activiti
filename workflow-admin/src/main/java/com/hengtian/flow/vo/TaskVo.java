@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * 工作流用户任务VO
- * @author liu.junyang
- *
+ * @author houjinrong@chtwm.com
+ * date 2018/5/10 14:28
  */
 public class TaskVo implements Serializable{
 	
@@ -58,7 +58,6 @@ public class TaskVo implements Serializable{
 	 * 挂起状态(1.未挂起 2.已挂起)
 	 */
     private String suspended;
-
 	/**
 	 * 流程实例ID
 	 */

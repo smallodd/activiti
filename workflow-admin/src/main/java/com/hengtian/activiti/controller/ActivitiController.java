@@ -21,7 +21,8 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.DateUtils;
-import com.hengtian.common.utils.MailTemplateUtils;
+import com.hengtian.common.utils
+		.MailTemplateUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.model.TMailLog;
@@ -345,15 +346,15 @@ public class ActivitiController extends BaseController{
 			return renderError("自定义参数格式不正确！",Constant.PARAM_ERROR);
 		}
 		EntityWrapper entityWrapper=new EntityWrapper();
-		entityWrapper.where("task_id={0}",taskId).andNew("status={0}",0).isNotNull("approver_real");
+		entityWrapper.where("task_id={0}",taskId).andNew("status={0}",0).isNotNull("assignee_real");
 
 		List<TRuTask> list=tRuTaskService.selectList(entityWrapper);
 		if(list==null||list.size()==0){
 			return renderError("任务没有审批人，请将任务转办给审批人！",Constant.FAIL);
 		}
 		TRuTask tRuTask=list.get(0);
-		taskParam.setApprover(tRuTask.getApproverReal());
-		taskParam.setAssignType(tRuTask.getApproverType());
+		taskParam.setApprover(tRuTask.getAssigneeReal());
+		taskParam.setAssignType(tRuTask.getAssigneeType());
 		ShiroUser user = getShiroUser();
 		if(user.getLoginName().equals("admin")) {
 			taskParam.setComment("【管理员代办】"+commentContent);

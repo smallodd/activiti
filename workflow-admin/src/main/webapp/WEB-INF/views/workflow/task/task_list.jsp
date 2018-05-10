@@ -45,7 +45,7 @@
     var taskDataGrid;
     $(function () {
         taskDataGrid = $('#taskDataGrid').datagrid({
-            url: '${ctx}/activiti/allTaskDataGrid',
+            url: '${ctx}/workflow/data/task',
             striped: true,
             rownumbers: true,
             pagination: true,
@@ -68,9 +68,9 @@
                 sortable: true,
                 formatter: function (value, row, index) {
                     switch (value) {
-                        case '1':
+                        case '-1':
                             return '待签收';
-                        case '2':
+                        case '0':
                             return '待受理';
                     }
                 }
@@ -163,7 +163,7 @@
         }
         parent.$.modalDialog({
             title: '办理',
-            width: 400,
+            width: 570,
             height: 450,
             href: '${ctx}/activiti/completeTaskPage?id=' + id,
             buttons: [{
