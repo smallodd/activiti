@@ -46,7 +46,7 @@ public class WorkflowPageController {
     }
 
     /**
-     * 代办任务列表-页面
+     * 代办任务列表
      * @author houjinrong@chtwm.com
      * date 2018/5/10 13:29
      */
@@ -55,6 +55,23 @@ public class WorkflowPageController {
         return  "/workflow/task/task_list";
     }
 
+    /**
+     * 历史任务列表
+     * @author houjinrong@chtwm.com
+     * date 2018/5/11 15:29
+     */
+    @GetMapping("/task/his")
+    public String hisTask(){
+        return  "/workflow/task/task_his_list";
+    }
+
+    /**
+     * 流程图展示
+     * @param request
+     * @param response
+     * @param processDefinitionId
+     * @param processInstanceId
+     */
     @GetMapping("/diagram")
     public void diagramViewer(HttpServletRequest request, HttpServletResponse response,
             String processDefinitionId, String processInstanceId){

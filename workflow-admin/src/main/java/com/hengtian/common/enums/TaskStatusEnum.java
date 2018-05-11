@@ -14,6 +14,12 @@ public enum TaskStatusEnum {
     REMIND_FINISHED(1, "完成"),
 
     /**
+     * 催办状态
+     */
+    COMPLETE_AGREE(0, "审批通过"),
+    COMPLETE_REFUSE(1, "审批拒绝"),
+
+    /**
      * 任务状态
      */
     BEFORESIGN(-1, "待签收"),

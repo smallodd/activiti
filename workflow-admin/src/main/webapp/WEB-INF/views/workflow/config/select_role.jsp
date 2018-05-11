@@ -26,11 +26,11 @@
                     singleSelect: singleSelect,
                     fitColumns: true,
                     striped: true,
+                    rownumbers:true,
                     idField: 'id',
                     sortName: 'id',
                     sortOrder: 'asc',
                     columns: [[{
-                        width: '110px',
                         title: '主键',
                         field: 'id',
                         sortable: true,
@@ -41,7 +41,7 @@
                         field: 'roleName',
                         sortable: true
                     }, {
-                        width: '260px',
+                        width: '235px',
                         title: '描述',
                         field: 'description',
                         sortable: true

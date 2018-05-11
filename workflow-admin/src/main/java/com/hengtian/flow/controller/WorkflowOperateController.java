@@ -141,7 +141,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         tUserTask.setAssignType(taskParam.getAssignType());
         tUserTask.setTaskType(taskParam.getTaskType());
         tUserTask.setCandidateIds(taskParam.getApprover());
-        Boolean flag = workflowService.setApprover(task, tUserTask);
+        Boolean flag = workflowService.setAssignee(task, tUserTask);
         if (flag) {
             result.setMsg("设置成功！");
             result.setCode(Constant.SUCCESS);

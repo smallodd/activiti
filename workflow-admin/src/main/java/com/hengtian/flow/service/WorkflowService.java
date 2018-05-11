@@ -28,7 +28,7 @@ public interface WorkflowService {
      * @param tUserTask
      * @return
      */
-    Boolean setApprover(Task task, TUserTask tUserTask);
+    Boolean setAssignee(Task task, TUserTask tUserTask);
 
     /**
      * 审批接口

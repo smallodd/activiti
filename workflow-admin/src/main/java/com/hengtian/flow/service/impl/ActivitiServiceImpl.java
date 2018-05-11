@@ -481,7 +481,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 					entityWrapper.where("proc_def_key={0}", definition.getKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
 					//查询当前任务任务节点信息
 					TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
-					boolean flag = workflowService.setApprover(task, tUserTask);
+					boolean flag = workflowService.setAssignee(task, tUserTask);
 				}
 			}
 		}

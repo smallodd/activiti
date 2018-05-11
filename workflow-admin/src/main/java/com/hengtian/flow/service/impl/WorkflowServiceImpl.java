@@ -161,7 +161,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                     //查询当前任务任务节点信息
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
-                    boolean flag = setApprover(task, tUserTask);
+                    boolean flag = setAssignee(task, tUserTask);
                     if (!flag) {
                         taskService.addComment(task.getId(), processInstance.getProcessInstanceId(), "生成扩展任务时失败，删除任务！");//备注
                         runtimeService.deleteProcessInstance(processInstance.getProcessInstanceId(), "");
@@ -214,14 +214,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @param tUserTask
      */
     @Override
-    public Boolean setApprover(Task task, TUserTask tUserTask) {
+    public Boolean setAssignee(Task task, TUserTask tUserTask) {
         log.info("进入设置审批人接口,tUserTask参数{}", JSONObject.toJSONString(tUserTask));
 
             //获取任务中的自定义参数
             Map<String, Object> map = taskService.getVariables(task.getId());
             String assignees = tUserTask.getCandidateIds();
-            String[] strs = assignees.split(",");
-            List list = Arrays.asList(strs);
+            String[] assigneeArray = assignees.split(",");
+            List list = Arrays.asList(assigneeArray);
             Set set = new HashSet(list);
             String[] rid = (String[]) set.toArray(new String[0]);
 
@@ -301,7 +301,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setCode(Constant.PARAM_ERROR);
                 return result;
             }
-            if (taskParam.getPass() != 1 && taskParam.getPass() != 2) {
+            if (taskParam.getPass() != TaskStatusEnum.COMPLETE_AGREE.status && taskParam.getPass() != TaskStatusEnum.COMPLETE_REFUSE.status) {
                 result.setMsg("任务类型参数错误！");
                 result.setCode(Constant.PARAM_ERROR);
                 return result;
@@ -317,19 +317,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             taskService.addComment(taskParam.getTaskId(), task.getProcessInstanceId(), taskParam.getComment());
 
             if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())) {
-
-
                 int total = (int) map.get("approve_total");
                 int pass = (int) map.get("approve_pass");
                 int not_pass = (int) map.get("approve_not_pass");
                 total = total + 1;
 
-                if (taskParam.getPass() == 1) {
+                if (taskParam.getPass() == TaskStatusEnum.COMPLETE_AGREE.status) {
                     pass = pass + 1;
                     //设置原生工作流表哪些审批了
                     taskService.setAssignee(task.getId(), StringUtils.isBlank(t.getAssignee()) ? taskParam.getApprover() : t.getAssignee() + "," + taskParam.getApprover() + "_Y");
 
-                } else if (taskParam.getPass() == 2) {
+                } else if (taskParam.getPass() == TaskStatusEnum.COMPLETE_REFUSE.status) {
                     not_pass = not_pass + 1;
                     taskService.setAssignee(task.getId(), StringUtils.isBlank(t.getAssignee()) ? taskParam.getApprover() : t.getAssignee() + "," + taskParam.getApprover() + "_N");
 
@@ -337,8 +335,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 map.put("approve_total", total);
                 map.put("approve_pass", pass);
                 map.put("not_pass", not_pass);
+
                 double passPer = pass / tUserTask.getUserCountTotal();
                 double not_pass_per = not_pass / tUserTask.getUserCountTotal();
+
                 taskService.setVariables(task.getId(), map);
                 if (passPer >= tUserTask.getUserCountNeed()) {
 
@@ -379,9 +379,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     workDetailService.insert(tWorkDetail);
                     return result;
                 }
-
             } else {
-                if (taskParam.getPass() == 1) {
+                if (taskParam.getPass() == TaskStatusEnum.COMPLETE_AGREE.status) {
                     //设置原生工作流表哪些审批了
                     taskService.setAssignee(t.getId(), taskParam.getApprover() + "_Y");
                     taskService.complete(t.getId(), map);
@@ -389,17 +388,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTask.setStatus(1);
                     EntityWrapper truWrapper = new EntityWrapper();
                     truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
-                    ;
+
                     tRuTaskService.update(tRuTask, truWrapper);
                     result.setSuccess(true);
 
-                } else if (taskParam.getPass() == 2) {
+                } else if (taskParam.getPass() == TaskStatusEnum.COMPLETE_REFUSE.status) {
                     //拒绝任务
                     taskService.setAssignee(task.getId(), taskParam.getApprover() + "_N");
-                    runtimeService.deleteProcessInstance(task.getProcessInstanceId(), taskParam.getComment());
+                    runtimeService.deleteProcessInstance(task.getProcessInstanceId(), "refused");
                     //taskService.deleteTask(t.getId(), "拒绝此任务");
                     TRuTask tRuTask = new TRuTask();
-                    tRuTask.setStatus(2);
+                    tRuTask.setStatus(TaskStatusEnum.REFUSE.status);
                     EntityWrapper truWrapper = new EntityWrapper();
                     truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
                     tRuTaskService.update(tRuTask, truWrapper);
@@ -436,8 +435,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tuserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                     //查询当前任务任务节点信息
                     TUserTask tUserTask1 = tUserTaskService.selectOne(tuserWrapper);
-                    boolean flag = setApprover(task1, tUserTask1);
-
+                    boolean flag = setAssignee(task1, tUserTask1);
                 }
             }
 
@@ -489,13 +487,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     notDelete += s;
                 }
             }
-
         }
 
-
-//        //第二步 删除多余节点
-
-
+        //第二步 删除多余节点
         List <Execution> exlist=null;
         if(execution==null||StringUtils.isBlank(execution.getParentId())){
 
@@ -527,22 +521,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     if (notDelete.contains(tas.getTaskDefinitionKey()) ){
                         continue;
                     }else if(tRuTask != null && olde.equals(newDate)) {
+                        TaskEntity entity = (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
 
-                        TaskEntity resus = (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
-
-                        resus.setExecutionId(null);
-                        taskService.saveTask(resus);
-                        taskService.deleteTask(resus.getId(), true);
+                        entity.setExecutionId(null);
+                        taskService.saveTask(entity);
+                        taskService.deleteTask(entity.getId(), true);
 
                         EntityWrapper ewe = new EntityWrapper();
                         ewe.where("task_id={0}", tRuTask.getTaskId()).andNew("status={0}", -2);
                         tRuTaskService.delete(ewe);
-
                     }
                 }
             }
         }
-
     }
 
     /**
@@ -681,7 +672,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     entityWrapper.where("proc_def_key={0}", definition.getKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
                     //查询当前任务任务节点信息
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
-                    boolean flag = setApprover(task, tUserTask);
+                    boolean flag = setAssignee(task, tUserTask);
                 }
             }
         }
@@ -1093,17 +1084,21 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             re = "SELECT trt.assignee_real AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,trt.STATUS AS PRIORITY_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
         }
+
         if (taskQueryParam.getAppKey() != null) {
             sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
             con.append(" AND tap.APP_KEY = #{appKey}");
         }
+
         sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
         if (StringUtils.isNotBlank(taskQueryParam.getTitle())) {
             con.append(" AND tap.APP_KEY LIKE #{title} ");
         }
+
         if (StringUtils.isNotBlank(taskQueryParam.getCreator())) {
             con.append(" AND ahp.START_USER_ID_ = #{creator} ");
         }
+
         if (StringUtils.isNotBlank(taskQueryParam.getBusinessKey())) {
             con.append(" AND ahp.BUSINESS_KEY_ = #{businessKey} ");
         }
@@ -1116,7 +1111,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             con.append(" AND art.ASSIGNEE_ LIKE #{assignee} ");
             assignee = assignee + "_";
         } else if (TaskListEnum.CLAIM.type.equals(type)) {
-            con.append(" AND trt.STATUS=" + TaskStatusEnum.BEFORESIGN.status);
+            con.append(" AND trt.STATUS = " + TaskStatusEnum.BEFORESIGN.status);
             if (StringUtils.isNotBlank(assignee)) {
                 con.append(" AND (");
                 con.append(" (trt.ASSIGNEE_TYPE =" + AssignType.PERSON.code + " AND trt.ASSIGNEE = #{assignee}) ");

@@ -61,4 +61,19 @@ public class WorkflowDataController {
         PageInfo pageInfo = workflowService.activeTaskList(taskQueryParam);
         return pageInfo;
     }
+
+    /**
+     * 代办任务列表-页面
+     * @param taskQueryParam
+     * @author houjinrong@chtwm.com
+     * date 2018/5/10 13:29
+     */
+    @PostMapping("/task/his")
+    @ResponseBody
+    public Object hisTask(TaskQueryParam taskQueryParam,Integer page, Integer rows){
+        taskQueryParam.setPageNum(page);
+        taskQueryParam.setPageSize(rows);
+        PageInfo pageInfo = workflowService.closeTaskList(taskQueryParam);
+        return pageInfo;
+    }
 }
