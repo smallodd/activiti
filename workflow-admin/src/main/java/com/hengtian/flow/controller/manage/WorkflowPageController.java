@@ -6,6 +6,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 /**
  * 工作流程相关-页面
  * @author houjinrong@chtwm.com
@@ -48,5 +52,15 @@ public class WorkflowPageController {
     @GetMapping("/task")
     public String task(){
         return  "/workflow/task/task_list";
+    }
+
+    @GetMapping("/diagram")
+    public void diagramViewr(HttpServletRequest request, HttpServletResponse response,
+            String processDefinitionId, String processInstanceId){
+        try {
+            response.sendRedirect(request.getContextPath() + "/diagram-viewer/index.html?processDefinitionId="+processDefinitionId+"&processInstanceId="+processInstanceId);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
