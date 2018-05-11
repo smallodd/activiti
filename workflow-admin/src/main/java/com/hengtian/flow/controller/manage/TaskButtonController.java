@@ -1,6 +1,7 @@
 package com.hengtian.flow.controller.manage;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.hengtian.common.enums.ButtonStatusEnum;
 import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.service.TButtonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class TaskButtonController {
     @ResponseBody
     public Object queryButton(){
         EntityWrapper<TButton> wrapper = new EntityWrapper();
-        wrapper.where("status={0}",1);
+        wrapper.where("status={0}", ButtonStatusEnum.USABLE.status);
         List<TButton> tButtons = tButtonService.selectList(wrapper);
         return tButtons;
     }

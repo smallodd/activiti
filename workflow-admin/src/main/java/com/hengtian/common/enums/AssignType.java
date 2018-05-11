@@ -12,7 +12,8 @@ import java.util.Map;
 public enum AssignType {
     PERSON(3,"人员"),
     DEPARTMENT(1,"部门"),
-    ROLE(2,"角色");
+    ROLE(2,"角色"),
+    EXPR(4,"表达式");
     public Integer code;
 
     public String name;

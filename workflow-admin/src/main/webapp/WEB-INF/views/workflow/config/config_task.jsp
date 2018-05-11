@@ -16,7 +16,7 @@
             <tr>
                 <td><strong>任务名称</strong></td>
                 <td><strong>配置选项类型</strong></td>
-                <td><strong>人员 | 部门 | 角色选项</strong></td>
+                <td><strong>人员 | 部门 | 角色 | 表达式选项</strong></td>
                 <td><strong>操作权限</strong></td>
                 <td><strong>通过条件</strong></td>
             </tr>
@@ -30,7 +30,7 @@
                                 <option value="${taskType.key}" <c:if test="${taskType.key == ut.taskType}">selected="selected"</c:if>>${taskType.value}</option>
                             </c:forEach>
                         </select>
-                        <select id="assignType${ut.taskDefKey}" class="easyui-combobox selectConfigType" data-options="width:66,height:29,panelHeight:'auto'">
+                        <select id="assignType${ut.taskDefKey}" class="easyui-combobox selectConfigType" data-options="width:77,height:29,panelHeight:'auto'">
                             <c:forEach var="assignType" items="${assignType}">
                                 <option value="${assignType.key}" <c:if test="${assignType.key == ut.assignType}">selected="selected"</c:if>>${assignType.value}</option>
                             </c:forEach>
@@ -50,6 +50,7 @@
 <div id="configDepartmentDialog"></div>
 <div id="configRoleDialog"></div>
 <div id="configUserDialog"></div>
+<div id="configExprDialog"></div>
 <div id="configButtonDialog"></div>
 <input type="hidden" id="taskKey"/>
 <script type="text/javascript">
@@ -239,6 +240,40 @@
                         $("#taskJson").val($("#taskJsonSelect").val());
                         $("#taskJsonSelect").val("");
                         $("#configUserDialog").dialog('close');
+                    }
+                }]
+            });
+        }else if(assignType === "4"){
+            //表达式设置
+            $("#configExprDialog").dialog({
+                title : '选择表达式',
+                width : 500,
+                height : 450,
+                href :  '${ctx}/expr/select',
+                buttons : [ {
+                    text : '确定',
+                    handler : function() {
+                        //给输入框赋人员名称的值
+                        var taskJsonStr = $("#taskJsonSelect").val();
+                        if(taskJsonStr == undefined || taskJsonStr == ""){
+                            $("#configExprDialog").dialog('close');
+                            return;
+                        }
+                        var taskJsonVal = JSON.parse(taskJsonStr);
+                        for(var i=0;i<taskJsonVal.length;i++){
+                            if(taskJsonVal[i].taskDefKey===taskDefKey){
+                                if(taskJsonVal[i].code != undefined){
+                                    $("#taskUser"+taskDefKey).val(taskJsonVal[i].name);
+                                    if(taskJsonVal[i].name){
+                                        $("#taskUser"+taskDefKey).attr("title",taskJsonVal[i].name.replace(/,/g,"\n"));
+                                    }
+                                }
+                            }
+                        }
+
+                        $("#taskJson").val($("#taskJsonSelect").val());
+                        $("#taskJsonSelect").val("");
+                        $("#configExprDialog").dialog('close');
                     }
                 }]
             });
