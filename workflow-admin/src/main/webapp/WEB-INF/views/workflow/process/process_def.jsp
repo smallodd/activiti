@@ -80,7 +80,7 @@
                 title : '流程图片名称',
                 field : 'imageName',
                 formatter : function(value, row, index){
-                    var str = $.formatString('<a target="_blank" href="${ctx}/activiti/getProcessResource?type=image&pdid={0}">{1}</a>', row.id ,row.imageName);
+                    var str = $.formatString('<a target="_blank" href="${ctx}/workflow/page/diagram?processDefinitionId={0}">{1}</a>', row.id ,row.imageName);
                     return str;
                 }
             }, {

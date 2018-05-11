@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller.manage;
 
+import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.service.WorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -55,10 +56,14 @@ public class WorkflowPageController {
     }
 
     @GetMapping("/diagram")
-    public void diagramViewr(HttpServletRequest request, HttpServletResponse response,
+    public void diagramViewer(HttpServletRequest request, HttpServletResponse response,
             String processDefinitionId, String processInstanceId){
         try {
-            response.sendRedirect(request.getContextPath() + "/diagram-viewer/index.html?processDefinitionId="+processDefinitionId+"&processInstanceId="+processInstanceId);
+            if(StringUtils.isBlank(processInstanceId)){
+                response.sendRedirect(request.getContextPath() + "/diagram-viewer/index.html?processDefinitionId="+processDefinitionId);
+            }else{
+                response.sendRedirect(request.getContextPath() + "/diagram-viewer/index.html?processDefinitionId="+processDefinitionId+"&processInstanceId="+processInstanceId);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
