@@ -301,7 +301,7 @@
      * 查看任务进度
      */
     function showTaskFun(processInstanceId) {
-        var contentStr = $.formatString('<img src="${ctx}/activiti/showTask/{0}"></img>', processInstanceId);
+        var contentStr = $.formatString('<img src="${ctx}/rest/process/schedule/{0}"></img>', processInstanceId);
         $("#showTaskWindow").window({
             title: '任务进度',
             width: 900,

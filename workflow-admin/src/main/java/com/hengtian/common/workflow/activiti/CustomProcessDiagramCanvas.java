@@ -1,19 +1,41 @@
-package com.hengtian.common.workflow.activiti;
+/* Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import org.activiti.bpmn.model.AssociationDirection;
-import org.activiti.bpmn.model.GraphicInfo;
-import org.activiti.image.exception.ActivitiImageException;
-import org.activiti.image.util.ReflectUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.activiti.image.impl;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
-import java.awt.geom.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,7 +46,26 @@ import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+
+import org.activiti.bpmn.model.AssociationDirection;
+import org.activiti.bpmn.model.GraphicInfo;
+import org.activiti.image.exception.ActivitiImageException;
+import org.activiti.image.util.ReflectUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Represents a canvas on which BPMN 2.0 constructs can be drawn.
+ *
+ * Some of the icons used are licensed under a Creative Commons Attribution 2.5
+ * License, see http://www.famfamfam.com/lab/icons/silk/
+ *
+ * @see com.hengtian.common.workflow.activiti.CustomProcessDiagramGenerator
+ * @author Joram Barrez
+ */
 public class CustomProcessDiagramCanvas {
+
     protected static final Logger LOGGER = LoggerFactory.getLogger(CustomProcessDiagramCanvas.class);
     public enum SHAPE_TYPE {Rectangle, Rhombus, Ellipse}
 
@@ -54,8 +95,7 @@ public class CustomProcessDiagramCanvas {
 
     // Fonts
     protected static Font LABEL_FONT = null;
-    protected static Font ANNOTATION_FONT = new Font("Arial", Font.PLAIN, FONT_SIZE);
-    protected static Font TASK_FONT = new Font("Arial", Font.PLAIN, FONT_SIZE);
+    protected static Font ANNOTATION_FONT = null;
 
     // Strokes
     protected static Stroke THICK_TASK_BORDER_STROKE = new BasicStroke(3.0f);
@@ -102,6 +142,7 @@ public class CustomProcessDiagramCanvas {
     protected ClassLoader customClassLoader;
     protected String activityFontName = "Arial";
     protected String labelFontName = "Arial";
+    protected String annotationFontName = "Arial";
 
     /**
      * Creates an empty canvas with given width and height.
@@ -113,7 +154,7 @@ public class CustomProcessDiagramCanvas {
      *
      */
     public CustomProcessDiagramCanvas(int width, int height, int minX, int minY, String imageType,
-                                       String activityFontName, String labelFontName, ClassLoader customClassLoader) {
+                                       String activityFontName, String labelFontName, String annotationFontName, ClassLoader customClassLoader) {
 
         this.canvasWidth = width;
         this.canvasHeight = height;
@@ -124,6 +165,9 @@ public class CustomProcessDiagramCanvas {
         }
         if (labelFontName != null) {
             this.labelFontName = labelFontName;
+        }
+        if (annotationFontName != null) {
+            this.annotationFontName = annotationFontName;
         }
         this.customClassLoader = customClassLoader;
 
@@ -173,7 +217,8 @@ public class CustomProcessDiagramCanvas {
         g.setFont(font);
         this.fontMetrics = g.getFontMetrics();
 
-        LABEL_FONT = new Font(labelFontName, Font.BOLD, 12);
+        LABEL_FONT = new Font(labelFontName, Font.ITALIC, 10);
+        ANNOTATION_FONT = new Font(annotationFontName, Font.PLAIN, FONT_SIZE);
 
         try {
             USERTASK_IMAGE = ImageIO.read(ReflectUtil.getResource("org/activiti/icons/userTask.png", customClassLoader));
@@ -662,9 +707,9 @@ public class CustomProcessDiagramCanvas {
         g.setPaint(TASK_BOX_COLOR);
 
         int arcR = 6;
-        if (thickBorder) {
+        if (thickBorder)
             arcR = 3;
-        }
+
         // shape
         RoundRectangle2D rect = new RoundRectangle2D.Double(x, y, width, height, arcR, arcR);
         g.fill(rect);
@@ -709,7 +754,7 @@ public class CustomProcessDiagramCanvas {
 
         int currentHeight = 0;
         // Prepare a list of lines of text we'll be drawing
-        java.util.List<TextLayout> layouts = new ArrayList<TextLayout>();
+        List<TextLayout> layouts = new ArrayList<TextLayout>();
         String lastLine = null;
 
         LineBreakMeasurer measurer = new LineBreakMeasurer(characterIterator, g.getFontRenderContext());
@@ -1025,6 +1070,7 @@ public class CustomProcessDiagramCanvas {
     public void drawHighLight(int x, int y, int width, int height, Color color) {
         Paint originalPaint = g.getPaint();
         Stroke originalStroke = g.getStroke();
+
         if(color == null){
             g.setPaint(HIGHLIGHT_COLOR);
         }else{
@@ -1133,7 +1179,7 @@ public class CustomProcessDiagramCanvas {
      * @param graphicInfoList
      *
      */
-    public java.util.List<GraphicInfo> connectionPerfectionizer(CustomProcessDiagramCanvas.SHAPE_TYPE sourceShapeType, CustomProcessDiagramCanvas.SHAPE_TYPE targetShapeType, GraphicInfo sourceGraphicInfo, GraphicInfo targetGraphicInfo, List<GraphicInfo> graphicInfoList) {
+    public List<GraphicInfo> connectionPerfectionizer(SHAPE_TYPE sourceShapeType, SHAPE_TYPE targetShapeType, GraphicInfo sourceGraphicInfo, GraphicInfo targetGraphicInfo, List<GraphicInfo> graphicInfoList) {
         Shape shapeFirst = createShape(sourceShapeType, sourceGraphicInfo);
         Shape shapeLast = createShape(targetShapeType, targetGraphicInfo);
 
@@ -1179,11 +1225,11 @@ public class CustomProcessDiagramCanvas {
      * @param graphicInfo
      * @return Shape
      */
-    private static Shape createShape(CustomProcessDiagramCanvas.SHAPE_TYPE shapeType, GraphicInfo graphicInfo) {
-        if (CustomProcessDiagramCanvas.SHAPE_TYPE.Rectangle.equals(shapeType)) {
+    private static Shape createShape(SHAPE_TYPE shapeType, GraphicInfo graphicInfo) {
+        if (SHAPE_TYPE.Rectangle.equals(shapeType)) {
             // source is rectangle
             return new Rectangle2D.Double(graphicInfo.getX(), graphicInfo.getY(), graphicInfo.getWidth(), graphicInfo.getHeight());
-        } else if (CustomProcessDiagramCanvas.SHAPE_TYPE.Rhombus.equals(shapeType)) {
+        } else if (SHAPE_TYPE.Rhombus.equals(shapeType)) {
             // source is rhombus
             Path2D.Double rhombus = new Path2D.Double();
             rhombus.moveTo(graphicInfo.getX(), graphicInfo.getY() + graphicInfo.getHeight() / 2);
@@ -1193,7 +1239,7 @@ public class CustomProcessDiagramCanvas {
             rhombus.lineTo(graphicInfo.getX(), graphicInfo.getY() + graphicInfo.getHeight() / 2);
             rhombus.closePath();
             return rhombus;
-        } else if (CustomProcessDiagramCanvas.SHAPE_TYPE.Ellipse.equals(shapeType)) {
+        } else if (SHAPE_TYPE.Ellipse.equals(shapeType)) {
             // source is ellipse
             return new Ellipse2D.Double(graphicInfo.getX(), graphicInfo.getY(), graphicInfo.getWidth(), graphicInfo.getHeight());
         } else {

@@ -804,6 +804,7 @@ public class ActivitiUtilServiceImpl {
         vo.setTaskCreateTime(task.getCreateTime());
         vo.setBusinessName(task.getCategory());
         vo.setBusinessKey(task.getDescription());
+        vo.setProcessInstanceId(task.getProcessInstanceId());
         if(task instanceof Task){
             vo.setTaskState(task.getPriority()+"");
             vo.setTaskAssign(task.getAssignee());

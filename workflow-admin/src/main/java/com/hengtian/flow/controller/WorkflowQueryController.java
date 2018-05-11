@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller;
 
+import com.google.common.collect.Lists;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.AskTaskParam;
@@ -7,6 +8,7 @@ import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.param.WorkDetailParam;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TWorkDetailService;
@@ -24,6 +26,7 @@ import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.task.Comment;
+import org.activiti.engine.task.Task;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.lang3.StringUtils;
@@ -242,8 +245,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
      * @return
      */
     @SysLog("流程任务跟踪")
-    @ApiOperation(httpMethod = "POST", value = "流程任务跟踪")
-    @RequestMapping(value = "/rest/process/schedule/{processInstanceId}", method = RequestMethod.POST)
+    @ApiOperation(httpMethod = "GET", value = "流程任务跟踪")
+    @RequestMapping(value = "/rest/process/schedule/{processInstanceId}", method = RequestMethod.GET)
     public void getProcessSchedule(HttpServletResponse response,
                                    @ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @PathVariable("processInstanceId") String processInstanceId) {
         logger.info("----------------获取流程跟踪图开始,入参 processInstanceId：{}----------------", processInstanceId);
@@ -263,7 +266,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             processEngineConfiguration = processEngine.getProcessEngineConfiguration();
             Context.setProcessEngineConfiguration((ProcessEngineConfigurationImpl) processEngineConfiguration);
 
-            ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
+            CustomDefaultProcessDiagramGenerator diagramGenerator = (CustomDefaultProcessDiagramGenerator) processEngineConfiguration.getProcessDiagramGenerator();
             ProcessDefinitionEntity definitionEntity = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(processInstance.getProcessDefinitionId());
 
             List<HistoricActivityInstance> highLightedActivitList = historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
@@ -278,6 +281,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
                 String activityId = tempActivity.getActivityId();
                 highLightedActivitis.add(activityId);
             }
+            List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+            List<String> taskDefinitionKeyList = Lists.newArrayList();
+            for(Task task : taskList){
+                taskDefinitionKeyList.add(task.getTaskDefinitionKey());
+            }
             //生成流图片  5.18.0
             /*InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
                     processEngineConfiguration.getLabelFontName(),
@@ -289,7 +297,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
                     processEngineConfiguration.getLabelFontName(),
                     processEngineConfiguration.getActivityFontName(),
                     processEngineConfiguration.getAnnotationFontName(),
-                    processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0);
+                    processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.0, taskDefinitionKeyList);
             //单独返回流程图，不高亮显示
             //InputStream imageStream = diagramGenerator.generatePngDiagram(bpmnModel);
             //输出资源内容到相应对象

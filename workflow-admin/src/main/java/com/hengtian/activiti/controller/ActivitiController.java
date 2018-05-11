@@ -699,6 +699,7 @@ public class ActivitiController extends BaseController{
 		InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
 				processEngineConfiguration.getLabelFontName(),
 				processEngineConfiguration.getActivityFontName(),
+				processEngineConfiguration.getAnnotationFontName(),
 				processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1, taskDefinitionKeyList);
 		//5.22.0
 		//InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);
