@@ -6,6 +6,8 @@ import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.service.TButtonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -23,7 +25,7 @@ public class TaskButtonController {
      * @author houjinrong@chtwm.com
      * date 2018/5/9 9:50
      */
-    @RequestMapping("/select")
+    @GetMapping("/select")
     public String selectButtonPage(){
         return "workflow/config/select_button";
     }
@@ -34,7 +36,7 @@ public class TaskButtonController {
      * @author houjinrong@chtwm.com
      * date 2018/5/9 10:24
      */
-    @RequestMapping("/list")
+    @PostMapping("/list")
     @ResponseBody
     public Object queryButton(){
         EntityWrapper<TButton> wrapper = new EntityWrapper();
