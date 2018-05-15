@@ -19,10 +19,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Iterator;
 import java.util.List;
@@ -53,7 +50,7 @@ public class UserTaskController extends BaseController{
 	 * @author houjinrong@chtwm.com
 	 * date 2018/5/7 15:47
 	 */
-	@RequestMapping("/config/page/{id}")
+	@GetMapping("/config/page/{id}")
 	public String configPage(Model model, @PathVariable("id") String id) {
 		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(id).singleResult();
 		EntityWrapper<TUserTask> wrapper = new EntityWrapper();
@@ -147,7 +144,7 @@ public class UserTaskController extends BaseController{
      * @param taskJson
      * @return
      */
-    @RequestMapping("/config")
+    @PostMapping("/config")
     @ResponseBody
     public Object config(String taskJson) {
 		try {
