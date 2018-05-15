@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -49,7 +50,7 @@ public class EmpController {
      * @author houjinrong@chtwm.com
      * date 2018/5/7 15:10
      */
-    @RequestMapping("/user")
+    @PostMapping("/user")
     @ResponseBody
     public Object queryUser(String code, String name, Integer page, Integer rows){
         code = StringUtils.isBlank(code)?null:code.trim();
@@ -74,7 +75,7 @@ public class EmpController {
      * @author houjinrong@chtwm.com
      * date 2018/5/7 15:10
      */
-    @RequestMapping("/department")
+    @PostMapping("/department")
     @ResponseBody
     public Object queryDepartment(String code, String name, Integer page, Integer rows){
         code = StringUtils.isBlank(code)?null:code.trim();
@@ -96,7 +97,7 @@ public class EmpController {
      * @author houjinrong@chtwm.com
      * date 2018/5/7 15:10
      */
-    @RequestMapping("/role/{system}")
+    @PostMapping("/role/{system}")
     @ResponseBody
     public Object queryRole(@PathVariable("system")Integer system){
         List<RbacRole> allRoleBySystem = privilegeService.getAllRoleBySystem(system);
