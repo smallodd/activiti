@@ -1,7 +1,33 @@
 package com.hengtian.flow.controller.manage;
 
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.collect.Maps;
+import com.hengtian.common.base.BaseController;
+import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.operlog.SysLog;
+import com.hengtian.common.param.TaskParam;
+import com.hengtian.common.result.Result;
+import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.WorkflowService;
+import org.activiti.engine.TaskService;
+import org.activiti.engine.task.Task;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 工作流程相关-操作
@@ -10,6 +36,152 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 @RequestMapping("/workflow/action")
-public class WorkflowActionController {
+public class WorkflowActionController extends BaseController {
 
+    @Autowired
+    private WorkflowService workflowService;
+    @Autowired
+    private TaskService taskService;
+    @Autowired
+    private TRuTaskService tRuTaskService;
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
+     * 签收任务
+     * @param claimUser 签收人
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/14 15:17
+     */
+    @SysLog(value="任务签收")
+    @PostMapping(value="/task/claim")
+    @ResponseBody
+    public Object taskClaim(String claimUser, String taskId){
+        if(StringUtils.isBlank(claimUser) || StringUtils.isBlank(taskId)){
+            return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
+        }
+        Map<String,String> userMap = Maps.newHashMap();
+        for(String userCode : claimUser.split(",")){
+            String[] split = userCode.split(":");
+            if(userMap.containsKey(split[0])){
+                userMap.put(split[0],userMap.get(split[0])+","+split[1]);
+            }else{
+                userMap.put(split[0],split[1]);
+            }
+        }
+
+        try {
+            if(MapUtils.isNotEmpty(userMap)){
+                Iterator<Map.Entry<String, String>> iterator = userMap.entrySet().iterator();
+                while (iterator.hasNext()){
+                    Map.Entry<String, String> next = iterator.next();
+                    Result result = workflowService.taskClaim(next.getValue(), taskId, next.getKey());
+                    if(!result.isSuccess()){
+                        return result;
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            logger.info("", e);
+            return renderError(ResultEnum.FAIL.msg);
+        }
+        return resultSuccess(ResultEnum.SUCCESS.msg);
+    }
+
+    /**
+     * 签收任务
+     * @param claimUser 签收人
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/14 15:17
+     */
+    @SysLog(value="任务退签")
+    @PostMapping(value="/task/unclaim")
+    @ResponseBody
+    public Object taskUnclaim(String claimUser, String taskId){
+        if(StringUtils.isBlank(claimUser) || StringUtils.isBlank(taskId)){
+            return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
+        }
+        Map<String,String> userMap = Maps.newHashMap();
+        for(String userCode : claimUser.split(",")){
+            String[] split = userCode.split(":");
+            if(userMap.containsKey(split[0])){
+                userMap.put(split[0],userMap.get(split[0])+","+split[1]);
+            }else{
+                userMap.put(split[0],split[1]);
+            }
+        }
+
+        try {
+            if(MapUtils.isNotEmpty(userMap)){
+                Iterator<Map.Entry<String, String>> iterator = userMap.entrySet().iterator();
+                while (iterator.hasNext()){
+                    Map.Entry<String, String> next = iterator.next();
+                    Result result = workflowService.taskUnclaim(next.getValue(), taskId, next.getKey());
+                    if(!result.isSuccess()){
+                        return result;
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            logger.info("", e);
+            return renderError(ResultEnum.FAIL.msg);
+        }
+        return resultSuccess(ResultEnum.SUCCESS.msg);
+    }
+
+
+    /**
+     * 办理任务(完成任务)
+     * @param taskId 任务ID
+     * @param commentContent 审批意见
+     * @param commentResult 审批结果 2：同意；3：不同意
+     * @return
+     */
+    @SysLog(value="办理任务")
+    @PostMapping("/task/complete")
+    @ResponseBody
+    public Object completeTask(@RequestParam("taskId") String taskId,
+                               @RequestParam("assignee") String assignee,
+                               @RequestParam(value = "jsonVariable",required = false) String jsonVariable,
+                               @RequestParam("commentContent") String commentContent,
+                               @RequestParam("commentResult") Integer commentResult){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        TaskParam taskParam=new TaskParam();
+        if(task==null){
+            return renderError(ResultEnum.TASK_NOT_EXIST.msg, ResultEnum.TASK_NOT_EXIST.code) ;
+        }
+        //查看审批人是否有权限
+        EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
+        wrapper.where("task_id={0}",taskId);
+        wrapper.and("assignee_real LIKE {0}","%"+assignee+"%");
+        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+        if(CollectionUtils.isEmpty(tRuTasks)){
+            return renderError(ResultEnum.TASK_ASSIGNEE_ILLEGAL.msg, ResultEnum.TASK_ASSIGNEE_ILLEGAL.code) ;
+        }
+
+        try {
+            if(StringUtils.isNotBlank(jsonVariable)) {
+                JSONObject.parseObject(jsonVariable);
+            }
+        }catch (Exception e){
+            return renderError(ResultEnum.PARAM_ERROR.msg,ResultEnum.PARAM_ERROR.code);
+        }
+
+        TRuTask tRuTask = tRuTasks.get(0);
+        taskParam.setApprover(assignee);
+        taskParam.setAssignType(tRuTask.getAssigneeType());
+        taskParam.setComment("【管理员代办】"+commentContent);
+        taskParam.setPass(commentResult);
+        taskParam.setTaskId(taskId);
+        taskParam.setTaskType(tRuTask.getTaskType());
+        taskParam.setJsonVariables(jsonVariable);
+        Object result = workflowService.approveTask(task,taskParam);
+        return JSONObject.toJSONString(result);
+    }
 }

@@ -27,15 +27,44 @@ public class AppProcinst {
      * 流程实例ID
      */
     @TableField(value = "proc_inst_id")
-    private String procinstId;
+    private String procInstId;
+    /**
+     * 流程创建人
+     */
+    @TableField(value = "creator")
+    private String creator;
+    /**
+     * 流程创建人部门
+     */
+    @TableField(value = "creator_dept")
+    private String creatorDept;
+    /**
+     * 最后审批人
+     */
+    @TableField(value = "assignee")
+    private String assignee;
+    /**
+     * 流程名称
+     */
+    @TableField(value = "proc_def_name")
+    private String procDefName;
+
+    /**
+     * 任务节点名称
+     */
+    @TableField(value = "task_def_name")
+    private String taskDefName;
 
     public AppProcinst(){
 
     }
 
-    public AppProcinst(Integer appKey, String procinstId) {
+    public AppProcinst(Integer appKey, String procInstId, String creator, String creatorDept,String procDefName) {
         this.appKey = appKey;
-        this.procinstId = procinstId;
+        this.procInstId = procInstId;
+        this.creator = creator;
+        this.creatorDept = creatorDept;
+        this.procDefName = procDefName;
     }
 
     public Long getId() {
@@ -54,11 +83,51 @@ public class AppProcinst {
         this.appKey = appKey;
     }
 
-    public String getProcinstId() {
-        return procinstId;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public void setProcinstId(String procinstId) {
-        this.procinstId = procinstId;
+    public void setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
+    }
+
+    public String getCreator() {
+        return creator;
+    }
+
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
+
+    public String getCreatorDept() {
+        return creatorDept;
+    }
+
+    public void setCreatorDept(String creatorDept) {
+        this.creatorDept = creatorDept;
+    }
+
+    public String getAssignee() {
+        return assignee;
+    }
+
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
+    }
+
+    public String getProcDefName() {
+        return procDefName;
+    }
+
+    public void setProcDefName(String procDefName) {
+        this.procDefName = procDefName;
+    }
+
+    public String getTaskDefName() {
+        return taskDefName;
+    }
+
+    public void setTaskDefName(String taskDefName) {
+        this.taskDefName = taskDefName;
     }
 }

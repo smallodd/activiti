@@ -13,13 +13,13 @@
             <table>
                 <tr>
                     <th>标题:</th>
-                    <td><input name="businessName" placeholder="标题"/></td>
+                    <td><input name="title" placeholder="标题"/></td>
                     <th>业务主键:</th>
                     <td><input name="businessKey" placeholder="业务主键"/></td>
                     <th>申请人:</th>
-                    <td><input name="processOwner" placeholder="申请人"/></td>
+                    <td><input name="creator" placeholder="申请人"/></td>
                     <th>当前审批人:</th>
-                    <td><input name="taskAssign" placeholder="当前审批人"/></td>
+                    <td><input name="assignee" placeholder="当前审批人"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton"
                            data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="taskSearchFun();">查询</a>
@@ -36,9 +36,7 @@
     </div>
 </div>
 <div id="taskToolbar" style="display: none;">
-    <%-- <shiro:hasPermission name="/task/add">
-        <a onclick="taskAddFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-page-add'">添加</a>
-    </shiro:hasPermission> --%>
+
 </div>
 <div id="showTaskWindow"></div>
 <script type="text/javascript">
@@ -106,41 +104,40 @@
                 width: 350,
                 formatter: function (value, row, index) {
                     var str = '';
-
-                    <shiro:hasPermission name="/activiti/adminClaimTask">
-                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-claimTask" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="claimTaskFun(\'{0}\');" >签收</a>', row.id);
+                    <shiro:hasPermission name="/task/claim">
+                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-claimTask" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="claimTaskFun(\'{0}\',\'{1}\');" >签收</a>', row.id, row.processDefinitionId);
                     </shiro:hasPermission>
-
-                    <shiro:hasPermission name="/activiti/adminComplateTask">
-                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="completeTaskFun(\'{0}\');" >办理</a>', row.id);
+                    <shiro:hasPermission name="/task/unclaim">
+                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-unclaimTask" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="unclaimTaskFun(\'{0}\',\'{1}\');" >退签</a>', row.id, row.processDefinitionId);
                     </shiro:hasPermission>
-                    <%--<shiro:hasPermission name="/activiti/adminDelegateTask">
+                    <shiro:hasPermission name="/task/complete">
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-delegateTask" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="delegateTaskFun(\'{0}\');" >委派</a>', row.id);
-                    </shiro:hasPermission>--%>
-                    <shiro:hasPermission name="/activiti/adminTransferTask">
-                    str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-transferTask" data-options="plain:true,iconCls:\'fi-rewind-ten icon-red\'" onclick="transferTaskFun(\'{0}\');" >转办</a>', row.id);
+                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="completeTaskFun(\'{0}\');" >办理</a>', row.id);
                     </shiro:hasPermission>
-                    <shiro:hasPermission name="/activiti/adminJumpTask">
-                    str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-jumpTask" data-options="plain:true,iconCls:\'fi-share icon-yellow\'" onclick="jumpTaskFun(\'{0}\');" >跳转</a>', row.id);
+
+                    <shiro:hasPermission name="/task/transfer">
+                        str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-transferTask" data-options="plain:true,iconCls:\'fi-rewind-ten icon-red\'" onclick="transferTaskFun(\'{0}\');" >转办</a>', row.id);
                     </shiro:hasPermission>
-                    <shiro:hasPermission name="/ask/comment">
-                    str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askTask" data-options="plain:true,iconCls:\'fi-share icon-green\'" onclick="askTaskFun(\'{0}\');" >问询</a>', row.id);
+                    <shiro:hasPermission name="/task/jump">
+                        str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-jumpTask" data-options="plain:true,iconCls:\'fi-share icon-yellow\'" onclick="jumpTaskFun(\'{0}\');" >跳转</a>', row.id);
                     </shiro:hasPermission>
-                    <shiro:hasPermission name="/activiti/adminShowTask">
-                    str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-taskProgress" data-options="plain:true,iconCls:\'fi-arrow-right icon-grey\'" onclick="showTaskFun(\'{0}\');" >进度</a>', row.processInstanceId);
+                    <shiro:hasPermission name="/task/ask">
+                        str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askTask" data-options="plain:true,iconCls:\'fi-share icon-green\'" onclick="askTaskFun(\'{0}\');" >问询</a>', row.id);
+                    </shiro:hasPermission>
+                    <shiro:hasPermission name="/task/progress">
+                        str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-taskProgress" data-options="plain:true,iconCls:\'fi-arrow-right icon-grey\'" onclick="showTaskFun(\'{0}\');" >进度</a>', row.processInstanceId);
                     </shiro:hasPermission>
                     return str;
                 }
             }]],
             onLoadSuccess: function (data) {
                 $('.task-easyui-linkbutton-claimTask').linkbutton({text: '签收'});
+                $('.task-easyui-linkbutton-unclaimTask').linkbutton({text:'退签'});
                 $('.task-easyui-linkbutton-complateTask').linkbutton({text: '办理'});
-                //$('.task-easyui-linkbutton-delegateTask').linkbutton({text:'委派'});
                 $('.task-easyui-linkbutton-transferTask').linkbutton({text: '转办'});
                 $('.task-easyui-linkbutton-jumpTask').linkbutton({text: '跳转'});
                 $('.task-easyui-linkbutton-taskProgress').linkbutton({text: '进度'});
@@ -165,19 +162,13 @@
             title: '办理',
             width: 570,
             height: 450,
-            href: '${ctx}/activiti/completeTaskPage?id=' + id,
+            href: '${ctx}/workflow/page/task/complete/' + id,
             buttons: [{
                 text: '确定',
                 handler: function () {
                     parent.$.modalDialog.openner_dataGrid = taskDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
-                    var f = parent.$.modalDialog.handler.find('#complateTaskForm');
-//                    var op = parent.$.modalDialog.handler.find("#taskUser").val();
-//                    if(op != null && op != ""){
-//                        f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
+                    var f = parent.$.modalDialog.handler.find('#completeTaskForm');
                     f.submit();
-//                    }else{
-//                        parent.$.messager.alert('提示', "没有审批人", 'info');
-//                    }
                 }
             }]
         });
@@ -187,7 +178,7 @@
     /**
      * 签收任务
      */
-    function claimTaskFun(id) {
+    function claimTaskFun1(id) {
         if (id == undefined) {//点击右键菜单才会触发这个
             var rows = taskDataGrid.datagrid('getSelections');
             id = rows[0].id;
@@ -207,6 +198,60 @@
                     progressClose();
                 }, 'JSON');
             }
+        });
+    }
+
+    /**
+     * 退签任务
+     */
+    function claimTaskFun(taskId, procDefId) {
+        if (taskId == undefined) {//点击右键菜单才会触发这个
+            var rows = taskDataGrid.datagrid('getSelections');
+            taskId = rows[0].id;
+        } else {//点击操作里面的删除图标会触发这个
+            taskDataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+        }
+        parent.$.modalDialog({
+            title: '选择受理人',
+            width: 500,
+            height: 450,
+            modal: true,
+            href: '${ctx}/workflow/page/user/claim?taskId=' + taskId+"&claimType=1&procDefId="+procDefId,
+            buttons: [{
+                text: '确定',
+                handler: function () {
+                    parent.$.modalDialog.openner_dataGrid = taskDataGrid;
+                    var f = parent.$.modalDialog.handler.find('#taskClaimForm');
+                    f.submit();
+                }
+            }]
+        });
+    }
+
+    /**
+     * 退签任务
+     */
+    function unclaimTaskFun(taskId, procDefId) {
+        if (taskId == undefined) {//点击右键菜单才会触发这个
+            var rows = taskDataGrid.datagrid('getSelections');
+            taskId = rows[0].id;
+        } else {//点击操作里面的删除图标会触发这个
+            taskDataGrid.datagrid('unselectAll').datagrid('uncheckAll');
+        }
+        parent.$.modalDialog({
+            title: '选择受理人',
+            width: 500,
+            height: 450,
+            modal: true,
+            href: '${ctx}/workflow/page/user/claim?taskId=' + taskId+"&claimType=2&procDefId="+procDefId,
+            buttons: [{
+                text: '确定',
+                handler: function () {
+                    parent.$.modalDialog.openner_dataGrid = taskDataGrid;
+                    var f = parent.$.modalDialog.handler.find('#taskClaimForm');
+                    f.submit();
+                }
+            }]
         });
     }
 

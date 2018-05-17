@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public enum AssignType {
     PERSON(3,"人员"),
-    DEPARTMENT(1,"部门"),
+    //DEPARTMENT(1,"部门"),
     ROLE(2,"角色"),
     EXPR(4,"表达式");
     public Integer code;
@@ -80,5 +80,10 @@ public enum AssignType {
             map.put(c.code,c.name);
         }
         return map;
+    }
+
+    public static void main(String[] args) {
+        String str = "4545_Y,535335_N";
+        System.out.println(str.replaceAll("_Y", ""));
     }
 }

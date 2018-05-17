@@ -14,10 +14,12 @@ public enum TaskStatusEnum {
     REMIND_FINISHED(1, "完成"),
 
     /**
-     * 催办状态
+     * 任务办理状态
      */
-    COMPLETE_AGREE(0, "审批通过"),
-    COMPLETE_REFUSE(1, "审批拒绝"),
+    //审批通过
+    COMPLETE_AGREE(1, "completed"),
+    //审批拒绝
+    COMPLETE_REFUSE(2, "refused"),
 
     /**
      * 任务状态
@@ -39,5 +41,9 @@ public enum TaskStatusEnum {
 
     public static String getCloseStatus(){
         return AGREE.status + "," + REFUSE.status;
+    }
+
+    public static String getCOMPLETEStatus(){
+        return COMPLETE_AGREE.desc + "," + COMPLETE_REFUSE.desc;
     }
 }

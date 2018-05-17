@@ -239,4 +239,13 @@ public interface WorkflowService {
      * @return
      */
     Result getParentNodes(String taskId, String userId, boolean isAll);
+
+    /**
+     * 全部任务信息
+     * @param taskQueryParam
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/15 11:12
+     */
+    PageInfo allTaskPage(TaskQueryParam taskQueryParam, String type);
 }

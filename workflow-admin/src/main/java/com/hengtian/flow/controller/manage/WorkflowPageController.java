@@ -1,15 +1,37 @@
 package com.hengtian.flow.controller.manage;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.hengtian.application.model.AppModel;
+import com.hengtian.application.service.AppModelService;
+import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.StringUtils;
-import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.vo.CommentVo;
+import com.rbac.entity.RbacUser;
+import com.rbac.service.UserService;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.TaskService;
+import org.activiti.engine.impl.persistence.entity.CommentEntity;
+import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.task.Comment;
+import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 工作流程相关-页面
@@ -21,7 +43,15 @@ import java.io.IOException;
 public class WorkflowPageController {
 
     @Autowired
-    private WorkflowService workflowService;
+    private TRuTaskService tRuTaskService;
+    @Autowired
+    private RepositoryService repositoryService;
+    @Autowired
+    private AppModelService appModelService;
+    @Autowired
+    private TaskService taskService;
+    @Autowired
+    private UserService userService;
 
     /**
      * 流程定义管理
@@ -84,5 +114,96 @@ public class WorkflowPageController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 签收/退签 选择人员
+     * @param taskId 任务ID
+     * @param claimType 1-签收；2-退签
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/14 13:53
+     */
+    @GetMapping("/user/claim")
+    public String selectUserClaim(Model model, String taskId, int claimType, String procDefId){
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(procDefId).singleResult();
+        EntityWrapper<AppModel> wrapper = new EntityWrapper<>();
+        wrapper.where("model_key={0}", processDefinition.getKey());
+        AppModel appModel = appModelService.selectOne(wrapper);
+
+        EntityWrapper<TRuTask> wrapper1 = new EntityWrapper<>();
+        wrapper.where("task_id={0}", taskId);
+        List<TRuTask> ruTasks = tRuTaskService.selectList(wrapper1);
+
+        model.addAttribute("taskId", taskId);
+        model.addAttribute("claimType", claimType);
+        model.addAttribute("system", appModel.getAppKey());
+        model.addAttribute("ruTasks", ruTasks);
+
+        return "workflow/task/select_user_claim";
+    }
+
+    /**
+     * 任务办理页面
+     * @param model
+     * @param taskId 任务ID
+     * @return
+     */
+    @GetMapping("/task/complete/{taskId}")
+    public String completeTaskPage(Model model,@PathVariable("taskId") String taskId) {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        String processInstanceId = task.getProcessInstanceId();
+
+        List<CommentVo> comments = new ArrayList<CommentVo>();
+        List<Comment> commentList= taskService.getProcessInstanceComments(processInstanceId);
+        for(Comment comment : commentList){
+            CommentEntity c = (CommentEntity)comment;
+            CommentVo vo = new CommentVo();
+            RbacUser user = userService.getUserById(comment.getUserId());
+            vo.setCommentUser(user==null?c.getUserId():user.getName());
+            vo.setCommentTime(DateUtils.formatDateToString(comment.getTime()));
+            vo.setCommentContent(c.getMessage());
+
+            comments.add(vo);
+        }
+
+        model.addAttribute("task", task);
+        model.addAttribute("comments", comments);
+        model.addAttribute("assignees", getAssigneeUserByTaskId(taskId));
+        return "workflow/task/task_complete";
+    }
+
+    private Set<String> getAssigneeUserByTaskId(String taskId){
+        if(StringUtils.isBlank(taskId)){
+            return null;
+        }
+
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return null;
+        }
+
+        List<String> assigneeList = Lists.newArrayList();
+        if(StringUtils.isNotBlank(task.getAssignee())){
+            String assignee = task.getAssignee().replaceAll("_N","").replaceAll("_Y","");
+            assigneeList = Arrays.asList(assignee.split(","));
+        }
+
+        EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
+        wrapper.where("task_id={0}", taskId);
+        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+        Set<String> result = Sets.newHashSet();
+        for(TRuTask t : tRuTasks){
+            if(StringUtils.isNotBlank(t.getAssigneeReal())){
+                String[] array = t.getAssigneeReal().split(",");
+                for(String a : array){
+                    if(!assigneeList.contains(a)){
+                        result.add(a);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 }

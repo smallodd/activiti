@@ -15,6 +15,7 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TTaskButtonService;
 import com.hengtian.flow.service.TUserTaskService;
 import com.rbac.service.PrivilegeService;
+import com.user.service.org.OrgService;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,10 +36,8 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
 
     @Autowired
     private TUserTaskDao tUserTaskDao;
-
     @Autowired
     private TTaskButtonService tTaskButtonService;
-
     @Autowired
     private PrivilegeService privilegeService;
 
@@ -62,9 +61,10 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
             tUserTask.setTaskType(obj.getString("taskType"));
             tUserTask.setAssignType(obj.getInteger("assignType"));
 
-            int assigneeCount = obj.getString("code").split(",").length;
+            String assignee = obj.getString("code");
+            int assigneeCount = StringUtils.isBlank(assignee)?0:assignee.split(",").length;
 
-            if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType"))){
+            if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType")) || TaskType.CANDIDATEUSER.value.equals(obj.getString("taskType"))){
                 if(assigneeCount == 1 && AssignType.PERSON.code.equals(obj.getInteger("assignType"))){
                     //会签时，任务节点审核人只有一个时转为普通任务
                     tUserTask.setTaskType(TaskType.ASSIGNEE.value);
@@ -77,16 +77,18 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
             if(percentage == null || percentage > 1 || percentage < 0){
                 percentage = 1d;
             }
-            if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType").toString())){
+
+            if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType"))){
                 if(AssignType.ROLE.code.equals(obj.getInteger("assignType"))){
                     if(assigneeCount == 1){
-                        //获取部门下的所有人数
+                        //获取角色下的所有人数
                         assigneeCount = privilegeService.getUsersByRoleId(1, null, obj.getLong("code")).size();
                     }
                 }
                 tUserTask.setUserCountTotal(assigneeCount);
                 tUserTask.setUserCountNeed((int)Math.round(assigneeCount*percentage));
             }
+
             tUserTask.setPercentage(percentage);
             Integer c = tUserTaskDao.updateById(tUserTask);
             if(c.intValue() < 0){

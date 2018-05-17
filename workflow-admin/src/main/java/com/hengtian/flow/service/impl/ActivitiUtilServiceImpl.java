@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.model.TTaskButton;
@@ -38,10 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -768,12 +766,12 @@ public class ActivitiUtilServiceImpl {
      * @author houjinrong@chtwm.com
      * date 2018/5/10 14:58
      */
-    protected List<TaskVo> transferTask(List<Task> taskList){
+    protected List<TaskVo> transferTask(String userId,List<Task> taskList, boolean isAll){
         List<TaskVo> taskVoList = Lists.newArrayList();
         if(CollectionUtils.isNotEmpty(taskList)){
             for (Task t : taskList){
                 TaskVo vo = new TaskVo();
-                transferTaskInfo(t, vo);
+                transferTaskInfo(userId, t, vo, isAll);
                 taskVoList.add(vo);
             }
         }
@@ -785,19 +783,19 @@ public class ActivitiUtilServiceImpl {
      * @author houjinrong@chtwm.com
      * date 2018/5/10 14:58
      */
-    protected List<TaskVo> transferHisTask(List<HistoricTaskInstance> taskList){
+    protected List<TaskVo> transferHisTask(String userId,List<HistoricTaskInstance> taskList, boolean isAll){
         List<TaskVo> taskVoList = Lists.newArrayList();
         if(CollectionUtils.isNotEmpty(taskList)){
             for (HistoricTaskInstance t : taskList){
                 TaskVo vo = new TaskVo();
-                transferTaskInfo(t, vo);
+                transferTaskInfo(userId, t, vo, isAll);
                 taskVoList.add(vo);
             }
         }
         return taskVoList;
     }
 
-    private void transferTaskInfo(TaskInfo task, TaskVo vo){
+    private void transferTaskInfo(String userId, TaskInfo task, TaskVo vo, boolean isAll){
         vo.setId(task.getId());
         vo.setTaskName(task.getName());
         vo.setProcessOwner(task.getOwner());
@@ -805,9 +803,34 @@ public class ActivitiUtilServiceImpl {
         vo.setBusinessName(task.getCategory());
         vo.setBusinessKey(task.getDescription());
         vo.setProcessInstanceId(task.getProcessInstanceId());
-        if(task instanceof Task){
-            vo.setTaskState(task.getPriority()+"");
-            vo.setTaskAssign(task.getAssignee());
+        vo.setProcessDefinitionId(task.getProcessDefinitionId());
+        vo.setTaskAssign(task.getAssignee());
+        if(isAll){
+            if(task instanceof HistoricTaskInstance){
+                HistoricTaskInstance hisTask = (HistoricTaskInstance)task;
+                if(TaskStatusEnum.COMPLETE_AGREE.desc.equals(hisTask.getDeleteReason())){
+                    vo.setTaskState(TaskStatusEnum.AGREE.status+"");
+                }else if(TaskStatusEnum.COMPLETE_REFUSE.desc.equals(hisTask.getDeleteReason())){
+                    vo.setTaskState(TaskStatusEnum.REFUSE.status+"");
+                }
+                if(StringUtils.isNotBlank(task.getAssignee())){
+                    vo.setTaskAssign(task.getAssignee().replaceAll("_Y", "").replaceAll("_N", ""));
+                }
+            }else{
+                vo.setTaskState(task.getPriority()+"");
+            }
+        }else {
+            if(task instanceof HistoricTaskInstance){
+                vo.setTaskState(task.getPriority()+"");
+            }else {
+                String assignee = task.getAssignee();
+                if(StringUtils.isNotBlank(assignee)){
+                    List list = Arrays.asList(assignee.split(","));
+                    if(list.contains(userId)){
+                        vo.setTaskState(TaskStatusEnum.OPEN.status+"");
+                    }
+                }
+            }
         }
     }
 }

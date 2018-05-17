@@ -24,7 +24,8 @@ public enum ResultEnum {
     TASK_TYPE_ERROR("2001","任务类型不正确"),
     ASSIGN_TYPE_ERROR("2002","审批人类型不存在"),
     TASK_NOT_EXIST("2003","任务不存在"),
-    TASK_ROLLBACK_FORBIDDEN("2004","任务不可驳回或撤回");
+    TASK_ROLLBACK_FORBIDDEN("2004","任务不可驳回或撤回"),
+    TASK_ASSIGNEE_ILLEGAL("2005","审批人不合法");
 
 
     public String code;

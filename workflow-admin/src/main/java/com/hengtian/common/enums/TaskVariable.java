@@ -1,6 +1,5 @@
 package com.hengtian.common.enums;
 
-@Deprecated
 public enum TaskVariable {
 
     //任务类型
@@ -18,7 +17,17 @@ public enum TaskVariable {
     //任务节点所有审核人
     TASKUSER("taskUser"),
     //任务流程最后审核人
-    LASTTASKUSER("lastTaskUser");
+    LASTTASKUSER("lastTaskUser"),
+
+
+
+
+
+    APPROVE_COUNT("approveCount"),
+    APPROVE_COUNT_TOTAL("approveCountTotal"),
+    APPROVE_COUNT_NEED("approveCountNeed"),
+    APPROVE_COUNT_NOW("approveCountNow"),
+    APPROVE_COUNT_REFUSE("approveCountRefuse");
 
     public String value;
 
