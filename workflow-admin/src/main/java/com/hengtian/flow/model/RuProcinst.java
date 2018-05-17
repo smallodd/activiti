@@ -11,7 +11,7 @@ import com.baomidou.mybatisplus.enums.IdType;
  * date 2018/4/20 10:47
  */
 @TableName("t_app_procinst")
-public class AppProcinst {
+public class RuProcinst {
 
     /**
      * 主键
@@ -55,11 +55,11 @@ public class AppProcinst {
     @TableField(value = "task_def_name")
     private String taskDefName;
 
-    public AppProcinst(){
+    public RuProcinst(){
 
     }
 
-    public AppProcinst(Integer appKey, String procInstId, String creator, String creatorDept,String procDefName) {
+    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorDept, String procDefName) {
         this.appKey = appKey;
         this.procInstId = procInstId;
         this.creator = creator;

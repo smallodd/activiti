@@ -83,7 +83,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     private AppModelService appModelService;
 
     @Autowired
-    private AppProcinstService appProcinstService;
+    private RuProcinstService ruProcinstService;
 
     @Autowired
     private TUserTaskService tUserTaskService;
@@ -204,13 +204,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
 
             //添加应用-流程实例对应关系
-            String deptCode = "";
+            String deptName = "";
             RbacUser user = userService.getUserById(creator);
             if(user != null){
-                deptCode = user.getDeptCode();
+                deptName = user.getDeptName();
             }
-            AppProcinst appProcinst = new AppProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, deptCode,processDefinition.getName());
-            appProcinstService.insert(appProcinst);
+            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, deptName,processDefinition.getName());
+            ruProcinstService.insert(ruProcinst);
         }
         return result;
     }
@@ -262,17 +262,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         //保存记录当前审批人
-        EntityWrapper<AppProcinst> wrapper = new EntityWrapper<>();
+        EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
         wrapper.where("proc_inst_id={0}", task.getProcessInstanceId());
 
-        AppProcinst appProcinst = new AppProcinst();
+        RuProcinst ruProcinst = new RuProcinst();
         if(AssignType.PERSON.code.intValue() == tUserTask.getAssignType().intValue()){
-            appProcinst.setAssignee(assignees);
+            ruProcinst.setAssignee(assignees);
         }
 
-        appProcinst.setTaskDefName(task.getName());
+        ruProcinst.setTaskDefName(task.getName());
 
-        appProcinstService.update(appProcinst, wrapper);
+        ruProcinstService.update(ruProcinst, wrapper);
 
         log.info("设置审批人结束");
         return true;
