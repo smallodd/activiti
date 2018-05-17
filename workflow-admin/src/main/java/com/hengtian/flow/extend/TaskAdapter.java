@@ -6,8 +6,6 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.SpringBeanUtil;
 import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.service.impl.WorkflowServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.ContextLoader;
 
 public class TaskAdapter implements TaskManager {
 

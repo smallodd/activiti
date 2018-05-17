@@ -26,15 +26,22 @@ public class TaskQueryParam {
     @ApiModelProperty(value = "任务ID", example="110")
     private String taskId;
     /**
+     * 任务状态
+     * 已办任务状态：_Y-同意；_N-拒绝
+     * 待办任务状态：-1：待签收；0-待处理
+     */
+    @ApiModelProperty(value = "任务状态", example="110")
+    private String taskState;
+    /**
      * 流程实例id
      */
     @ApiModelProperty(value = "流程实例id", example="110")
     private String procInstId;
     /**
-     * 流程实例名称
+     * 流程名称
      */
     @ApiModelProperty(value = "流程实例名称", example="110")
-    private String procInstName;
+    private String procDefName;
     /**
      * 审批人id
      */
@@ -53,7 +60,7 @@ public class TaskQueryParam {
     /**
      * 系统定义的key
      */
-    @ApiModelProperty(value = "系统定义的key", required = true, example="系统定义的key")
+    @ApiModelProperty(value = "系统定义的key", required = true, example="1")
     private Integer appKey;
     /**
      * 业务系统主键
@@ -61,18 +68,18 @@ public class TaskQueryParam {
     @ApiModelProperty(value = "业务系统主键", required = true, example="业务系统主键")
     private String businessKey;
     /**
-     * 业务系统主键 1：运行结束；0：正在运行
+     * 流程实例状态 1：运行结束；0：正在运行
      */
-    @ApiModelProperty(value = "流程示例状态", required = true, example="0")
-    private Integer processState;
+    @ApiModelProperty(value = "流程实例状态", required = true, example="0")
+    private Integer procInstState;
     /**
-     * 业务系统主键
+     * 创建日期-开始
      */
     @ApiModelProperty(value = "创建日期-开始", required = true, example="2018-05-01")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private String createTimeStart;
     /**
-     * 业务系统主键
+     * 创建日期-结
      */
     @ApiModelProperty(value = "创建日期-结束", required = true, example="2018-05-30")
     @DateTimeFormat(pattern="yyyy-MM-dd")
@@ -120,12 +127,12 @@ public class TaskQueryParam {
         this.procInstId = procInstId;
     }
 
-    public String getProcInstName() {
-        return procInstName;
+    public String getProcDefName() {
+        return procDefName;
     }
 
-    public void setProcInstName(String procInstName) {
-        this.procInstName = procInstName;
+    public void setProcDefName(String procDefName) {
+        this.procDefName = procDefName;
     }
 
     public String getAssignee() {
@@ -200,11 +207,19 @@ public class TaskQueryParam {
         this.rows = rows;
     }
 
-    public Integer getProcessState() {
-        return processState;
+    public String getTaskState() {
+        return taskState;
     }
 
-    public void setProcessState(Integer processState) {
-        this.processState = processState;
+    public void setTaskState(String taskState) {
+        this.taskState = taskState;
+    }
+
+    public Integer getProcInstState() {
+        return procInstState;
+    }
+
+    public void setProcInstState(Integer procInstState) {
+        this.procInstState = procInstState;
     }
 }

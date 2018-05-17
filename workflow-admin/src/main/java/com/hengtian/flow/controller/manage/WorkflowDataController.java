@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskListEnum;
-import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TRuTask;
@@ -18,7 +17,10 @@ import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,7 +82,7 @@ public class WorkflowDataController {
             PageInfo pageInfo = workflowService.allTaskPage(taskQueryParam, TaskListEnum.ACTIVE.type);
             return pageInfo;
         }else {
-            PageInfo pageInfo = workflowService.activeTaskList(taskQueryParam);
+            PageInfo pageInfo = workflowService.myTaskPage(taskQueryParam, TaskListEnum.ACTIVE.type);
             return pageInfo;
         }
     }
@@ -98,7 +100,7 @@ public class WorkflowDataController {
             PageInfo pageInfo = workflowService.allTaskPage(taskQueryParam, TaskListEnum.CLOSE.type);
             return pageInfo;
         }else {
-            PageInfo pageInfo = workflowService.closeTaskList(taskQueryParam);
+            PageInfo pageInfo = workflowService.myTaskPage(taskQueryParam, TaskListEnum.CLOSE.type);
             return pageInfo;
         }
     }

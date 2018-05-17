@@ -56,7 +56,7 @@ public class TaskResult {
     /**
      * 流程名称
      */
-    private String processName;
+    private String processDefinitionName;
     /**
      * 流程状态
      */
@@ -64,7 +64,11 @@ public class TaskResult {
     /**
      * 创建时间
      */
-    private Date createTime;
+    private Date startTime;
+    /**
+     * 结束时间
+     */
+    private Date endTime;
 
     public String getTaskId() {
         return taskId;
@@ -154,12 +158,12 @@ public class TaskResult {
         this.processInstanceTitle = processInstanceTitle;
     }
 
-    public String getProcessName() {
-        return processName;
+    public String getProcessDefinitionName() {
+        return processDefinitionName;
     }
 
-    public void setProcessName(String processName) {
-        this.processName = processName;
+    public void setProcessDefinitionName(String processDefinitionName) {
+        this.processDefinitionName = processDefinitionName;
     }
 
     public String getProcessInstanceState() {
@@ -170,11 +174,19 @@ public class TaskResult {
         this.processInstanceState = processInstanceState;
     }
 
-    public Date getCreateTime() {
-        return createTime;
+    public Date getStartTime() {
+        return startTime;
     }
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
     }
 }

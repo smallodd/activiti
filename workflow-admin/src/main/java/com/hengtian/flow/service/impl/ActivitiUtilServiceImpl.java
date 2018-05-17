@@ -1,6 +1,7 @@
 package com.hengtian.flow.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -8,7 +9,9 @@ import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.TTaskButton;
+import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.service.TTaskButtonService;
 import com.hengtian.flow.vo.TaskVo;
 import org.activiti.bpmn.model.*;
@@ -48,7 +51,7 @@ import java.util.function.Predicate;
  * @author houjinrong@chtwm.com
  * date 2018/4/28 16:35
  */
-public class ActivitiUtilServiceImpl {
+public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult> {
 
     Logger logger = Logger.getLogger(getClass());
 

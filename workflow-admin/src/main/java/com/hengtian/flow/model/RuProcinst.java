@@ -55,6 +55,12 @@ public class RuProcinst {
     @TableField(value = "task_def_name")
     private String taskDefName;
 
+    /**
+     * 流程实例状态：0-未完成；1-完成
+     */
+    @TableField(value = "proc_inst_state")
+    private String procInstState;
+
     public RuProcinst(){
 
     }
@@ -129,5 +135,13 @@ public class RuProcinst {
 
     public void setTaskDefName(String taskDefName) {
         this.taskDefName = taskDefName;
+    }
+
+    public String getProcInstState() {
+        return procInstState;
+    }
+
+    public void setProcInstState(String procInstState) {
+        this.procInstState = procInstState;
     }
 }

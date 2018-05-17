@@ -3,6 +3,7 @@ package com.hengtian.flow.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -19,6 +20,7 @@ import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.CreateCmd;
 import com.hengtian.common.workflow.cmd.JumpCmd;
+import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
@@ -99,8 +101,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
     @Autowired
     private UserService userService;
+
     @Autowired
     private PrivilegeService privilegeService;
+
+    @Autowired
+    private WorkflowDao workflowDao;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1017,53 +1023,61 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 未办任务列表
      *
-     * @param taskQueryParam 任务查询条件
      * @return 分页
      * @author houjinrong@chtwm.com
      * date 2018/4/20 15:35
      */
     @Override
-    public PageInfo openTaskList(TaskQueryParam taskQueryParam) {
-        return myTaskPage(taskQueryParam, TaskListEnum.OPEN.type);
+    public void openTaskList(PageInfo pageInfo) {
+        Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
+        List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
+        pageInfo.setRows(list);
+        pageInfo.setTotal(page.getTotal());
     }
 
     /**
      * 已办任务列表
      *
-     * @param taskQueryParam 任务查询条件实体类
      * @return json
      * @author houjinrong@chtwm.com
      * date 2018/4/19 15:17
      */
     @Override
-    public PageInfo closeTaskList(TaskQueryParam taskQueryParam) {
-        return myTaskPage(taskQueryParam, TaskListEnum.CLOSE.type);
+    public void closeTaskList(PageInfo pageInfo) {
+        Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
+        List<TaskResult> list = workflowDao.queryCloseTask(page, pageInfo.getCondition());
+        pageInfo.setRows(list);
+        pageInfo.setTotal(page.getTotal());
     }
 
     /**
      * 待处理任务（包括待认领和待办任务）
      *
-     * @param taskQueryParam 任务查询条件
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 16:01
      */
     @Override
-    public PageInfo activeTaskList(TaskQueryParam taskQueryParam) {
-        return myTaskPage(taskQueryParam, TaskListEnum.ACTIVE.type);
+    public void activeTaskList(PageInfo pageInfo) {
+        Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
+        List<TaskResult> list = workflowDao.queryActiveTask(page, pageInfo.getCondition());
+        pageInfo.setRows(list);
+        pageInfo.setTotal(page.getTotal());
     }
 
     /**
      * 待认领任务列表， 任务签收后变为待办任务，待办任务可取消签认领
      *
-     * @param taskQueryParam 任务查询条件
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 15:59
      */
     @Override
-    public PageInfo claimTaskList(TaskQueryParam taskQueryParam) {
-        return myTaskPage(taskQueryParam, TaskListEnum.CLAIM.type);
+    public void claimTaskList(PageInfo pageInfo) {
+        Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
+        List<TaskResult> list = workflowDao.queryClaimTask(page, pageInfo.getCondition());
+        pageInfo.setRows(list);
+        pageInfo.setTotal(page.getTotal());
     }
 
     /**
@@ -1073,7 +1087,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @param type
      * @return
      */
-    private PageInfo myTaskPage(TaskQueryParam taskQueryParam, String type) {
+    @Override
+    public PageInfo myTaskPage(TaskQueryParam taskQueryParam, String type) {
         StringBuffer sb = new StringBuffer();
         StringBuffer con = new StringBuffer();
         con.append(" WHERE 1=1 ");
@@ -1142,9 +1157,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         if (TaskListEnum.CLOSE.type.equals(type)) {
-            if(ProcessStatusEnum.UNFINISHED.status == taskQueryParam.getProcessState()){
+            if(ProcessStatusEnum.UNFINISHED.status == taskQueryParam.getProcInstState()){
                 con.append(" ahp.DELETE_REASON_ IS NULL ");
-            }else if(ProcessStatusEnum.UNFINISHED.status == taskQueryParam.getProcessState()){
+            }else if(ProcessStatusEnum.UNFINISHED.status == taskQueryParam.getProcInstState()){
                 con.append(" ahp.DELETE_REASON_ IS NOT NULL ");
             }
             con.append(" AND art.ASSIGNEE_ LIKE #{assignee} ");

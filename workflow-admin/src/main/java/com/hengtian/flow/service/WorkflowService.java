@@ -1,18 +1,16 @@
 package com.hengtian.flow.service;
 
+import com.baomidou.mybatisplus.service.IService;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TUserTask;
-import com.hengtian.flow.vo.TaskVo;
-import org.activiti.engine.history.HistoricTaskInstance;
+import com.hengtian.flow.model.TaskResult;
 import org.activiti.engine.task.Task;
 
-import java.util.List;
-
-public interface WorkflowService {
+public interface WorkflowService extends IService<TaskResult> {
     /**
      * 申请任务
      *
@@ -192,42 +190,38 @@ public interface WorkflowService {
     /**
      * 未办任务列表
      *
-     * @param taskQueryParam 任务查询条件
      * @return 分页
      * @author houjinrong@chtwm.com
      * date 2018/4/20 15:35
      */
-    PageInfo openTaskList(TaskQueryParam taskQueryParam);
+    void openTaskList(PageInfo pageInfo);
 
     /**
      * 已办任务列表
      *
-     * @param taskQueryParam 任务查询条件
      * @return 分页
      * @author houjinrong@chtwm.com
      * date 2018/4/20 15:35
      */
-    PageInfo closeTaskList(TaskQueryParam taskQueryParam);
+    void closeTaskList(PageInfo pageInfo);
 
     /**
      * 待处理任务（包括待认领和待办任务）
      *
-     * @param taskQueryParam 任务查询条件
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 16:01
      */
-    PageInfo activeTaskList(TaskQueryParam taskQueryParam);
+    void activeTaskList(PageInfo pageInfo);
 
     /**
      * 待认领任务列表， 任务签收后变为待办任务，待办任务可取消签认领
      *
-     * @param taskQueryParam 任务查询条件
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/23 15:59
      */
-    PageInfo claimTaskList(TaskQueryParam taskQueryParam);
+    void claimTaskList(PageInfo pageInfo);
 
 
     /**
@@ -239,6 +233,15 @@ public interface WorkflowService {
      * @return
      */
     Result getParentNodes(String taskId, String userId, boolean isAll);
+
+    /**
+     * 我的任务信息
+     * @param taskQueryParam
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/15 11:12
+     */
+    PageInfo myTaskPage(TaskQueryParam taskQueryParam, String type);
 
     /**
      * 全部任务信息
