@@ -414,7 +414,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         return new Result(true, "任务已拒绝！");
                     }else{
                         //------------任务继续------------
-                        result = new Result(true, "办理成功！");
+                        String assignee = task.getAssignee();
+                        taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getApprover()+"_Y"):(assignee+","+taskParam.getApprover()+"_Y"));
+                        return new Result(true, "办理成功！");
                     }
                 }
             } else {
@@ -462,6 +464,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
 
             result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
+            result.setSuccess(true);
+            result.setMsg("任务已办理成功");
             return result;
         }
     }

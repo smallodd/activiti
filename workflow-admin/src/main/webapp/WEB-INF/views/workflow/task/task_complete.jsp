@@ -9,7 +9,7 @@
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
     <div data-options="region:'center',border:false" style="overflow: auto;padding: 3px;">
-        <div class="easyui-layout" style="width:550px;height:350px;">
+        <div class="easyui-layout" style="width:550px;height:370px;">
             <div data-options="region:'east',split:true" title="意见列表" style="width:180px;">
                 <c:if test="${empty comments}">暂无意见 ！</c:if>
                 <c:forEach var="comment" items="${comments}">
@@ -23,19 +23,19 @@
                     <input type="hidden" name="taskId" id="taskId" value="${task.id}">
                     <table class="grid">
                         <tr>
-                            <td>自定义参数<br/>例子：{"a":"b"}</td>
+                            <td width="100px">自定义参数<br/>例子：{"a":"b"}</td>
                             <td><input class="easyui-textbox" data-options="multiline:true" name="jsonVariable" style="width:260px;height: 100px;"></td>
                         </tr>
                         <tr>
                             <td>我的意见</td>
                             <td>
-                                <input class="easyui-textbox" data-options="multiline:true" name="commentContent" style="width:260px;height: 120px;">
+                                <input class="easyui-textbox" data-options="multiline:true" name="commentContent" style="width:260px;height: 135px;">
                             </td>
                         </tr>
                         <tr>
                             <td>办理人</td>
                             <td>
-                                <select name="assignee" class="easyui-combobox selectConfigType" data-options="width:120,height:25,panelHeight:'auto'">
+                                <select name="assignee" class="easyui-combobox selectConfigType" data-options="width:120,height:30,panelHeight:'auto'">
                                     <c:forEach var="a" items="${assignees}">
                                         <option value="${a}">${a}</option>
                                     </c:forEach>
