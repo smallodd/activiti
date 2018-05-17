@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.enums.IdType;
  * @author houjinrong@chtwm.com
  * date 2018/4/20 10:47
  */
-@TableName("t_app_procinst")
+@TableName("t_ru_procinst")
 public class RuProcinst {
 
     /**

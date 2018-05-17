@@ -1100,7 +1100,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         sb.append(" LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_ ");
 
         if (taskQueryParam.getAppKey() != null || StringUtils.isNotBlank(taskQueryParam.getCreatorDept())) {
-            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
+            sb.append(" LEFT JOIN t_ru_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
             if(taskQueryParam.getAppKey() != null){
                 con.append(" AND tap.APP_KEY = #{appKey}");
             }
@@ -1228,7 +1228,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         if (taskQueryParam.getAppKey() != null) {
-            sb.append(" LEFT JOIN t_app_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
+            sb.append(" LEFT JOIN t_ru_procinst AS tap ON art.PROC_INST_ID_=tap.PROC_INST_ID ");
             con.append(" AND tap.APP_KEY = #{appKey}");
         }
 
