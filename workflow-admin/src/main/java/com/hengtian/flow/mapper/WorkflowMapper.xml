@@ -33,8 +33,6 @@
         ahp.NAME_ AS processInstanceTitle,
         trp.PROC_DEF_NAME AS processDefinitionName,
         ahp.DELETE_REASON_ AS processInstanceState,
-        art.CREATE_TIME_ AS startTime,
-        art.CREATE_TIME_ AS endTime
     </sql>
 
     <sql id="queryCondition">
@@ -90,9 +88,11 @@
     </sql>
 
     <!--我的待办任务（待审批和待签收）-->
-    <select id="queryActiveTask" parameterType="com.hengtian.common.param.TaskQueryParam" resultMap="taskResultMap">
+    <select id="queryActiveTask" resultMap="taskResultMap">
         SELECT
           <include refid="taskResult"/>
+          art.CREATE_TIME_ AS startTime,
+          art.CREATE_TIME_ AS endTime
         FROM
           act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
           LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -103,9 +103,11 @@
     </select>
 
     <!--我的历史任务-->
-    <select id="queryCloseTask" parameterType="com.hengtian.common.param.TaskQueryParam" resultMap="taskResultMap">
+    <select id="queryCloseTask" resultMap="taskResultMap">
         SELECT
           <include refid="taskResult"/>
+          art.START_TIME_ AS startTime,
+          art.END_TIME_ AS endTime
         FROM
           act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
           LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -117,9 +119,11 @@
     </select>
 
     <!--我的待审批任务-->
-    <select id="queryOpenTask" parameterType="com.hengtian.common.param.TaskQueryParam" resultMap="taskResultMap">
+    <select id="queryOpenTask" resultMap="taskResultMap">
         SELECT
           <include refid="taskResult"/>
+          art.CREATE_TIME_ AS startTime,
+          art.CREATE_TIME_ AS endTime
         FROM
           act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
           LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -130,9 +134,11 @@
     </select>
 
     <!--我的待签收任务-->
-    <select id="queryClaimTask" parameterType="com.hengtian.common.param.TaskQueryParam" resultMap="taskResultMap">
-        ELECT
+    <select id="queryClaimTask" resultMap="taskResultMap">
+        SELECT
           <include refid="taskResult"/>
+          art.CREATE_TIME_ AS startTime,
+          art.CREATE_TIME_ AS endTime
         FROM
           act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
           LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
