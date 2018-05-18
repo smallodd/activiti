@@ -458,14 +458,18 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             repairNextTaskNode(t,execution);
 
             List<Task> resultList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
-            //设置审批人处理逻辑
-            if (!Boolean.valueOf(map.get("customApprover").toString())) {
-                for (Task task1 : resultList) {
-                    EntityWrapper tuserWrapper = new EntityWrapper();
-                    tuserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
-                    //查询当前任务任务节点信息
-                    TUserTask tUserTask1 = tUserTaskService.selectOne(tuserWrapper);
-                    boolean flag = setAssignee(task1, tUserTask1);
+            if(CollectionUtils.isEmpty(resultList)){
+                finishProcessInstance(t.getProcessInstanceId());
+            }else{
+                //设置审批人处理逻辑
+                if (!Boolean.valueOf(map.get("customApprover").toString())) {
+                    for (Task task1 : resultList) {
+                        EntityWrapper tuserWrapper = new EntityWrapper();
+                        tuserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", task1.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
+                        //查询当前任务任务节点信息
+                        TUserTask tUserTask1 = tUserTaskService.selectOne(tuserWrapper);
+                        boolean flag = setAssignee(task1, tUserTask1);
+                    }
                 }
             }
 

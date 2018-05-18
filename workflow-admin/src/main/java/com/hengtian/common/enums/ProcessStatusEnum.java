@@ -2,8 +2,8 @@ package com.hengtian.common.enums;
 
 public enum ProcessStatusEnum {
 
-    FINISHED(0, "未完成"),
-    UNFINISHED(1, "完成");
+    UNFINISHED(0, "未完成"),
+    FINISHED(1, "完成");
 
     public int status;
 
