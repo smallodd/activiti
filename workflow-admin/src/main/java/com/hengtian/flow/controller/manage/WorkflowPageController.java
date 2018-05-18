@@ -1,12 +1,11 @@
 package com.hengtian.flow.controller.manage;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.StringUtils;
+import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.vo.CommentVo;
@@ -29,9 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 工作流程相关-页面
@@ -40,7 +37,7 @@ import java.util.Set;
  */
 @Controller
 @RequestMapping("/workflow/page")
-public class WorkflowPageController {
+public class WorkflowPageController extends WorkflowBaseController{
 
     @Autowired
     private TRuTaskService tRuTaskService;
@@ -173,37 +170,16 @@ public class WorkflowPageController {
         return "workflow/task/task_complete";
     }
 
-    private Set<String> getAssigneeUserByTaskId(String taskId){
-        if(StringUtils.isBlank(taskId)){
-            return null;
-        }
-
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(task == null){
-            return null;
-        }
-
-        List<String> assigneeList = Lists.newArrayList();
-        if(StringUtils.isNotBlank(task.getAssignee())){
-            String assignee = task.getAssignee().replaceAll("_N","").replaceAll("_Y","");
-            assigneeList = Arrays.asList(assignee.split(","));
-        }
-
-        EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
-        wrapper.where("task_id={0}", taskId);
-        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
-        Set<String> result = Sets.newHashSet();
-        for(TRuTask t : tRuTasks){
-            if(StringUtils.isNotBlank(t.getAssigneeReal())){
-                String[] array = t.getAssigneeReal().split(",");
-                for(String a : array){
-                    if(!assigneeList.contains(a)){
-                        result.add(a);
-                    }
-                }
-            }
-        }
-
-        return result;
+    /**
+     * 任务转办
+     * @param taskId 任务ID
+     * @return 
+     * @author houjinrong@chtwm.com
+     * date 2018/5/18 16:01
+     */
+    @GetMapping("/task/transfer/{taskId}")
+    public String transferTaskPage(Model model,@PathVariable("taskId") String taskId){
+        model.addAttribute("taskId", taskId);
+        return "workflow/task/task_delegate";
     }
 }

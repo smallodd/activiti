@@ -5,12 +5,18 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Maps;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.enums.TaskStatus;
+import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskVariable;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.shiro.ShiroUser;
+import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
@@ -141,7 +147,8 @@ public class WorkflowActionController extends BaseController {
      * @param taskId 任务ID
      * @param commentContent 审批意见
      * @param commentResult 审批结果 2：同意；3：不同意
-     * @return
+     * author houjinrong@chtwm.com
+     * date 2018/5/18 17:57
      */
     @SysLog(value="办理任务")
     @PostMapping("/task/complete")
@@ -183,5 +190,32 @@ public class WorkflowActionController extends BaseController {
         taskParam.setJsonVariables(jsonVariable);
         Object result = workflowService.approveTask(task,taskParam);
         return JSONObject.toJSONString(result);
+    }
+
+    /**
+     * 转办任务
+     * @param taskId 任务ID
+     * @param userId 任务原所属用户ID
+     * @param transferUserId 任务要转办用户ID
+     * @return
+     * author houjinrong@chtwm.com
+     * date 2018/5/18 17:57
+     */
+    @SysLog(value="转办任务")
+    @PostMapping("/task/transfer")
+    @ResponseBody
+    public Object transferTask(String taskId, String userId, String transferUserId){
+        if(StringUtils.isBlank(taskId) || StringUtils.isBlank(userId) || StringUtils.isBlank(transferUserId)){
+            return renderError(ResultEnum.PARAM_ERROR.msg);
+        }
+        try {
+            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            if(task == null){
+                return renderError(ResultEnum.TASK_NOT_EXIST.msg);
+            }
+            return workflowService.taskTransfer(userId, taskId, transferUserId);
+        } catch (Exception e) {
+            return renderError("委派任务失败，系统错误！");
+        }
     }
 }

@@ -729,7 +729,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<TRuTask>();
         wrapper.where("task_id={0}", taskId);
-        wrapper.and("assignee_real", userId);
+
+        String oldUser = userId;
+
+        if(userId.indexOf(":") > -1){
+            String[] array = userId.split(":");
+            userId = array[0];
+            oldUser = array[1];
+        }
+
+        wrapper.and("assignee", userId);
         TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
 
         //用户组权限判断
@@ -737,7 +746,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             return new Result(false, "您所在的用户组没有权限进行该操作");
         }
 
-        tRuTask.setAssigneeReal(targetUserId);
+        if(StringUtils.contains(tRuTask.getAssigneeReal(), targetUserId)){
+            return new Result(false, "办理人已存在，同一办理人只能办理一次");
+        }
+        tRuTask.setAssigneeReal(tRuTask.getAssigneeReal().replace(oldUser, targetUserId));
         tRuTaskService.updateById(tRuTask);
         return new Result(true, "转办任务成功");
     }
