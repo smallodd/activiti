@@ -5,13 +5,16 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.hengtian.common.enums.ProcessStatusEnum;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.dao.WorkflowDao;
+import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TTaskButton;
 import com.hengtian.flow.model.TaskResult;
+import com.hengtian.flow.service.RuProcinstService;
 import com.hengtian.flow.service.TTaskButtonService;
 import com.hengtian.flow.vo.TaskVo;
 import org.activiti.bpmn.model.*;
@@ -67,6 +70,8 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private ProcessEngine processEngine;
     @Autowired
     private TTaskButtonService tTaskButtonService;
+    @Autowired
+    private RuProcinstService ruProcinstService;
 
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list){
         if(list!=null&&list.size()>0) {
@@ -835,5 +840,27 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 }
             }
         }
+    }
+
+    /**
+     * 删除流程
+     * @param processInstanceId
+     * @param deleteReason
+     * @author houjinrong@chtwm.com
+     */
+    protected void deleteProcessInstance(String processInstanceId, String deleteReason){
+        if(StringUtils.isBlank(processInstanceId)){
+            return;
+        }
+
+        runtimeService.deleteProcessInstance(processInstanceId, "refused");
+
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.where("proc_inst_id={0}",processInstanceId);
+
+        RuProcinst ruProcinst = new RuProcinst();
+        ruProcinst.setProcInstState(ProcessStatusEnum.UNFINISHED.status+"");
+
+        ruProcinstService.update(ruProcinst, wrapper);
     }
 }

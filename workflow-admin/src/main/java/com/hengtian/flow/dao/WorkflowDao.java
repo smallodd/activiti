@@ -2,6 +2,7 @@ package com.hengtian.flow.dao;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.plugins.pagination.Pagination;
+import com.hengtian.flow.model.ProcessInstanceResult;
 import com.hengtian.flow.model.TaskResult;
 
 import java.util.List;
@@ -48,4 +49,14 @@ public interface WorkflowDao extends BaseMapper<TaskResult> {
      * date 2018/4/23 15:59
      */
     List<TaskResult> queryClaimTask(Pagination page, Map<String, Object> params);
+
+    /**
+     * 我发起的流程实例
+     *
+     * @param params 任务查询条件
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/18 9:51
+     */
+    List<ProcessInstanceResult> queryProcessInstance(Pagination page, Map<String, Object> params);
 }

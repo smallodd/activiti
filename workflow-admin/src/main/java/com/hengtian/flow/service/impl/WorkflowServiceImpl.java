@@ -169,7 +169,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     boolean flag = setAssignee(task, tUserTask);
                     if (!flag) {
                         taskService.addComment(task.getId(), processInstance.getProcessInstanceId(), "生成扩展任务时失败，删除任务！");//备注
-                        runtimeService.deleteProcessInstance(processInstance.getProcessInstanceId(), "");
+                        deleteProcessInstance(processInstance.getProcessInstanceId(), "");
                         historyService.deleteHistoricProcessInstance(processInstance.getProcessInstanceId());//(顺序不能换)
 
                         result.setSuccess(false);
@@ -404,7 +404,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         //------------任务完成-未通过------------
                         String assignee = task.getAssignee();
                         taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getApprover()+"_N"):(assignee+","+taskParam.getApprover()+"_N"));
-                        runtimeService.deleteProcessInstance(task.getProcessInstanceId(), "refused");
+                        deleteProcessInstance(task.getProcessInstanceId(), "refused");
                         if(AssignType.PERSON.code.equals(taskParam.getAssignType())){
                             TRuTask tRuTask = new TRuTask();
                             tRuTask.setStatus(TaskStatusEnum.SKIP.status);
@@ -440,7 +440,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 } else if (taskParam.getPass() == TaskStatusEnum.COMPLETE_REFUSE.status) {
                     //拒绝任务
                     taskService.setAssignee(task.getId(), taskParam.getApprover() + "_N");
-                    runtimeService.deleteProcessInstance(task.getProcessInstanceId(), "refused");
+                    deleteProcessInstance(task.getProcessInstanceId(), "refused");
 
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(TaskStatusEnum.REFUSE.status);
@@ -935,7 +935,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (historicProcessInstance != null) {
             String startUserId = historicProcessInstance.getStartUserId();
             if (startUserId.equals(processInstanceId)) {
-                runtimeService.deleteProcessInstance(processInstanceId, "");
+                deleteProcessInstance(processInstanceId, "");
             } else {
                 return new Result(false, ResultEnum.PERMISSION_DENY.code, ResultEnum.PERMISSION_DENY.msg);
             }
@@ -1343,5 +1343,20 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             e.printStackTrace();
         }
         return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
+    }
+
+    /**
+     * 我的流程
+     *
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 15:59
+     */
+    @Override
+    public void processInstanceList(PageInfo pageInfo){
+        Page<ProcessInstanceResult> page = new Page<ProcessInstanceResult>(pageInfo.getNowpage(), pageInfo.getSize());
+        List<ProcessInstanceResult> list = workflowDao.queryProcessInstance(page, pageInfo.getCondition());
+        pageInfo.setRows(list);
+        pageInfo.setTotal(page.getTotal());
     }
 }

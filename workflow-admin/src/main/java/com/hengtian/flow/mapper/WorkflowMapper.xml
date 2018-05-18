@@ -19,6 +19,17 @@
         <result column="endTime" property="endTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <resultMap id="processInstanceResultMap" type="com.hengtian.flow.model.ProcessInstanceResult">
+        <result column="processInstanceId" property="processInstanceId" jdbcType="VARCHAR"/>
+        <result column="processInstanceName" property="processInstanceName" jdbcType="VARCHAR"/>
+        <result column="processDefinitionName" property="processDefinitionName" jdbcType="VARCHAR"/>
+        <result column="processInstanceState" property="processInstanceState" jdbcType="VARCHAR"/>
+        <result column="assignee" property="assignee" jdbcType="VARCHAR"/>
+        <result column="taskDefinitionName" property="taskDefinitionName" jdbcType="VARCHAR"/>
+        <result column="startTime" property="startTime" jdbcType="DATE"/>
+        <result column="endTime" property="endTime" jdbcType="DATE"/>
+    </resultMap>
+
     <sql id="taskResult">
         art.ID_ AS taskId,
         art.NAME_ AS taskName,
@@ -148,20 +159,49 @@
           <include refid="queryCondition"/>
     </select>
 
-    <select id="queryProcess">
+    <select id="queryProcessInstance" resultMap="processInstanceResultMap">
         SELECT
-            ahp.ID_,
-            ahp.NAME,
-            ahp.START_USER_ID_,
-            ahp.START_TIME_,
-            ahp.END_TIME_,
-            ahp.DELETE_REASON_,
-            trp.PROC_DEF_NAME,
-            trp.ASSIGNEE,
-            trp.TASK_DEF_NAME
+            ahp.ID_ AS processInstanceId,
+            ahp.NAME_ AS processInstanceName,
+            trp.PROC_INST_STATE AS processInstanceState,
+            trp.PROC_DEF_NAME AS processDefinitionName,
+            trp.ASSIGNEE AS assignee,
+            trp.TASK_DEF_NAME AS taskDefinitionName,
+            ahp.START_TIME_ AS startTime,
+            ahp.END_TIME_ AS endTime
         FROM
             act_hi_procinst AS ahp, t_ru_procinst AS trp
         WHERE
             ahp.ID_ = trp.proc_inst_id
+            <if test="appKey != null and appKey != ''">
+                AND trp.APP_KEY = #{appKey}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND trp.CREATOR = #{creator}
+            </if>
+            <if test="processInstanceId != null and processInstanceId != ''">
+                AND ahp.ID_ = #{processInstancetId}
+            </if>
+            <if test="processInstanceState != null">
+                AND trp.PROC_INST_STATE = #{processInstanceState}
+            </if>
+            <if test="processInstanceName != null and processInstanceName != ''">
+                AND ahp.NAME_ LIKE CONCAT('%',#{processInstanceName},'%')
+            </if>
+            <if test="processDefinitionName != null and processDefinitionName != ''">
+                AND trp.PROC_DEF_NAME LIKE CONCAT('%',#{processDefinitionName},'%')
+            </if>
+            <if test="startTimeFrom != null">
+                AND ahp.START_TIME_ &gt;= #{startTimeFrom}
+            </if>
+            <if test="startTimeSTo != null">
+                AND AND ahp.START_TIME_ &lt;= #{startTimeSTo}
+            </if>
+            <if test="endTimeFrom != null">
+                AND AND ahp.END_TIME_ &gt;= #{endTimeFrom}
+            </if>
+            <if test="endTimeTo != null">
+                AND AND ahp.END_TIME_ &lt;= #{endTimeTo}
+            </if>
     </select>
 </mapper>

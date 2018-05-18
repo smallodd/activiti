@@ -251,4 +251,13 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/5/15 11:12
      */
     PageInfo allTaskPage(TaskQueryParam taskQueryParam, String type);
+
+    /**
+     * 我的流程
+     *
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 15:59
+     */
+    void processInstanceList(PageInfo pageInfo);
 }

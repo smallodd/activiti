@@ -3,10 +3,7 @@ package com.hengtian.flow.controller;
 import com.google.common.collect.Lists;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.operlog.SysLog;
-import com.hengtian.common.param.AskTaskParam;
-import com.hengtian.common.param.TaskQueryParam;
-import com.hengtian.common.param.TaskRemindQueryParam;
-import com.hengtian.common.param.WorkDetailParam;
+import com.hengtian.common.param.*;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
@@ -28,7 +25,6 @@ import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
-import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang3.StringUtils;
@@ -39,12 +35,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by ma on 2018/4/17.
@@ -82,6 +77,26 @@ public class WorkflowQueryController extends WorkflowBaseController {
     private TWorkDetailService tWorkDetailService;
 
     /**
+     * 获取我发起的流程
+     *
+     * @param processInstanceQueryParam 流程查询条件
+     * @return
+     * @author houjinrong@chtwm.com
+     */
+    @ResponseBody
+    @SysLog("获取我发起的流程")
+    @ApiOperation(httpMethod = "POST", value = "获取我发起的流程")
+    @RequestMapping(value = "/rest/procInst", method = RequestMethod.POST)
+    public Object processInstanceList(@ApiParam(value = "流程查询条件", name = "processInstanceQueryParam", required = true) @RequestBody @Valid ProcessInstanceQueryParam processInstanceQueryParam) {
+        logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", processInstanceQueryParam.toString());
+        PageInfo pageInfo = new PageInfo(processInstanceQueryParam.getPage(), processInstanceQueryParam.getRows());
+        pageInfo.setCondition(new BeanMap(processInstanceQueryParam));
+        workflowService.processInstanceList(pageInfo);
+
+        return pageInfo;
+    }
+
+    /**
      * 催办任务列表
      *
      * @param taskRemindQueryParam 任务查询条件实体类
@@ -92,7 +107,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "催办任务列表")
-    @RequestMapping(value = "/rest/task/remind/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/remind", method = RequestMethod.POST)
     public Object remindTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
         return remindTaskService.remindTaskList(taskRemindQueryParam);
     }
@@ -108,7 +123,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("被催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "被催办任务列表")
-    @RequestMapping(value = "/rest/task/reminded/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/reminded", method = RequestMethod.POST)
     public Object remindedTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
         return remindTaskService.remindedTaskList(taskRemindQueryParam);
     }
@@ -124,7 +139,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("未办任务列表")
     @ApiOperation(httpMethod = "POST", value = "未办任务列表")
-    @RequestMapping(value = "/rest/task/open/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/open", method = RequestMethod.POST)
     public Object openTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
@@ -144,7 +159,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("已办任务列表")
     @ApiOperation(httpMethod = "POST", value = "已办任务列表")
-    @RequestMapping(value = "/rest/task/close/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/close", method = RequestMethod.POST)
     public Object closeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
@@ -164,7 +179,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("待处理任务列表")
     @ApiOperation(httpMethod = "POST", value = "待处理任务列表")
-    @RequestMapping(value = "/rest/task/active/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/active", method = RequestMethod.POST)
     public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
@@ -184,7 +199,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("待签收任务列表")
     @ApiOperation(httpMethod = "POST", value = "待签收任务列表")
-    @RequestMapping(value = "/rest/task/claim/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/claim", method = RequestMethod.POST)
     public Object claimTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
@@ -202,7 +217,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "问询任务列表")
-    @RequestMapping(value = "/rest/task/enquire/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/enquire", method = RequestMethod.POST)
     public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getCreateId())) {
             return new Result(false, "createId不能为空");
@@ -220,7 +235,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("被问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
-    @RequestMapping(value = "/rest/task/enquired/page", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/task/enquired", method = RequestMethod.POST)
     public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getAskUserId())) {
             return new Result(false, "askUserId不能为空");
@@ -391,4 +406,5 @@ public class WorkflowQueryController extends WorkflowBaseController {
         logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", taskId);
         return renderSuccess(workflowService.getParentNodes(taskId, userId, isAll != 0));
     }
+
 }
