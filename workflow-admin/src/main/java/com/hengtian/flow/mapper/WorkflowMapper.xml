@@ -165,14 +165,16 @@
             ahp.NAME_ AS processInstanceName,
             trp.PROC_INST_STATE AS processInstanceState,
             trp.PROC_DEF_NAME AS processDefinitionName,
-            trp.ASSIGNEE AS assignee,
-            trp.TASK_DEF_NAME AS taskDefinitionName,
+            GROUP_CONCAT(trt.ASSIGNEE_REAL) AS assignee,
+            GROUP_CONCAT(art.NAME_) AS taskDefinitionName,
             ahp.START_TIME_ AS startTime,
             ahp.END_TIME_ AS endTime
         FROM
-            act_hi_procinst AS ahp, t_ru_procinst AS trp
+            act_hi_procinst AS ahp LEFT JOIN t_ru_procinst AS trp ON ahp.ID_ = trp.PROC_INST_ID
+            LEFT JOIN t_ru_task AS trt ON ahp.ID_=trt.PROC_INST_ID AND trp.PROC_INST_STATE=0
+            LEFT JOIN act_ru_task AS art ON ahp.ID_=art.PROC_INST_ID_
         WHERE
-            ahp.ID_ = trp.proc_inst_id
+            1=1
             <if test="appKey != null and appKey != ''">
                 AND trp.APP_KEY = #{appKey}
             </if>
@@ -203,5 +205,6 @@
             <if test="endTimeTo != null">
                 AND AND ahp.END_TIME_ &lt;= #{endTimeTo}
             </if>
+        GROUP by ahp.ID_
     </select>
 </mapper>

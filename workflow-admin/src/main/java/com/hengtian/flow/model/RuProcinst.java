@@ -50,6 +50,12 @@ public class RuProcinst {
     private String procDefName;
 
     /**
+     * 任务节点key
+     */
+    @TableField(value = "task_def_key")
+    private String taskDefKey;
+
+    /**
      * 任务节点名称
      */
     @TableField(value = "task_def_name")
@@ -61,9 +67,7 @@ public class RuProcinst {
     @TableField(value = "proc_inst_state")
     private String procInstState;
 
-    public RuProcinst(){
-
-    }
+    public RuProcinst(){}
 
     public RuProcinst(Integer appKey, String procInstId, String creator, String creatorDept, String procDefName) {
         this.appKey = appKey;
@@ -143,5 +147,13 @@ public class RuProcinst {
 
     public void setProcInstState(String procInstState) {
         this.procInstState = procInstState;
+    }
+
+    public String getTaskDefKey() {
+        return taskDefKey;
+    }
+
+    public void setTaskDefKey(String taskDefKey) {
+        this.taskDefKey = taskDefKey;
     }
 }

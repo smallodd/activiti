@@ -168,9 +168,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
                     boolean flag = setAssignee(task, tUserTask);
                     if (!flag) {
-                        taskService.addComment(task.getId(), processInstance.getProcessInstanceId(), "生成扩展任务时失败，删除任务！");//备注
+                        //备注
+                        taskService.addComment(task.getId(), processInstance.getProcessInstanceId(), "生成扩展任务时失败，删除任务！");
                         deleteProcessInstance(processInstance.getProcessInstanceId(), "");
-                        historyService.deleteHistoricProcessInstance(processInstance.getProcessInstanceId());//(顺序不能换)
+                        //(顺序不能换)
+                        historyService.deleteHistoricProcessInstance(processInstance.getProcessInstanceId());
 
                         result.setSuccess(false);
                         result.setCode(Constant.FAIL);
