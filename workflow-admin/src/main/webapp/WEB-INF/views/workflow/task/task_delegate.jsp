@@ -21,6 +21,7 @@
 					<select id="assigneeTree" name="assignee">
 						<option value="">加载</option>
 					</select>
+					<%--<input class="easyui-combotree" data-options="url:'${ctx}/workflow/data/task/transfer/tree/325014',method:'get',required:true" style="width:160px;">--%>
 				</td>
 			</tr>
 		</table>

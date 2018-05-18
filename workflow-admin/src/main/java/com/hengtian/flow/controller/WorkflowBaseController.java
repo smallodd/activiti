@@ -150,7 +150,13 @@ public class WorkflowBaseController extends BaseController {
                         JSONObject child = new JSONObject();
                         child.put("id", t.getAssignee()+":"+a);
                         child.put("text", a);
-                        jsonObject.accumulate("children", child);
+                        if(!jsonObject.containsKey("children")){
+                            JSONArray jsonArray = new JSONArray();
+                            jsonArray.add(child);
+                            jsonObject.put("children", jsonArray);
+                        }else{
+                            jsonObject.accumulate("children", child);
+                        }
                     }
                 }
                 if(jsonObject.containsKey("children")){
