@@ -854,14 +854,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
 
         runtimeService.deleteProcessInstance(processInstanceId, deleteReason);
-        finishProcessInstance(processInstanceId);
+        finishProcessInstance(processInstanceId, ProcessStatusEnum.FINISHED_N.status);
     }
 
     /**
      * 流程结束更改流程状态
      * @param processInstanceId
      */
-    protected void finishProcessInstance(String processInstanceId){
+    protected void finishProcessInstance(String processInstanceId, int processInstanceState){
         if(StringUtils.isBlank(processInstanceId)){
             return;
         }
@@ -869,7 +869,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         wrapper.where("proc_inst_id={0}",processInstanceId);
 
         RuProcinst ruProcinst = new RuProcinst();
-        ruProcinst.setProcInstState(ProcessStatusEnum.FINISHED.status+"");
+        ruProcinst.setProcInstState(processInstanceState+"");
 
         ruProcinstService.update(ruProcinst, wrapper);
     }

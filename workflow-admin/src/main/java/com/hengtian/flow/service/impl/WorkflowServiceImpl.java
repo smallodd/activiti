@@ -459,7 +459,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
             List<Task> resultList = taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).list();
             if(CollectionUtils.isEmpty(resultList)){
-                finishProcessInstance(t.getProcessInstanceId());
+                finishProcessInstance(t.getProcessInstanceId(), ProcessStatusEnum.FINISHED_Y.status);
             }else{
                 //设置审批人处理逻辑
                 if (!Boolean.valueOf(map.get("customApprover").toString())) {
