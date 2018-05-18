@@ -127,9 +127,11 @@ public class WorkflowActionController extends BaseController {
                 Iterator<Map.Entry<String, String>> iterator = userMap.entrySet().iterator();
                 while (iterator.hasNext()){
                     Map.Entry<String, String> next = iterator.next();
-                    Result result = workflowService.taskUnclaim(next.getValue(), taskId, next.getKey());
-                    if(!result.isSuccess()){
-                        return result;
+                    for(String assignee : next.getValue().split(",")){
+                        Result result = workflowService.taskUnclaim(assignee, taskId, next.getKey());
+                        if(!result.isSuccess()){
+                            return result;
+                        }
                     }
                 }
 
