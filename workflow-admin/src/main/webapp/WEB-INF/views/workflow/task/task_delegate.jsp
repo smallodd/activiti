@@ -80,7 +80,7 @@
      */
     $(function() {
         $('#taskDelegateForm').form({
-            url : '${ctx}/activiti/delegateTask',
+            url : '${ctx}/emp/user',
             onSubmit : function() {
                 progressLoad();
                 var rows = $("#delegateTaskGrid").datagrid("getSelections");
