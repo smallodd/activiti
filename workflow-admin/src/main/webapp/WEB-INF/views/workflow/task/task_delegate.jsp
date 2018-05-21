@@ -65,6 +65,8 @@
                     //清除选中
                     $('#assigneeTree').combotree('clear');
                 }
+
+                //var parent = $('#assigneeTree').combotree('tree').tree('getParent', node.target);
             }
         })
 
