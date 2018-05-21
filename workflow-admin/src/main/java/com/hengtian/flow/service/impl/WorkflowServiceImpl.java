@@ -236,16 +236,22 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //获取任务中的自定义参数
         Map<String, Object> map = taskService.getVariables(task.getId());
         String assignees = tUserTask.getCandidateIds();
+        String assigneeNames = tUserTask.getCandidateName();
         String[] assigneeArray = assignees.split(",");
-        List list = Arrays.asList(assigneeArray);
-        Set set = new HashSet(list);
-        String[] rid = (String[]) set.toArray(new String[0]);
+        String[] assigneeNameArray = assigneeNames.split(",");
+        Set set = new HashSet(Arrays.asList(assigneeArray));
+        assigneeArray = (String[]) set.toArray(new String[0]);
+        set = new HashSet(Arrays.asList(assigneeNameArray));
+        assigneeNameArray = (String[]) set.toArray(new String[0]);
 
         //生成扩展任务信息
-        for (String assignee : rid) {
+        String assignee;
+        for (int i=0;i<assigneeArray.length;i++) {
+            assignee = assigneeArray[i];
             TRuTask tRuTask = new TRuTask();
             tRuTask.setTaskId(task.getId());
             tRuTask.setAssignee(assignee);
+            tRuTask.setAssigneeName(assigneeNameArray[i]);
             EntityWrapper entityWrapper = new EntityWrapper();
             entityWrapper.where("task_id={0}", task.getId()).andNew("assignee={0}", assignee);
             TRuTask tRu = tRuTaskService.selectOne(entityWrapper);
@@ -725,7 +731,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             oldUser = array[1];
         }
 
-        wrapper.and("assignee", userId);
+        wrapper.and("assignee={0}", userId);
         TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
 
         //用户组权限判断
