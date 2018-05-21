@@ -269,19 +269,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             tRuTaskService.insert(tRuTask);
         }
 
-        //保存记录当前审批人
-        EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
-        wrapper.where("proc_inst_id={0}", task.getProcessInstanceId());
-
-        RuProcinst ruProcinst = new RuProcinst();
-        if(AssignType.PERSON.code.intValue() == tUserTask.getAssignType().intValue()){
-            ruProcinst.setAssignee(assignees);
-        }
-
-        ruProcinst.setTaskDefName(task.getName());
-
-        ruProcinstService.update(ruProcinst, wrapper);
-
         log.info("设置审批人结束");
         return true;
     }
