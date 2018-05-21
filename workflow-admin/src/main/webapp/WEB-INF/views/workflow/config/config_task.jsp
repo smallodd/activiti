@@ -107,9 +107,17 @@
 
         $(".selectConfigType").combobox({
             onChange: function (n,o) {
-                $("#taskJsonSelect").val("");
-
                 var taskDefKey = $(this).parent().attr("data-key");
+
+                var taskType = $("#taskType"+taskDefKey).val();
+                var assignType = $("#assignType"+taskDefKey).val();
+                if(assignType == 4 && taskType != "assignee"){
+                    $(this).combobox("select",o);
+                    $.messager.alert('提示', "只有审批支持表达式",'info');
+                    return;
+                }
+
+                $("#taskJsonSelect").val("");
                 $("#taskUser"+taskDefKey).val("");
                 $("#percentage"+taskDefKey).val("");
                 clearUser(taskDefKey);

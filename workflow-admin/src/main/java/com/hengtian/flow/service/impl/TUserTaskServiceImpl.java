@@ -63,6 +63,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
 
             String assignee = obj.getString("code");
             int assigneeCount = StringUtils.isBlank(assignee)?0:assignee.split(",").length;
+            int assigneeNeed = 0;
 
             if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType")) || TaskType.CANDIDATEUSER.value.equals(obj.getString("taskType"))){
                 if(assigneeCount == 1 && AssignType.PERSON.code.equals(obj.getInteger("assignType"))){
@@ -78,16 +79,37 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
                 percentage = 1d;
             }
 
-            if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType"))){
+            if(TaskType.CANDIDATEUSER.value.equals(obj.getString("taskType"))){
+                //候选
+                if(StringUtils.isNotBlank(assignee)){
+                    assigneeCount = 1;
+                    assigneeNeed = 1;
+                }
+            }else {
+                //审批和会签
                 if(AssignType.ROLE.code.equals(obj.getInteger("assignType"))){
-                    if(assigneeCount == 1){
-                        //获取角色下的所有人数
-                        assigneeCount = privilegeService.getUsersByRoleId(1, null, obj.getLong("code")).size();
+                    String roleIds = obj.getString("code");
+                    assigneeCount = 0;
+                    if(StringUtils.isNotBlank(roleIds)){
+                        String[] roleIdArray = roleIds.split(",");
+                        for(String roleId : roleIdArray){
+                            assigneeCount = assigneeCount + privilegeService.getUsersByRoleId(1, null, Long.parseLong(roleId)).size();
+                        }
+                    }
+
+                    assigneeNeed = (int)Math.round(assigneeCount*percentage);
+                }else{
+                    if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType"))){
+                        assigneeNeed = (int)Math.round(assigneeCount*percentage);
+                    }else{
+                        assigneeNeed = 1;
                     }
                 }
-                tUserTask.setUserCountTotal(assigneeCount);
-                tUserTask.setUserCountNeed((int)Math.round(assigneeCount*percentage));
             }
+
+            tUserTask.setUserCountTotal(assigneeCount);
+            tUserTask.setUserCountNeed(assigneeNeed);
+
 
             tUserTask.setPercentage(percentage);
             Integer c = tUserTaskDao.updateById(tUserTask);
