@@ -2,11 +2,17 @@ package com.hengtian.flow.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.utils.PageInfo;
+import com.hengtian.flow.model.TApprovalAgent;
 import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.service.TApprovalAgentService;
 import com.hengtian.flow.service.TRuTaskService;
+import com.rbac.entity.RbacRole;
+import com.rbac.service.PrivilegeService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.activiti.engine.TaskService;
@@ -16,14 +22,12 @@ import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class WorkflowBaseController extends BaseController {
 
@@ -37,6 +41,12 @@ public class WorkflowBaseController extends BaseController {
 
     @Autowired
     private TRuTaskService tRuTaskService;
+
+    @Autowired
+    private TApprovalAgentService tApprovalAgentService;
+
+    @Autowired
+    private PrivilegeService privilegeService;
 
 
     /**
@@ -168,5 +178,40 @@ public class WorkflowBaseController extends BaseController {
         }
 
         return json;
+    }
+
+    /**
+     * 查询代理人
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/21 18:04
+     */
+    public void setAssigneeAndRole(PageInfo pageInfo, String assignee, int appKey){
+        List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, assignee);
+        pageInfo.getCondition().put("assignee", assignee);
+        String roleIds = null;
+        /*EntityWrapper<TApprovalAgent> wrapper = new EntityWrapper<>();
+        wrapper.where("agent={0}", assignee);
+        wrapper.and("status={0}", 0);
+        List<TApprovalAgent> tApprovalAgents = tApprovalAgentService.selectList(wrapper);
+        List<String> assigneeList = Lists.newArrayList();
+        assigneeList.add(assignee);
+
+        Map<String,List<RbacRole>> assigneeRoleMap = Maps.newConcurrentMap();
+        if(CollectionUtils.isNotEmpty(tApprovalAgents)){
+            for(TApprovalAgent agent : tApprovalAgents){
+                assigneeList.add(agent.getClient());
+                List<RbacRole> roleList = privilegeService.getAllRoleByUserId(appKey, agent.getClient());
+                roles.addAll(roleList);
+                assigneeRoleMap.put(agent.getAgent(), roleList);
+            }
+        }
+
+        pageInfo.getCondition().put("assigneeList", assigneeList);*/
+        for(RbacRole role : roles){
+            roleIds = roleIds == null?role.getId()+"":roleIds+""+role.getId();
+        }
+
+        pageInfo.getCondition().put("roleId", roleIds);
     }
 }
