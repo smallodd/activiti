@@ -6,10 +6,14 @@ import com.google.common.collect.Sets;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.service.TApprovalAgentService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TTaskButtonService;
+import com.rbac.entity.RbacRole;
+import com.rbac.service.PrivilegeService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.activiti.engine.RuntimeService;
@@ -48,6 +52,12 @@ public class WorkflowBaseController extends BaseController {
 
     @Autowired
     TTaskButtonService tTaskButtonService;
+
+    @Autowired
+    private TApprovalAgentService tApprovalAgentService;
+
+    @Autowired
+    private PrivilegeService privilegeService;
 
 
     /**
@@ -206,5 +216,40 @@ public class WorkflowBaseController extends BaseController {
 
 
         return  taskNodeResult;
+    }
+
+    /**
+     * 查询代理人
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/21 18:04
+     */
+    public void setAssigneeAndRole(PageInfo pageInfo, String assignee, int appKey){
+        List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, assignee);
+        pageInfo.getCondition().put("assignee", assignee);
+        String roleIds = null;
+        /*EntityWrapper<TApprovalAgent> wrapper = new EntityWrapper<>();
+        wrapper.where("agent={0}", assignee);
+        wrapper.and("status={0}", 0);
+        List<TApprovalAgent> tApprovalAgents = tApprovalAgentService.selectList(wrapper);
+        List<String> assigneeList = Lists.newArrayList();
+        assigneeList.add(assignee);
+
+        Map<String,List<RbacRole>> assigneeRoleMap = Maps.newConcurrentMap();
+        if(CollectionUtils.isNotEmpty(tApprovalAgents)){
+            for(TApprovalAgent agent : tApprovalAgents){
+                assigneeList.add(agent.getClient());
+                List<RbacRole> roleList = privilegeService.getAllRoleByUserId(appKey, agent.getClient());
+                roles.addAll(roleList);
+                assigneeRoleMap.put(agent.getAgent(), roleList);
+            }
+        }
+
+        pageInfo.getCondition().put("assigneeList", assigneeList);*/
+        for(RbacRole role : roles){
+            roleIds = roleIds == null?role.getId()+"":roleIds+""+role.getId();
+        }
+
+        pageInfo.getCondition().put("roleId", roleIds);
     }
 }
