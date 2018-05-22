@@ -13,7 +13,7 @@ import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.extend.TaskAdapter;
-import com.hengtian.flow.model.*;
+import com.hengtian.flow.model.TApprovalAgent;
 import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
@@ -30,7 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ma on 2018/4/12.
