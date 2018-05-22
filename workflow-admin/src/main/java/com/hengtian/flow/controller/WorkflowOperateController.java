@@ -189,19 +189,22 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @param approver     审批人
      * @return
      */
-    @RequestMapping(value = "approveTaskList", method = RequestMethod.POST)
+    @RequestMapping(value = "approveTaskBatch", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("批量审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "批量审批任务接口")
-    public Object approveTaskList(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds, @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "type", required = true) @RequestParam("type") Integer type, @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable, @ApiParam(value = "审批人信息", name = "approver", required = true) @RequestParam("approver") String approver) {
+    public Object approveTaskBatch(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds,
+                                   @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "pass", required = true) @RequestParam("pass") Integer pass,
+                                   @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable,
+                                   @ApiParam(value = "审批人信息", name = "approver", required = true) @RequestParam("approver") String approver) {
         Map map = JSONObject.parseObject(jsonVariable);
         Result result = new Result();
         result.setMsg("审批成功");
-        if (StringUtils.isBlank(taskIds) || type == null) {
+        if (StringUtils.isBlank(taskIds) || pass == null) {
             return renderError("请传正确的参数！", Constant.PARAM_ERROR);
         }
-        String[] strs = taskIds.split(",");
-        for (String taskId : strs) {
+        String[] array = taskIds.split(",");
+        for (String taskId : array) {
 
             Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
             if (task == null) {
@@ -209,20 +212,20 @@ public class WorkflowOperateController extends WorkflowBaseController {
             }
             EntityWrapper wrapper = new EntityWrapper();
             wrapper.where("task_id={0}", task.getId());
-            wrapper.like("approver_real", "%" + approver + "%");
+            wrapper.like("assignee_real", "%" + approver + "%");
             TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
             if (tRuTask == null) {
                 result.setMsg(result.getMsg() + "," + task.getName() + "不属于" + "【" + approver + "】审批失败");
             }
-            if (type.intValue() == 1) {
+            if (pass.intValue() == 1) {
                 taskService.setAssignee(task.getId(), approver + "_Y");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "批量同意");
                 taskService.complete(taskId, map);
-            } else if (type.intValue() == 2) {
+            } else if (pass.intValue() == 2) {
                 taskService.setAssignee(task.getId(), approver + "_N");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "拒绝");
                 taskService.deleteTask(taskId, "批量拒绝");
-            } else if (type.intValue() == 3) {
+            } else if (pass.intValue() == 3) {
                 taskService.setAssignee(task.getId(), approver + "_F");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "流程流转");
                 taskService.complete(taskId, map);
