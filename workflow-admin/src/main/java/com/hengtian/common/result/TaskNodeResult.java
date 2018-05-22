@@ -1,6 +1,7 @@
 package com.hengtian.common.result;
 
 
+import com.hengtian.flow.model.TButton;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.task.Task;
 
@@ -27,7 +28,7 @@ public class TaskNodeResult implements Serializable {
 
     private String processInstanceId;
 
-    private List<String> buttonKeys;
+    private List<TButton> buttons;
 
     public Integer getAssignType() {
         return assignType;
@@ -85,12 +86,12 @@ public class TaskNodeResult implements Serializable {
         this.processInstanceId = processInstanceId;
     }
 
-    public List<String> getButtonKeys() {
-        return buttonKeys;
+    public List<TButton> getButtonKeys() {
+        return buttons;
     }
 
-    public void setButtonKeys(List<String> buttonKeys) {
-        this.buttonKeys = buttonKeys;
+    public void setButtonKeys(List<TButton> buttons) {
+        this.buttons = buttons;
     }
 
     /**

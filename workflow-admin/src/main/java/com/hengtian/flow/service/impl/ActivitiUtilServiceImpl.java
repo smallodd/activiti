@@ -12,6 +12,7 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.RuProcinst;
+import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TTaskButton;
 import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.service.RuProcinstService;
@@ -78,17 +79,27 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             String id=list.get(0).getProcessInstanceId();
             ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
             for (TaskNodeResult taskNodeResult : list) {
-                EntityWrapper entityWrapper = new EntityWrapper();
-                entityWrapper.where("proc_def_key={0}", processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}", taskNodeResult.getTaskDefinedKey());
-                List<TTaskButton> tTaskButtons = tTaskButtonService.selectList(entityWrapper);
-                List<String> li = new ArrayList<>();
-                for(TTaskButton tTaskButton:tTaskButtons){
-                    li.add(tTaskButton.getButtonKey());
-                }
-                taskNodeResult.setButtonKeys(li);
+
+                List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
+
+                taskNodeResult.setButtonKeys(tButtons);
             }
         }
         return  list;
+    }
+
+    public TaskNodeResult setButtons(TaskNodeResult taskNodeResult){
+
+        String id=taskNodeResult.getProcessInstanceId();
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
+
+
+        List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
+
+        taskNodeResult.setButtonKeys(tButtons);
+
+
+        return  taskNodeResult;
     }
     /**
      * 获取当前历史任务节点

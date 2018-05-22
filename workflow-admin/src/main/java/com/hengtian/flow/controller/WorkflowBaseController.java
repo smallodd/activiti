@@ -2,24 +2,28 @@ package com.hengtian.flow.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.flow.model.TButton;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TApprovalAgent;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.TApprovalAgentService;
 import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TTaskButtonService;
 import com.rbac.entity.RbacRole;
 import com.rbac.service.PrivilegeService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.collections.CollectionUtils;
@@ -41,6 +45,12 @@ public class WorkflowBaseController extends BaseController {
 
     @Autowired
     private TRuTaskService tRuTaskService;
+
+    @Autowired
+    RuntimeService runtimeService;
+
+    @Autowired
+    TTaskButtonService tTaskButtonService;
 
     @Autowired
     private TApprovalAgentService tApprovalAgentService;
@@ -178,6 +188,33 @@ public class WorkflowBaseController extends BaseController {
         }
 
         return json;
+    }
+    public List<TaskNodeResult> setButtons(List<TaskNodeResult> list){
+        if(list!=null&&list.size()>0) {
+            String id=list.get(0).getProcessInstanceId();
+            ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
+            for (TaskNodeResult taskNodeResult : list) {
+
+                List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
+
+                taskNodeResult.setButtonKeys(tButtons);
+            }
+        }
+        return  list;
+    }
+
+    public TaskNodeResult setButtons(TaskNodeResult taskNodeResult){
+
+            String id=taskNodeResult.getProcessInstanceId();
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
+
+
+                List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
+
+                taskNodeResult.setButtonKeys(tButtons);
+
+
+        return  taskNodeResult;
     }
 
     /**

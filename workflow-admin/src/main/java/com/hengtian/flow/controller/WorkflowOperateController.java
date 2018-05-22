@@ -2,6 +2,7 @@ package com.hengtian.flow.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.enums.TaskType;
@@ -14,16 +15,16 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.TAskTask;
+import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
-import com.hengtian.flow.service.TAskTaskService;
-import com.hengtian.flow.service.TRuTaskService;
-import com.hengtian.flow.service.TUserTaskService;
-import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.task.TaskDefinition;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -48,7 +49,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
     @Autowired
     TaskService taskService;
-
+    @Autowired
+    private RepositoryService repositoryService;
     @Autowired
     TAskTaskService tAskTaskService;
 
@@ -58,6 +60,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     TRuTaskService tRuTaskService;
     @Autowired
     TUserTaskService tUserTaskService;
+    @Autowired
+    TTaskButtonService tTaskButtonService;
 
     /**
      * 任务创建接口
@@ -248,7 +252,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
         if (task == null) {
             return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
         }
-        return renderSuccess(TaskNodeResult.toTaskNodeResult(task));
+
+
+
+
+        return setButtons( TaskNodeResult.toTaskNodeResult(task));
     }
 
     /**
