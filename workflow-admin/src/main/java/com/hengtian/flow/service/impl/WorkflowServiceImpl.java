@@ -680,6 +680,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //实现跳转
         ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
 
+        TRuTask tRuTask=new TRuTask();
+        EntityWrapper en=new EntityWrapper();
+        en.where("status={0}",-2).andNew("proc_inst_id={0}",instance.getId());
+        tRuTaskService.delete(en);
+
+        tRuTask.setStatus(-2);
+        EntityWrapper entityWrapper1=new EntityWrapper();
+        entityWrapper1.where("task_id={0}",taskId);
+        tRuTaskService.update(tRuTask,entityWrapper1);
+
         boolean customApprover = (boolean) runtimeService.getVariable(instance.getProcessInstanceId(), "customApprover");
 
         if (!customApprover) {
