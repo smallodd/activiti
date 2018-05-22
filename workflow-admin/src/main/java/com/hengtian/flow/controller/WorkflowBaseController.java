@@ -6,9 +6,8 @@ import com.google.common.collect.Sets;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.result.TaskNodeResult;
-import com.hengtian.flow.model.TButton;
 import com.hengtian.common.utils.PageInfo;
-import com.hengtian.flow.model.TApprovalAgent;
+import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.TApprovalAgentService;
 import com.hengtian.flow.service.TRuTaskService;
@@ -26,12 +25,14 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 public class WorkflowBaseController extends BaseController {
 
