@@ -250,9 +250,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
         }
 
-
-
-
         return setButtons( TaskNodeResult.toTaskNodeResult(task));
     }
 
