@@ -2,7 +2,6 @@ package com.hengtian.flow.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.enums.TaskType;
@@ -14,14 +13,15 @@ import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.extend.TaskAdapter;
-import com.hengtian.flow.model.*;
+import com.hengtian.flow.model.TApprovalAgent;
+import com.hengtian.flow.model.TAskTask;
+import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.task.TaskDefinition;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -30,7 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ma on 2018/4/12.
@@ -44,10 +47,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @Autowired
     TaskService taskService;
     @Autowired
-    private RepositoryService repositoryService;
-    @Autowired
     TAskTaskService tAskTaskService;
-
     @Autowired
     WorkflowService workflowService;
     @Autowired
@@ -63,7 +63,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @param processParam
      * @return
      */
-    @RequestMapping(value = "create", method = RequestMethod.POST)
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("接口创建任务操作")
     @ApiOperation(httpMethod = "POST", value = "生成任务接口")
@@ -189,19 +189,22 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @param approver     审批人
      * @return
      */
-    @RequestMapping(value = "approveTaskList", method = RequestMethod.POST)
+    @RequestMapping(value = "approveTaskBatch", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("批量审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "批量审批任务接口")
-    public Object approveTaskList(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds, @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "type", required = true) @RequestParam("type") Integer type, @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable, @ApiParam(value = "审批人信息", name = "approver", required = true) @RequestParam("approver") String approver) {
+    public Object approveTaskBatch(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds,
+                                   @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "pass", required = true) @RequestParam("pass") Integer pass,
+                                   @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable,
+                                   @ApiParam(value = "审批人信息", name = "approver", required = true) @RequestParam("approver") String approver) {
         Map map = JSONObject.parseObject(jsonVariable);
         Result result = new Result();
         result.setMsg("审批成功");
-        if (StringUtils.isBlank(taskIds) || type == null) {
+        if (StringUtils.isBlank(taskIds) || pass == null) {
             return renderError("请传正确的参数！", Constant.PARAM_ERROR);
         }
-        String[] strs = taskIds.split(",");
-        for (String taskId : strs) {
+        String[] array = taskIds.split(",");
+        for (String taskId : array) {
 
             Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
             if (task == null) {
@@ -209,20 +212,20 @@ public class WorkflowOperateController extends WorkflowBaseController {
             }
             EntityWrapper wrapper = new EntityWrapper();
             wrapper.where("task_id={0}", task.getId());
-            wrapper.like("approver_real", "%" + approver + "%");
+            wrapper.like("assignee_real", "%" + approver + "%");
             TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
             if (tRuTask == null) {
                 result.setMsg(result.getMsg() + "," + task.getName() + "不属于" + "【" + approver + "】审批失败");
             }
-            if (type.intValue() == 1) {
+            if (pass.intValue() == 1) {
                 taskService.setAssignee(task.getId(), approver + "_Y");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "批量同意");
                 taskService.complete(taskId, map);
-            } else if (type.intValue() == 2) {
+            } else if (pass.intValue() == 2) {
                 taskService.setAssignee(task.getId(), approver + "_N");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "拒绝");
                 taskService.deleteTask(taskId, "批量拒绝");
-            } else if (type.intValue() == 3) {
+            } else if (pass.intValue() == 3) {
                 taskService.setAssignee(task.getId(), approver + "_F");
                 taskService.addComment(taskId, task.getProcessInstanceId(), "流程流转");
                 taskService.complete(taskId, map);
@@ -246,9 +249,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
         if (task == null) {
             return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
         }
-
-
-
 
         return setButtons( TaskNodeResult.toTaskNodeResult(task));
     }
