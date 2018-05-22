@@ -44,6 +44,14 @@ public class TApprovalAgent {
     @TableField(value = "status")
     private Integer status;
 
+    public String getAgent() {
+        return agent;
+    }
+
+    public void setAgent(String agent) {
+        this.agent = agent;
+    }
+
     public String getId() {
         return id;
     }

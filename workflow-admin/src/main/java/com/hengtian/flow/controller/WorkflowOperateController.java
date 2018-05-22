@@ -14,10 +14,7 @@ import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.extend.TaskAdapter;
-import com.hengtian.flow.model.TAskTask;
-import com.hengtian.flow.model.TButton;
-import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -33,10 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by ma on 2018/4/12.
@@ -61,7 +55,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @Autowired
     TUserTaskService tUserTaskService;
     @Autowired
-    TTaskButtonService tTaskButtonService;
+    TApprovalAgentService tApprovalAgentService;
 
     /**
      * 任务创建接口
@@ -566,5 +560,28 @@ public class WorkflowOperateController extends WorkflowBaseController {
         } else {
             return validate;
         }
+    }
+
+    /**
+     * 委派授权
+     * @param approvalAgent
+     * @return
+     */
+    @RequestMapping(value = "/delegate", method = RequestMethod.POST)
+    @ResponseBody
+    public Object delegate(TApprovalAgent approvalAgent){
+        if(approvalAgent.getBeginTime()==null||approvalAgent.getEndTime()==null||StringUtils.isBlank(approvalAgent.getClient())||StringUtils.isBlank(approvalAgent.getAgent())){
+            return renderError("参数不正确",Constant.PARAM_ERROR);
+        }
+        EntityWrapper entityWrapper=new EntityWrapper();
+        entityWrapper.where("client={0}",approvalAgent.getClient()).andNew("agent={0}",approvalAgent.getAgent()).andNew("status={0}",0);
+        TApprovalAgent tApprovalAgent=tApprovalAgentService.selectOne(entityWrapper);
+        if(tApprovalAgent!=null){
+            return renderError("该代理已经设置过",Constant.AGENT_HAVE_EXIST);
+        }
+        approvalAgent.setStatus(0);
+        tApprovalAgentService.insert(approvalAgent);
+
+        return renderSuccess();
     }
 }
