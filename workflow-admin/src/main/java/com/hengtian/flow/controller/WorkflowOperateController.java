@@ -13,6 +13,7 @@ import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.extend.TaskAdapter;
+import com.hengtian.flow.model.*;
 import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
@@ -29,15 +30,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
+ * Created by ma on 2018/4/12.
  * 所有涉及到操作类的功能都放到这里
- * @author ma
- * @date 2018/4/12.
  */
 @Controller
 @RequestMapping("/rest/flow/operate")
@@ -55,7 +52,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @Autowired
     TUserTaskService tUserTaskService;
     @Autowired
-    TTaskButtonService tTaskButtonService;
+    TApprovalAgentService tApprovalAgentService;
 
     /**
      * 任务创建接口
@@ -83,8 +80,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 result.setCode(Constant.FAIL);
                 result.setSuccess(false);
                 return result;
+
             }
         }
+
     }
 
     /**
@@ -93,11 +92,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @param taskParam
      * @return
      */
-    @RequestMapping(value = "/setAssignee", method = RequestMethod.POST)
+    @RequestMapping(value = "setApprover", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("设置审批人接口")
     @ApiOperation(httpMethod = "POST", value = "设置审批人接口")
-    public Object setAssignee(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
+    public Object setApprover(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
         logger.info("设置审批人接口调用，参数{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         if (StringUtils.isBlank(taskParam.getApprover()) || taskParam.getAssignType() == null || StringUtils.isBlank(taskParam.getTaskType()) || StringUtils.isBlank(taskParam.getTaskId())) {
@@ -155,7 +154,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @param taskParam 任务信息对象 @TaskParam
      * @return
      */
-    @RequestMapping(value = "/approveTask", method = RequestMethod.POST)
+    @RequestMapping(value = "approveTask", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "审批任务接口")
@@ -187,19 +186,19 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @param approver     审批人
      * @return
      */
-    @RequestMapping(value = "/approveTaskBatch", method = RequestMethod.POST)
+    @RequestMapping(value = "approveTaskList", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("批量审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "批量审批任务接口")
-    public Object approveTaskBatch(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds, @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "type", required = true) @RequestParam("type") Integer type, @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable, @ApiParam(value = "审批人信息", name = "approver", required = true) @RequestParam("approver") String approver) {
+    public Object approveTaskList(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds, @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "type", required = true) @RequestParam("type") Integer type, @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable, @ApiParam(value = "审批人信息", name = "approver", required = true) @RequestParam("approver") String approver) {
         Map map = JSONObject.parseObject(jsonVariable);
         Result result = new Result();
         result.setMsg("审批成功");
         if (StringUtils.isBlank(taskIds) || type == null) {
             return renderError("请传正确的参数！", Constant.PARAM_ERROR);
         }
-        String[] array = taskIds.split(",");
-        for (String taskId : array) {
+        String[] strs = taskIds.split(",");
+        for (String taskId : strs) {
 
             Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
             if (task == null) {
@@ -207,7 +206,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             }
             EntityWrapper wrapper = new EntityWrapper();
             wrapper.where("task_id={0}", task.getId());
-            wrapper.like("assignee_real", "%" + approver + "%");
+            wrapper.like("approver_real", "%" + approver + "%");
             TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
             if (tRuTask == null) {
                 result.setMsg(result.getMsg() + "," + task.getName() + "不属于" + "【" + approver + "】审批失败");
@@ -244,6 +243,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
         if (task == null) {
             return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
         }
+
+
+
 
         return setButtons( TaskNodeResult.toTaskNodeResult(task));
     }
@@ -340,6 +342,16 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
         }
         return resultSuccess("成功", taskNodeResults);
+    }
+
+    /**
+     * 获取代办任务总数
+     *
+     * @return
+     */
+    public Object taskCount() {
+
+        return null;
     }
 
     /**
@@ -545,5 +557,28 @@ public class WorkflowOperateController extends WorkflowBaseController {
         } else {
             return validate;
         }
+    }
+
+    /**
+     * 委派授权
+     * @param approvalAgent
+     * @return
+     */
+    @RequestMapping(value = "/delegate", method = RequestMethod.POST)
+    @ResponseBody
+    public Object delegate(TApprovalAgent approvalAgent){
+        if(approvalAgent.getBeginTime()==null||approvalAgent.getEndTime()==null||StringUtils.isBlank(approvalAgent.getClient())||StringUtils.isBlank(approvalAgent.getAgent())){
+            return renderError("参数不正确",Constant.PARAM_ERROR);
+        }
+        EntityWrapper entityWrapper=new EntityWrapper();
+        entityWrapper.where("client={0}",approvalAgent.getClient()).andNew("agent={0}",approvalAgent.getAgent()).andNew("status={0}",0);
+        TApprovalAgent tApprovalAgent=tApprovalAgentService.selectOne(entityWrapper);
+        if(tApprovalAgent!=null){
+            return renderError("该代理已经设置过",Constant.AGENT_HAVE_EXIST);
+        }
+        approvalAgent.setStatus(0);
+        tApprovalAgentService.insert(approvalAgent);
+
+        return renderSuccess();
     }
 }

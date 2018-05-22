@@ -50,7 +50,9 @@ public class Constant {
      */
     public static final String TASK_NOT_BELONG_USER="1007";
 
-
-
+    /**
+     * 委派时重复
+     */
+    public static final String AGENT_HAVE_EXIST="2001";
 
 }
