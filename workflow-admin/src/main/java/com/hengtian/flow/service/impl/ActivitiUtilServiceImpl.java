@@ -13,7 +13,6 @@ import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TButton;
-import com.hengtian.flow.model.TTaskButton;
 import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.service.RuProcinstService;
 import com.hengtian.flow.service.TTaskButtonService;
@@ -25,6 +24,7 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.javax.el.ExpressionFactory;
+import org.activiti.engine.impl.javax.el.PropertyNotFoundException;
 import org.activiti.engine.impl.javax.el.ValueExpression;
 import org.activiti.engine.impl.juel.ExpressionFactoryImpl;
 import org.activiti.engine.impl.juel.SimpleContext;
@@ -269,15 +269,18 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * date 2018/4/27 17:05
      */
     protected List<String> getBeforeTaskDefinitionKeys(TaskInfo task, boolean isAll){
-        List<TaskDefinition> beforeTaskDefinitions = getBeforeTaskDefinitions(task, isAll);
-        if(CollectionUtils.isEmpty(beforeTaskDefinitions)){
-            return null;
+        List<String> beforeTaskDefKeys = null;
+        try {
+            Map<String, FlowNode> nodeMap = findBeforeTask(task, isAll);
+            if(nodeMap != null && nodeMap.size() > 0){
+                beforeTaskDefKeys = Lists.newArrayList();
+                beforeTaskDefKeys.addAll(nodeMap.keySet());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        List<String> beforeTaskDefinitionKeys = Lists.newArrayList();
-        for(TaskDefinition def : beforeTaskDefinitions){
-            beforeTaskDefinitionKeys.add(def.getKey());
-        }
-        return beforeTaskDefinitionKeys;
+
+        return beforeTaskDefKeys;
     }
 
     /**
@@ -324,6 +327,9 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         for(PvmTransition pt : actImpl.getIncomingTransitions()){
             if(activityBehavior instanceof UserTaskActivityBehavior){
                 TaskDefinition taskDefinition = ((UserTaskActivityBehavior) activityBehavior).getTaskDefinition();
+                if(beforeTaskDefinition.contains(beforeTaskDefinition)){
+                    return;
+                }
                 beforeTaskDefinition.add(taskDefinition);
                 if(isAll){
                     if(pt.getSource() != null){
@@ -639,7 +645,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @return
      * @throws Exception
      */
-    protected List <String> findBeforeTask(String taskKey,String processInstanceId ,String processDefinitionId ,boolean isAll) {
+    protected List<String> findBeforeTask(String taskKey,String processInstanceId ,String processDefinitionId ,boolean isAll) {
         Map<String, FlowNode> nodeMap = Maps.newHashMap();
         //查询流程定义。
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
@@ -774,7 +780,12 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             }
             ValueExpression e = factory.createValueExpression(context, conditionExpression, boolean.class);
 
-            return (Boolean) e.getValue(context);
+            try {
+                return (Boolean) e.getValue(context);
+            } catch (PropertyNotFoundException ex) {
+                logger.error("未传入与表达式"+conditionExpression+"对应的参数值", ex);
+                return false;
+            }
         }
 
         return true;

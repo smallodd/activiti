@@ -27,9 +27,7 @@
         $(function() {
             dataGrid = $('#taskCandidateUserClaimGrid').datagrid({
                 url : '${ctx}/workflow/data/user/claim?taskId='+taskId+"&claimType="+claimType+"&system="+system,
-                pagePosition : 'bottom',
                 border:true,
-                pagination : true,
                 singleSelect : false,
                 fitColumns : true,
                 striped: true,

@@ -98,11 +98,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @param taskParam
      * @return
      */
-    @RequestMapping(value = "setApprover", method = RequestMethod.POST)
+    @RequestMapping(value = "setAssignee", method = RequestMethod.POST)
     @ResponseBody
     @SysLog("设置审批人接口")
     @ApiOperation(httpMethod = "POST", value = "设置审批人接口")
-    public Object setApprover(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
+    public Object setAssignee(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
         logger.info("设置审批人接口调用，参数{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         if (StringUtils.isBlank(taskParam.getApprover()) || StringUtils.isBlank(taskParam.getTaskId())) {
