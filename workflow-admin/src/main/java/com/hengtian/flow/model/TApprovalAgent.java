@@ -92,11 +92,5 @@ public class TApprovalAgent {
         this.status = status;
     }
 
-    public String getAgent() {
-        return agent;
-    }
 
-    public void setAgent(String agent) {
-        this.agent = agent;
-    }
 }
