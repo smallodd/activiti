@@ -493,17 +493,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             List <Task> tasks=taskService.createTaskQuery().processInstanceId(t.getProcessInstanceId()).taskDefinitionKey(s).orderByTaskCreateTime().desc().list();
             //
             List<String> list=findBeforeTask(s,t.getProcessInstanceId(),t.getProcessDefinitionId(),true);
-            boolean isCraete=true;
+            boolean isCreate=true;
             if(list!=null&&list.size()>0){
                 for(String key:list){
                     Task task=taskService.createTaskQuery().taskDefinitionKey(key).processInstanceId(t.getProcessInstanceId()).singleResult();
                     if(task!=null){
-                        isCraete=false;
+                        isCreate=false;
                         break;
                     }
                 }
             }
-            if((tasks==null||tasks.size()==0)&&isCraete) {
+            if((tasks==null||tasks.size()==0)&&isCreate) {
                 long count = historyService.createHistoricActivityInstanceQuery().processInstanceId(t.getProcessInstanceId()).activityId(s).finished().count();
                 if (count >= 1) {
                     managementService.executeCommand(new CreateCmd(t.getExecutionId(), s));
