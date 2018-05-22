@@ -20,8 +20,10 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.task.TaskDefinition;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -56,7 +58,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     TUserTaskService tUserTaskService;
     @Autowired
     TApprovalAgentService tApprovalAgentService;
-
+    @Autowired
+    RepositoryService repositoryService;
     /**
      * 任务创建接口
      *
@@ -102,27 +105,27 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object setApprover(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
         logger.info("设置审批人接口调用，参数{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
-        if (StringUtils.isBlank(taskParam.getApprover()) || taskParam.getAssignType() == null || StringUtils.isBlank(taskParam.getTaskType()) || StringUtils.isBlank(taskParam.getTaskId())) {
+        if (StringUtils.isBlank(taskParam.getApprover()) || StringUtils.isBlank(taskParam.getTaskId())) {
             logger.info("参数不合法");
             result.setMsg("参数不合法");
             result.setCode(Constant.PARAM_ERROR);
             return result;
         }
-        if (!TaskType.checkExist(taskParam.getTaskType())) {
-            logger.info("任务类型不存在");
-            result.setCode(Constant.TASK_TYPE_ERROR);
-            result.setMsg("任务类型不正确");
-            result.setObj(TaskType.getTaskTypeList());
-            return result;
-        }
-
-        if (!AssignType.checkExist(taskParam.getAssignType())) {
-            logger.info("审批人类型不存在");
-            result.setCode(Constant.ASSIGN_TYPE_ERROR);
-            result.setMsg("审批人类型不正确");
-            result.setObj(AssignType.getList());
-            return result;
-        }
+//        if (!TaskType.checkExist(taskParam.getTaskType())) {
+//            logger.info("任务类型不存在");
+//            result.setCode(Constant.TASK_TYPE_ERROR);
+//            result.setMsg("任务类型不正确");
+//            result.setObj(TaskType.getTaskTypeList());
+//            return result;
+//        }
+//
+//        if (!AssignType.checkExist(taskParam.getAssignType())) {
+//            logger.info("审批人类型不存在");
+//            result.setCode(Constant.ASSIGN_TYPE_ERROR);
+//            result.setMsg("审批人类型不正确");
+//            result.setObj(AssignType.getList());
+//            return result;
+//        }
         Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
         if (task == null) {
             result.setMsg("任务不存在！");
@@ -135,9 +138,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
         if (!Boolean.valueOf(map.get("customApprover").toString())) {
             return renderError("此任务不可以设置审批人！审批人由操作后台设置", Constant.PARAM_ERROR);
         }
-        TUserTask tUserTask = new TUserTask();
-        tUserTask.setAssignType(taskParam.getAssignType());
-        tUserTask.setTaskType(taskParam.getTaskType());
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+        EntityWrapper entityWrapper=new EntityWrapper();
+        entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version={0}",processInstance.getProcessDefinitionVersion());
+        TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
+
         tUserTask.setCandidateIds(taskParam.getApprover());
         Boolean flag = workflowService.setAssignee(task, tUserTask);
         if (flag) {
