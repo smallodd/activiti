@@ -57,8 +57,7 @@
             columns: [[{
                 width: '60',
                 title: '主键',
-                field: 'id',
-                hidden: true
+                field: 'id'
             }, {
                 width: '100',
                 title: '状态',
