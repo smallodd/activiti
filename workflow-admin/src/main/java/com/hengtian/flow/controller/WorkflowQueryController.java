@@ -110,7 +110,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "催办任务列表")
     @RequestMapping(value = "/rest/task/remind", method = RequestMethod.POST)
     public Object remindTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
-        return remindTaskService.remindTaskList(taskRemindQueryParam);
+        return renderSuccess(remindTaskService.remindTaskList(taskRemindQueryParam));
     }
 
     /**
@@ -126,7 +126,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "被催办任务列表")
     @RequestMapping(value = "/rest/task/reminded", method = RequestMethod.POST)
     public Object remindedTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
-        return remindTaskService.remindedTaskList(taskRemindQueryParam);
+        return renderSuccess(remindTaskService.remindedTaskList(taskRemindQueryParam));
     }
 
     /**
@@ -149,7 +149,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         pageInfo.setCondition(new BeanMap(taskQueryParam));
         workflowService.openTaskList(pageInfo);
 
-        return pageInfo;
+        return renderSuccess(pageInfo);
     }
 
     /**
@@ -172,7 +172,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         pageInfo.setCondition(new BeanMap(taskQueryParam));
         workflowService.closeTaskList(pageInfo);
 
-        return pageInfo;
+        return renderSuccess(pageInfo);
     }
 
     /**
@@ -199,7 +199,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
         workflowService.activeTaskList(pageInfo);
 
-        return pageInfo;
+        return renderSuccess(pageInfo);
     }
 
     /**
@@ -225,7 +225,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
         workflowService.claimTaskList(pageInfo);
 
-        return pageInfo;
+        return renderSuccess(pageInfo);
     }
 
     /**
@@ -242,7 +242,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if (StringUtils.isBlank(taskEnquireParam.getCreateId())) {
             return new Result(false, "createId不能为空");
         }
-        return tAskTaskService.enquireTaskList(taskEnquireParam);
+        return renderSuccess(tAskTaskService.enquireTaskList(taskEnquireParam));
     }
 
 
@@ -260,7 +260,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if (StringUtils.isBlank(taskEnquireParam.getAskUserId())) {
             return new Result(false, "askUserId不能为空");
         }
-        return tAskTaskService.enquiredTaskList(taskEnquireParam);
+        return renderSuccess(tAskTaskService.enquiredTaskList(taskEnquireParam));
     }
 
     /**
@@ -386,7 +386,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
-        return renderSuccess(commentList);
+        return renderSuccess(renderSuccess(commentList));
     }
 
     /**
