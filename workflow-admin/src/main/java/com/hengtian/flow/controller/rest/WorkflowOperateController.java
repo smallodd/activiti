@@ -189,7 +189,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * 批量审批接口
      *
      * @param taskIds      任务id字符串，用","隔开
-     * @param type         类型 1是通过，2是拒绝 3是通过自定义参数流转
+     * @param pass         类型 1是通过，2是拒绝 3是通过自定义参数流转
      * @param jsonVariable 参数map
      * @param approver     审批人
      * @return
