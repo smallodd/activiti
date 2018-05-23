@@ -140,7 +140,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         }
         ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
         EntityWrapper entityWrapper=new EntityWrapper();
-        entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version={0}",processInstance.getProcessDefinitionVersion());
+        entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={0}",processInstance.getProcessDefinitionVersion());
         TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
 
         tUserTask.setCandidateIds(taskParam.getApprover());
