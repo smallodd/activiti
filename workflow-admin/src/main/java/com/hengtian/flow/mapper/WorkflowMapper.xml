@@ -166,7 +166,7 @@
             trp.PROC_INST_STATE AS processInstanceState,
             trp.PROC_DEF_NAME AS processDefinitionName,
             GROUP_CONCAT(trt.ASSIGNEE_REAL) AS assignee,
-            GROUP_CONCAT(art.NAME_) AS taskDefinitionName,
+            GROUP_CONCAT(DISTINCT art.NAME_) AS taskDefinitionName,
             ahp.START_TIME_ AS startTime,
             ahp.END_TIME_ AS endTime
         FROM
@@ -197,13 +197,13 @@
                 AND ahp.START_TIME_ &gt;= #{startTimeFrom}
             </if>
             <if test="startTimeSTo != null">
-                AND AND ahp.START_TIME_ &lt;= #{startTimeSTo}
+                AND ahp.START_TIME_ &lt;= #{startTimeSTo}
             </if>
             <if test="endTimeFrom != null">
-                AND AND ahp.END_TIME_ &gt;= #{endTimeFrom}
+                AND ahp.END_TIME_ &gt;= #{endTimeFrom}
             </if>
             <if test="endTimeTo != null">
-                AND AND ahp.END_TIME_ &lt;= #{endTimeTo}
+                AND ahp.END_TIME_ &lt;= #{endTimeTo}
             </if>
         GROUP by ahp.ID_
     </select>
