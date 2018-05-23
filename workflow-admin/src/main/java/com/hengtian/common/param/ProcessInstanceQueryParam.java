@@ -36,8 +36,9 @@ public class ProcessInstanceQueryParam {
 
     /**
      * 流程状态
+     * 0-进行中；1-完成；2-未完成
      */
-    @ApiModelProperty(value = "流程状态", example="1")
+    @ApiModelProperty(value = "流程状态", example="0-进行中；1-完成；2-未完成")
     private String processInstanceState;
 
     /**

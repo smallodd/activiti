@@ -1,5 +1,10 @@
 package com.hengtian.common.enums;
 
+/**
+ * 流程实力状态枚举类
+ * @author houjinrong@chtwm.com
+ * date 2018/5/23 11:01
+ */
 public enum ProcessStatusEnum {
 
     UNFINISHED(0, "未完成"),
