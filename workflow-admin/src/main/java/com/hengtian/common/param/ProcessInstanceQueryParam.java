@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -18,14 +19,14 @@ public class ProcessInstanceQueryParam {
      * 系统key
      */
     @ApiModelProperty(value = "系统key", required = true, example="1")
-    @NotBlank
+    @NotBlank(message = "系统key不能为空！")
     private String appKey;
 
     /**
      * 创建人id
      */
     @ApiModelProperty(value = "创建人id", required = true, example="H000000")
-    @NotBlank
+    @NotBlank(message = "创建人id不能为空！")
     private String creator;
 
     /**
@@ -81,11 +82,13 @@ public class ProcessInstanceQueryParam {
      * 分页-当前页
      */
     @ApiModelProperty(value = "当前页", required = true, example="1")
+    @NotNull(message = "当前页不能为空！")
     private int page;
     /**
      * 分页-每页条数
      */
     @ApiModelProperty(value = "每页条数", required = true, example="10")
+    @NotNull(message = "每页条数不能为空！")
     private int rows;
 
     public String getAppKey() {
