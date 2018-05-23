@@ -138,7 +138,11 @@
             url: '${ctx}/activiti/startTask',
             data: {"processKey":processKey},
             success: function(json){
-                parent.$.messager.alert('提示', json.msg, 'info');
+                if(json.success) {
+                    parent.$.messager.alert('提示', json.msg, 'info');
+                }else{
+                    parent.$.messager.alert('提示', json.msg, 'error');
+                }
             }
         });
     }

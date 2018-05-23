@@ -18,4 +18,6 @@ public interface TUserTaskService extends IService<TUserTask> {
      * date 2018/5/9 10:28
      */
     Result config(String configJsonStr);
+
+    long selectNotSetAssign(TUserTask tUserTask);
 }

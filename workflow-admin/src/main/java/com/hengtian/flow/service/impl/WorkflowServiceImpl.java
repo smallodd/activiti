@@ -142,6 +142,22 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             result.setCode(Constant.BUSSINESSKEY_EXIST);
             return result;
         } else {
+            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(processParam.getProcessDefinitionKey()).latestVersion().singleResult();
+            if(!processParam.isCustomApprover()){
+                    EntityWrapper entityWrapper = new EntityWrapper();
+                    entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("version_={0}", processDefinition.getVersion()).isNull("candidate_ids");
+                    //查询当前任务任务节点信息
+                    TUserTask query=new TUserTask();
+                    query.setProcDefKey(processParam.getProcessDefinitionKey());
+                    query.setVersion(processDefinition.getVersion());
+                    long count = tUserTaskService.selectNotSetAssign(query);
+                    if(count>0){
+                        result.setCode(Constant.TASK_NOT_SET_APPROVER);
+                        result.setMsg("节点有存在未设置审批人");
+                        result.setSuccess(false);
+                        return result;
+                    }
+            }
             String creator = processParam.getCreatorId();
             variables.put("customApprover", processParam.isCustomApprover());
             variables.put("appKey", processParam.getAppKey());
@@ -152,13 +168,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             //给对应实例生成标题
             runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());
 
-            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(processParam.getProcessDefinitionKey()).latestVersion().singleResult();
+
             //查询创建完任务之后生成的任务信息
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
 
             String taskId = "";
             if (!processParam.isCustomApprover()) {
                 log.info("工作流平台设置审批人");
+
                 for (int i = 0; i < taskList.size(); i++) {
                     Task task = taskList.get(i);
                     taskId += task.getId();

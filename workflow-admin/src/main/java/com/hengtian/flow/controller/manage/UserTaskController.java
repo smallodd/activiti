@@ -148,7 +148,7 @@ public class UserTaskController extends BaseController{
     @ResponseBody
     public Object config(String taskJson) {
 		try {
-			return tUserTaskService.config(taskJson);
+			return JSONObject.toJSONString(tUserTaskService.config(taskJson));
 		} catch (Exception e) {
 			logger.error("任务节点配置失败", e);
 			return renderError("任务节点配置");

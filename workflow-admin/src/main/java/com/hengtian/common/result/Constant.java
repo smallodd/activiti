@@ -49,6 +49,10 @@ public class Constant {
      * 任务不属于该用户
      */
     public static final String TASK_NOT_BELONG_USER="1007";
+    /**
+     * 审批人未设置
+     */
+    public static final String TASK_NOT_SET_APPROVER="1008";
 
     /**
      * 委派时重复
