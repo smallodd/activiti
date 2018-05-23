@@ -10,6 +10,8 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
 import org.activiti.engine.task.Task;
 
+import java.util.Map;
+
 public interface WorkflowService extends IService<TaskResult> {
     /**
      * 申请任务
@@ -260,4 +262,13 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/4/23 15:59
      */
     void processInstanceList(PageInfo pageInfo);
+
+    /**
+     * 待处理任务总数（包括待认领和待办任务）
+     *
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 16:01
+     */
+    Long activeTaskCount(Map<String,Object> paraMap);
 }

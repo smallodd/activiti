@@ -1380,4 +1380,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
     }
+
+    /**
+     * 待处理任务总数（包括待认领和待办任务）
+     *
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 16:01
+     */
+    @Override
+    public Long activeTaskCount(Map<String,Object> paraMap){
+        return workflowDao.activeTaskCount(paraMap);
+    }
 }

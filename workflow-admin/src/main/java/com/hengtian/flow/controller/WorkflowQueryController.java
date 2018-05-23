@@ -1,6 +1,7 @@
 package com.hengtian.flow.controller;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.hengtian.common.base.BaseResponse;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.operlog.SysLog;
@@ -12,6 +13,8 @@ import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TWorkDetailService;
 import com.hengtian.flow.service.WorkflowService;
+import com.rbac.entity.RbacRole;
+import com.rbac.service.PrivilegeService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.activiti.bpmn.model.BpmnModel;
@@ -41,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ma on 2018/4/17.
@@ -55,27 +59,22 @@ public class WorkflowQueryController extends WorkflowBaseController {
     private RemindTaskService remindTaskService;
     @Autowired
     private TAskTaskService tAskTaskService;
-
     @Autowired
     private WorkflowService workflowService;
-
     @Autowired
     private HistoryService historyService;
-
     @Autowired
     private RepositoryService repositoryService;
-
     @Autowired
     private ProcessEngineConfiguration processEngineConfiguration;
-
     @Autowired
     private ProcessEngineFactoryBean processEngine;
-
     @Autowired
     private TaskService taskService;
-
     @Autowired
     private TWorkDetailService tWorkDetailService;
+    @Autowired
+    private PrivilegeService privilegeService;
 
 
     /**
@@ -143,7 +142,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "未办任务列表")
     @RequestMapping(value = "/rest/task/open", method = RequestMethod.POST)
     public Object openTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() != null){
+        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
@@ -166,7 +165,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "已办任务列表")
     @RequestMapping(value = "/rest/task/close", method = RequestMethod.POST)
     public Object closeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() != null){
+        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
@@ -189,7 +188,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "待处理任务列表")
     @RequestMapping(value = "/rest/task/active", method = RequestMethod.POST)
     public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() != null){
+        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
 
@@ -216,7 +215,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "待签收任务列表")
     @RequestMapping(value = "/rest/task/claim", method = RequestMethod.POST)
     public Object claimTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
-        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() != null){
+        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
@@ -411,7 +410,6 @@ public class WorkflowQueryController extends WorkflowBaseController {
         return renderSuccess(commentList);
     }
 
-
     /**
      * 获取父级任务节点
      *
@@ -428,4 +426,38 @@ public class WorkflowQueryController extends WorkflowBaseController {
         return renderSuccess(workflowService.getParentNodes(taskId, userId, isAll != 0));
     }
 
+    /**
+     * 待处理任务列表
+     *
+     * @param taskQueryParam 任务查询条件实体类
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/23 16:35
+     */
+    @ResponseBody
+    @SysLog("待处理任务总数")
+    @ApiOperation(httpMethod = "POST", value = "待处理任务总数")
+    @RequestMapping(value = "/rest/task/active/count", method = RequestMethod.POST)
+    public Object activeTaskCount(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
+            return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
+        }
+
+        Map<String,Object> paraMap = Maps.newHashMap();
+        BeanMap beanMap = new BeanMap(taskQueryParam);
+        paraMap.putAll(beanMap);
+
+        List<RbacRole> roles = privilegeService.getAllRoleByUserId(taskQueryParam.getAppKey(), taskQueryParam.getAssignee());
+        String roleId = null;
+
+        for(RbacRole role : roles){
+            roleId = roleId == null?role.getId()+"":roleId+""+role.getId();
+        }
+
+        if(StringUtils.isNotBlank(roleId)){
+            paraMap.put("roleId", roleId);
+        }
+        Long count = workflowService.activeTaskCount(paraMap);
+        return renderSuccess(count);
+    }
 }
