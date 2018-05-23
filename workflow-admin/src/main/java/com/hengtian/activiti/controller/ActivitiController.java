@@ -123,7 +123,7 @@ public class ActivitiController extends BaseController{
 		processParam.setAppKey(Integer.valueOf(list.get(0).getAppKey()));
 		processParam.setTitle("模拟测试任务title"+UUID.randomUUID().toString());
 		Result result=workflowService.startProcessInstance(processParam);
-		result.setMsg("模拟开启成功！");
+
     	return result;
 	}
 	

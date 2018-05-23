@@ -139,4 +139,9 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
         }
         return new Result(true, "配置成功！");
     }
+
+    @Override
+    public long selectNotSetAssign(TUserTask tUserTask) {
+        return tUserTaskDao.selectNotSetAssign(tUserTask);
+    }
 }

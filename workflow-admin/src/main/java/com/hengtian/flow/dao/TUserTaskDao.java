@@ -10,4 +10,5 @@ import com.hengtian.flow.model.TUserTask;
  */
 public interface TUserTaskDao extends BaseMapper<TUserTask> {
 
+    long selectNotSetAssign(TUserTask tUserTask);
 }
