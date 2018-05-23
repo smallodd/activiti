@@ -27,7 +27,7 @@ import java.text.ParseException;
  * @author houjinrong@chtwm.com
  * date 2018/5/23 11:28
  */
-@ControllerAdvice
+//@ControllerAdvice
 @Slf4j
 public class WebExceptionHandler {
 

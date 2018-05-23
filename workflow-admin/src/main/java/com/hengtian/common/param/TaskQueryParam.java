@@ -1,6 +1,7 @@
 package com.hengtian.common.param;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -10,6 +11,18 @@ import org.springframework.format.annotation.DateTimeFormat;
  */
 public class TaskQueryParam {
 
+    /**
+     * 系统定义的key
+     */
+    @ApiModelProperty(value = "系统定义的key", required = true, example="1")
+    @NotBlank(message = "系统定义的key不能为空")
+    private Integer appKey;
+    /**
+     * 审批人id
+     */
+    @ApiModelProperty(value = "审批人id", example="H000000")
+    @NotBlank(message = "审批人id不能为空")
+    private String assignee;
     /**
      * 创建人id
      */
@@ -40,13 +53,8 @@ public class TaskQueryParam {
     /**
      * 流程名称
      */
-    @ApiModelProperty(value = "流程实例名称", example="110")
+    @ApiModelProperty(value = "流程定义名称", example="110")
     private String procDefName;
-    /**
-     * 审批人id
-     */
-    @ApiModelProperty(value = "审批人id", example="H000000")
-    private String assignee;
     /**
      * 创建任务的标题
      */
@@ -57,11 +65,6 @@ public class TaskQueryParam {
      */
     @ApiModelProperty(value = "任务名称", example="任务名称")
     private String taskName;
-    /**
-     * 系统定义的key
-     */
-    @ApiModelProperty(value = "系统定义的key", required = true, example="1")
-    private Integer appKey;
     /**
      * 业务系统主键
      */
@@ -79,7 +82,7 @@ public class TaskQueryParam {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private String createTimeStart;
     /**
-     * 创建日期-结
+     * 创建日期-结束
      */
     @ApiModelProperty(value = "创建日期-结束", required = true, example="2018-05-30")
     @DateTimeFormat(pattern="yyyy-MM-dd")
@@ -222,4 +225,6 @@ public class TaskQueryParam {
     public void setProcInstState(Integer procInstState) {
         this.procInstState = procInstState;
     }
+
+
 }

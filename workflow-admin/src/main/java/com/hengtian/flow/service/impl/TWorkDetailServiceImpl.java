@@ -1,9 +1,11 @@
 package com.hengtian.flow.service.impl;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.hengtian.common.param.WorkDetailParam;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.dao.TWorkDetailDao;
 import com.hengtian.flow.model.TWorkDetail;
 import com.hengtian.flow.service.TWorkDetailService;
@@ -23,16 +25,17 @@ public class TWorkDetailServiceImpl extends ServiceImpl<TWorkDetailDao, TWorkDet
     /**
      * 操作流程详细信息
      *
-     * @param workDetailParam
+     * @param processInstanceId 流程实例
+     * @param operator 操作人
      * @return
      */
     @Override
-    public PageInfo operateDetailInfo(WorkDetailParam workDetailParam) {
-        PageInfo pageInfo = new PageInfo(workDetailParam.getPageNum(), workDetailParam.getPageSize());
-        Page<TWorkDetail> page = new Page(workDetailParam.getPageNum(), workDetailParam.getPageSize());
-        List<TWorkDetail> list = tWorkDetailDao.operateDetailList(page, workDetailParam);
-        pageInfo.setRows(list);
-        pageInfo.setTotal(page.getTotal());
-        return pageInfo;
+    public List<TWorkDetail> operateDetailInfo(String processInstanceId, String operator) {
+        EntityWrapper<TWorkDetail> wrapper = new EntityWrapper();
+        wrapper.where("proc_inst_id={0}", processInstanceId);
+        if(StringUtils.isNotBlank(operator)){
+            wrapper.and("operator={0}", operator);
+        }
+        return tWorkDetailDao.selectList(wrapper);
     }
 }

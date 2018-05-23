@@ -2,6 +2,7 @@ package com.hengtian.flow.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignType;
@@ -29,10 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class WorkflowBaseController extends BaseController {
 
@@ -249,7 +247,8 @@ public class WorkflowBaseController extends BaseController {
         for(RbacRole role : roles){
             roleIds = roleIds == null?role.getId()+"":roleIds+""+role.getId();
         }
-
-        pageInfo.getCondition().put("roleId", roleIds);
+        Map<String, Object> condition = Maps.newHashMap(pageInfo.getCondition());
+        condition.put("roleId", roleIds);
+        pageInfo.setCondition(condition);
     }
 }
