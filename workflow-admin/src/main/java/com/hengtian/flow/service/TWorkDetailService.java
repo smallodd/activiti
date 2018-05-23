@@ -1,9 +1,9 @@
 package com.hengtian.flow.service;
 
 import com.baomidou.mybatisplus.service.IService;
-import com.hengtian.common.param.WorkDetailParam;
-import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TWorkDetail;
+
+import java.util.List;
 
 /**
  * 操作流程详细信息
@@ -14,8 +14,9 @@ public interface TWorkDetailService extends IService<TWorkDetail> {
     /**
      * 操作流程详细信息
      *
-     * @param workDetailParam
+     * @param processInstanceId 流程实例
+     * @param operator 操作人
      * @return
      */
-    PageInfo operateDetailInfo(WorkDetailParam workDetailParam);
+    List<TWorkDetail> operateDetailInfo(String processInstanceId, String operator);
 }

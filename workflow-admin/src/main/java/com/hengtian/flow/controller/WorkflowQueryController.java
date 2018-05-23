@@ -282,15 +282,17 @@ public class WorkflowQueryController extends WorkflowBaseController {
     /**
      * 操作流程详细信息
      *
-     * @param workDetailParam 任务查询条件
+     * @param processInstanceId 流程实例
+     * @param operator 操作人
      * @return
      */
     @ResponseBody
     @SysLog("操作流程详细信息")
     @ApiOperation(httpMethod = "POST", value = "操作流程详细信息")
     @RequestMapping(value = "/rest/task/operateDetailInfo", method = RequestMethod.POST)
-    public Object operateDetailInfo(@ApiParam(value = "任务查询条件", name = "workDetailParam", required = true) @RequestBody WorkDetailParam workDetailParam) {
-        return tWorkDetailService.operateDetailInfo(workDetailParam);
+    public Object operateDetailInfo(@ApiParam(value = "任务查询条件", name = "processInstanceId", required = true) @RequestParam String processInstanceId,
+                                    @ApiParam(value = "任务查询条件", name = "operator", required = false) @RequestParam String operator) {
+        return renderSuccess(tWorkDetailService.operateDetailInfo(processInstanceId, operator));
     }
 
     /**
@@ -380,13 +382,13 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("流程论列表评")
     @ApiOperation(httpMethod = "POST", value = "评论列表表评")
     @RequestMapping(value = "/rest/process/comment", method = RequestMethod.POST)
-    public Object processCommentList(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) String processInstanceId) {
+    public Object processCommentList(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @RequestParam String processInstanceId) {
         logger.info("----------------查询审批意见列表开始,入参 processInstanceId：{}----------------", processInstanceId);
         if (StringUtils.isBlank(processInstanceId)) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
-        return renderSuccess(renderSuccess(commentList));
+        return renderSuccess(commentList);
     }
 
     /**
@@ -401,7 +403,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("任务评论列表")
     @ApiOperation(httpMethod = "POST", value = "任务评论列表")
     @RequestMapping(value = "/rest/task/comment", method = RequestMethod.POST)
-    public Object taskCommentList(@ApiParam(value = "任务ID", name = "taskId", required = true) String taskId) {
+    public Object taskCommentList(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId) {
         logger.info("----------------查询审批意见列表开始,入参 taskId：{}----------------", taskId);
         if (StringUtils.isBlank(taskId)) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
