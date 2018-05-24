@@ -136,7 +136,7 @@ public class AskController extends BaseController {
      * @param targetTaskDefKey  目标任务节点KEY
      * @return
      */
-    @RequestMapping(value = "askTask")
+    @PostMapping(value = "askTask")
     @ResponseBody
     public Result askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey) {
         try {
