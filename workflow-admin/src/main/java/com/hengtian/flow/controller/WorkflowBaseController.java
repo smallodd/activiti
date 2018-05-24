@@ -162,7 +162,7 @@ public class WorkflowBaseController extends BaseController {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("id", t.getAssignee());
             jsonObject.put("text", t.getAssigneeName());
-            if(AssignType.ROLE.code.equals(t.getAssigneeType())){
+            if(AssignType.ROLE.code.equals(t.getAssigneeType()) || AssignType.EXPR.code.equals(t.getAssigneeType())){
                 if(StringUtils.isNotBlank(t.getAssigneeReal())){
                     String[] array = t.getAssigneeReal().split(",");
                     for(String a : array){
@@ -181,7 +181,7 @@ public class WorkflowBaseController extends BaseController {
                 if(jsonObject.containsKey("children")){
                     json.add(jsonObject);
                 }
-            }else {
+            } else {
                 json.add(jsonObject);
             }
         }
