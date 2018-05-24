@@ -12,10 +12,7 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.extend.TaskAdapter;
-import com.hengtian.flow.model.TApprovalAgent;
-import com.hengtian.flow.model.TAskTask;
-import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -32,10 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by ma on 2018/4/12.
@@ -62,6 +56,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     RepositoryService repositoryService;
     @Autowired
     RuntimeService runtimeService;
+    @Autowired
+    TWorkDetailService tWorkDetailService;
     /**
      * 任务创建接口
      *
@@ -559,7 +555,19 @@ public class WorkflowOperateController extends WorkflowBaseController {
         if (validate.isSuccess()) {
             TaskAdapter taskAdapter = new TaskAdapter();
             try {
-                return taskAdapter.taskAction(taskActionParam);
+                Result result = taskAdapter.taskAction(taskActionParam);
+                //存储操作记录
+                if(result.isSuccess()){
+                    TWorkDetail tWorkDetail = new TWorkDetail();
+                    tWorkDetail.setCreateTime(new Date());
+                    tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】进行了" + TaskActionEnum.getDesc(taskActionParam.getActionType()) + "操作");
+                    tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
+                    tWorkDetail.setOperator(taskActionParam.getUserId());
+                    tWorkDetail.setTaskId(taskActionParam.getTaskId());
+
+                    tWorkDetailService.insert(tWorkDetail);
+                }
+                return result;
             } catch (Exception e) {
                 logger.error("", e);
                 return renderError("操作失败");

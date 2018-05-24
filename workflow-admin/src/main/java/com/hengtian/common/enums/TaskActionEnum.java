@@ -28,9 +28,35 @@ public enum TaskActionEnum {
 
     public String desc;
 
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
     TaskActionEnum(String value, String desc){
         this.value = value;
         this.desc = desc;
+    }
+
+    public static String getDesc(String value){
+        for(TaskActionEnum actionEnum : TaskActionEnum.values()){
+            if(actionEnum.getValue().equals(value)){
+                return actionEnum.getDesc();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -54,7 +80,7 @@ public enum TaskActionEnum {
     }
 
     public static void main(String[] args) {
-        System.out.println(contains("activate"));
+        System.out.println(getDesc("activate"));
         System.out.println(TaskActionEnum.valuesToString());
     }
 
