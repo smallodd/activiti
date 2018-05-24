@@ -1264,6 +1264,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             con.append(" AND art.ASSIGNEE_ LIKE #{assignee} ");
             assignee = assignee + "_";
         } else if (TaskListEnum.CLAIM.type.equals(type)) {
+            con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS = " + TaskStatusEnum.BEFORESIGN.status);
             con.append(" AND (");
             con.append(" (trt.ASSIGNEE_TYPE =" + AssignType.PERSON.code + " AND trt.ASSIGNEE = #{assignee}) ");
@@ -1273,6 +1274,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
             con.append(")");
         } else if (TaskListEnum.ACTIVE.type.equals(type)) {
+            con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS IN (" + TaskStatusEnum.BEFORESIGN.status + "," + TaskStatusEnum.OPEN.status + ") ");
             con.append(" AND (");
             con.append(" (trt.ASSIGNEE_TYPE =" + AssignType.PERSON.code + "trt.ASSIGNEE = #{assignee}) ");
@@ -1282,6 +1284,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
             con.append(")");
         } else {
+            con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS=" + TaskStatusEnum.OPEN.status);
             con.append(" AND trt.ASSIGNEE_REAL LIKE #{assignee} ");
         }
@@ -1366,10 +1369,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (TaskListEnum.CLOSE.type.equals(type)) {
             con.append(" AND art.DELETE_REASON_ IN ('completed','refused') ");
         } else if (TaskListEnum.CLAIM.type.equals(type)) {
+            con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS = " + TaskStatusEnum.BEFORESIGN.status);
         } else if (TaskListEnum.ACTIVE.type.equals(type)) {
+            con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS IN (" + TaskStatusEnum.BEFORESIGN.status + "," + TaskStatusEnum.OPEN.status + ") ");
         } else {
+            con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS=" + TaskStatusEnum.OPEN.status);
         }
 

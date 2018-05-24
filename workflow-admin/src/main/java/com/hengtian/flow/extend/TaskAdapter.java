@@ -46,10 +46,10 @@ public class TaskAdapter implements TaskManager {
             return WorkflowService.taskCancel(taskActionParam.getUserId(), taskActionParam.getProcessInstanceId());
         } else if (TaskActionEnum.SUSPEND.value.equals(actionType)) {
             //挂起流程
-            return WorkflowService.processSuspend(taskActionParam.getUserId(), taskActionParam.getTaskId());
+            return WorkflowService.processSuspend(taskActionParam.getUserId(), taskActionParam.getProcessInstanceId());
         } else if (TaskActionEnum.ACTIVATE.value.equals(actionType)) {
             //激活流程
-            return WorkflowService.processActivate(taskActionParam.getUserId(), taskActionParam.getTaskId());
+            return WorkflowService.processActivate(taskActionParam.getUserId(), taskActionParam.getProcessInstanceId());
         }
 
         return new Result();

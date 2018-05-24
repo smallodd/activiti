@@ -1,4 +1,4 @@
-package com.hengtian.flow.controller;
+package com.hengtian.flow.controller.rest;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -11,6 +11,7 @@ import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
+import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TWorkDetailService;

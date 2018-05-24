@@ -1,10 +1,8 @@
-package com.hengtian.flow.controller;
+package com.hengtian.flow.controller.rest;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskActionEnum;
-import com.hengtian.common.enums.TaskType;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskActionParam;
@@ -12,6 +10,7 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.TApprovalAgent;
 import com.hengtian.flow.model.TAskTask;
@@ -21,6 +20,7 @@ import com.hengtian.flow.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -60,6 +60,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     TApprovalAgentService tApprovalAgentService;
     @Autowired
     RepositoryService repositoryService;
+    @Autowired
+    RuntimeService runtimeService;
     /**
      * 任务创建接口
      *
