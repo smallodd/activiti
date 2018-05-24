@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.*;
@@ -20,6 +21,7 @@ import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.CreateCmd;
 import com.hengtian.common.workflow.cmd.JumpCmd;
+import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
@@ -29,6 +31,8 @@ import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
 import com.rbac.service.UserService;
+import com.user.entity.emp.Emp;
+import com.user.service.emp.EmpService;
 import org.activiti.bpmn.model.FlowNode;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
@@ -108,6 +112,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     private WorkflowDao workflowDao;
 
+    @Autowired
+    private EmpService empService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result startProcessInstance(ProcessParam processParam) {
@@ -183,18 +190,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                     //查询当前任务任务节点信息
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+                    //将流程创建人暂存到expr字段
+                    tUserTask.setExpr(creator);
                     boolean flag = setAssignee(task, tUserTask);
-                    if (!flag) {
-                        //备注
-                        taskService.addComment(task.getId(), processInstance.getProcessInstanceId(), "生成扩展任务时失败，删除任务！");
-                        deleteProcessInstance(processInstance.getProcessInstanceId(), "");
-                        //(顺序不能换)
-                        historyService.deleteHistoricProcessInstance(processInstance.getProcessInstanceId());
-
-                        result.setSuccess(false);
-                        result.setCode(Constant.FAIL);
-                        result.setMsg("生成扩展任务失败，删除其他信息");
-                        return result;
+                    if(!flag){
+                        throw new WorkFlowException("设置审批人异常");
                     }
                 }
                 result.setSuccess(true);
@@ -282,7 +282,59 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             //判断如果是非人员审批，需要认领之后才能审批
             if (AssignType.ROLE.code.intValue() == tUserTask.getAssignType().intValue()) {
                 tRuTask.setStatus(-1);
-            } else {
+            } else if(AssignType.EXPR.code.intValue() == tUserTask.getAssignType().intValue()){
+                //表达式
+                List<Emp> empLeader = Lists.newArrayList();
+                String assigneeReal = null;
+                if(ExprEnum.LEADER.expr.equals(assignee)){
+                    //上级节点领导
+                    List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(task, false);
+                    if(CollectionUtils.isNotEmpty(beforeTaskDefKeys)){
+                        for(String taskDefKey : beforeTaskDefKeys){
+                            HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list().get(0);
+                            String str = historicTaskInstance.getAssignee().replaceAll("_Y","").replaceAll("_N","");
+                            for(String a : str.split(",")){
+                                List<Emp> emps = empService.selectDirectSupervisorByCode(a);
+                                if(CollectionUtils.isNotEmpty(emps)){
+                                    empLeader.addAll(emps);
+                                }
+                            }
+                        }
+                    }
+                }else if(ExprEnum.LEADER_CREATOR.expr.equals(assignee)){
+                    //流程创建人领导
+                    String creator = tUserTask.getExpr();
+                    if(StringUtils.isBlank(creator)){
+                        EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
+                        wrapper.where("proc_inst_id={0}", task.getProcessInstanceId());
+                        RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
+                        creator = ruProcinst.getCreator();
+                    }
+                    List<Emp> emps = empService.selectDirectSupervisorByCode(creator);
+                    if(CollectionUtils.isNotEmpty(emps)){
+                        empLeader.addAll(emps);
+                    }
+                }
+
+                if(CollectionUtils.isNotEmpty(empLeader)){
+                    Set<String> assigneeSet = Sets.newHashSet();
+                    for(Emp emp : empLeader){
+                        assigneeSet.add(emp.getCode());
+                    }
+                    assigneeReal = StringUtils.join(assigneeSet.toArray(), ",");
+                    tRuTask.setAssigneeReal(assigneeReal);
+
+                    JSONObject approveCountJson = new JSONObject();
+                    approveCountJson.put(TaskVariable.APPROVE_COUNT_TOTAL.value, assigneeSet.size());
+                    approveCountJson.put(TaskVariable.APPROVE_COUNT_NEED.value, assigneeSet.size());
+                    approveCountJson.put(TaskVariable.APPROVE_COUNT_NOW.value, 0);
+                    approveCountJson.put(TaskVariable.APPROVE_COUNT_REFUSE.value, 0);
+
+                    taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.APPROVE_COUNT.value,approveCountJson.toJSONString());
+                }else{
+                    return false;
+                }
+            } else{
                 tRuTask.setStatus(0);
                 tRuTask.setAssigneeReal(assignee);
             }
@@ -305,7 +357,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Object approveTask(Task task, TaskParam taskParam) {
+    public Object approveTask(Task task, TaskParam taskParam){
+        if(StringUtils.isBlank(taskParam.getApprover())){
+            return new Result("审批人不合法");
+        }
 
         log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
@@ -325,6 +380,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Map map = taskService.getVariables(task.getId());
         map.putAll(variables);
         TRuTask ruTask = tRuTaskService.selectOne(entityWrapper);
+        if(ruTask.getAssigneeReal().indexOf(taskParam.getApprover()) < 0){
+            return new Result("审批人不合法");
+        }
         if (ruTask == null) {
             result.setMsg("该用户没有操作此任务的权限");
             result.setCode(Constant.TASK_NOT_BELONG_USER);
@@ -365,7 +423,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             tWorkDetail.setDetail("工号【" + taskParam.getApprover() + "】审批了该任务，审批意见是【" + taskParam.getComment() + "】");
             workDetailService.insert(tWorkDetail);
 
-            if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())) {
+            if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignType.EXPR.code.equals(tUserTask.getAssignType())) {
                 //会签
                 JSONObject approveCountJson = new JSONObject();
                 String approveCount = (String)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.APPROVE_COUNT.value);
@@ -481,6 +539,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         //查询当前任务任务节点信息
                         TUserTask tUserTask1 = tUserTaskService.selectOne(tuserWrapper);
                         boolean flag = setAssignee(task1, tUserTask1);
+                        if(!flag){
+                            throw new WorkFlowException("设置审批人异常");
+                        }
                     }
                 }
             }

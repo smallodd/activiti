@@ -3,7 +3,7 @@ package com.hengtian.common.workflow.exception;
 /**
  * Created by ma on 2018/4/12.
  */
-public class WorkFlowException extends Exception {
+public class WorkFlowException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**

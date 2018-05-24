@@ -39,28 +39,10 @@ public class RuProcinst {
     @TableField(value = "creator_dept")
     private String creatorDept;
     /**
-     * 最后审批人
-     */
-    @TableField(value = "assignee")
-    private String assignee;
-    /**
      * 流程名称
      */
     @TableField(value = "proc_def_name")
     private String procDefName;
-
-    /**
-     * 任务节点key
-     */
-    @TableField(value = "task_def_key")
-    private String taskDefKey;
-
-    /**
-     * 任务节点名称
-     */
-    @TableField(value = "task_def_name")
-    private String taskDefName;
-
     /**
      * 流程实例状态：0-未完成；1-完成
      */
@@ -117,28 +99,12 @@ public class RuProcinst {
         this.creatorDept = creatorDept;
     }
 
-    public String getAssignee() {
-        return assignee;
-    }
-
-    public void setAssignee(String assignee) {
-        this.assignee = assignee;
-    }
-
     public String getProcDefName() {
         return procDefName;
     }
 
     public void setProcDefName(String procDefName) {
         this.procDefName = procDefName;
-    }
-
-    public String getTaskDefName() {
-        return taskDefName;
-    }
-
-    public void setTaskDefName(String taskDefName) {
-        this.taskDefName = taskDefName;
     }
 
     public String getProcInstState() {
@@ -149,11 +115,4 @@ public class RuProcinst {
         this.procInstState = procInstState;
     }
 
-    public String getTaskDefKey() {
-        return taskDefKey;
-    }
-
-    public void setTaskDefKey(String taskDefKey) {
-        this.taskDefKey = taskDefKey;
-    }
 }
