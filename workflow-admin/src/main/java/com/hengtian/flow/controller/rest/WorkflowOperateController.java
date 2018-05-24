@@ -2,6 +2,7 @@ package com.hengtian.flow.controller.rest;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.google.common.collect.Lists;
 import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
@@ -22,6 +23,7 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -550,7 +552,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
         }
 
         //校验操作人权限
-
+        Result re = validateTask(taskActionParam);
+        if(!re.isSuccess()){
+            return re;
+        }
         //参数校验
         Result validate = taskActionParam.validate();
         if (validate.isSuccess()) {
@@ -599,5 +604,39 @@ public class WorkflowOperateController extends WorkflowBaseController {
         tApprovalAgentService.insert(approvalAgent);
 
         return renderSuccess();
+    }
+
+    private Result validateTask(TaskActionParam taskActionParam){
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(taskActionParam.getProcessInstanceId()).list();
+        if(CollectionUtils.isNotEmpty(taskList)){
+            if(StringUtils.isNotBlank(taskActionParam.getTaskId())){
+                boolean b = false;
+                for(Task t : taskList){
+                    if(t.getId().equals(taskActionParam.getTaskId())){
+                        b = true;
+                        break;
+                    }
+                }
+                if(!b){
+                    return new Result("流程实例ID与任务ID不对应");
+                }
+                EntityWrapper<TRuTask> wrapper = new EntityWrapper();
+                wrapper.where("task_id={0}", taskActionParam.getTaskId());
+                List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+                List<String> assigneList = Lists.newArrayList();
+                for(TRuTask rt : tRuTasks){
+                    if(StringUtils.isNotBlank(rt.getAssigneeReal())){
+                        assigneList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
+                    }
+                }
+                if(!assigneList.contains(taskActionParam.getUserId())){
+                    return new Result("用户【"+taskActionParam.getUserId()+"】没有权限进行该操作");
+                }
+            }
+        }else{
+            return new Result("无效的流程实例ID");
+        }
+
+        return new Result(true,"");
     }
 }
