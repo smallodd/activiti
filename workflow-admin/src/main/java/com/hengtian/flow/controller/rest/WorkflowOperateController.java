@@ -623,13 +623,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 EntityWrapper<TRuTask> wrapper = new EntityWrapper();
                 wrapper.where("task_id={0}", taskActionParam.getTaskId());
                 List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
-                List<String> assigneList = Lists.newArrayList();
+                List<String> assigneeList = Lists.newArrayList();
                 for(TRuTask rt : tRuTasks){
                     if(StringUtils.isNotBlank(rt.getAssigneeReal())){
-                        assigneList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
+                        assigneeList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
                     }
                 }
-                if(!assigneList.contains(taskActionParam.getUserId())){
+                if(!assigneeList.contains(taskActionParam.getUserId())){
                     return new Result("用户【"+taskActionParam.getUserId()+"】没有权限进行该操作");
                 }
             }
