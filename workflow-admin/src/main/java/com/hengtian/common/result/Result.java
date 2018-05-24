@@ -1,5 +1,7 @@
 package com.hengtian.common.result;
 
+import com.common.common.CodeConts;
+
 import java.io.Serializable;
 
 /**
@@ -8,6 +10,18 @@ import java.io.Serializable;
 public class Result implements Serializable {
 
     private static final long serialVersionUID = 5576237395711742681L;
+
+
+    /**
+     * 成功返回值
+     */
+    private final static String SUCCESS_CODE = CodeConts.SUCCESS;
+
+    /**
+     * 失败默认返回值
+     */
+    private final static String FAILED_CODE = CodeConts.FAILURE;
+
     /**
      * 是否成功 ，默认false
      */
@@ -30,6 +44,12 @@ public class Result implements Serializable {
     private Object obj = null;
 
     public Result(){}
+
+    public Result(String msg){
+        this.code = FAILED_CODE;
+        this.msg = msg;
+        this.success = false;
+    }
 
     public Result(String code, String msg){
         this.code = code;

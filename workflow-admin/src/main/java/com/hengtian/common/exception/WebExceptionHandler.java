@@ -2,7 +2,7 @@ package com.hengtian.common.exception;
 
 import com.common.common.CodeConts;
 import com.common.exception.MyException;
-import com.hengtian.common.base.BaseResponse;
+import com.hengtian.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -27,7 +27,7 @@ import java.text.ParseException;
  * @author houjinrong@chtwm.com
  * date 2018/5/23 11:28
  */
-//@ControllerAdvice
+@ControllerAdvice
 @Slf4j
 public class WebExceptionHandler {
 
@@ -36,53 +36,53 @@ public class WebExceptionHandler {
     /**
      * 无法找到对应类
      * @param ex ClassNotFoundException异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(ClassNotFoundException.class)
     public @ResponseBody
-    BaseResponse classnotfoundExp(ClassNotFoundException ex){
+    Result classnotfoundExp(ClassNotFoundException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -----异常已记录（"+ System.currentTimeMillis()+") ----- ########");
-        return BaseResponse.failedCustom("无法找到对应类！").build();
+        return new Result("无法找到对应类！");
     }
 
     /**
      * 未找到该方法
      * @param ex 异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(NoSuchMethodException.class)
     public @ResponseBody
-    BaseResponse mothodnotfoundExp(NoSuchMethodException ex){
+    Result mothodnotfoundExp(NoSuchMethodException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -----异常已记录（"+ System.currentTimeMillis()+") ----- ########");
-        return BaseResponse.failedCustom("未找到该方法！").build();
+        return new Result("未找到该方法！");
     }
 
     /**
      * 未找到指定文件
      * @param ex 异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(FileNotFoundException.class)
     public @ResponseBody
-    BaseResponse filenotfoundExp(FileNotFoundException ex){
+    Result filenotfoundExp(FileNotFoundException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -----异常已记录（"+ System.currentTimeMillis()+") ----- ########");
-        return BaseResponse.failedCustom("未找到指定文件！").build();
+        return new Result("未找到指定文件！");
     }
 
     /**
      * I
-     * @param ex BaseResponse异常
-     * @return BaseResponse
+     * @param ex Result异常
+     * @return Result
      */
     @ExceptionHandler(IOException.class)
     public @ResponseBody
-    BaseResponse ioExp(IOException ex){
+    Result ioExp(IOException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("I/O异常！").build();
+        return new Result("I/O异常！");
     }
 
     // ---------------- RuntimeException ----------------------
@@ -90,246 +90,246 @@ public class WebExceptionHandler {
     /**
      * 数组已越界
      * @param ex 异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(IndexOutOfBoundsException.class)
     public @ResponseBody
-    BaseResponse indexOutOfBoundsExp(IndexOutOfBoundsException ex){
+    Result indexOutOfBoundsExp(IndexOutOfBoundsException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("数组已越界！").build();
+        return new Result("数组已越界！");
     }
 
     /**
      * 空指针异常
      * @param ex 异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(NullPointerException.class)
     public @ResponseBody
-    BaseResponse nullPointerExp(NullPointerException ex){
+    Result nullPointerExp(NullPointerException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("空指针异常！").build();
+        return new Result("空指针异常！");
     }
 
     /**
      * 类型强制转换异常
      * @param ex 异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(ClassCastException.class)
     public @ResponseBody
-    BaseResponse classCastExp(ClassCastException ex){
+    Result classCastExp(ClassCastException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("类型强制转换异常！").build();
+        return new Result("类型强制转换异常！");
     }
 
     /**
      * 数组大小为负异常
      * @param ex 异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(NegativeArraySizeException.class)
     public @ResponseBody
-    BaseResponse arraySizeExp(NegativeArraySizeException ex){
+    Result arraySizeExp(NegativeArraySizeException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("数组大小为负异常！").build();
+        return new Result("数组大小为负异常！");
     }
 
     /**
      * 算术异常
      * @param ex 异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(ArithmeticException.class)
     public @ResponseBody
-    BaseResponse arithmeticExp(ArithmeticException ex){
+    Result arithmeticExp(ArithmeticException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("算术异常！").build();
+        return new Result("算术异常！");
     }
 
     /**
      * 操作数据库异常
      * @param ex 异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(SQLException.class)
     public @ResponseBody
-    BaseResponse sqlExp(SQLException ex){
+    Result sqlExp(SQLException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("操作数据库异常！").build();
+        return new Result("操作数据库异常！");
     }
 
     /**
      * 违法的访问异常
      * @param ex 异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(IllegalAccessException.class)
     public @ResponseBody
-    BaseResponse illegalAccessExp(IllegalAccessException ex){
+    Result illegalAccessExp(IllegalAccessException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("违法的访问异常！").build();
+        return new Result("违法的访问异常！");
     }
 
     /**
      * 违法的监控状态异常
      * @param ex IllegalMonitorStateException异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(IllegalMonitorStateException.class)
     public @ResponseBody
-    BaseResponse illegalMonitorExp(IllegalMonitorStateException ex){
+    Result illegalMonitorExp(IllegalMonitorStateException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("违法的监控状态异常！").build();
+        return new Result("违法的监控状态异常！");
     }
 
     /**
      * 违法的监控状态异常
      * @param ex IllegalStateException异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(IllegalStateException.class)
     public @ResponseBody
-    BaseResponse illegalStateExp(IllegalStateException ex){
+    Result illegalStateExp(IllegalStateException ex){
         log.error(ex.getMessage(),ex);
         log.info("##### -------异常已记录（"+ System.currentTimeMillis()+") ---- ########");
-        return BaseResponse.failedCustom("违法的监控状态异常！").build();
+        return new Result("违法的监控状态异常！");
     }
 
     /**
      * 网络连接异常
      * @param ex 网络连接异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(ConnectException.class)
     public @ResponseBody
-    BaseResponse operateExpNetException(ConnectException ex){
+    Result operateExpNetException(ConnectException ex){
         log.error(ex.getMessage(),ex);
         log.info("####### -----异常已记录（"+ System.currentTimeMillis()+") -----########");
-        return BaseResponse.failedCustom("网络连接异常！").build();
+        return new Result("网络连接异常！");
     }
 
     /**
      * 服务器异常
      * @param ex Exception异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(Exception.class)
     public @ResponseBody
-    BaseResponse exp(Exception ex){
+    Result exp(Exception ex){
         log.error(ex.getMessage(),ex);
         log.info("####### -----异常已记录（"+ System.currentTimeMillis()+") -----########");
-        return BaseResponse.failedCustom("服务器异常！").build();
+        return new Result("服务器异常！");
     }
 
     /**
      * 自定义异常
      * @param ex MyException异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(MyException.class)
     public @ResponseBody
-    BaseResponse myExp(MyException ex){
+    Result myExp(MyException ex){
         log.error(ex.getMessage(),ex);
         log.info("####### -----异常已记录（"+ System.currentTimeMillis()+") -----########");
-        return BaseResponse.failedCustom(ex.getMessage()).build();
+        return new Result(ex.getMessage());
     }
 
     /**
      * 强制转换异常
      * @param ex ParseException异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(ParseException.class)
     public @ResponseBody
-    BaseResponse parseExp(ParseException ex){
+    Result parseExp(ParseException ex){
         log.error(ex.getMessage(),ex);
         log.info("####### -----异常已记录（"+ System.currentTimeMillis()+") -----########");
-        return BaseResponse.failedCustom("强制转换异常！").build();
+        return new Result("强制转换异常！");
     }
 
     /**
      * 请求超时异常
      * @param ex SocketTimeoutException异常
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(SocketTimeoutException.class)
     public @ResponseBody
-    BaseResponse timeoutExp(SocketTimeoutException ex){
+    Result timeoutExp(SocketTimeoutException ex){
         log.error(ex.getMessage(),ex);
         log.info("####### -----异常已记录（"+ System.currentTimeMillis()+") -----########");
-        return BaseResponse.failedCustom("请求超时异常！").build();
+        return new Result("请求超时异常！");
     }
 
     /**
      * 参数验证异常 -- 对于@表单提交
      * @param ex BindException异常
      * @param request HttpServletRequest
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(BindException.class)
     public @ResponseBody
-    BaseResponse validateExp(BindException ex, HttpServletRequest request){
+    Result validateExp(BindException ex, HttpServletRequest request){
         FieldError fieldError = ex.getBindingResult().getFieldError();
         log.info("入参验证失败");
         log.info("请求的地址：{}", request.getRequestURI());
         log.info("字段:{}, 信息:{}", fieldError.getField(), fieldError.getDefaultMessage());
-        return BaseResponse.failedCustom(fieldError.getDefaultMessage() + fieldError.getField()).build();
+        return new Result(fieldError.getDefaultMessage() + fieldError.getField());
     }
 
     /**
      * 参数验证异常 -- 对于@RequestParam(required = true)
      * @param ex MissingServletRequestParameterException异常
      * @param request HttpServletRequest
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public @ResponseBody
-    BaseResponse validateExp(MissingServletRequestParameterException ex, HttpServletRequest request){
+    Result validateExp(MissingServletRequestParameterException ex, HttpServletRequest request){
         log.info("入参验证失败");
         log.info("请求的地址：{}", request.getRequestURI());
         log.info("类型{}, 字段{}", ex.getParameterType(), ex.getParameterName(), "不能为空，必填项！");
-        return BaseResponse.failedCustom(ex.getParameterName() + "不能为空，必填项！类型："  + ex.getParameterType()).build();
+        return new Result(ex.getParameterName() + "不能为空，必填项！类型："  + ex.getParameterType());
     }
 
     /**
      * 参数验证异常 -- 对于@RquestBody
      * @param ex MethodArgumentNotValidException 异常
      * @param request HttpServletRequest
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public @ResponseBody
-    BaseResponse validateExp(MethodArgumentNotValidException ex, HttpServletRequest request){
+    Result validateExp(MethodArgumentNotValidException ex, HttpServletRequest request){
         log.info("入参验证失败");
         log.info("请求的地址：{}", request.getRequestURI());
         FieldError fieldError = ex.getBindingResult().getFieldError();
         log.info("字段:{}, 信息:{}", fieldError.getField(), fieldError.getDefaultMessage());
-        return BaseResponse.failedCustom(fieldError.getDefaultMessage() + fieldError.getField()).build();
+        return new Result(fieldError.getDefaultMessage() + fieldError.getField());
     }
 
     /**
      * 验证用户是否登陆异常 -- 对于@RequestAttribute(InsuranceConstant.REQUEST_EMP_INFO)
      * @param ex ServletRequestBindingException
      * @param request HttpServletRequest
-     * @return BaseResponse
+     * @return Result
      */
     @ExceptionHandler(ServletRequestBindingException.class)
     public @ResponseBody
-    BaseResponse validateExp(ServletRequestBindingException ex, HttpServletRequest request){
+    Result validateExp(ServletRequestBindingException ex, HttpServletRequest request){
         String REQUEST_EMP_INFO = "REQUEST_USER_INFO";
         if (ex.getMessage().contains(REQUEST_EMP_INFO)) {
             log.info("用户验证失败");
             log.info("请求的地址：{}", request.getRequestURI());
-            return BaseResponse.failedCustom(CodeConts.LOGIN_FAILURE, "用户未登录（校验失败）").build();
+            return new Result(CodeConts.LOGIN_FAILURE, "用户未登录（校验失败）");
         } else {
             return exp(ex);
         }

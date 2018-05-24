@@ -2,10 +2,12 @@ package com.hengtian.flow.controller;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.hengtian.common.base.BaseResponse;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.operlog.SysLog;
-import com.hengtian.common.param.*;
+import com.hengtian.common.param.AskTaskParam;
+import com.hengtian.common.param.ProcessInstanceQueryParam;
+import com.hengtian.common.param.TaskQueryParam;
+import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
@@ -88,13 +90,13 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("获取我发起的流程")
     @ApiOperation(httpMethod = "POST", value = "获取我发起的流程")
     @RequestMapping(value = "/rest/procInst", method = RequestMethod.POST)
-    public BaseResponse processInstanceList(@ApiParam(value = "流程查询条件", name = "processInstanceQueryParam", required = true) @RequestBody @Validated ProcessInstanceQueryParam processInstanceQueryParam) {
+    public Object processInstanceList(@ApiParam(value = "流程查询条件", name = "processInstanceQueryParam", required = true) @RequestBody @Validated ProcessInstanceQueryParam processInstanceQueryParam) {
         logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", processInstanceQueryParam.toString());
         PageInfo pageInfo = new PageInfo(processInstanceQueryParam.getPage(), processInstanceQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(processInstanceQueryParam));
         workflowService.processInstanceList(pageInfo);
 
-        return BaseResponse.successCustom().setData(pageInfo).build();
+        return renderSuccess(pageInfo);
     }
 
     /**
