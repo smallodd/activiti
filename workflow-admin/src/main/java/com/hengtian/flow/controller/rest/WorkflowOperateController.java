@@ -545,10 +545,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return renderError("操作类型不能为空");
         } else if (StringUtils.isBlank(taskActionParam.getUserId())) {
             return renderError("操作人工号不能为空");
+        } else if (StringUtils.isBlank(taskActionParam.getProcessInstanceId())) {
+            return renderError("流程实例ID不能为空");
         }
 
         //校验操作人权限
-
 
         //参数校验
         Result validate = taskActionParam.validate();
@@ -560,7 +561,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 if(result.isSuccess()){
                     TWorkDetail tWorkDetail = new TWorkDetail();
                     tWorkDetail.setCreateTime(new Date());
-                    tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】进行了" + TaskActionEnum.getDesc(taskActionParam.getActionType()) + "操作");
+                    tWorkDetail.setDetail("工号为【" + taskActionParam.getUserId() + "】的员工进行了【" + TaskActionEnum.getDesc(taskActionParam.getActionType()) + "】操作");
                     tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
                     tWorkDetail.setOperator(taskActionParam.getUserId());
                     tWorkDetail.setTaskId(taskActionParam.getTaskId());

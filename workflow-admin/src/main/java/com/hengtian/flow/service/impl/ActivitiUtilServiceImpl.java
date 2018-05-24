@@ -207,7 +207,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         beforeTaskDefinitionKeys.removeIf(new Predicate<String>() {
             @Override
             public boolean test(String taskDefKey) {
-                if(hisTaskList.contains(taskDefKey)){
+                if(!hisTaskList.contains(taskDefKey)){
                     return true;
                 }
                 return false;
@@ -249,7 +249,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     }
 
     /**
-     * 断当前节点是否可以撤回或驳回
+     * 判断当前节点是否可以撤回或驳回
      * @param task 任务实例
      * @return
      * @author houjinrong@chtwm.com
