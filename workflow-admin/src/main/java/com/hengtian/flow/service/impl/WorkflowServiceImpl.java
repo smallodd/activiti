@@ -808,7 +808,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
 
-        EntityWrapper<TRuTask> wrapper = new EntityWrapper<TRuTask>();
+        EntityWrapper<TRuTask> wrapper = new EntityWrapper();
         wrapper.where("task_id={0}", taskId);
 
         String oldUser = userId;
