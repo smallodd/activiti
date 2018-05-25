@@ -50,8 +50,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by ma on 2018/4/17.
  * 所有列表查询都放这里
+ * @author mayunliang@chtwm.com
+ * date 2018/4/17 9:38
  */
 @Controller
 public class WorkflowQueryController extends WorkflowBaseController {
