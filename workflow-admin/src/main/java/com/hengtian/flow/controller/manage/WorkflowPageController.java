@@ -1,12 +1,12 @@
 package com.hengtian.flow.controller.manage;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.hengtian.application.model.AppModel;
-import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.controller.WorkflowBaseController;
+import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.service.RuProcinstService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.vo.CommentVo;
 import com.rbac.entity.RbacUser;
@@ -14,7 +14,6 @@ import com.rbac.service.UserService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,7 @@ public class WorkflowPageController extends WorkflowBaseController{
     @Autowired
     private RepositoryService repositoryService;
     @Autowired
-    private AppModelService appModelService;
+    private RuProcinstService ruProcinstService;
     @Autowired
     private TaskService taskService;
     @Autowired
@@ -123,19 +122,23 @@ public class WorkflowPageController extends WorkflowBaseController{
      */
     @GetMapping("/user/claim")
     public String selectUserClaim(Model model, String taskId, int claimType, String procDefId){
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(procDefId).singleResult();
-        EntityWrapper<AppModel> wrapper = new EntityWrapper<>();
-        wrapper.where("model_key={0}", processDefinition.getKey());
-        AppModel appModel = appModelService.selectOne(wrapper);
+        if(StringUtils.isNotBlank(taskId)){
+            Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+            if(task != null){
+                EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
+                wrapper.where("proc_inst_id={0}", task.getProcessInstanceId());
+                RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
 
-        EntityWrapper<TRuTask> wrapper1 = new EntityWrapper<>();
-        wrapper.where("task_id={0}", taskId);
-        List<TRuTask> ruTasks = tRuTaskService.selectList(wrapper1);
+                EntityWrapper<TRuTask> wrapper1 = new EntityWrapper<>();
+                wrapper1.where("task_id={0}", taskId);
+                List<TRuTask> ruTasks = tRuTaskService.selectList(wrapper1);
 
-        model.addAttribute("taskId", taskId);
-        model.addAttribute("claimType", claimType);
-        model.addAttribute("system", appModel.getAppKey());
-        model.addAttribute("ruTasks", ruTasks);
+                model.addAttribute("taskId", taskId);
+                model.addAttribute("claimType", claimType);
+                model.addAttribute("system", ruProcinst.getAppKey());
+                model.addAttribute("ruTasks", ruTasks);
+            }
+        }
 
         return "workflow/task/select_user_claim";
     }
@@ -173,7 +176,7 @@ public class WorkflowPageController extends WorkflowBaseController{
     /**
      * 任务转办
      * @param taskId 任务ID
-     * @return 
+     * @return
      * @author houjinrong@chtwm.com
      * date 2018/5/18 16:01
      */
