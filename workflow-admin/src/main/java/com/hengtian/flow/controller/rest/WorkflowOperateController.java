@@ -551,14 +551,14 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return renderError("流程实例ID不能为空");
         }
 
-        //校验操作人权限
-        Result re = validateTask(taskActionParam);
-        if(!re.isSuccess()){
-            return re;
-        }
         //参数校验
         Result validate = taskActionParam.validate();
         if (validate.isSuccess()) {
+            //校验操作人权限
+            Result re = validateTask(taskActionParam);
+            if(!re.isSuccess()){
+                return re;
+            }
             TaskAdapter taskAdapter = new TaskAdapter();
             try {
                 Result result = taskAdapter.taskAction(taskActionParam);
