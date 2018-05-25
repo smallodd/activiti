@@ -3,9 +3,10 @@ package com.hengtian.common.result;
 import java.util.List;
 
 /**
- * @description：TreeVO
+ * 树形结构实体类
+ * @author houjinrong@chtwm.com
+ * date 2018/5/25 9:16
  */
-@Deprecated
 public class Tree implements java.io.Serializable {
 
     private static final long serialVersionUID = 980682543891282923L;
