@@ -105,7 +105,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object setAssignee(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
         logger.info("设置审批人接口调用，参数{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
-        if (StringUtils.isBlank(taskParam.getApprover()) || StringUtils.isBlank(taskParam.getTaskId())) {
+        if (StringUtils.isBlank(taskParam.getAssignee()) || StringUtils.isBlank(taskParam.getTaskId())) {
             logger.info("参数不合法");
             result.setMsg("参数不合法");
             result.setCode(Constant.PARAM_ERROR);
@@ -143,7 +143,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={0}",processInstance.getProcessDefinitionVersion());
         TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
 
-        tUserTask.setCandidateIds(taskParam.getApprover());
+        tUserTask.setCandidateIds(taskParam.getAssignee());
         Boolean flag = workflowService.setAssignee(task, tUserTask);
         if (flag) {
             result.setMsg("设置成功！");
@@ -174,7 +174,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         }
         //查询是否当前审批人是否在当前结点有问询信息
         EntityWrapper entityWrapper = new EntityWrapper();
-        entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getApprover());
+        entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getAssignee());
         //查询是否有正在问询的节点
         TAskTask tAskTask = tAskTaskService.selectOne(entityWrapper);
         if (tAskTask != null) {
@@ -191,7 +191,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @param taskIds      任务id字符串，用","隔开
      * @param pass         类型 1是通过，2是拒绝 3是通过自定义参数流转
      * @param jsonVariable 参数map
-     * @param approver     审批人
+     * @param assignee     审批人
      * @return
      */
     @RequestMapping(value = "approveTaskBatch", method = RequestMethod.POST)
@@ -201,7 +201,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object approveTaskBatch(@ApiParam(value = "任务id列表，用','隔开", name = "taskIds", required = true) @RequestParam("taskIds") String taskIds,
                                    @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "pass", required = true) @RequestParam("pass") Integer pass,
                                    @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable,
-                                   @ApiParam(value = "审批人信息", name = "approver", required = true) @RequestParam("approver") String approver) {
+                                   @ApiParam(value = "审批人信息", name = "assignee", required = true) @RequestParam("assignee") String assignee) {
         Map map = JSONObject.parseObject(jsonVariable);
         Result result = new Result();
         result.setMsg("审批成功");
@@ -215,26 +215,12 @@ public class WorkflowOperateController extends WorkflowBaseController {
             if (task == null) {
                 return renderError("请传正确的参数！【" + taskId + "】任务不存在！", Constant.PARAM_ERROR);
             }
-            EntityWrapper wrapper = new EntityWrapper();
-            wrapper.where("task_id={0}", task.getId());
-            wrapper.like("assignee_real", "%" + approver + "%");
-            TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
-            if (tRuTask == null) {
-                result.setMsg(result.getMsg() + "," + task.getName() + "不属于" + "【" + approver + "】审批失败");
-            }
-            if (pass.intValue() == 1) {
-                taskService.setAssignee(task.getId(), approver + "_Y");
-                taskService.addComment(taskId, task.getProcessInstanceId(), "批量同意");
-                taskService.complete(taskId, map);
-            } else if (pass.intValue() == 2) {
-                taskService.setAssignee(task.getId(), approver + "_N");
-                taskService.addComment(taskId, task.getProcessInstanceId(), "拒绝");
-                taskService.deleteTask(taskId, "批量拒绝");
-            } else if (pass.intValue() == 3) {
-                taskService.setAssignee(task.getId(), approver + "_F");
-                taskService.addComment(taskId, task.getProcessInstanceId(), "流程流转");
-                taskService.complete(taskId, map);
-            }
+            TaskParam taskParam = new TaskParam();
+            taskParam.setTaskId(taskId);
+            taskParam.setPass(pass);
+            taskParam.setJsonVariables(jsonVariable);
+            taskParam.setAssignee(assignee);
+            workflowService.approveTask(task, taskParam);
         }
         return result;
     }

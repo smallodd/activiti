@@ -358,7 +358,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Object approveTask(Task task, TaskParam taskParam){
-        if(StringUtils.isBlank(taskParam.getApprover())){
+        if(StringUtils.isBlank(taskParam.getAssignee())){
             return new Result("审批人不合法");
         }
 
@@ -367,7 +367,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         result.setCode(Constant.SUCCESS);
         EntityWrapper entityWrapper = new EntityWrapper();
         entityWrapper.where("task_id={0}", task.getId());
-        entityWrapper.like("assignee_real", "%" + taskParam.getApprover() + "%");
+        entityWrapper.like("assignee_real", "%" + taskParam.getAssignee() + "%");
         //查询流程定义信息
         ProcessDefinition processDefinition = repositoryService.getProcessDefinition(task.getProcessDefinitionId());
 
@@ -380,7 +380,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Map map = taskService.getVariables(task.getId());
         map.putAll(variables);
         TRuTask ruTask = tRuTaskService.selectOne(entityWrapper);
-        if(ruTask.getAssigneeReal().indexOf(taskParam.getApprover()) < 0){
+        if(ruTask.getAssigneeReal().indexOf(taskParam.getAssignee()) < 0){
             return new Result("审批人不合法");
         }
         if (ruTask == null) {
@@ -410,17 +410,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             wrapper.where("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion()).andNew("proc_def_key={0}", processDefinition.getKey());
 
             TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
-            identityService.setAuthenticatedUserId(taskParam.getApprover());
+            identityService.setAuthenticatedUserId(taskParam.getAssignee());
             taskService.addComment(taskParam.getTaskId(), task.getProcessInstanceId(), taskParam.getComment());
             taskService.setVariables(task.getId(), map);
 
             //设置操作的明细备注
             TWorkDetail tWorkDetail = new TWorkDetail();
             tWorkDetail.setTaskId(task.getId());
-            tWorkDetail.setOperator(taskParam.getApprover());
+            tWorkDetail.setOperator(taskParam.getAssignee());
             tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
             tWorkDetail.setCreateTime(new Date());
-            tWorkDetail.setDetail("工号【" + taskParam.getApprover() + "】审批了该任务，审批意见是【" + taskParam.getComment() + "】");
+            tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】审批了该任务，审批意见是【" + taskParam.getComment() + "】");
             workDetailService.insert(tWorkDetail);
 
             if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignType.EXPR.code.equals(tUserTask.getAssignType())) {
@@ -453,7 +453,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 if(approveCountAgree >= approveCountNeed){
                     //------------任务完成-通过------------
                     String assignee = task.getAssignee();
-                    taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getApprover()+"_Y"):(assignee+","+taskParam.getApprover()+"_Y"));
+                    taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_Y"):(assignee+","+taskParam.getAssignee()+"_Y"));
                     taskService.complete(task.getId(), map);
                     if(AssignType.PERSON.code.equals(taskParam.getAssignType())){
                         TRuTask tRuTask = new TRuTask();
@@ -463,7 +463,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         tRuTaskService.update(tRuTask, wrapper_);
 
                         wrapper_ = new EntityWrapper();
-                        wrapper_.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
+                        wrapper_.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getAssignee());
                         tRuTask.setStatus(TaskStatusEnum.AGREE.status);
                         tRuTaskService.update(tRuTask, wrapper_);
 
@@ -473,7 +473,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     if(approveCountTotal - approveCountNow + approveCountAgree < approveCountNeed){
                         //------------任务完成-未通过------------
                         String assignee = task.getAssignee();
-                        taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getApprover()+"_N"):(assignee+","+taskParam.getApprover()+"_N"));
+                        taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_N"):(assignee+","+taskParam.getAssignee()+"_N"));
                         deleteProcessInstance(task.getProcessInstanceId(), "refused");
                         if(AssignType.PERSON.code.equals(taskParam.getAssignType())){
                             TRuTask tRuTask = new TRuTask();
@@ -483,7 +483,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             tRuTaskService.update(tRuTask, wrapper_);
 
                             wrapper_ = new EntityWrapper();
-                            wrapper_.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
+                            wrapper_.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getAssignee());
                             tRuTask.setStatus(TaskStatusEnum.REFUSE.status);
                             tRuTaskService.update(tRuTask, wrapper_);
                         }
@@ -491,31 +491,31 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     }else{
                         //------------任务继续------------
                         String assignee = task.getAssignee();
-                        taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getApprover()+"_Y"):(assignee+","+taskParam.getApprover()+"_Y"));
+                        taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_Y"):(assignee+","+taskParam.getAssignee()+"_Y"));
                         return new Result(true, "办理成功！");
                     }
                 }
             } else {
                 if (taskParam.getPass() == TaskStatusEnum.COMPLETE_AGREE.status) {
                     //设置原生工作流表哪些审批了
-                    taskService.setAssignee(t.getId(), taskParam.getApprover() + "_Y");
+                    taskService.setAssignee(t.getId(), taskParam.getAssignee() + "_Y");
                     taskService.complete(t.getId(), map);
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(1);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getAssignee());
 
                     tRuTaskService.update(tRuTask, truWrapper);
                     result.setSuccess(true);
                 } else if (taskParam.getPass() == TaskStatusEnum.COMPLETE_REFUSE.status) {
                     //拒绝任务
-                    taskService.setAssignee(task.getId(), taskParam.getApprover() + "_N");
+                    taskService.setAssignee(task.getId(), taskParam.getAssignee() + "_N");
                     deleteProcessInstance(task.getProcessInstanceId(), "refused");
 
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(TaskStatusEnum.REFUSE.status);
                     EntityWrapper truWrapper = new EntityWrapper();
-                    truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getApprover());
+                    truWrapper.where("task_id={0}", t.getId()).andNew("assignee_real={0}", taskParam.getAssignee());
                     tRuTaskService.update(tRuTask, truWrapper);
                     result.setMsg("任务已经拒绝！");
                     result.setCode(Constant.SUCCESS);

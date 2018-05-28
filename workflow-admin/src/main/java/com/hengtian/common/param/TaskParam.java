@@ -1,10 +1,6 @@
 package com.hengtian.common.param;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.Map;
 
 /**
  * Created by ma on 2018/4/18.
@@ -23,7 +19,7 @@ public class TaskParam {
     private Integer assignType;
     //审批人
     @ApiModelProperty(value = "审批人", example="H00001")
-    private String approver;
+    private String assignee;
 
     @ApiModelProperty(value = "审批时传参数", example="审批意见")
     private String comment;
@@ -59,12 +55,12 @@ public class TaskParam {
         this.assignType = assignType;
     }
 
-    public String getApprover() {
-        return approver;
+    public String getAssignee() {
+        return assignee;
     }
 
-    public void setApprover(String approver) {
-        this.approver = approver;
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
     }
 
     public String getComment() {
