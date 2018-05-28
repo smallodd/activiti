@@ -1277,7 +1277,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS IN (" + TaskStatusEnum.BEFORESIGN.status + "," + TaskStatusEnum.OPEN.status + ") ");
             con.append(" AND (");
-            con.append(" (trt.ASSIGNEE_TYPE =" + AssignType.PERSON.code + "trt.ASSIGNEE = #{assignee}) ");
+            con.append(" (trt.ASSIGNEE_TYPE =" + AssignType.PERSON.code + " AND trt.ASSIGNEE = #{assignee}) ");
 
             if(StringUtils.isNotBlank(roleId)){
                 con.append(" OR (trt.ASSIGNEE_TYPE =" + AssignType.ROLE.code + " AND trt.ASSIGNEE IN (#{roleId})) ");
