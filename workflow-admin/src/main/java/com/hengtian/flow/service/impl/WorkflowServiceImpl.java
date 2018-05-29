@@ -325,12 +325,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTask.setAssigneeReal(assigneeReal);
 
                     JSONObject approveCountJson = new JSONObject();
-                    approveCountJson.put(TaskVariable.APPROVE_COUNT_TOTAL.value, assigneeSet.size());
-                    approveCountJson.put(TaskVariable.APPROVE_COUNT_NEED.value, assigneeSet.size());
-                    approveCountJson.put(TaskVariable.APPROVE_COUNT_NOW.value, 0);
-                    approveCountJson.put(TaskVariable.APPROVE_COUNT_REFUSE.value, 0);
+                    approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_TOTAL.value, assigneeSet.size());
+                    approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NEED.value, assigneeSet.size());
+                    approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NOW.value, 0);
+                    approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_REFUSE.value, 0);
 
-                    taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.APPROVE_COUNT.value,approveCountJson.toJSONString());
+                    taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value,approveCountJson.toJSONString());
                 }else{
                     return false;
                 }
@@ -427,28 +427,28 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignType.EXPR.code.equals(tUserTask.getAssignType())) {
                 //会签
                 JSONObject approveCountJson = new JSONObject();
-                String approveCount = (String)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.APPROVE_COUNT.value);
+                String approveCount = (String)map.get(task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value);
                 if(StringUtils.isBlank(approveCount)){
-                    approveCountJson.put(TaskVariable.APPROVE_COUNT_TOTAL.value, tUserTask.getUserCountTotal());
-                    approveCountJson.put(TaskVariable.APPROVE_COUNT_NEED.value, tUserTask.getUserCountNeed());
-                    approveCountJson.put(TaskVariable.APPROVE_COUNT_NOW.value, 0);
-                    approveCountJson.put(TaskVariable.APPROVE_COUNT_REFUSE.value, 0);
+                    approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_TOTAL.value, tUserTask.getUserCountTotal());
+                    approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NEED.value, tUserTask.getUserCountNeed());
+                    approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NOW.value, 0);
+                    approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_REFUSE.value, 0);
                 }else {
                     approveCountJson = JSONObject.parseObject(approveCount);
                 }
 
-                int approveCountNow = approveCountJson.getInteger(TaskVariable.APPROVE_COUNT_NOW.value);
-                int approveCountTotal = approveCountJson.getInteger(TaskVariable.APPROVE_COUNT_TOTAL.value);
-                int approveCountNeed = approveCountJson.getInteger(TaskVariable.APPROVE_COUNT_NEED.value);
-                int approveCountRefuse = approveCountJson.getInteger(TaskVariable.APPROVE_COUNT_REFUSE.value);
+                int approveCountNow = approveCountJson.getInteger(TaskVariableEnum.APPROVE_COUNT_NOW.value);
+                int approveCountTotal = approveCountJson.getInteger(TaskVariableEnum.APPROVE_COUNT_TOTAL.value);
+                int approveCountNeed = approveCountJson.getInteger(TaskVariableEnum.APPROVE_COUNT_NEED.value);
+                int approveCountRefuse = approveCountJson.getInteger(TaskVariableEnum.APPROVE_COUNT_REFUSE.value);
 
                 if(taskParam.getPass() == TaskStatusEnum.COMPLETE_REFUSE.status){
                     approveCountRefuse ++;
                 }
 
-                approveCountJson.put(TaskVariable.APPROVE_COUNT_NOW.value,++approveCountNow);
-                approveCountJson.put(TaskVariable.APPROVE_COUNT_REFUSE.value,approveCountRefuse);
-                taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.APPROVE_COUNT.value,approveCountJson.toJSONString());
+                approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NOW.value,++approveCountNow);
+                approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_REFUSE.value,approveCountRefuse);
+                taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value,approveCountJson.toJSONString());
 
                 int approveCountAgree = approveCountNow - approveCountRefuse;
                 if(approveCountAgree >= approveCountNeed){

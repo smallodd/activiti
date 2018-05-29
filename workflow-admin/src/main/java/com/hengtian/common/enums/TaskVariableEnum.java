@@ -1,6 +1,6 @@
 package com.hengtian.common.enums;
 
-public enum TaskVariable {
+public enum TaskVariableEnum {
 
     //任务类型
     TASKTYPE("taskType"),
@@ -31,7 +31,7 @@ public enum TaskVariable {
 
     public String value;
 
-    TaskVariable(String value){
+    TaskVariableEnum(String value){
         this.value = value;
     }
 }

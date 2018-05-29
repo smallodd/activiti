@@ -12,7 +12,7 @@ import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
-import com.hengtian.common.enums.TaskVariable;
+import com.hengtian.common.enums.TaskVariableEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskParam;
@@ -439,11 +439,11 @@ public class ActivitiController extends BaseController{
 			}
 			ShiroUser user = getShiroUser();
     		if(ConstantUtils.ADMIN_ID.equals(user.getId()) || user.getId().equals(userId)){
-				String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value)+"";
+				String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey()+":"+ TaskVariableEnum.TASKTYPE.value)+"";
 				if(TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)){
 					//会签
 					//修改会签人
-					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value)+"";
+					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.TASKUSER.value)+"";
 					if(StringUtils.contains(candidateIds, transferUserId)){
 						return renderError("【"+transferUserId+"】已在当前任务中<br/>（同一任务节点同一个人最多可办理一次）");
 					}
@@ -453,13 +453,13 @@ public class ActivitiController extends BaseController{
 					Map<String,Object> variable = Maps.newHashMap();
 					variable.put(task.getTaskDefinitionKey() + ":" + userId, userId+":"+TaskStatus.TRANSFER.value);
 					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
-					variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, candidateIds.replace(userId,transferUserId));
+					variable.put(task.getTaskDefinitionKey() + ":"+ TaskVariableEnum.TASKUSER.value, candidateIds.replace(userId,transferUserId));
 					taskService.setVariablesLocal(taskId, variable);
 				}else{
 					Map<String,Object> variable = Maps.newHashMap();
 					variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
 					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
-					variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, transferUserId);
+					variable.put(task.getTaskDefinitionKey() + ":"+ TaskVariableEnum.TASKUSER.value, transferUserId);
 					taskService.setVariablesLocal(taskId, variable);
 					activitiService.transferTask(transferUserId, taskId);
 				}
@@ -489,7 +489,7 @@ public class ActivitiController extends BaseController{
 			}
 			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
 			if(task != null){
-				String candidateIds = taskService.getVariable(taskId, task.getTaskDefinitionKey() + ":" + TaskVariable.TASKUSER.value)+"";
+				String candidateIds = taskService.getVariable(taskId, task.getTaskDefinitionKey() + ":" + TaskVariableEnum.TASKUSER.value)+"";
 				if(StringUtils.isNotBlank(candidateIds)){
 					EntityWrapper<SysUser> wrapper =new EntityWrapper<SysUser>();
 					wrapper.in("id",candidateIds.split(","));

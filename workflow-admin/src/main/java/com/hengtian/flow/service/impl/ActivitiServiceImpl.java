@@ -8,16 +8,13 @@ import com.google.common.collect.Maps;
 
 import com.hengtian.application.model.App;
 import com.hengtian.application.service.AppService;
-import com.hengtian.common.enums.AssignType;
 import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskType;
-import com.hengtian.common.enums.TaskVariable;
+import com.hengtian.common.enums.TaskVariableEnum;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.*;
-import com.hengtian.common.workflow.cmd.DeleteActiveTaskCmd;
 import com.hengtian.common.workflow.cmd.JumpCmd;
-import com.hengtian.common.workflow.cmd.StartActivityCmd;
 import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
@@ -28,12 +25,9 @@ import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.CommonVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
 import com.hengtian.flow.vo.TaskVo;
-import com.hengtian.system.service.SysUserService;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
 import org.activiti.engine.history.*;
-import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.engine.impl.interceptor.Command;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
@@ -294,23 +288,23 @@ public class ActivitiServiceImpl implements ActivitiService {
 			//会签处理
 			int userCountNow = 0;
 
-			runtimeService.setVariable(processInstanceId,processInstanceId+":"+TaskVariable.LASTTASKUSER.value,userId);
+			runtimeService.setVariable(processInstanceId,processInstanceId+":"+ TaskVariableEnum.LASTTASKUSER.value,userId);
 			if(map != null){
-				String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value) + "";
+				String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":"+ TaskVariableEnum.TASKTYPE.value) + "";
 				if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
 					//会签人
-					String userCount = (String)map.get(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNT.value);
+					String userCount = (String)map.get(task.getTaskDefinitionKey()+":"+ TaskVariableEnum.USERCOUNT.value);
 					if(StringUtils.isBlank(userCount)){
-						logger.error("会签任务【"+taskId+"】数据不完整，缺少属性"+TaskVariable.USERCOUNT.value);
+						logger.error("会签任务【"+taskId+"】数据不完整，缺少属性"+ TaskVariableEnum.USERCOUNT.value);
 						result.setSuccess(false);
-						result.setMsg("会签任务【"+taskId+"】数据不完整，缺少属性"+TaskVariable.USERCOUNT.value);
+						result.setMsg("会签任务【"+taskId+"】数据不完整，缺少属性"+ TaskVariableEnum.USERCOUNT.value);
 						return result;
 					}
 					JSONObject userCountJson = JSONObject.parseObject(userCount);
-					userCountNow = userCountJson.getInteger(TaskVariable.USERCOUNTNOW.value);
-					int userCountTotal = userCountJson.getInteger(TaskVariable.USERCOUNTTOTAL.value);
-					int userCountNeed = userCountJson.getInteger(TaskVariable.USERCOUNTNEED.value);
-					int userCountRefuse = userCountJson.getInteger(TaskVariable.USERCOUNTREFUSE.value);
+					userCountNow = userCountJson.getInteger(TaskVariableEnum.USERCOUNTNOW.value);
+					int userCountTotal = userCountJson.getInteger(TaskVariableEnum.USERCOUNTTOTAL.value);
+					int userCountNeed = userCountJson.getInteger(TaskVariableEnum.USERCOUNTNEED.value);
+					int userCountRefuse = userCountJson.getInteger(TaskVariableEnum.USERCOUNTREFUSE.value);
 
 					String taskResult = TaskStatus.FINISHEDPASS.value;
 					if(ConstantUtils.vacationStatus.NOT_PASSED.getValue().equals(commentResult)){
@@ -319,9 +313,9 @@ public class ActivitiServiceImpl implements ActivitiService {
 					}
 					Map<String,Object> variables = Maps.newHashMap();
 					variables.put(task.getTaskDefinitionKey()+":"+userId,userId+":"+taskResult);
-					userCountJson.put(TaskVariable.USERCOUNTNOW.value,++userCountNow);
-					userCountJson.put(TaskVariable.USERCOUNTREFUSE.value,userCountRefuse);
-					variables.put(task.getTaskDefinitionKey()+":"+TaskVariable.USERCOUNT.value,userCountJson.toJSONString());
+					userCountJson.put(TaskVariableEnum.USERCOUNTNOW.value,++userCountNow);
+					userCountJson.put(TaskVariableEnum.USERCOUNTREFUSE.value,userCountRefuse);
+					variables.put(task.getTaskDefinitionKey()+":"+ TaskVariableEnum.USERCOUNT.value,userCountJson.toJSONString());
 					taskService.setVariablesLocal(taskId,variables);
 
 					int userCountAgree = userCountNow - userCountRefuse;
@@ -561,7 +555,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 					}else if((shiroUser.getId()+":"+TaskStatus.FINISHEDREFUSE.value).equals(taskStatus)){
 						vo.setTaskState("拒绝");
 					}
-					vo.setTaskAssign(map.get(his.getProcessInstanceId()+":"+TaskVariable.LASTTASKUSER.value)+"");
+					vo.setTaskAssign(map.get(his.getProcessInstanceId()+":"+ TaskVariableEnum.LASTTASKUSER.value)+"");
 				}else{
 					//兼容旧数据
 					HistoricTaskInstanceQuery historicTaskInstanceQuery=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getProcessInstanceId()).orderByTaskCreateTime().desc();
@@ -618,8 +612,8 @@ public class ActivitiServiceImpl implements ActivitiService {
 				App app=appService.selectOne(wrapper);
 				vo.setAppName(app==null?"":app.getName());
 				vo.setBusinessKey(commonVo.getBusinessKey());
-				if(map.containsKey(his.getId()+":"+TaskVariable.LASTTASKUSER.value)){
-					vo.setTaskAssign(map.get(his.getId()+":"+TaskVariable.LASTTASKUSER.value)+"");
+				if(map.containsKey(his.getId()+":"+ TaskVariableEnum.LASTTASKUSER.value)){
+					vo.setTaskAssign(map.get(his.getId()+":"+ TaskVariableEnum.LASTTASKUSER.value)+"");
 				}else{
 					HistoricTaskInstance taskInstance=historyService.createHistoricTaskInstanceQuery().processInstanceId(his.getId()).orderByHistoricTaskInstanceEndTime().desc().finished().list().get(0);
 					vo.setTaskAssign(taskInstance.getAssignee());
@@ -674,8 +668,8 @@ public class ActivitiServiceImpl implements ActivitiService {
 					String candidateIds = tUserTask.getCandidateIds();
 
 					Map<String,Object> variable = Maps.newHashMap();
-					variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
-					variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+					variable.put(tUserTask.getTaskDefKey()+":"+ TaskVariableEnum.TASKTYPE.value,tUserTask.getTaskType());
+					variable.put(tUserTask.getTaskDefKey()+":"+ TaskVariableEnum.TASKUSER.value,candidateIds);
 
 					if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
 						//候选人
@@ -683,8 +677,8 @@ public class ActivitiServiceImpl implements ActivitiService {
 							variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
 						}
 
-						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKTYPE.value,tUserTask.getTaskType());
-						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.TASKUSER.value,candidateIds);
+						variable.put(tUserTask.getTaskDefKey()+":"+ TaskVariableEnum.TASKTYPE.value,tUserTask.getTaskType());
+						variable.put(tUserTask.getTaskDefKey()+":"+ TaskVariableEnum.TASKUSER.value,candidateIds);
 					} else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
 						/**
 						 * 为当前任务设置属性值
@@ -695,11 +689,11 @@ public class ActivitiServiceImpl implements ActivitiService {
 						}
 
 						JSONObject json = new JSONObject();
-						json.put(TaskVariable.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
-						json.put(TaskVariable.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
-						json.put(TaskVariable.USERCOUNTNOW.value,0);
-						json.put(TaskVariable.USERCOUNTREFUSE.value,0);
-						variable.put(tUserTask.getTaskDefKey()+":"+TaskVariable.USERCOUNT.value,json.toJSONString());
+						json.put(TaskVariableEnum.USERCOUNTTOTAL.value,tUserTask.getUserCountTotal());
+						json.put(TaskVariableEnum.USERCOUNTNEED.value,tUserTask.getUserCountNeed());
+						json.put(TaskVariableEnum.USERCOUNTNOW.value,0);
+						json.put(TaskVariableEnum.USERCOUNTREFUSE.value,0);
+						variable.put(tUserTask.getTaskDefKey()+":"+ TaskVariableEnum.USERCOUNT.value,json.toJSONString());
 					}else{
 						variable.put(tUserTask.getTaskDefKey()+":"+candidateIds,candidateIds+":"+TaskStatus.UNFINISHED.value);
 					}
