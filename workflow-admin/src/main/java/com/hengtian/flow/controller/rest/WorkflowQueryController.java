@@ -292,7 +292,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("操作流程详细信息")
     @ApiOperation(httpMethod = "POST", value = "操作流程详细信息")
-    @RequestMapping(value = "/rest/task/operateDetailInfo", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/process/detail", method = RequestMethod.POST)
     public Object operateDetailInfo(@ApiParam(value = "任务查询条件", name = "processInstanceId", required = true) @RequestParam String processInstanceId,
                                     @ApiParam(value = "任务查询条件", name = "operator", required = false) @RequestParam String operator) {
         return renderSuccess(tWorkDetailService.operateDetailInfo(processInstanceId, operator));
