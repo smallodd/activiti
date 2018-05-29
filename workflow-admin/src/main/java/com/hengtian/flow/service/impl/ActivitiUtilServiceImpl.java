@@ -934,6 +934,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
 
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
+        wrapper.where("proc_inst_id={0}", hisTask.getProcessInstanceId());
         wrapper.in("task_def_key", beforeTaskDefKeys);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
         String assignee = "";

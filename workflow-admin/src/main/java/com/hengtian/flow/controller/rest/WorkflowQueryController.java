@@ -3,6 +3,7 @@ package com.hengtian.flow.controller.rest;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.ProcessInstanceQueryParam;
@@ -170,6 +171,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object closeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
+        }
+        if(taskQueryParam.getTaskState() == null){
+            taskQueryParam.setTaskState("");
+        }else if ("_Y".equals(taskQueryParam.getTaskState()) || "_N".equals(taskQueryParam.getTaskState())){
+            return renderError(ResultEnum.PARAM_ERROR.msg+"必须为_Y或_N或为''", ResultEnum.PARAM_ERROR.code);
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
