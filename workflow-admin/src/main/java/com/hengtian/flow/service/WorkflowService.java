@@ -234,7 +234,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @param isAll  是否递归获取全部父节点
      * @return
      */
-    Result getParentNodes(String taskId, String userId, boolean isAll);
+    Result getBeforeNodes(String taskId, String userId, boolean isAll);
 
     /**
      * 我的任务信息

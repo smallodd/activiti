@@ -423,18 +423,20 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 获取父级任务节点
-     *
      * @param taskId 任务ID
      * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/29 14:38
      */
     @ResponseBody
     @SysLog("获取父级任务节点")
     @ApiOperation(httpMethod = "POST", value = "获取父级任务节点")
-    @RequestMapping(value = "/rest/parentNode", method = RequestMethod.POST)
-    public Object getParentNodes(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId, @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
+    @RequestMapping(value = "/rest/node/before", method = RequestMethod.POST)
+    public Object getBeforeNodes(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
+                                  @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
                                  @ApiParam(value = "是否递归获取父级节点", name = "isAll", required = true) @RequestParam(defaultValue = "1") Integer isAll) {
         logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", taskId);
-        return renderSuccess(workflowService.getParentNodes(taskId, userId, isAll != 0));
+        return renderSuccess(workflowService.getBeforeNodes(taskId, userId, isAll != 0));
     }
 
     /**
