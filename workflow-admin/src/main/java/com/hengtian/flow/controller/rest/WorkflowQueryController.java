@@ -306,9 +306,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
      */
     @SysLog("流程任务跟踪")
     @ApiOperation(httpMethod = "GET", value = "流程任务跟踪")
-    @RequestMapping(value = "/rest/process/schedule/{processInstanceId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/rest/process/schedule", method = RequestMethod.POST)
     public void getProcessSchedule(HttpServletResponse response,
-                                   @ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @PathVariable("processInstanceId") String processInstanceId) {
+                                   @ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @RequestParam String processInstanceId) {
         logger.info("----------------获取流程跟踪图开始,入参 processInstanceId：{}----------------", processInstanceId);
         if (StringUtils.isBlank(processInstanceId)) {
             try {
