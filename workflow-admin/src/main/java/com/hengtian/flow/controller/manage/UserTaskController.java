@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.hengtian.common.base.BaseController;
-import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.enums.TaskType;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TButtonService;
@@ -21,7 +21,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -103,7 +102,7 @@ public class UserTaskController extends BaseController{
 			model.addAttribute("uTasks", uTasks);
 
 			model.addAttribute("taskType",TaskType.getTaskTypeMap());
-			model.addAttribute("assignType", AssignType.getAssignpeMap());
+			model.addAttribute("assignType", AssignTypeEnum.getAssignpeMap());
 		}
 
 		return "workflow/config/config_task";

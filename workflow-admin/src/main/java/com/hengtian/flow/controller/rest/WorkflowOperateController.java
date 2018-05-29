@@ -119,11 +119,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
 //            return result;
 //        }
 //
-//        if (!AssignType.checkExist(taskParam.getAssignType())) {
+//        if (!AssignTypeEnum.checkExist(taskParam.getAssignType())) {
 //            logger.info("审批人类型不存在");
 //            result.setCode(Constant.ASSIGN_TYPE_ERROR);
 //            result.setMsg("审批人类型不正确");
-//            result.setObj(AssignType.getList());
+//            result.setObj(AssignTypeEnum.getList());
 //            return result;
 //        }
         Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();

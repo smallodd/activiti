@@ -2,7 +2,7 @@ package com.hengtian.flow.controller.manage;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
-import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.enums.TaskListEnum;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.utils.PageInfo;
@@ -135,7 +135,7 @@ public class WorkflowDataController extends WorkflowBaseController {
         String assignee = StringUtils.isBlank(task.getAssignee()) ? null : task.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
         List<String> assigneeList = StringUtils.isBlank(assignee) ? Lists.newArrayList() : Arrays.asList(assignee.split(","));
         for (TRuTask tRuTask : tRuTasks) {
-            if (AssignType.ROLE.code.equals(tRuTask.getAssigneeType())) {
+            if (AssignTypeEnum.ROLE.code.equals(tRuTask.getAssigneeType())) {
                 tempUserList = privilegeService.getUsersByRoleId(system, null, Long.parseLong(tRuTask.getAssignee()));
                 List<String> assigneeReal = StringUtils.isBlank(tRuTask.getAssigneeReal()) ? null : Arrays.asList(tRuTask.getAssigneeReal().split(","));
                 for (RbacUser user : tempUserList) {

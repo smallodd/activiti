@@ -280,9 +280,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
             tRuTask.setTaskType(tUserTask.getTaskType());
             //判断如果是非人员审批，需要认领之后才能审批
-            if (AssignType.ROLE.code.intValue() == tUserTask.getAssignType().intValue()) {
+            if (AssignTypeEnum.ROLE.code.intValue() == tUserTask.getAssignType().intValue()) {
                 tRuTask.setStatus(-1);
-            } else if(AssignType.EXPR.code.intValue() == tUserTask.getAssignType().intValue()){
+            } else if(AssignTypeEnum.EXPR.code.intValue() == tUserTask.getAssignType().intValue()){
                 //表达式
                 List<Emp> empLeader = Lists.newArrayList();
                 String assigneeReal = null;
@@ -424,7 +424,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】审批了该任务，审批意见是【" + taskParam.getComment() + "】");
             workDetailService.insert(tWorkDetail);
 
-            if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignType.EXPR.code.equals(tUserTask.getAssignType())) {
+            if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
                 //会签
                 JSONObject approveCountJson = new JSONObject();
                 String approveCount = (String)map.get(task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value);
@@ -456,7 +456,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     String assignee = task.getAssignee();
                     taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_Y"):(assignee+","+taskParam.getAssignee()+"_Y"));
                     taskService.complete(task.getId(), map);
-                    if(AssignType.PERSON.code.equals(taskParam.getAssignType())){
+                    if(AssignTypeEnum.PERSON.code.equals(taskParam.getAssignType())){
                         TRuTask tRuTask = new TRuTask();
                         tRuTask.setStatus(TaskStatusEnum.SKIP.status);
                         EntityWrapper wrapper_ = new EntityWrapper();
@@ -476,7 +476,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         String assignee = task.getAssignee();
                         taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_N"):(assignee+","+taskParam.getAssignee()+"_N"));
                         deleteProcessInstance(task.getProcessInstanceId(), "refused");
-                        if(AssignType.PERSON.code.equals(taskParam.getAssignType())){
+                        if(AssignTypeEnum.PERSON.code.equals(taskParam.getAssignType())){
                             TRuTask tRuTask = new TRuTask();
                             tRuTask.setStatus(TaskStatusEnum.SKIP.status);
                             EntityWrapper wrapper_ = new EntityWrapper();
@@ -1274,20 +1274,20 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS = " + TaskStatusEnum.BEFORESIGN.status);
             con.append(" AND (");
-            con.append(" (trt.ASSIGNEE_TYPE =" + AssignType.PERSON.code + " AND trt.ASSIGNEE = #{assignee}) ");
+            con.append(" (trt.ASSIGNEE_TYPE =" + AssignTypeEnum.PERSON.code + " AND trt.ASSIGNEE = #{assignee}) ");
 
             if(StringUtils.isNotBlank(roleId)){
-                con.append(" OR (trt.ASSIGNEE_TYPE =" + AssignType.ROLE.code + " AND trt.ASSIGNEE IN (#{roleId}) AND #{assignee} NOT IN (trt.ASSIGNEE_REAL)) ");
+                con.append(" OR (trt.ASSIGNEE_TYPE =" + AssignTypeEnum.ROLE.code + " AND trt.ASSIGNEE IN (#{roleId}) AND #{assignee} NOT IN (trt.ASSIGNEE_REAL)) ");
             }
             con.append(")");
         } else if (TaskListEnum.ACTIVE.type.equals(type)) {
             con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS IN (" + TaskStatusEnum.BEFORESIGN.status + "," + TaskStatusEnum.OPEN.status + ") ");
             con.append(" AND (");
-            con.append(" (trt.ASSIGNEE_TYPE =" + AssignType.PERSON.code + " AND trt.ASSIGNEE = #{assignee}) ");
+            con.append(" (trt.ASSIGNEE_TYPE =" + AssignTypeEnum.PERSON.code + " AND trt.ASSIGNEE = #{assignee}) ");
 
             if(StringUtils.isNotBlank(roleId)){
-                con.append(" OR (trt.ASSIGNEE_TYPE =" + AssignType.ROLE.code + " AND trt.ASSIGNEE IN (#{roleId})) ");
+                con.append(" OR (trt.ASSIGNEE_TYPE =" + AssignTypeEnum.ROLE.code + " AND trt.ASSIGNEE IN (#{roleId})) ");
             }
             con.append(")");
         } else {

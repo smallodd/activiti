@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by ma on 2018/4/18.
+ * 审批人类型
+ * @author mayunliang@chtwm.com
+ * date 2018/5/29 13:36
  */
-public enum AssignType {
+public enum AssignTypeEnum {
     PERSON(3,"人员"),
     //DEPARTMENT(1,"部门"),
     ROLE(2,"角色"),
@@ -34,40 +36,40 @@ public enum AssignType {
         this.name = name;
     }
 
-    AssignType(Integer code, String name) {
+    AssignTypeEnum(Integer code, String name) {
         this.code=code;
         this.name=name;
     }
 
     public static Integer getCode(String name){
-        for(AssignType assignType:values()){
-            if(assignType.getName().equals(name)){
-                return  assignType.code;
+        for(AssignTypeEnum assignTypeEnum :values()){
+            if(assignTypeEnum.getName().equals(name)){
+                return  assignTypeEnum.code;
             }
         }
         return null;
     }
 
     public static String getName(int code){
-        for(AssignType assignType:values()){
-            if(assignType.getCode().intValue()==code){
-                return  assignType.name;
+        for(AssignTypeEnum assignTypeEnum :values()){
+            if(assignTypeEnum.getCode().intValue()==code){
+                return  assignTypeEnum.name;
             }
         }
         return null;
     }
 
-    public static List<AssignType> getList(){
-        List<AssignType> list=new ArrayList<>();
-        for(AssignType assignType:values()){
-              list.add(assignType);
+    public static List<AssignTypeEnum> getList(){
+        List<AssignTypeEnum> list=new ArrayList<>();
+        for(AssignTypeEnum assignTypeEnum :values()){
+              list.add(assignTypeEnum);
         }
         return list;
     }
 
     public static boolean checkExist(int code){
-        for(AssignType assignType:values()){
-            if(assignType.getCode().intValue()==code){
+        for(AssignTypeEnum assignTypeEnum :values()){
+            if(assignTypeEnum.getCode().intValue()==code){
                 return  true;
             }
         }
@@ -76,7 +78,7 @@ public enum AssignType {
 
     public static Map<Integer, String> getAssignpeMap(){
         Map<Integer,String> map = Maps.newLinkedHashMap();
-        for (AssignType c : AssignType.values()) {
+        for (AssignTypeEnum c : AssignTypeEnum.values()) {
             map.put(c.code,c.name);
         }
         return map;

@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hengtian.common.base.BaseController;
-import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TButton;
@@ -162,7 +162,7 @@ public class WorkflowBaseController extends BaseController {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("id", t.getAssignee());
             jsonObject.put("text", t.getAssigneeName());
-            if(AssignType.ROLE.code.equals(t.getAssigneeType()) || AssignType.EXPR.code.equals(t.getAssigneeType())){
+            if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType()) || AssignTypeEnum.EXPR.code.equals(t.getAssigneeType())){
                 if(StringUtils.isNotBlank(t.getAssigneeReal())){
                     String[] array = t.getAssigneeReal().split(",");
                     for(String a : array){

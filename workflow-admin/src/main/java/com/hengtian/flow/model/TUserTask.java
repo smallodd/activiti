@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.baomidou.mybatisplus.enums.IdType;
-import com.hengtian.common.enums.AssignType;
+import com.hengtian.common.enums.AssignTypeEnum;
 
 /**
  * <p>
@@ -83,7 +83,7 @@ public class TUserTask implements Serializable {
      * '审批人类型 1 :部门；2：角色：3：人员；4：组'
      */
     @TableField(value = "assign_type")
-    private Integer assignType= AssignType.PERSON.code;
+    private Integer assignType= AssignTypeEnum.PERSON.code;
     /**
      * 完成百分比，小数0-1
      */
