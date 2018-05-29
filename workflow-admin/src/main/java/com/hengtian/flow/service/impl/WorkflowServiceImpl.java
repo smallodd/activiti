@@ -809,6 +809,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
 
+        RbacUser user = userService.getUserById(targetUserId);
+        if(user == null){
+            return new Result(false, "被转办人不存在");
+        }
+
         EntityWrapper<TRuTask> wrapper = new EntityWrapper();
         wrapper.where("task_id={0}", taskId);
 
@@ -831,7 +836,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(StringUtils.contains(tRuTask.getAssigneeReal(), targetUserId)){
             return new Result(false, "办理人已存在，同一办理人只能办理一次");
         }
+        if(userId.indexOf(":") < 0){
+            tRuTask.setAssignee(targetUserId);
+            tRuTask.setAssigneeName(user.getName());
+        }
+
         tRuTask.setAssigneeReal(tRuTask.getAssigneeReal().replace(oldUser, targetUserId));
+
         tRuTaskService.updateById(tRuTask);
         return new Result(true, "转办任务成功");
     }
