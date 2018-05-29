@@ -436,7 +436,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
                                   @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
                                  @ApiParam(value = "是否递归获取父级节点", name = "isAll", required = true) @RequestParam(defaultValue = "1") Integer isAll) {
         logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", taskId);
-        return renderSuccess(workflowService.getBeforeNodes(taskId, userId, isAll != 0));
+        return workflowService.getBeforeNodes(taskId, userId, isAll != 0);
     }
 
     /**
