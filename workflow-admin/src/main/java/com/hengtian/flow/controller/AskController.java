@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author chenzhangyan  on 2018/4/18.
  */
-@RequestMapping("ask")
+@RequestMapping("/rest/ask")
 @Controller
 public class AskController extends BaseController {
     private static final Logger log = LoggerFactory.getLogger(AskController.class);
@@ -65,7 +65,7 @@ public class AskController extends BaseController {
             request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
             request.setAttribute("processInstanceId", task.getProcessInstanceId());
         }
-        Result result = workflowService.getParentNodes(taskId, getUserId(), true);
+        Result result = workflowService.getBeforeNodes(taskId, getUserId(), true);
         request.setAttribute("tasks", result.getObj());
         return "ask/comment";
     }
