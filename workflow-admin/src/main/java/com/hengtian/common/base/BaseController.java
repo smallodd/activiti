@@ -65,7 +65,7 @@ public abstract class BaseController {
         Result result = new Result();
         result.setMsg(msg);
         result.setCode(Constant.FAIL);
-        return JSONObject.toJSONString(result);
+        return result;
     }
     /**
      * ajax失败
@@ -76,7 +76,7 @@ public abstract class BaseController {
         Result result = new Result();
         result.setMsg(msg);
         result.setCode(code);
-        return JSONObject.toJSONString(result);
+        return result;
     }
     /**
      * ajax失败
@@ -88,7 +88,7 @@ public abstract class BaseController {
         result.setMsg(msg);
         result.setCode(code);
         result.setObj(o);
-        return JSONObject.toJSONString(result);
+        return result;
     }
 
     /**
@@ -99,21 +99,10 @@ public abstract class BaseController {
         Result result = new Result();
         result.setSuccess(true);
         result.setCode(Constant.SUCCESS);
-        return JSONObject.toJSONString(result);
+        return result;
     }
 
-    /**
-     * ajax成功
-     * @param msg 消息
-     * @return {Object}
-     */
-    public Object renderSuccess(String msg) {
-        Result result = new Result();
-        result.setSuccess(true);
-        result.setMsg(msg);
-        result.setCode(Constant.SUCCESS);
-        return JSONObject.toJSONString(result);
-    }
+
 
 
     /**
@@ -151,7 +140,7 @@ public abstract class BaseController {
         result.setSuccess(true);
         result.setObj(obj);
         result.setCode(Constant.SUCCESS);
-        return JSONObject.toJSONString(result);
+        return result;
     }
     
     public <T> Page<T> getPage(int current, int size, String sort, String order){
