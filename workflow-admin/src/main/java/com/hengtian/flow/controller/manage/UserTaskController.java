@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignTypeEnum;
-import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskTypeEnum;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TButtonService;
 import com.hengtian.flow.service.TUserTaskService;
@@ -101,7 +101,7 @@ public class UserTaskController extends BaseController{
 			model.addAttribute("taskJson", taskJson);
 			model.addAttribute("uTasks", uTasks);
 
-			model.addAttribute("taskType",TaskType.getTaskTypeMap());
+			model.addAttribute("taskType", TaskTypeEnum.getTaskTypeMap());
 			model.addAttribute("assignType", AssignTypeEnum.getAssignpeMap());
 		}
 

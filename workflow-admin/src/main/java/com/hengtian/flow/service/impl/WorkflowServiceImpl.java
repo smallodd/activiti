@@ -424,7 +424,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】审批了该任务，审批意见是【" + taskParam.getComment() + "】");
             workDetailService.insert(tWorkDetail);
 
-            if (TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
+            if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
                 //会签
                 JSONObject approveCountJson = new JSONObject();
                 String approveCount = (String)map.get(task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value);

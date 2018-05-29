@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
-import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskTypeEnum;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.ActivitiService;
@@ -155,10 +155,10 @@ public class TUserTaskController extends BaseController{
     		TUserTask tUserTask= tUserTaskService.selectById(taskId);
 
 			tUserTask.setTaskType(obj.get("type").toString());
-    		if(TaskType.COUNTERSIGN.value.equals(obj.get("type").toString())){
+    		if(TaskTypeEnum.COUNTERSIGN.value.equals(obj.get("type").toString())){
 				if(obj.get("value").toString().split(",").length == 1){
 					//会签时，任务节点审核人只有一个时转为普通任务
-					tUserTask.setTaskType(TaskType.ASSIGNEE.value);
+					tUserTask.setTaskType(TaskTypeEnum.ASSIGNEE.value);
 				}
 			}
     		tUserTask.setCandidateIds(obj.get("value").toString());

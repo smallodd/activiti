@@ -9,7 +9,7 @@ import com.google.common.collect.Maps;
 import com.hengtian.application.model.App;
 import com.hengtian.application.service.AppService;
 import com.hengtian.common.enums.TaskStatus;
-import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskTypeEnum;
 import com.hengtian.common.enums.TaskVariableEnum;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
@@ -291,7 +291,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 			runtimeService.setVariable(processInstanceId,processInstanceId+":"+ TaskVariableEnum.LASTTASKUSER.value,userId);
 			if(map != null){
 				String taskTypeCurrent = map.get(task.getTaskDefinitionKey()+":"+ TaskVariableEnum.TASKTYPE.value) + "";
-				if(TaskType.COUNTERSIGN.value.equals(taskTypeCurrent)){
+				if(TaskTypeEnum.COUNTERSIGN.value.equals(taskTypeCurrent)){
 					//会签人
 					String userCount = (String)map.get(task.getTaskDefinitionKey()+":"+ TaskVariableEnum.USERCOUNT.value);
 					if(StringUtils.isBlank(userCount)){
@@ -671,7 +671,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 					variable.put(tUserTask.getTaskDefKey()+":"+ TaskVariableEnum.TASKTYPE.value,tUserTask.getTaskType());
 					variable.put(tUserTask.getTaskDefKey()+":"+ TaskVariableEnum.TASKUSER.value,candidateIds);
 
-					if (TaskType.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
+					if (TaskTypeEnum.CANDIDATEUSER.value.equals(tUserTask.getTaskType())) {
 						//候选人
 						for(String candidateId : candidateIds.split(",")){
 							variable.put(tUserTask.getTaskDefKey()+":"+candidateId,candidateId+":"+TaskStatus.UNFINISHED.value);
@@ -679,7 +679,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 
 						variable.put(tUserTask.getTaskDefKey()+":"+ TaskVariableEnum.TASKTYPE.value,tUserTask.getTaskType());
 						variable.put(tUserTask.getTaskDefKey()+":"+ TaskVariableEnum.TASKUSER.value,candidateIds);
-					} else if(TaskType.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
+					} else if(TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType())){
 						/**
 						 * 为当前任务设置属性值
 						 * 把审核人信息放入属性表，多个审核人（会签/候选）多条记录

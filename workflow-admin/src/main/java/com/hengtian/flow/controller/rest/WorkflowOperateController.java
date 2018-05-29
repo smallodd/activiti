@@ -111,11 +111,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
             result.setCode(Constant.PARAM_ERROR);
             return result;
         }
-//        if (!TaskType.checkExist(taskParam.getTaskType())) {
+//        if (!TaskTypeEnum.checkExist(taskParam.getTaskType())) {
 //            logger.info("任务类型不存在");
 //            result.setCode(Constant.TASK_TYPE_ERROR);
 //            result.setMsg("任务类型不正确");
-//            result.setObj(TaskType.getTaskTypeList());
+//            result.setObj(TaskTypeEnum.getTaskTypeList());
 //            return result;
 //        }
 //

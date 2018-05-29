@@ -11,7 +11,7 @@ import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.TaskStatus;
-import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskTypeEnum;
 import com.hengtian.common.enums.TaskVariableEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
@@ -440,7 +440,7 @@ public class ActivitiController extends BaseController{
 			ShiroUser user = getShiroUser();
     		if(ConstantUtils.ADMIN_ID.equals(user.getId()) || user.getId().equals(userId)){
 				String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey()+":"+ TaskVariableEnum.TASKTYPE.value)+"";
-				if(TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)){
+				if(TaskTypeEnum.COUNTERSIGN.value.equals(taskType) || TaskTypeEnum.CANDIDATEUSER.value.equals(taskType)){
 					//会签
 					//修改会签人
 					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.TASKUSER.value)+"";

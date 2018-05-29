@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.AssignTypeEnum;
-import com.hengtian.common.enums.TaskType;
+import com.hengtian.common.enums.TaskTypeEnum;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.dao.TUserTaskDao;
@@ -64,10 +64,10 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
             int assigneeCount = StringUtils.isBlank(assignee)?0:assignee.split(",").length;
             int assigneeNeed = 0;
 
-            if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType")) || TaskType.CANDIDATEUSER.value.equals(obj.getString("taskType"))){
+            if(TaskTypeEnum.COUNTERSIGN.value.equals(obj.getString("taskType")) || TaskTypeEnum.CANDIDATEUSER.value.equals(obj.getString("taskType"))){
                 if(assigneeCount == 1 && AssignTypeEnum.PERSON.code.equals(obj.getInteger("assignType"))){
                     //会签时，任务节点审核人只有一个时转为普通任务
-                    tUserTask.setTaskType(TaskType.ASSIGNEE.value);
+                    tUserTask.setTaskType(TaskTypeEnum.ASSIGNEE.value);
                 }
             }
             tUserTask.setCandidateIds(obj.getString("code"));
@@ -78,7 +78,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
                 percentage = 1d;
             }
 
-            if(TaskType.CANDIDATEUSER.value.equals(obj.getString("taskType"))){
+            if(TaskTypeEnum.CANDIDATEUSER.value.equals(obj.getString("taskType"))){
                 //候选
                 if(StringUtils.isNotBlank(assignee)){
                     assigneeCount = 1;
@@ -98,7 +98,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
 
                     assigneeNeed = (int)Math.round(assigneeCount*percentage);
                 }else{
-                    if(TaskType.COUNTERSIGN.value.equals(obj.getString("taskType"))){
+                    if(TaskTypeEnum.COUNTERSIGN.value.equals(obj.getString("taskType"))){
                         assigneeNeed = (int)Math.round(assigneeCount*percentage);
                     }else{
                         assigneeNeed = 1;

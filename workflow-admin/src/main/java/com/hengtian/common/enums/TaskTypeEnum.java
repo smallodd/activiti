@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public enum TaskType {
+public enum TaskTypeEnum {
     //审核人
     ASSIGNEE("assignee","审批"),
     //会签
@@ -18,7 +18,7 @@ public enum TaskType {
 
     public String name;
 
-    TaskType(String value,String name){
+    TaskTypeEnum(String value, String name){
         this.value = value;
         this.name=name;
     }
@@ -40,7 +40,7 @@ public enum TaskType {
     }
 
     public static String getValue(String name) {
-        for (TaskType c : TaskType.values()) {
+        for (TaskTypeEnum c : TaskTypeEnum.values()) {
             if (c.getName().equals(name) ) {
                 return c.value;
             }
@@ -49,7 +49,7 @@ public enum TaskType {
     }
 
     public static String getName(String value) {
-        for (TaskType c : TaskType.values()) {
+        for (TaskTypeEnum c : TaskTypeEnum.values()) {
             if (c.getValue().equals(value) ) {
                 return c.name;
             }
@@ -58,7 +58,7 @@ public enum TaskType {
     }
 
     public static boolean checkExist(String value){
-        for (TaskType c : TaskType.values()) {
+        for (TaskTypeEnum c : TaskTypeEnum.values()) {
             if (c.getValue().equals(value) ) {
                 return true;
             }
@@ -66,17 +66,17 @@ public enum TaskType {
         return false;
     }
 
-    public static List<TaskType> getTaskTypeList(){
-        List<TaskType> taskTypes=new ArrayList<>();
-        for (TaskType c : TaskType.values()) {
-          taskTypes.add(c);
+    public static List<TaskTypeEnum> getTaskTypeList(){
+        List<TaskTypeEnum> taskTypeEnums =new ArrayList<>();
+        for (TaskTypeEnum c : TaskTypeEnum.values()) {
+          taskTypeEnums.add(c);
         }
-        return taskTypes;
+        return taskTypeEnums;
     }
 
     public static Map<String, String> getTaskTypeMap(){
         Map<String,String> map = Maps.newLinkedHashMap();
-        for (TaskType c : TaskType.values()) {
+        for (TaskTypeEnum c : TaskTypeEnum.values()) {
             map.put(c.value,c.name);
         }
         return map;
