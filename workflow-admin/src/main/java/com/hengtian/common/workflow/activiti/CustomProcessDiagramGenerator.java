@@ -3,7 +3,6 @@ package com.hengtian.common.workflow.activiti;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Event;
 import org.activiti.bpmn.model.Process;
-import org.activiti.image.impl.CustomProcessDiagramCanvas;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.awt.*;
