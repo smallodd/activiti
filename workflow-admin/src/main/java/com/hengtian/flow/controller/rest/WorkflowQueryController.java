@@ -2,8 +2,8 @@ package com.hengtian.flow.controller.rest;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.hengtian.common.enums.ApproveResultEnum;
 import com.hengtian.common.enums.ResultEnum;
-import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.ProcessInstanceQueryParam;
@@ -174,7 +174,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }
         if(taskQueryParam.getTaskState() == null){
             taskQueryParam.setTaskState("");
-        }else if ("_Y".equals(taskQueryParam.getTaskState()) || "_N".equals(taskQueryParam.getTaskState())){
+        }else if (ApproveResultEnum.AGREE.result.equals(taskQueryParam.getTaskState()) || ApproveResultEnum.REFUSE.result.equals(taskQueryParam.getTaskState())){
             return renderError(ResultEnum.PARAM_ERROR.msg+"必须为_Y或_N或为''", ResultEnum.PARAM_ERROR.code);
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
