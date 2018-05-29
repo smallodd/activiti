@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author chenzhangyan  on 2018/4/18.
  */
-@RequestMapping("ask")
+@RequestMapping("/rest/ask")
 @Controller
 public class AskController extends BaseController {
     private static final Logger log = LoggerFactory.getLogger(AskController.class);
