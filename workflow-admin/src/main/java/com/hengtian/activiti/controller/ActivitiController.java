@@ -353,7 +353,7 @@ public class ActivitiController extends BaseController{
 			return renderError("任务没有审批人，请将任务转办给审批人！",Constant.FAIL);
 		}
 		TRuTask tRuTask=list.get(0);
-		taskParam.setApprover(tRuTask.getAssigneeReal());
+		taskParam.setAssignee(tRuTask.getAssigneeReal());
 		taskParam.setAssignType(tRuTask.getAssigneeType());
 		ShiroUser user = getShiroUser();
 		if(user.getLoginName().equals("admin")) {

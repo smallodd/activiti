@@ -18,6 +18,8 @@ public class TRuTask implements Serializable {
     private String id;
     @TableField(value = "task_id")
     private String taskId;
+    @TableField(value = "task_def_key")
+    private String taskDefKey;
     @TableField(value = "assignee")
     private String assignee;
     @TableField(value = "assignee_name")
@@ -143,5 +145,13 @@ public class TRuTask implements Serializable {
 
     public void setAssigneeName(String assigneeName) {
         this.assigneeName = assigneeName;
+    }
+
+    public String getTaskDefKey() {
+        return taskDefKey;
+    }
+
+    public void setTaskDefKey(String taskDefKey) {
+        this.taskDefKey = taskDefKey;
     }
 }

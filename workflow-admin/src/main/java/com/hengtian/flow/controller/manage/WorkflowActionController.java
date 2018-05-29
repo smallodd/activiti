@@ -183,7 +183,7 @@ public class WorkflowActionController extends BaseController {
         }
 
         TRuTask tRuTask = tRuTasks.get(0);
-        taskParam.setApprover(assignee);
+        taskParam.setAssignee(assignee);
         taskParam.setAssignType(tRuTask.getAssigneeType());
         taskParam.setComment("【管理员代办】"+commentContent);
         taskParam.setPass(commentResult);

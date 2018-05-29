@@ -341,6 +341,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             tRuTask.setExpireTime(task.getDueDate());
             tRuTask.setAppKey(Integer.valueOf(map.get("appKey").toString()));
             tRuTask.setProcInstId(task.getProcessInstanceId());
+            tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
             tRuTaskService.insert(tRuTask);
         }
 
@@ -1145,6 +1146,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public void closeTaskList(PageInfo pageInfo) {
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryCloseTask(page, pageInfo.getCondition());
+        for(TaskResult t : list){
+            t.setAssigneeNext(getNextAssignee(t.getTaskId()));
+        }
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
     }
@@ -1160,6 +1164,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public void activeTaskList(PageInfo pageInfo) {
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryActiveTask(page, pageInfo.getCondition());
+        for(TaskResult t : list){
+            t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
+        }
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
     }

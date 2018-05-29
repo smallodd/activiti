@@ -80,7 +80,6 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @Autowired
     private PrivilegeService privilegeService;
 
-
     /**
      * 获取我发起的流程
      *
