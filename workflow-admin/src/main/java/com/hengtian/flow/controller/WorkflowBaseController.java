@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.hengtian.common.base.BaseController;
+import com.hengtian.common.base.BaseRestController;
 import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.PageInfo;
@@ -32,7 +32,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
-public class WorkflowBaseController extends BaseController {
+/**
+ * 基类
+ * @author houjinrong@chtwm.com
+ * date 2018/5/29 17:34
+ */
+public class WorkflowBaseController extends BaseRestController {
 
     Logger logger = Logger.getLogger(getClass());
 

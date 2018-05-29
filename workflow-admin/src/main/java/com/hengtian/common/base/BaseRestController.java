@@ -1,25 +1,24 @@
 package com.hengtian.common.base;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import com.alibaba.fastjson.JSONObject;
-import com.hengtian.common.result.Constant;
-import org.apache.shiro.SecurityUtils;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
-import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringEscapeEditor;
+import org.apache.shiro.SecurityUtils;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * @description：基础 controller
  */
-public abstract class BaseController {
-
+public abstract class BaseRestController {
+	
     @InitBinder
     public void initBinder(ServletRequestDataBinder binder) {
         /**
@@ -65,7 +64,7 @@ public abstract class BaseController {
         Result result = new Result();
         result.setMsg(msg);
         result.setCode(Constant.FAIL);
-        return JSONObject.toJSONString(result);
+        return result;
     }
     /**
      * ajax失败
@@ -76,7 +75,7 @@ public abstract class BaseController {
         Result result = new Result();
         result.setMsg(msg);
         result.setCode(code);
-        return JSONObject.toJSONString(result);
+        return result;
     }
     /**
      * ajax失败
@@ -88,7 +87,7 @@ public abstract class BaseController {
         result.setMsg(msg);
         result.setCode(code);
         result.setObj(o);
-        return JSONObject.toJSONString(result);
+        return result;
     }
 
     /**
@@ -99,7 +98,7 @@ public abstract class BaseController {
         Result result = new Result();
         result.setSuccess(true);
         result.setCode(Constant.SUCCESS);
-        return JSONObject.toJSONString(result);
+        return result;
     }
 
     /**
@@ -112,7 +111,7 @@ public abstract class BaseController {
         result.setSuccess(true);
         result.setMsg(msg);
         result.setCode(Constant.SUCCESS);
-        return JSONObject.toJSONString(result);
+        return result;
     }
 
 
@@ -151,9 +150,9 @@ public abstract class BaseController {
         result.setSuccess(true);
         result.setObj(obj);
         result.setCode(Constant.SUCCESS);
-        return JSONObject.toJSONString(result);
+        return result;
     }
-
+    
     public <T> Page<T> getPage(int current, int size, String sort, String order){
         Page<T> page = new Page<T>(current, size, sort);
         if ("desc".equals(order)) {
@@ -163,7 +162,7 @@ public abstract class BaseController {
         }
         return page;
     }
-
+    
     public <T> PageInfo pageToPageInfo(Page<T> page) {
         PageInfo pageInfo = new PageInfo();
         pageInfo.setRows(page.getRecords());
