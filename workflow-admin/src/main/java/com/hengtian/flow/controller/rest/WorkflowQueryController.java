@@ -9,6 +9,7 @@ import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.ProcessInstanceQueryParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
+import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
@@ -28,6 +29,7 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -473,6 +475,50 @@ public class WorkflowQueryController extends WorkflowBaseController {
         Long count = workflowService.activeTaskCount(paraMap);
         return renderSuccess(count);
     }
+
+    /**
+     * 查询用户某个任务是否审批过
+     * @param userCode  用户主键
+     * @param bussinessId  业务主键
+     * @param appKey   appKey
+     * @return
+     */
+    @SysLog("查询用户是否已经审批过某个任务")
+    @ApiOperation(httpMethod = "POST", value = "查询用户是否已经审批过某个任务")
+    @RequestMapping(value = "/rest/task/checkUserApproved", method = RequestMethod.POST)
+    @ResponseBody
+    public Object checkUserApproved(@ApiParam(value = "用户code", name = "userCode", required = true) @RequestParam("userCode") String userCode,@ApiParam(value = "业务主键", name = "bussinessId", required = true) @RequestParam("bussinessId")String bussinessId,@ApiParam(value = "系统键值", name = "appKey",  required = true) @RequestParam("appKey")String appKey){
+        Result result=new Result();
+        if(StringUtils.isBlank(userCode)||StringUtils.isBlank(bussinessId)||StringUtils.isBlank(appKey)){
+
+            result.setSuccess(false);
+            result.setCode(Constant.PARAM_ERROR);
+            result.setMsg("参数错误！");
+            return result;
+        }
+     List<HistoricTaskInstance> list=   historyService.createHistoricTaskInstanceQuery().processInstanceBusinessKey(bussinessId).processVariableValueEquals("appKey", appKey).taskAssigneeLike("%"+userCode+"").orderByTaskCreateTime().desc().list();
+
+        if(list!=null&&list.size()>0){
+            HistoricTaskInstance historicTaskInstance=list.get(0);
+            if(historicTaskInstance.getEndTime()!=null){
+                result.setMsg("用户已经审批过");
+                result.setSuccess(true);
+                result.setCode(Constant.SUCCESS);
+                return result;
+            }else{
+                result.setMsg("用户未审批过");
+                result.setSuccess(false);
+                result.setCode(Constant.SUCCESS);
+                return result;
+            }
+        }else{
+            result.setMsg("用户未审批过");
+            result.setSuccess(false);
+            result.setCode(Constant.SUCCESS);
+            return result;
+        }
+    }
+
 
     /**
      * 任务详情
