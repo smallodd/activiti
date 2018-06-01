@@ -312,7 +312,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
      */
     @SysLog("流程任务跟踪")
     @ApiOperation(httpMethod = "GET", value = "流程任务跟踪")
-    @RequestMapping(value = "/rest/process/schedule", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/process/schedule", method = RequestMethod.GET)
     public void getProcessSchedule(HttpServletResponse response,
                                    @ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @RequestParam String processInstanceId) {
         logger.info("----------------获取流程跟踪图开始,入参 processInstanceId：{}----------------", processInstanceId);
@@ -433,7 +433,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "获取父级任务节点")
     @RequestMapping(value = "/rest/node/before", method = RequestMethod.POST)
     public Object getBeforeNodes(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
-                                  @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
+                                 @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
                                  @ApiParam(value = "是否递归获取父级节点", name = "isAll", required = true) @RequestParam(defaultValue = "1") Integer isAll) {
         logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", taskId);
         return workflowService.getBeforeNodes(taskId, userId, isAll != 0);
@@ -472,5 +472,25 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }
         Long count = workflowService.activeTaskCount(paraMap);
         return renderSuccess(count);
+    }
+
+    /**
+     * 任务详情
+     * @param userId 用户ID
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 9:40
+     */
+    @ResponseBody
+    @SysLog("任务详情")
+    @ApiOperation(httpMethod = "POST", value = "任务详情")
+    @RequestMapping(value = "/rest/task/detail", method = RequestMethod.POST)
+    public Object taskDetail(@ApiParam(value = "用户ID", name = "userId", required = true) @RequestParam String userId,
+                             @ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId){
+        if(StringUtils.isBlank(userId) || StringUtils.isBlank(taskId)){
+            return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
+        }
+        return workflowService.taskDetail(userId, taskId);
     }
 }

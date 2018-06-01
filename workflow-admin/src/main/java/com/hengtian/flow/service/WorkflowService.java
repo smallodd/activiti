@@ -271,4 +271,14 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/4/23 16:01
      */
     Long activeTaskCount(Map<String,Object> paraMap);
+
+    /**
+     * 任务详情
+     * @param userId 用户ID
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 9:44
+     */
+    Result taskDetail(String userId, String taskId);
 }
