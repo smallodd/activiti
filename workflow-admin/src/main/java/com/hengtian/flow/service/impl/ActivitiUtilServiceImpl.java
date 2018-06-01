@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.enums.ProcessStatusEnum;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
@@ -19,6 +20,8 @@ import com.hengtian.flow.service.RuProcinstService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TTaskButtonService;
 import com.hengtian.flow.vo.TaskVo;
+import com.rbac.entity.RbacRole;
+import com.rbac.service.PrivilegeService;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.engine.*;
@@ -77,6 +80,8 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private RuProcinstService ruProcinstService;
     @Autowired
     private TRuTaskService tRuTaskService;
+    @Autowired
+    private PrivilegeService privilegeService;
 
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list){
         if(list!=null&&list.size()>0) {
@@ -971,5 +976,77 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
 
         return assignee;
+    }
+
+    /**
+     * 通过用户ID获取用户所有所属角色
+     * @param processInstanceId 流程实例ID
+     * @param userId 用户ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 11:29
+     */
+    protected List<Long> getAllRoleByUserId(String processInstanceId, String userId){
+        Integer system = getAppKey(processInstanceId);
+        if(system == null){
+            return null;
+        }
+        List<RbacRole> roles = privilegeService.getAllRoleByUserId(system, userId);
+        if(CollectionUtils.isEmpty(roles)){
+            return null;
+        }
+        List<Long> roleIds = Lists.newArrayList();
+        for(RbacRole role : roles){
+            roleIds.add(role.getId());
+        }
+
+        return roleIds;
+    }
+
+    /**
+     * 通过流程实例ID获取系统KEY
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 11:21
+     */
+    protected Integer getAppKey(String processInstanceId){
+        EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
+        wrapper.eq("proc_inst_id", processInstanceId);
+        RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
+        return ruProcinst==null?null:ruProcinst.getAppKey();
+    }
+
+    /**
+     * 检验用户是否有权操作该任务
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 11:50
+     */
+    protected boolean validateUserIntask(TaskInfo task, String userId, List<TRuTask> tRuTasks){
+        if(CollectionUtils.isEmpty(tRuTasks)){
+            return false;
+        }
+
+        if(tRuTasks.get(0).getAssigneeType().equals(AssignTypeEnum.ROLE.code)){
+            //角色审批
+            List<Long> roleIds = getAllRoleByUserId(task.getProcessInstanceId(), userId);
+            if(CollectionUtils.isNotEmpty(roleIds)){
+                return false;
+            }
+            for(TRuTask rt : tRuTasks){
+                if(roleIds.contains(rt.getAssignee())){
+                    return true;
+                }
+            }
+        }else{
+            //人员审批
+            for(TRuTask rt : tRuTasks){
+                if(userId.equals(rt.getAssignee())){
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

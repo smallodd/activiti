@@ -2,6 +2,7 @@ package com.hengtian.flow.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.enums.SqlLike;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.google.common.base.Joiner;
@@ -1493,5 +1494,34 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public Long activeTaskCount(Map<String,Object> paraMap){
         return workflowDao.activeTaskCount(paraMap);
+    }
+
+    /**
+     * 任务详情
+     * @param userId 用户ID
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 9:44
+     */
+    @Override
+    public Result taskDetail(String userId, String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return new Result("任务ID【"+taskId+"】对应的任务不能存在");
+        }
+        EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
+        wrapper.eq("task_id", taskId);
+        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+
+        if(!validateUserIntask(task, userId,tRuTasks)){
+            return new Result("用户【"+userId+"】无权查看任务【"+taskId+"】");
+        }
+        List<Task> resultList = Lists.newArrayList(task);
+
+        Result result = new Result();
+        result.setSuccess(true);
+        result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
+        return result;
     }
 }
