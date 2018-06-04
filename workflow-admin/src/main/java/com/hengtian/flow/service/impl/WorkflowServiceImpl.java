@@ -140,10 +140,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         }
         //校验当前业务主键是否已经在系统中存在
-        boolean isInFlow = checkBusinessKeyIsInFlow(processParam.getProcessDefinitionKey(), processParam.getBussinessKey(), processParam.getAppKey());
+        boolean isInFlow = checkBusinessKeyIsInFlow(processParam.getProcessDefinitionKey(), processParam.getBusinessKey(), processParam.getAppKey());
 
         if (isInFlow) {
-            log.info("业务主键【{}】已经提交过任务", processParam.getBussinessKey());
+            log.info("业务主键【{}】已经提交过任务", processParam.getBusinessKey());
             //已经创建过则返回错误信息
             result.setSuccess(false);
             result.setMsg("此条信息已经提交过任务");
@@ -171,7 +171,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             variables.put("appKey", processParam.getAppKey());
             identityService.setAuthenticatedUserId(creator);
             //生成任务
-            ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(processParam.getProcessDefinitionKey(), processParam.getBussinessKey(), variables);
+            ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(processParam.getProcessDefinitionKey(), processParam.getBusinessKey(), variables);
 
             //给对应实例生成标题
             runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());

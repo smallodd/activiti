@@ -35,7 +35,7 @@ public class ProcessParam {
      * 业务主键，各个业务系统中唯一
      */
     @ApiModelProperty(value = "业务主键，各个业务系统中唯一", required = true, example="业务主键")
-    private String bussinessKey;
+    private String businessKey;
     /**
      * 自定义审批人
      */
@@ -79,12 +79,12 @@ public class ProcessParam {
         this.appKey = appKey;
     }
 
-    public String getBussinessKey() {
-        return bussinessKey;
+    public String getBusinessKey() {
+        return businessKey;
     }
 
-    public void setBussinessKey(String bussinessKey) {
-        this.bussinessKey = bussinessKey;
+    public void setBusinessKey(String businessKey) {
+        this.businessKey = businessKey;
     }
 
     public boolean isCustomApprover() {
@@ -118,7 +118,7 @@ public class ProcessParam {
             result.setMsg("processDefinitionKey流程定义key属于必传字段！");
         }else if(getAppKey()==null){
             result.setMsg("appKey系统定义key属于必传字段！");
-        }else if(StringUtils.isBlank(getBussinessKey())){
+        }else if(StringUtils.isBlank(getBusinessKey())){
             result.setMsg("bussinessKey业务主键属于必传字段！");
         }else{
             result.setCode(Constant.SUCCESS);
