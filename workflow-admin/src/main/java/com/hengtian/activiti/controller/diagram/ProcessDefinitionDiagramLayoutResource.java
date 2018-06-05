@@ -13,20 +13,36 @@
 
 package com.hengtian.activiti.controller.diagram;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.rest.diagram.services.BaseProcessDefinitionDiagramLayoutResource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 @RestController
 @RequestMapping(value="/diagram-viewer/service")
 public class ProcessDefinitionDiagramLayoutResource extends BaseProcessDefinitionDiagramLayoutResource {
 
+  @Autowired
+  private RuntimeService runtimeService;
+
   @RequestMapping(value="/process-definition/{processDefinitionId}/diagram-layout", method = RequestMethod.GET, produces = "application/json")
   public ObjectNode getDiagram(@PathVariable String processDefinitionId) {
     return getDiagramNode(null, processDefinitionId);
+  }
+
+  /**
+   * 获取流程定义详情
+   * @author houjinrong@chtwm.com
+   * date 2018/6/5 18:23
+   */
+  @RequestMapping(value="/process-definition/{processInstanceId}/diagram-layout", method = RequestMethod.GET, produces = "application/json")
+  public ObjectNode getDiagramByProcessDefinitionId(@PathVariable String processInstanceId) {
+    ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+    return getDiagramNode(null, processInstance.getProcessDefinitionId());
   }
 }
