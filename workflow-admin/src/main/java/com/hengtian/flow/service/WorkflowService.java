@@ -6,10 +6,12 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
 import org.activiti.engine.task.Task;
 
+import java.util.List;
 import java.util.Map;
 
 public interface WorkflowService extends IService<TaskResult> {
@@ -38,6 +40,17 @@ public interface WorkflowService extends IService<TaskResult> {
      * @return
      */
     Object approveTask(Task task, TaskParam taskParam);
+
+    /**
+     * 校验审批人是否有权限审批
+     * @param task 任务对象
+     * @param assignee 审批人工号
+     * @param tRuTasks 节点审批信息
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/4 17:44
+     */
+    TRuTask validateTaskAssignee(Task task, String assignee, List<TRuTask> tRuTasks);
 
     /**
      * 任务认领 部门，角色，组审批时，需具体人员认领任务

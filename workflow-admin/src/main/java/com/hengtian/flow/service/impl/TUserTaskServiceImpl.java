@@ -86,22 +86,27 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
                 }
             }else {
                 //审批和会签
-                if(AssignTypeEnum.ROLE.code.equals(obj.getInteger("assignType"))){
-                    String roleIds = obj.getString("code");
-                    assigneeCount = 0;
-                    if(StringUtils.isNotBlank(roleIds)){
-                        String[] roleIdArray = roleIds.split(",");
-                        for(String roleId : roleIdArray){
-                            assigneeCount = assigneeCount + privilegeService.getUsersByRoleId(1, null, Long.parseLong(roleId)).size();
-                        }
-                    }
-
-                    assigneeNeed = (int)Math.round(assigneeCount*percentage);
+                if(percentage == 0){
+                    assigneeNeed = obj.getInteger("userCountNeed");
+                    assigneeCount = assigneeNeed;
                 }else{
-                    if(TaskTypeEnum.COUNTERSIGN.value.equals(obj.getString("taskType"))){
+                    if(AssignTypeEnum.ROLE.code.equals(obj.getInteger("assignType"))){
+                        String roleIds = obj.getString("code");
+                        assigneeCount = 0;
+                        if(StringUtils.isNotBlank(roleIds)){
+                            String[] roleIdArray = roleIds.split(",");
+                            for(String roleId : roleIdArray){
+                                assigneeCount = assigneeCount + privilegeService.getUsersByRoleId(1, null, Long.parseLong(roleId)).size();
+                            }
+                        }
+
                         assigneeNeed = (int)Math.round(assigneeCount*percentage);
                     }else{
-                        assigneeNeed = 1;
+                        if(TaskTypeEnum.COUNTERSIGN.value.equals(obj.getString("taskType"))){
+                            assigneeNeed = (int)Math.round(assigneeCount*percentage);
+                        }else{
+                            assigneeNeed = 1;
+                        }
                     }
                 }
             }

@@ -90,6 +90,11 @@ public class TUserTask implements Serializable {
     @TableField(value = "percentage")
     private Double percentage;
     /**
+     * 审批人为角色时，是否需要签收：0不需要；1需要
+     */
+    @TableField(value = "need_sign")
+    private short needSign;
+    /**
      * 表达式
      */
     @TableField(value = "expr")
@@ -213,5 +218,13 @@ public class TUserTask implements Serializable {
 
     public void setPercentage(Double percentage) {
         this.percentage = percentage;
+    }
+
+    public short getNeedSign() {
+        return needSign;
+    }
+
+    public void setNeedSign(short needSign) {
+        this.needSign = needSign;
     }
 }

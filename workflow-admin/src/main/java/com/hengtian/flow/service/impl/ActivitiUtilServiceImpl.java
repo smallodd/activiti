@@ -9,16 +9,16 @@ import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.enums.ProcessStatusEnum;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
+import com.hengtian.common.param.TaskParam;
+import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.dao.WorkflowDao;
-import com.hengtian.flow.model.RuProcinst;
-import com.hengtian.flow.model.TButton;
-import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.model.TaskResult;
+import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.RuProcinstService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TTaskButtonService;
+import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.service.PrivilegeService;
@@ -82,54 +82,58 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private TRuTaskService tRuTaskService;
     @Autowired
     private PrivilegeService privilegeService;
+    @Autowired
+    private TUserTaskService tUserTaskService;
 
-    public List<TaskNodeResult> setButtons(List<TaskNodeResult> list){
-        if(list!=null&&list.size()>0) {
-            String id=list.get(0).getProcessInstanceId();
-            ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
+    public List<TaskNodeResult> setButtons(List<TaskNodeResult> list) {
+        if (list != null && list.size() > 0) {
+            String id = list.get(0).getProcessInstanceId();
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
             for (TaskNodeResult taskNodeResult : list) {
 
-                List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
+                List<TButton> tButtons = tTaskButtonService.selectTaskButtons(processInstance.getProcessDefinitionKey(), taskNodeResult.getTaskDefinedKey());
 
                 taskNodeResult.setButtonKeys(tButtons);
             }
         }
-        return  list;
+        return list;
     }
 
-    public TaskNodeResult setButtons(TaskNodeResult taskNodeResult){
+    public TaskNodeResult setButtons(TaskNodeResult taskNodeResult) {
 
-        String id=taskNodeResult.getProcessInstanceId();
-        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
+        String id = taskNodeResult.getProcessInstanceId();
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
 
 
-        List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
+        List<TButton> tButtons = tTaskButtonService.selectTaskButtons(processInstance.getProcessDefinitionKey(), taskNodeResult.getTaskDefinedKey());
 
         taskNodeResult.setButtonKeys(tButtons);
 
 
-        return  taskNodeResult;
+        return taskNodeResult;
     }
+
     /**
      * 获取当前历史任务节点
+     *
      * @param processInstaceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/28 15:09
      */
-    protected List<String> getHisTaskDefKeys(String processInstaceId){
+    protected List<String> getHisTaskDefKeys(String processInstaceId) {
         List<HistoricTaskInstance> hisTask = historyService.createHistoricTaskInstanceQuery().list();
-        if(CollectionUtils.isEmpty(hisTask)){
+        if (CollectionUtils.isEmpty(hisTask)) {
             return null;
         }
 
         //去重
         Set<String> taskDefKeySet = Sets.newHashSet();
-        for(HistoricTaskInstance ht : hisTask){
+        for (HistoricTaskInstance ht : hisTask) {
             taskDefKeySet.add(ht.getTaskDefinitionKey());
         }
         List<String> taskDefKeyList = Lists.newArrayList();
-        if(CollectionUtils.isNotEmpty(taskDefKeySet)){
+        if (CollectionUtils.isNotEmpty(taskDefKeySet)) {
             taskDefKeyList.addAll(taskDefKeySet);
         }
         return taskDefKeyList;
@@ -137,25 +141,27 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 获取可跳转到的任务节点
+     *
      * @param task 发起跳转节点 - 历史任务记录
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/28 15:05
      */
-    protected List<String> getTaskDefKeysForJump(TaskInfo task){
+    protected List<String> getTaskDefKeysForJump(TaskInfo task) {
         return getHisTaskDefKeys(task.getProcessInstanceId());
     }
 
     /**
      * 获取可跳转到的任务节点
+     *
      * @param taskId 发起跳转节点 - 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/28 15:05
      */
-    protected List<String> getTaskDefKeysForJump(String taskId){
+    protected List<String> getTaskDefKeysForJump(String taskId) {
         HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        if(historicTaskInstance == null){
+        if (historicTaskInstance == null) {
             return null;
         }
         return getTaskDefKeysForJump(historicTaskInstance);
@@ -163,31 +169,33 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 判断当前节点是否允许跳转到达
-     * @param taskId 发起跳转节点任务ID
+     *
+     * @param taskId     发起跳转节点任务ID
      * @param taskDefKey 跳转到达的任务节点KEY
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/28 16:40
      */
-    protected boolean isAllowJump(String taskId, String taskDefKey){
+    protected boolean isAllowJump(String taskId, String taskDefKey) {
         HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
         return isAllowJump(historicTaskInstance, taskDefKey);
     }
 
     /**
      * 判断当前节点是否允许跳转到达
-     * @param task 发起跳转节点任务实例
+     *
+     * @param task       发起跳转节点任务实例
      * @param taskDefKey 跳转到达的任务节点KEY
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/28 16:40
      */
-    protected boolean isAllowJump(TaskInfo task, String taskDefKey){
+    protected boolean isAllowJump(TaskInfo task, String taskDefKey) {
         List<String> beforeTaskDefinitionKeys = getBeforeTaskDefinitionKeys(task, true);
-        if(CollectionUtils.isEmpty(beforeTaskDefinitionKeys)){
+        if (CollectionUtils.isEmpty(beforeTaskDefinitionKeys)) {
             return false;
         }
-        if(beforeTaskDefinitionKeys.contains(taskDefKey)){
+        if (beforeTaskDefinitionKeys.contains(taskDefKey)) {
             return true;
         }
 
@@ -196,27 +204,28 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 获取可撤回到的任务节点
+     *
      * @param task 任务实例
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/28 15:05
      */
-    protected List<String> getTaskDefKeysForRollback(TaskInfo task){
+    protected List<String> getTaskDefKeysForRollback(TaskInfo task) {
         //历史任务
         List<String> hisTaskList = getTaskDefKeysForJump(task);
-        if(CollectionUtils.isEmpty(hisTaskList)){
+        if (CollectionUtils.isEmpty(hisTaskList)) {
             return null;
         }
 
         //上一节点
         List<String> beforeTaskDefinitionKeys = getBeforeTaskDefinitionKeys(task, false);
-        if(CollectionUtils.isEmpty(beforeTaskDefinitionKeys)){
+        if (CollectionUtils.isEmpty(beforeTaskDefinitionKeys)) {
             return null;
         }
         beforeTaskDefinitionKeys.removeIf(new Predicate<String>() {
             @Override
             public boolean test(String taskDefKey) {
-                if(!hisTaskList.contains(taskDefKey)){
+                if (!hisTaskList.contains(taskDefKey)) {
                     return true;
                 }
                 return false;
@@ -227,14 +236,15 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 获取可驳回 / 撤回到的任务节点
+     *
      * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/28 15:05
      */
-    protected List<String> getTaskDefKeysForRollback(String taskId){
+    protected List<String> getTaskDefKeysForRollback(String taskId) {
         HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        if(historicTaskInstance == null){
+        if (historicTaskInstance == null) {
             return null;
         }
 
@@ -243,14 +253,15 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 判断当前节点是否可以撤回或驳回
+     *
      * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/28 16:33
      */
-    protected boolean isAllowRollback(String taskId){
+    protected boolean isAllowRollback(String taskId) {
         HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        if(historicTaskInstance == null){
+        if (historicTaskInstance == null) {
             return false;
         }
 
@@ -259,13 +270,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 判断当前节点是否可以撤回或驳回
+     *
      * @param task 任务实例
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/28 16:34
      */
-    protected boolean isAllowRollback(TaskInfo task){
-        if(CollectionUtils.isEmpty(getTaskDefKeysForRollback(task))){
+    protected boolean isAllowRollback(TaskInfo task) {
+        if (CollectionUtils.isEmpty(getTaskDefKeysForRollback(task))) {
             return false;
         }
         return true;
@@ -273,15 +285,16 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 获取上一级节点
+     *
      * @return 任务节点KEY集合
      * @author houjinrong@chtwm.com
      * date 2018/4/27 17:05
      */
-    protected List<String> getBeforeTaskDefinitionKeys(TaskInfo task, boolean isAll){
+    protected List<String> getBeforeTaskDefinitionKeys(TaskInfo task, boolean isAll) {
         List<String> beforeTaskDefKeys = null;
         try {
             Map<String, FlowNode> nodeMap = findBeforeTask(task, isAll);
-            if(nodeMap != null && nodeMap.size() > 0){
+            if (nodeMap != null && nodeMap.size() > 0) {
                 beforeTaskDefKeys = Lists.newArrayList();
                 beforeTaskDefKeys.addAll(nodeMap.keySet());
             }
@@ -294,11 +307,12 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 获取上一节点
+     *
      * @return 任务节点定义集合
      * @author houjinrong@chtwm.com
      * date 2018/4/27 17:05
      */
-    protected List<TaskDefinition> getBeforeTaskDefinitions(TaskInfo task, boolean isAll){
+    protected List<TaskDefinition> getBeforeTaskDefinitions(TaskInfo task, boolean isAll) {
         String processInstanceId = task.getProcessInstanceId();
         //流程标示
         String processDefinitionId = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult().getProcessDefinitionId();
@@ -313,7 +327,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         ActivityImpl actImpl = entity.getProcessDefinition().findActivity(activityId);
 
         List<TaskDefinition> beforeTaskDefinition = Lists.newArrayList();
-        for(PvmTransition pt : actImpl.getIncomingTransitions()){
+        for (PvmTransition pt : actImpl.getIncomingTransitions()) {
             beforeTaskDefinition((ActivityImpl) pt.getSource(), beforeTaskDefinition, isAll);
         }
 
@@ -322,31 +336,31 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 递归获取上一步任务节点
-     * @param actImpl 流程节点的定义
-     * @param beforeTaskDefinition 存放获取到的节点集合
-     * @param isAll 标识是否获取当前节点之前的所有节点
-     *            isAll为true  获取当前节点之前的所有节点
-     *            isAll为false 获取当前节点上一步的所有节点
      *
+     * @param actImpl              流程节点的定义
+     * @param beforeTaskDefinition 存放获取到的节点集合
+     * @param isAll                标识是否获取当前节点之前的所有节点
+     *                             isAll为true  获取当前节点之前的所有节点
+     *                             isAll为false 获取当前节点上一步的所有节点
      * @author houjinrong@chtwm.com
      * date 2018/4/28 9:32
      */
-    private void beforeTaskDefinition(ActivityImpl actImpl, List<TaskDefinition> beforeTaskDefinition, boolean isAll){
+    private void beforeTaskDefinition(ActivityImpl actImpl, List<TaskDefinition> beforeTaskDefinition, boolean isAll) {
         ActivityBehavior activityBehavior = actImpl.getActivityBehavior();
-        for(PvmTransition pt : actImpl.getIncomingTransitions()){
-            if(activityBehavior instanceof UserTaskActivityBehavior){
+        for (PvmTransition pt : actImpl.getIncomingTransitions()) {
+            if (activityBehavior instanceof UserTaskActivityBehavior) {
                 TaskDefinition taskDefinition = ((UserTaskActivityBehavior) activityBehavior).getTaskDefinition();
-                if(beforeTaskDefinition.contains(beforeTaskDefinition)){
+                if (beforeTaskDefinition.contains(beforeTaskDefinition)) {
                     return;
                 }
                 beforeTaskDefinition.add(taskDefinition);
-                if(isAll){
-                    if(pt.getSource() != null){
+                if (isAll) {
+                    if (pt.getSource() != null) {
                         beforeTaskDefinition((ActivityImpl) pt.getSource(), beforeTaskDefinition, isAll);
                     }
                 }
-            }else{
-                if(pt.getSource() != null){
+            } else {
+                if (pt.getSource() != null) {
                     beforeTaskDefinition((ActivityImpl) pt.getSource(), beforeTaskDefinition, isAll);
                 }
             }
@@ -355,15 +369,16 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 获取上一节点
+     *
      * @return 任务节点定义集合
      * @author houjinrong@chtwm.com
      * date 2018/4/27 17:05
      */
-    protected List<String> getNextTaskDefinitionKeys(TaskInfo task,boolean isAll){
-        List<String > nextTaskDefinitionKeys = Lists.newArrayList();
+    protected List<String> getNextTaskDefinitionKeys(TaskInfo task, boolean isAll) {
+        List<String> nextTaskDefinitionKeys = Lists.newArrayList();
         try {
-            Map<String, FlowNode> nextTask = findNextTask(task,isAll);
-            if(nextTask != null){
+            Map<String, FlowNode> nextTask = findNextTask(task, isAll);
+            if (nextTask != null) {
                 for (String s : nextTask.keySet()) {
                     nextTaskDefinitionKeys.add(s);
                 }
@@ -583,12 +598,11 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     }
 
 
-
-    protected List<String> findBeforeTaskDefKeys(TaskInfo task, boolean isAll){
+    protected List<String> findBeforeTaskDefKeys(TaskInfo task, boolean isAll) {
         List<String> beforeTaskDefKeys = null;
         try {
             Map<String, FlowNode> beforeTask = findBeforeTask(task, isAll);
-            if(beforeTask != null && beforeTask.size() > 0){
+            if (beforeTask != null && beforeTask.size() > 0) {
                 beforeTaskDefKeys = Lists.newArrayList();
                 beforeTaskDefKeys.addAll(beforeTask.keySet());
             }
@@ -600,59 +614,63 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         return beforeTaskDefKeys;
     }
 
-    protected List<String> findBeforeTaskDefKeys(String taskId, boolean isAll){
+    protected List<String> findBeforeTaskDefKeys(String taskId, boolean isAll) {
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
         return findBeforeTaskDefKeys(hisTask, isAll);
     }
 
     /**
      * 获取上步节点
+     *
      * @param taskId 任务ID
-     * @param isAll 是否查询之前所有节点
-     *              true 之前所有节点，直到开始节点
-     *              false 上一步节点
+     * @param isAll  是否查询之前所有节点
+     *               true 之前所有节点，直到开始节点
+     *               false 上一步节点
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/5/4 10:30
      */
-    protected Map<String, FlowNode> findBeforeTask(String taskId, boolean isAll) throws RuntimeException{
+    protected Map<String, FlowNode> findBeforeTask(String taskId, boolean isAll) throws RuntimeException {
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
         return findBeforeTask(hisTask, isAll);
     }
 
     /**
      * 通过任务节点key查询上个节点的信息
-     * @param taskKey   任务节点的key
+     *
+     * @param taskKey             任务节点的key
      * @param processInstanceId   流程实例id
      * @param processDefinitionId 流程定义id
      * @param isAll
      * @return
      * @throws Exception
      */
-    protected List<String> findBeforeTask(String taskKey,String processInstanceId ,String processDefinitionId ,boolean isAll) {
+    protected List<String> findBeforeTask(String taskKey, String processInstanceId, String processDefinitionId, boolean isAll) {
         Map<String, FlowNode> nodeMap = Maps.newHashMap();
         //查询流程定义。
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
         List<Process> processList = bpmnModel.getProcesses();
         Process process = processList.get(0);
         //当前节点流定义
-        FlowNode sourceFlowElement = ( FlowNode) process.getFlowElement(taskKey);
+        FlowNode sourceFlowElement = (FlowNode) process.getFlowElement(taskKey);
         //找到当前任务的流程变量
-        List<HistoricVariableInstance> listVar = historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list() ;
-        for(SequenceFlow sf : sourceFlowElement.getIncomingFlows()){
+        List<HistoricVariableInstance> listVar = historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
+        for (SequenceFlow sf : sourceFlowElement.getIncomingFlows()) {
             sourceFlowElement = (FlowNode) process.getFlowElement(sf.getTargetRef());
             iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
         }
         List<String> beforeTaskDefKeys = null;
 
-        if(nodeMap != null && nodeMap.size() > 0){
+        if (nodeMap != null && nodeMap.size() > 0) {
             beforeTaskDefKeys = Lists.newArrayList();
             beforeTaskDefKeys.addAll(nodeMap.keySet());
         }
         return beforeTaskDefKeys;
     }
+
     /**
      * 获取上步节点
+     *
      * @param task
      * @param isAll 是否查询之前所有节点
      *              true 之前所有节点，直到开始节点
@@ -661,17 +679,17 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @author houjinrong@chtwm.com
      * date 2018/5/4 10:30
      */
-    protected Map<String, FlowNode> findBeforeTask(TaskInfo task, boolean isAll) throws RuntimeException{
+    protected Map<String, FlowNode> findBeforeTask(TaskInfo task, boolean isAll) throws RuntimeException {
         Map<String, FlowNode> nodeMap = Maps.newHashMap();
         //查询流程定义。
         BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
         List<Process> processList = bpmnModel.getProcesses();
         Process process = processList.get(0);
         //当前节点流定义
-        FlowNode sourceFlowElement = ( FlowNode) process.getFlowElement(task.getTaskDefinitionKey());
+        FlowNode sourceFlowElement = (FlowNode) process.getFlowElement(task.getTaskDefinitionKey());
         //找到当前任务的流程变量
-        List<HistoricVariableInstance> listVar = historyService.createHistoricVariableInstanceQuery().processInstanceId(task.getProcessInstanceId()).list() ;
-        for(SequenceFlow sf : sourceFlowElement.getIncomingFlows()){
+        List<HistoricVariableInstance> listVar = historyService.createHistoricVariableInstanceQuery().processInstanceId(task.getProcessInstanceId()).list();
+        for (SequenceFlow sf : sourceFlowElement.getIncomingFlows()) {
             sourceFlowElement = (FlowNode) process.getFlowElement(sf.getTargetRef());
             iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
         }
@@ -686,25 +704,25 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @param sourceFlowElement
      * @param nodeMap
      * @param listVar
-     * @param isAll 是否查询之前所有节点
-     *              true 之前所有节点，直到开始节点
-     *              false 上一步节点
+     * @param isAll             是否查询之前所有节点
+     *                          true 之前所有节点，直到开始节点
+     *                          false 上一步节点
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/5/4 10:35
      */
-    private void iteratorBeforeNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar, boolean isAll){
-        for(SequenceFlow sf : sourceFlowElement.getIncomingFlows()){
+    private void iteratorBeforeNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar, boolean isAll) {
+        for (SequenceFlow sf : sourceFlowElement.getIncomingFlows()) {
             sourceFlowElement = (FlowNode) process.getFlowElement(sf.getSourceRef());
 
-            if((filterExpression(sf.getConditionExpression(), listVar))){
-                if(sourceFlowElement instanceof UserTask){
+            if ((filterExpression(sf.getConditionExpression(), listVar))) {
+                if (sourceFlowElement instanceof UserTask) {
                     nodeMap.put(sourceFlowElement.getId(), sourceFlowElement);
-                    if(isAll && sf.getSourceRef() != null){
+                    if (isAll && sf.getSourceRef() != null) {
                         iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
                     }
-                }else{
-                    if(sf.getSourceRef() != null){
+                } else {
+                    if (sf.getSourceRef() != null) {
                         iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
                     }
                 }
@@ -712,11 +730,11 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
     }
 
-    protected List<String> findNextTaskDefKeys(TaskInfo task, boolean isAll){
+    protected List<String> findNextTaskDefKeys(TaskInfo task, boolean isAll) {
         List<String> nextTaskDefKeys = null;
         try {
             Map<String, FlowNode> nextTask = findNextTask(task, isAll);
-            if(nextTask != null && nextTask.size() > 0){
+            if (nextTask != null && nextTask.size() > 0) {
                 nextTaskDefKeys = Lists.newArrayList();
                 nextTaskDefKeys.addAll(nextTask.keySet());
             }
@@ -728,64 +746,67 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         return nextTaskDefKeys;
     }
 
-    protected List<String> findNextTaskDefKeys(String taskId, boolean isAll){
+    protected List<String> findNextTaskDefKeys(String taskId, boolean isAll) {
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
         return findNextTaskDefKeys(hisTask, isAll);
     }
 
     /**
      * 查询流程当前节点的下一步节点。用于流程提示时的提示。
+     *
      * @param task 任务实体类
      * @return
      * @throws Exception
      */
-    public Map<String, FlowNode> findNextTask(TaskInfo task,boolean isAll){
+    public Map<String, FlowNode> findNextTask(TaskInfo task, boolean isAll) {
         Map<String, FlowNode> nodeMap = Maps.newHashMap();
         //查询流程定义。
         BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
         List<Process> processList = bpmnModel.getProcesses();
         Process process = processList.get(0);
         //当前节点流定义
-        FlowNode sourceFlowElement = ( FlowNode) process.getFlowElement(task.getTaskDefinitionKey());
+        FlowNode sourceFlowElement = (FlowNode) process.getFlowElement(task.getTaskDefinitionKey());
         //找到当前任务的流程变量
-        List<HistoricVariableInstance> listVar=historyService.createHistoricVariableInstanceQuery().processInstanceId(task.getProcessInstanceId()).list() ;
-        iteratorNextNodes(process, sourceFlowElement, nodeMap , listVar,isAll);
+        List<HistoricVariableInstance> listVar = historyService.createHistoricVariableInstanceQuery().processInstanceId(task.getProcessInstanceId()).list();
+        iteratorNextNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
         return nodeMap;
     }
 
     /**
      * 查询流程当前节点的下一步节点。用于流程提示时的提示。
+     *
      * @param taskId 任务ID
      * @return
      * @throws Exception
      */
-    public Map<String, FlowNode> findNextTask(String taskId,boolean isAll) {
+    public Map<String, FlowNode> findNextTask(String taskId, boolean isAll) {
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        return findNextTask(hisTask,isAll);
+        return findNextTask(hisTask, isAll);
     }
 
     /**
      * 查询流程当前节点的下一步节点。用于流程提示时的提示。
+     *
      * @param process
      * @param sourceFlowElement
      * @param nodeMap
      * @param listVar
      * @throws Exception
      */
-    private void iteratorNextNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar,Boolean isAll) {
+    private void iteratorNextNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar, Boolean isAll) {
         List<SequenceFlow> list = sourceFlowElement.getOutgoingFlows();
         for (SequenceFlow sf : list) {
             sourceFlowElement = (FlowNode) process.getFlowElement(sf.getTargetRef());
-            if((filterExpression(sf.getConditionExpression(), listVar))){
+            if ((filterExpression(sf.getConditionExpression(), listVar))) {
                 if (sourceFlowElement instanceof UserTask) {
-                    if(isAll && sf.getSourceRef() != null){
+                    if (isAll && sf.getSourceRef() != null) {
                         iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
                     }
                     nodeMap.put(sourceFlowElement.getId(), sourceFlowElement);
-                }else if (sourceFlowElement instanceof ExclusiveGateway) {
-                    iteratorNextNodes(process, sourceFlowElement, nodeMap,listVar,isAll);
-                }else if (sourceFlowElement instanceof ParallelGateway){
-                    iteratorNextNodes(process, sourceFlowElement, nodeMap,listVar,isAll);
+                } else if (sourceFlowElement instanceof ExclusiveGateway) {
+                    iteratorNextNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
+                } else if (sourceFlowElement instanceof ParallelGateway) {
+                    iteratorNextNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
                 }
             }
         }
@@ -793,11 +814,12 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 表达式校验，遍历节点时，根据表达式选择分支
+     *
      * @author houjinrong@chtwm.com
      * date 2018/5/10 14:30
      */
-    private boolean filterExpression(String conditionExpression, List<HistoricVariableInstance> listVar){
-        if(StringUtils.isNotEmpty(conditionExpression)) {
+    private boolean filterExpression(String conditionExpression, List<HistoricVariableInstance> listVar) {
+        if (StringUtils.isNotEmpty(conditionExpression)) {
             ExpressionFactory factory = new ExpressionFactoryImpl();
             SimpleContext context = new SimpleContext();
             for (HistoricVariableInstance var : listVar) {
@@ -808,7 +830,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             try {
                 return (Boolean) e.getValue(context);
             } catch (PropertyNotFoundException ex) {
-                logger.error("未传入与表达式"+conditionExpression+"对应的参数值", ex);
+                logger.error("未传入与表达式" + conditionExpression + "对应的参数值", ex);
                 return false;
             }
         }
@@ -818,13 +840,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 将activiti任务对象转为本地定义的任务对象，解决无法转为json的问题
+     *
      * @author houjinrong@chtwm.com
      * date 2018/5/10 14:58
      */
-    protected List<TaskVo> transferTask(String userId,List<Task> taskList, boolean isAll){
+    protected List<TaskVo> transferTask(String userId, List<Task> taskList, boolean isAll) {
         List<TaskVo> taskVoList = Lists.newArrayList();
-        if(CollectionUtils.isNotEmpty(taskList)){
-            for (Task t : taskList){
+        if (CollectionUtils.isNotEmpty(taskList)) {
+            for (Task t : taskList) {
                 TaskVo vo = new TaskVo();
                 transferTaskInfo(userId, t, vo, isAll);
                 taskVoList.add(vo);
@@ -835,13 +858,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 将activiti任务对象转为本地定义的任务对象，解决无法转为json的问题
+     *
      * @author houjinrong@chtwm.com
      * date 2018/5/10 14:58
      */
-    protected List<TaskVo> transferHisTask(String userId,List<HistoricTaskInstance> taskList, boolean isAll){
+    protected List<TaskVo> transferHisTask(String userId, List<HistoricTaskInstance> taskList, boolean isAll) {
         List<TaskVo> taskVoList = Lists.newArrayList();
-        if(CollectionUtils.isNotEmpty(taskList)){
-            for (HistoricTaskInstance t : taskList){
+        if (CollectionUtils.isNotEmpty(taskList)) {
+            for (HistoricTaskInstance t : taskList) {
                 TaskVo vo = new TaskVo();
                 transferTaskInfo(userId, t, vo, isAll);
                 taskVoList.add(vo);
@@ -850,7 +874,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         return taskVoList;
     }
 
-    private void transferTaskInfo(String userId, TaskInfo task, TaskVo vo, boolean isAll){
+    private void transferTaskInfo(String userId, TaskInfo task, TaskVo vo, boolean isAll) {
         vo.setId(task.getId());
         vo.setTaskName(task.getName());
         vo.setProcessOwner(task.getOwner());
@@ -860,29 +884,29 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         vo.setProcessInstanceId(task.getProcessInstanceId());
         vo.setProcessDefinitionId(task.getProcessDefinitionId());
         vo.setTaskAssign(task.getAssignee());
-        if(isAll){
-            if(task instanceof HistoricTaskInstance){
-                HistoricTaskInstance hisTask = (HistoricTaskInstance)task;
-                if(TaskStatusEnum.COMPLETE_AGREE.desc.equals(hisTask.getDeleteReason())){
-                    vo.setTaskState(TaskStatusEnum.AGREE.status+"");
-                }else if(TaskStatusEnum.COMPLETE_REFUSE.desc.equals(hisTask.getDeleteReason())){
-                    vo.setTaskState(TaskStatusEnum.REFUSE.status+"");
+        if (isAll) {
+            if (task instanceof HistoricTaskInstance) {
+                HistoricTaskInstance hisTask = (HistoricTaskInstance) task;
+                if (TaskStatusEnum.COMPLETE_AGREE.desc.equals(hisTask.getDeleteReason())) {
+                    vo.setTaskState(TaskStatusEnum.AGREE.status + "");
+                } else if (TaskStatusEnum.COMPLETE_REFUSE.desc.equals(hisTask.getDeleteReason())) {
+                    vo.setTaskState(TaskStatusEnum.REFUSE.status + "");
                 }
-                if(StringUtils.isNotBlank(task.getAssignee())){
+                if (StringUtils.isNotBlank(task.getAssignee())) {
                     vo.setTaskAssign(task.getAssignee().replaceAll("_Y", "").replaceAll("_N", ""));
                 }
-            }else{
-                vo.setTaskState(task.getPriority()+"");
+            } else {
+                vo.setTaskState(task.getPriority() + "");
             }
-        }else {
-            if(task instanceof HistoricTaskInstance){
-                vo.setTaskState(task.getPriority()+"");
-            }else {
+        } else {
+            if (task instanceof HistoricTaskInstance) {
+                vo.setTaskState(task.getPriority() + "");
+            } else {
                 String assignee = task.getAssignee();
-                if(StringUtils.isNotBlank(assignee)){
+                if (StringUtils.isNotBlank(assignee)) {
                     List list = Arrays.asList(assignee.split(","));
-                    if(list.contains(userId)){
-                        vo.setTaskState(TaskStatusEnum.OPEN.status+"");
+                    if (list.contains(userId)) {
+                        vo.setTaskState(TaskStatusEnum.OPEN.status + "");
                     }
                 }
             }
@@ -891,12 +915,13 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 删除流程
+     *
      * @param processInstanceId
      * @param deleteReason
      * @author houjinrong@chtwm.com
      */
-    protected void deleteProcessInstance(String processInstanceId, String deleteReason){
-        if(StringUtils.isBlank(processInstanceId)){
+    protected void deleteProcessInstance(String processInstanceId, String deleteReason) {
+        if (StringUtils.isBlank(processInstanceId)) {
             return;
         }
 
@@ -906,35 +931,37 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 流程结束更改流程状态
+     *
      * @param processInstanceId
      */
-    protected void finishProcessInstance(String processInstanceId, int processInstanceState){
-        if(StringUtils.isBlank(processInstanceId)){
+    protected void finishProcessInstance(String processInstanceId, int processInstanceState) {
+        if (StringUtils.isBlank(processInstanceId)) {
             return;
         }
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.where("proc_inst_id={0}",processInstanceId);
+        wrapper.where("proc_inst_id={0}", processInstanceId);
 
         RuProcinst ruProcinst = new RuProcinst();
-        ruProcinst.setProcInstState(processInstanceState+"");
+        ruProcinst.setProcInstState(processInstanceState + "");
 
         ruProcinstService.update(ruProcinst, wrapper);
     }
 
     /**
      * 获取上一步审批人
+     *
      * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/5/29 10:37
      */
-    protected String getBeforeAssignee(String taskId){
+    protected String getBeforeAssignee(String taskId) {
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        if(hisTask == null){
-            return  null;
+        if (hisTask == null) {
+            return null;
         }
         List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(hisTask, false);
-        if(CollectionUtils.isEmpty(beforeTaskDefKeys)){
+        if (CollectionUtils.isEmpty(beforeTaskDefKeys)) {
             return null;
         }
 
@@ -943,8 +970,8 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         wrapper.in("task_def_key", beforeTaskDefKeys);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
         String assignee = "";
-        for(TRuTask t : tRuTasks){
-            assignee = StringUtils.isBlank(assignee)?t.getAssigneeReal():assignee+","+t.getAssigneeReal();
+        for (TRuTask t : tRuTasks) {
+            assignee = StringUtils.isBlank(assignee) ? t.getAssigneeReal() : assignee + "," + t.getAssigneeReal();
         }
 
         return assignee;
@@ -952,18 +979,19 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 获取下一步审批人
+     *
      * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/5/29 10:38
      */
-    protected String getNextAssignee(String taskId){
+    protected String getNextAssignee(String taskId) {
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        if(hisTask == null){
-            return  null;
+        if (hisTask == null) {
+            return null;
         }
         List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
-        if(CollectionUtils.isEmpty(nextTaskDefKeys)){
+        if (CollectionUtils.isEmpty(nextTaskDefKeys)) {
             return null;
         }
 
@@ -971,8 +999,8 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         wrapper.in("task_def_key", nextTaskDefKeys);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
         String assignee = "";
-        for(TRuTask t : tRuTasks){
-            assignee = StringUtils.isBlank(assignee)?t.getAssigneeReal():assignee+","+t.getAssigneeReal();
+        for (TRuTask t : tRuTasks) {
+            assignee = StringUtils.isBlank(assignee) ? t.getAssigneeReal() : assignee + "," + t.getAssigneeReal();
         }
 
         return assignee;
@@ -980,23 +1008,24 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 通过用户ID获取用户所有所属角色
+     *
      * @param processInstanceId 流程实例ID
-     * @param userId 用户ID
+     * @param userId            用户ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/6/1 11:29
      */
-    protected List<Long> getAllRoleByUserId(String processInstanceId, String userId){
+    protected List<Long> getAllRoleByUserId(String processInstanceId, String userId) {
         Integer system = getAppKey(processInstanceId);
-        if(system == null){
+        if (system == null) {
             return null;
         }
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(system, userId);
-        if(CollectionUtils.isEmpty(roles)){
+        if (CollectionUtils.isEmpty(roles)) {
             return null;
         }
         List<Long> roleIds = Lists.newArrayList();
-        for(RbacRole role : roles){
+        for (RbacRole role : roles) {
             roleIds.add(role.getId());
         }
 
@@ -1005,48 +1034,98 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 通过流程实例ID获取系统KEY
+     *
      * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/6/1 11:21
      */
-    protected Integer getAppKey(String processInstanceId){
+    protected Integer getAppKey(String processInstanceId) {
         EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
         wrapper.eq("proc_inst_id", processInstanceId);
         RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
-        return ruProcinst==null?null:ruProcinst.getAppKey();
+        return ruProcinst == null ? null : ruProcinst.getAppKey();
     }
 
     /**
      * 检验用户是否有权操作该任务
+     *
      * @author houjinrong@chtwm.com
      * date 2018/6/1 11:50
      */
-    protected boolean validateUserIntask(TaskInfo task, String userId, List<TRuTask> tRuTasks){
-        if(CollectionUtils.isEmpty(tRuTasks)){
-            return false;
+    protected TRuTask validTaskAssignee(TaskInfo task, String userId, List<TRuTask> tRuTasks) {
+        if (CollectionUtils.isEmpty(tRuTasks)) {
+            return null;
         }
 
-        if(tRuTasks.get(0).getAssigneeType().equals(AssignTypeEnum.ROLE.code)){
+        if (tRuTasks.get(0).getAssigneeType().equals(AssignTypeEnum.ROLE.code)) {
             //角色审批
             List<Long> roleIds = getAllRoleByUserId(task.getProcessInstanceId(), userId);
-            if(CollectionUtils.isNotEmpty(roleIds)){
-                return false;
+            if (CollectionUtils.isEmpty(roleIds)) {
+                return null;
             }
-            for(TRuTask rt : tRuTasks){
-                if(roleIds.contains(rt.getAssignee())){
-                    return true;
+            for (TRuTask rt : tRuTasks) {
+                if (roleIds.contains(Long.parseLong(rt.getAssignee()))) {
+                    return rt;
                 }
             }
-        }else{
+        } else {
             //人员审批
-            for(TRuTask rt : tRuTasks){
-                if(userId.equals(rt.getAssignee())){
-                    return true;
+            for (TRuTask rt : tRuTasks) {
+                if (userId.equals(rt.getAssignee())) {
+                    return rt;
                 }
             }
         }
 
-        return false;
+        return null;
+    }
+
+    public Result validateApproveParam(TRuTask ruTask, TaskParam taskParam) {
+        if (!ruTask.getAssigneeType().equals(taskParam.getAssignType())) {
+            return new Result(Constant.PARAM_ERROR, "审批人类型参数错误！");
+        }
+        if (!ruTask.getTaskType().equals(taskParam.getTaskType())) {
+            return new Result(Constant.PARAM_ERROR, "任务类型参数错误！");
+        }
+        if (taskParam.getPass() != TaskStatusEnum.COMPLETE_AGREE.status && taskParam.getPass() != TaskStatusEnum.COMPLETE_REFUSE.status) {
+            return new Result(Constant.PARAM_ERROR, "任务类型参数错误！");
+        }
+
+        return new Result(true, "success");
+    }
+
+    /**
+     * 获取当前流程实例下的当前任务节点
+     * 如果任务已完成，则获取最后节点
+     */
+    public List<TaskNode> getCurrentTask(Integer appKey, String processInstanceId) {
+        EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
+        wrapper.eq("proc_inst_id", processInstanceId);
+        RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
+        String currentTaskKey = ruProcinst.getCurrentTaskKey();
+        if(StringUtils.isBlank(currentTaskKey)){
+            return null;
+        }
+        List<TaskNode> taskNodes = Lists.newArrayList();
+
+        List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKeyLike(currentTaskKey).list();
+        Map<String, Integer> temMap = Maps.newHashMap();
+
+        String currentAssignee = null;
+        for(HistoricTaskInstance hisTask : hisTasks){
+            if(temMap.containsKey(hisTask.getTaskDefinitionKey())){
+                continue;
+            }
+            TaskNode taskNode = new TaskNode();
+
+            currentAssignee = hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
+            taskNode.setAssignee(currentAssignee);
+            taskNode.setTaskDefinationName(hisTask.getName());
+            taskNode.setTaskDefinationKey(hisTask.getTaskDefinitionKey());
+            taskNodes.add(taskNode);
+        }
+
+        return taskNodes;
     }
 }

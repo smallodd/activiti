@@ -34,7 +34,7 @@
         art.ID_ AS taskId,
         art.NAME_ AS taskName,
         trt.STATUS AS taskState,
-        trt.ASSIGNEE_REAL AS assignee,
+        #{assignee} AS assignee,
         NULL AS assigneeBefore,
         NULL AS assigneeNext,
         trt.OWNER AS assigneeDelegate,
@@ -124,7 +124,7 @@
           LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
           LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
-          trp.APP_KEY = #{appKey} AND trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee}+#{taskState},'%')
+          trp.APP_KEY = #{appKey} AND art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%')
 
           <include refid="queryCondition"/>
     </select>
@@ -140,7 +140,7 @@
           LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
           LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
-          trp.APP_KEY = #{appKey} AND trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
+          trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%') OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId})))
           AND art.SUSPENSION_STATE_=1
           <include refid="queryCondition"/>
     </select>
@@ -156,7 +156,7 @@
           LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
           LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
-          trp.APP_KEY = #{appKey} AND trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (#{roleId})
+          trp.APP_KEY = #{appKey} AND trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId})
           AND art.SUSPENSION_STATE_=1
           <include refid="queryCondition"/>
     </select>
@@ -167,14 +167,11 @@
             ahp.NAME_ AS processInstanceName,
             trp.PROC_INST_STATE AS processInstanceState,
             trp.PROC_DEF_NAME AS processDefinitionName,
-            GROUP_CONCAT(trt.ASSIGNEE_REAL) AS assignee,
-            GROUP_CONCAT(DISTINCT art.NAME_) AS taskDefinitionName,
+            trp.APP_KEY AS appKey,
             ahp.START_TIME_ AS startTime,
             ahp.END_TIME_ AS endTime
         FROM
             act_hi_procinst AS ahp LEFT JOIN t_ru_procinst AS trp ON ahp.ID_ = trp.PROC_INST_ID
-            LEFT JOIN t_ru_task AS trt ON ahp.ID_=trt.PROC_INST_ID AND trp.PROC_INST_STATE=0
-            LEFT JOIN act_ru_task AS art ON ahp.ID_=art.PROC_INST_ID_
         WHERE
             1=1
             <if test="appKey != null and appKey != ''">
@@ -207,7 +204,6 @@
             <if test="endTimeTo != null">
                 AND ahp.END_TIME_ &lt;= #{endTimeTo}
             </if>
-        GROUP by ahp.ID_
     </select>
 
     <!--代办任务数量-->
@@ -219,7 +215,9 @@
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
             LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
-          trp.APP_KEY = #{appKey}
-          AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (#{roleId})))
+            trp.APP_KEY = #{appKey}
+            AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId})))
+            AND art.SUSPENSION_STATE_=1
+            <include refid="queryCondition"/>
     </select>
 </mapper>

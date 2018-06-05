@@ -1,8 +1,10 @@
 package com.hengtian.flow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 public class ProcessInstanceResult {
 
@@ -23,13 +25,14 @@ public class ProcessInstanceResult {
      */
     private String processInstanceState;
     /**
-     * 当前处理人
+     * 当前节点信息
      */
-    private String assignee;
+    private List<TaskNode> currentTaskNode;
     /**
-     * 当前节点
+     * 系统标识
      */
-    private String taskDefinitionName;
+    @JsonIgnore
+    private Integer appKey;
     /**
      * 发起时间
      */
@@ -73,22 +76,6 @@ public class ProcessInstanceResult {
         this.processInstanceState = processInstanceState;
     }
 
-    public String getAssignee() {
-        return assignee;
-    }
-
-    public void setAssignee(String assignee) {
-        this.assignee = assignee;
-    }
-
-    public String getTaskDefinitionName() {
-        return taskDefinitionName;
-    }
-
-    public void setTaskDefinitionName(String taskDefinitionName) {
-        this.taskDefinitionName = taskDefinitionName;
-    }
-
     public Date getStartTime() {
         return startTime;
     }
@@ -103,5 +90,21 @@ public class ProcessInstanceResult {
 
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
+    }
+
+    public List<TaskNode> getCurrentTaskNode() {
+        return currentTaskNode;
+    }
+
+    public void setCurrentTaskNode(List<TaskNode> currentTaskNode) {
+        this.currentTaskNode = currentTaskNode;
+    }
+
+    public Integer getAppKey() {
+        return appKey;
+    }
+
+    public void setAppKey(Integer appKey) {
+        this.appKey = appKey;
     }
 }

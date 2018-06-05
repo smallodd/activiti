@@ -158,7 +158,7 @@
         }
         parent.$.modalDialog({
             title : '设定人员',
-            width : 800,
+            width : 900,
             height : 450,
             href :  '${ctx}/assignee/config/page/' + id,
             buttons : [ {

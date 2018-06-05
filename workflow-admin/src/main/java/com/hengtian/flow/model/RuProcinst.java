@@ -48,15 +48,21 @@ public class RuProcinst {
      */
     @TableField(value = "proc_inst_state")
     private String procInstState;
+    /**
+     * 流程实例状态：0-未完成；1-完成
+     */
+    @TableField(value = "current_task_key")
+    private String currentTaskKey;
 
     public RuProcinst(){}
 
-    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorDept, String procDefName) {
+    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorDept, String procDefName, String currentTaskKey) {
         this.appKey = appKey;
         this.procInstId = procInstId;
         this.creator = creator;
         this.creatorDept = creatorDept;
         this.procDefName = procDefName;
+        this.currentTaskKey = currentTaskKey;
     }
 
     public Long getId() {
@@ -115,4 +121,11 @@ public class RuProcinst {
         this.procInstState = procInstState;
     }
 
+    public String getCurrentTaskKey() {
+        return currentTaskKey;
+    }
+
+    public void setCurrentTaskKey(String currentTaskKey) {
+        this.currentTaskKey = currentTaskKey;
+    }
 }

@@ -19,10 +19,11 @@
                 <td><strong>人员 | 部门 | 角色 | 表达式选项</strong></td>
                 <td><strong>操作权限</strong></td>
                 <td><strong>通过条件</strong></td>
+                <td><strong>条件参数</strong></td>
             </tr>
             <c:forEach var="ut" items="${uTasks}">
 				<tr>
-					<td>[${ut.taskName}]</td>
+					<td style="width: 100px;">[${ut.taskName}]</td>
 					<td style="width: 150px;" data-key="${ut.taskDefKey}">
 						<input id="taskId${ut.taskDefKey}" type="hidden" value="${ut.id}"/>
 						<select id="taskType${ut.taskDefKey}" class="easyui-combobox selectConfigType" data-options="width:66,height:29,panelHeight:'auto'">
@@ -39,7 +40,18 @@
                     <td><input id="taskUser${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configAssignee('${ut.taskDefKey}')"/></td>
 				    <td><input id="taskButton${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configButton('${ut.taskDefKey}')"/></td>
                     <td>
-                        <input class="easyui-numberbox" id="percentage${ut.taskDefKey}" value="${ut.percentage}" placeholder="范围0-1" data-options="required:true,min:0.01,max:1,precision:2" style="width:66px;height:29px">
+                        <select id="passType${ut.taskDefKey}" class="easyui-combobox passType" data-options="width:60,height:29,panelHeight:'auto'"onchange="selectPassType('${ut.taskDefKey}')">
+                            <option value="1" <c:if test="${ut.percentage != 0}">selected="selected"</c:if>>比例</option>
+                            <option value="2" <c:if test="${ut.percentage == 0}">selected="selected"</c:if>>人数</option>
+                        </select>
+                    </td>
+                    <td>
+                        <div id="percentageDiv${ut.taskDefKey}"  <c:if test="${ut.percentage == 0}">style="display: none"</c:if>>
+                            <input class="easyui-numberbox" id="percentage${ut.taskDefKey}" value="${ut.percentage}" placeholder="范围0-1" data-options="required:true,min:0.01,max:1,precision:2" style="width:66px;height:29px">
+                        </div>
+                        <div id="userCountNeedDiv${ut.taskDefKey}" <c:if test="${ut.percentage != 0}">style="display: none"</c:if>>
+                            <input class="easyui-numberbox" id="userCountNeed${ut.taskDefKey}" value="${ut.userCountNeed}" placeholder="整数" data-options="required:true,precision:0" style="width:66px;height:29px;display:none">
+                        </div>
                     </td>
                 </tr>
 			</c:forEach>
@@ -87,7 +99,13 @@
             	for(var i=0;i<taskJsonVal.length;i++){
                     taskJsonVal[i].taskType = $("#taskType"+taskJsonVal[i].taskDefKey).val();
                     taskJsonVal[i].assignType = $("#assignType"+taskJsonVal[i].taskDefKey).val();
-                    taskJsonVal[i].percentage = $("#percentage"+taskJsonVal[i].taskDefKey).val();
+                    var passType = $("#passType"+taskJsonVal[i].taskDefKey).val();
+                    if(passType == 1){
+                        taskJsonVal[i].percentage = $("#percentage"+taskJsonVal[i].taskDefKey).val();
+                    }else if(passType == 2){
+                        taskJsonVal[i].percentage = 0;
+                        taskJsonVal[i].userCountNeed = $("#userCountNeed"+taskJsonVal[i].taskDefKey).val();
+                    }
             	}
             	var taskStr = JSON.stringify(taskJsonVal);
             	$("#taskJson").val(taskStr);
@@ -121,6 +139,19 @@
                 $("#taskUser"+taskDefKey).val("");
                 $("#percentage"+taskDefKey).val("");
                 clearUser(taskDefKey);
+            }
+        });
+
+        $(".passType").combobox({
+            onChange: function (n,o) {
+                var taskDefKey = $(this).attr("id").replace("passType", "");
+                if(n == 1){
+                    $("#percentageDiv"+taskDefKey).show();
+                    $("#userCountNeedDiv"+taskDefKey).hide();
+                }else if(n == 2){
+                    $("#percentageDiv"+taskDefKey).hide();
+                    $("#userCountNeedDiv"+taskDefKey).show();
+                }
             }
         });
     });

@@ -8,15 +8,20 @@ import com.hengtian.common.base.BaseRestController;
 import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.service.TApprovalAgentService;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.RuProcinstService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TTaskButtonService;
+import com.hengtian.flow.service.TUserTaskService;
 import com.rbac.entity.RbacRole;
+import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
@@ -25,7 +30,7 @@ import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
-import org.activiti.spring.ProcessEngineFactoryBean;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,26 +47,21 @@ public class WorkflowBaseController extends BaseRestController {
     Logger logger = Logger.getLogger(getClass());
 
     @Autowired
-    ProcessEngineFactoryBean processEngine;
-
-    @Autowired
     private TaskService taskService;
-
     @Autowired
     private TRuTaskService tRuTaskService;
-
     @Autowired
     RuntimeService runtimeService;
-
     @Autowired
     TTaskButtonService tTaskButtonService;
-
     @Autowired
-    private TApprovalAgentService tApprovalAgentService;
-
+    private TUserTaskService tUserTaskService;
     @Autowired
     private PrivilegeService privilegeService;
-
+    @Autowired
+    private RuProcinstService ruProcinstService;
+    @Autowired
+    private ProcessEngine processEngine;
 
     /**
      * 获取需要高亮的线 (适配5.18以上版本；由于mysql5.6.4之后版本时间支持到毫秒，固旧方法比较开始时间的方法不在适合当前系统)
@@ -123,16 +123,43 @@ public class WorkflowBaseController extends BaseRestController {
             assigneeList = Arrays.asList(assignee.split(","));
         }
 
+        //查询审批时该节点的执行execution
+        ProcessDefinitionEntity definition = (ProcessDefinitionEntity) (processEngine.getRepositoryService().getProcessDefinition(task.getProcessDefinitionId()));
+
+        EntityWrapper<TUserTask> wrapper_ = new EntityWrapper<>();
+        wrapper_.where("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion()).andNew("proc_def_key={0}", definition.getKey());
+
+        TUserTask tUserTask = tUserTaskService.selectOne(wrapper_);
+
+        Set<String> result = Sets.newHashSet();
+
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.where("task_id={0}", taskId);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
-        Set<String> result = Sets.newHashSet();
-        for(TRuTask t : tRuTasks){
-            if(StringUtils.isNotBlank(t.getAssigneeReal())){
-                String[] array = t.getAssigneeReal().split(",");
-                for(String a : array){
-                    if(!assigneeList.contains(a)){
-                        result.add(a);
+        if(tUserTask.getNeedSign() == 0 && AssignTypeEnum.ROLE.code.equals(tUserTask.getAssignType())){
+            EntityWrapper<RuProcinst> wrapper1 = new EntityWrapper<>();
+            wrapper1.eq("proc_inst_id", task.getProcessInstanceId());
+            RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper1);
+            Integer appKey = ruProcinst==null?null:ruProcinst.getAppKey();
+
+            for(TRuTask t : tRuTasks){
+                List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(t.getAssignee()));
+                if(CollectionUtils.isNotEmpty(users)){
+                    for(RbacUser u : users){
+                        if(!assigneeList.contains(u.getCode())){
+                            result.add(u.getCode());
+                        }
+                    }
+                }
+            }
+        }else{
+            for(TRuTask t : tRuTasks){
+                if(StringUtils.isNotBlank(t.getAssigneeReal())){
+                    String[] array = t.getAssigneeReal().split(",");
+                    for(String a : array){
+                        if(!assigneeList.contains(a)){
+                            result.add(a);
+                        }
                     }
                 }
             }
@@ -250,7 +277,7 @@ public class WorkflowBaseController extends BaseRestController {
 
         pageInfo.getCondition().put("assigneeList", assigneeList);*/
         for(RbacRole role : roles){
-            roleIds = roleIds == null?role.getId()+"":roleIds+""+role.getId();
+            roleIds = roleIds == null?role.getId()+"":roleIds+","+role.getId();
         }
         Map<String, Object> condition = Maps.newHashMap(pageInfo.getCondition());
         condition.put("roleId", roleIds);

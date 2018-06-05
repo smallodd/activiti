@@ -7,6 +7,7 @@ import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.TaskParam;
+import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.TRuTaskService;
@@ -159,11 +160,17 @@ public class WorkflowActionController extends BaseController {
         if(task==null){
             return renderError(ResultEnum.TASK_NOT_EXIST.msg, ResultEnum.TASK_NOT_EXIST.code) ;
         }
-        //查看审批人是否有权限
+
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.where("task_id={0}",taskId);
-        wrapper.and("assignee_real LIKE {0}","%"+assignee+"%");
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+
+        //查看审批人是否有权限
+        TRuTask ruTask = workflowService.validateTaskAssignee(task, assignee, tRuTasks);
+        if(ruTask == null){
+            return renderError("该用户没有操作此任务的权限");
+        }
+
         if(CollectionUtils.isEmpty(tRuTasks)){
             return renderError(ResultEnum.TASK_ASSIGNEE_ILLEGAL.msg, ResultEnum.TASK_ASSIGNEE_ILLEGAL.code) ;
         }

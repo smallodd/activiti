@@ -153,6 +153,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
+
+        setAssigneeAndRole(pageInfo, taskQueryParam.getAssignee(), taskQueryParam.getAppKey());
         workflowService.openTaskList(pageInfo);
 
         return renderSuccess(pageInfo);
