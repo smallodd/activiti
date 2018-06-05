@@ -53,6 +53,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -208,6 +209,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setProcessInstanceId(processInstance.getProcessInstanceId());
                 tWorkDetail.setOperator(processParam.getCreatorId());
                 tWorkDetail.setTaskId(taskId);
+                tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
 
                 workDetailService.insert(tWorkDetail);
             } else {
@@ -224,6 +226,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setProcessInstanceId(processInstance.getProcessInstanceId());
                 tWorkDetail.setOperator(processParam.getCreatorId());
                 tWorkDetail.setTaskId(taskId);
+                tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
 
                 workDetailService.insert(tWorkDetail);
             }
@@ -414,12 +417,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         identityService.setAuthenticatedUserId(taskParam.getAssignee());
         taskService.addComment(taskParam.getTaskId(), task.getProcessInstanceId(), taskParam.getComment());
         taskService.setVariables(task.getId(), map);
-
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
         //设置操作的明细备注
         TWorkDetail tWorkDetail = new TWorkDetail();
         tWorkDetail.setTaskId(task.getId());
         tWorkDetail.setOperator(taskParam.getAssignee());
         tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
+        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         tWorkDetail.setCreateTime(new Date());
         tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】审批了该任务，审批意见是【" + taskParam.getComment() + "】");
         workDetailService.insert(tWorkDetail);
@@ -988,12 +992,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!success) {
             return new Result(false, "问询失败");
         }
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         TWorkDetail tWorkDetail = new TWorkDetail();
         tWorkDetail.setTaskId(task.getId());
         tWorkDetail.setOperator(userId);
         tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
         tWorkDetail.setCreateTime(new Date());
         tWorkDetail.setDetail("工号【" + userId + "】问询了该任务，问询内容是【" + commentResult + "】");
+        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
         return new Result(true, "问询成功");
     }
@@ -1032,11 +1038,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!success) {
             return new Result(false, "问询确认失败");
         }
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(tAskTask.getProcInstId()).singleResult();
         TWorkDetail tWorkDetail = new TWorkDetail();
         tWorkDetail.setTaskId(tAskTask.getCurrentTaskId());
         tWorkDetail.setOperator(userId);
         tWorkDetail.setProcessInstanceId(tAskTask.getProcInstId());
         tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         tWorkDetail.setDetail("工号【" + userId + "】回复了该问询，回复内容是【" + answerComment + "】");
         workDetailService.insert(tWorkDetail);
         return new Result(true, "问询确认成功");
@@ -1120,12 +1128,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result processSuspend(String userId, String processInstanceId) {
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         runtimeService.suspendProcessInstanceById(processInstanceId);
         TWorkDetail tWorkDetail = new TWorkDetail();
         tWorkDetail.setOperator(userId);
         tWorkDetail.setProcessInstanceId(processInstanceId);
         tWorkDetail.setCreateTime(new Date());
         tWorkDetail.setDetail("工号【" + userId + "】挂起了该流程");
+        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
         return new Result(true, "挂起流程成功");
     }
@@ -1142,11 +1152,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result processActivate(String userId, String processInstanceId) {
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         runtimeService.activateProcessInstanceById(processInstanceId);
         TWorkDetail tWorkDetail = new TWorkDetail();
         tWorkDetail.setOperator(userId);
         tWorkDetail.setProcessInstanceId(processInstanceId);
         tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         tWorkDetail.setDetail("工号【" + userId + "】激活了该流程");
         workDetailService.insert(tWorkDetail);
         return new Result(true, "激活流程成功");

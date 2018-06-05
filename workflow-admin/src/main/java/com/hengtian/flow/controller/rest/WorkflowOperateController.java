@@ -550,13 +550,14 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 Result result = taskAdapter.taskAction(taskActionParam);
                 //存储操作记录
                 if(result.isSuccess()){
+                 ProcessInstance processInstanc=   runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).singleResult();
                     TWorkDetail tWorkDetail = new TWorkDetail();
                     tWorkDetail.setCreateTime(new Date());
                     tWorkDetail.setDetail("工号为【" + taskActionParam.getUserId() + "】的员工进行了【" + TaskActionEnum.getDesc(taskActionParam.getActionType()) + "】操作");
                     tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
                     tWorkDetail.setOperator(taskActionParam.getUserId());
                     tWorkDetail.setTaskId(taskActionParam.getTaskId());
-
+                    tWorkDetail.setBusinessKey(processInstanc.getBusinessKey());
                     tWorkDetailService.insert(tWorkDetail);
                 }
                 return result;

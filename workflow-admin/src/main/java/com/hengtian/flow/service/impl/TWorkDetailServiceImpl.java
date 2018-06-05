@@ -30,12 +30,19 @@ public class TWorkDetailServiceImpl extends ServiceImpl<TWorkDetailDao, TWorkDet
      * @return
      */
     @Override
-    public List<TWorkDetail> operateDetailInfo(String processInstanceId, String operator) {
+    public List<TWorkDetail> operateDetailInfo(String processInstanceId, String operator,String businessKey) {
         EntityWrapper<TWorkDetail> wrapper = new EntityWrapper();
-        wrapper.where("proc_inst_id={0}", processInstanceId);
+        if(StringUtils.isNotBlank(processInstanceId)){
+         wrapper.where("proc_inst_id={0}", processInstanceId);
+
+        }
         if(StringUtils.isNotBlank(operator)){
             wrapper.and("operator={0}", operator);
         }
-        return tWorkDetailDao.selectList(wrapper);
+        if(StringUtils.isNotBlank(businessKey)){
+            wrapper.where("business_key={0}",businessKey);
+        }
+        List list=tWorkDetailDao.selectList(wrapper);
+        return list;
     }
 }

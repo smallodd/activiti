@@ -18,5 +18,5 @@ public interface TWorkDetailService extends IService<TWorkDetail> {
      * @param operator 操作人
      * @return
      */
-    List<TWorkDetail> operateDetailInfo(String processInstanceId, String operator);
+    List<TWorkDetail> operateDetailInfo(String processInstanceId, String operator,String businessKey);
 }
