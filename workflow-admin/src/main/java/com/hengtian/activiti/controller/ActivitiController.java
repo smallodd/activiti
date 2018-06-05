@@ -110,7 +110,7 @@ public class ActivitiController extends BaseController{
 	@ResponseBody
     public Object startTask(String processKey){
 		ProcessParam processParam=new ProcessParam();
-		processParam.setBussinessKey(UUID.randomUUID().toString());
+		processParam.setBusinessKey(UUID.randomUUID().toString());
 		processParam.setCustomApprover(false);
 		processParam.setCreatorId("admin");
 		processParam.setProcessDefinitionKey(processKey);

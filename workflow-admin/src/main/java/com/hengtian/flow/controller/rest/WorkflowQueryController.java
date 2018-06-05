@@ -94,7 +94,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("获取我发起的流程")
     @ApiOperation(httpMethod = "POST", value = "获取我发起的流程")
     @RequestMapping(value = "/rest/procInst", method = RequestMethod.POST)
-    public Object processInstanceList(@ApiParam(value = "流程查询条件", name = "processInstanceQueryParam", required = true) @RequestBody @Validated ProcessInstanceQueryParam processInstanceQueryParam) {
+    public Object processInstanceList(@ApiParam(value = "流程查询条件", name = "processInstanceQueryParam", required = true) @ModelAttribute @Validated ProcessInstanceQueryParam processInstanceQueryParam) {
         logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", processInstanceQueryParam.toString());
         PageInfo pageInfo = new PageInfo(processInstanceQueryParam.getPage(), processInstanceQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(processInstanceQueryParam));
@@ -115,7 +115,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "催办任务列表")
     @RequestMapping(value = "/rest/task/remind", method = RequestMethod.POST)
-    public Object remindTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
+    public Object remindTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskRemindQueryParam taskRemindQueryParam) {
         return renderSuccess(remindTaskService.remindTaskList(taskRemindQueryParam));
     }
 
@@ -131,7 +131,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("被催办任务列表")
     @ApiOperation(httpMethod = "POST", value = "被催办任务列表")
     @RequestMapping(value = "/rest/task/reminded", method = RequestMethod.POST)
-    public Object remindedTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskRemindQueryParam taskRemindQueryParam) {
+    public Object remindedTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskRemindQueryParam taskRemindQueryParam) {
         return renderSuccess(remindTaskService.remindedTaskList(taskRemindQueryParam));
     }
 
@@ -147,7 +147,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("未办任务列表")
     @ApiOperation(httpMethod = "POST", value = "未办任务列表")
     @RequestMapping(value = "/rest/task/open", method = RequestMethod.POST)
-    public Object openTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+    public Object openTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
@@ -172,7 +172,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("已办任务列表")
     @ApiOperation(httpMethod = "POST", value = "已办任务列表")
     @RequestMapping(value = "/rest/task/close", method = RequestMethod.POST)
-    public Object closeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+    public Object closeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
@@ -200,7 +200,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("待处理任务列表")
     @ApiOperation(httpMethod = "POST", value = "待处理任务列表")
     @RequestMapping(value = "/rest/task/active", method = RequestMethod.POST)
-    public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+    public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
@@ -227,7 +227,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("待签收任务列表")
     @ApiOperation(httpMethod = "POST", value = "待签收任务列表")
     @RequestMapping(value = "/rest/task/claim", method = RequestMethod.POST)
-    public Object claimTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+    public Object claimTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
@@ -251,7 +251,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "问询任务列表")
     @RequestMapping(value = "/rest/task/enquire", method = RequestMethod.POST)
-    public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
+    public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getCreateId())) {
             return new Result(false, "createId不能为空");
         }
@@ -269,7 +269,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("被问询任务列表")
     @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
     @RequestMapping(value = "/rest/task/enquired", method = RequestMethod.POST)
-    public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @RequestBody AskTaskParam taskEnquireParam) {
+    public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getAskUserId())) {
             return new Result(false, "askUserId不能为空");
         }
@@ -455,7 +455,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("待处理任务总数")
     @ApiOperation(httpMethod = "POST", value = "待处理任务总数")
     @RequestMapping(value = "/rest/task/active/count", method = RequestMethod.POST)
-    public Object activeTaskCount(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @RequestBody TaskQueryParam taskQueryParam) {
+    public Object activeTaskCount(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }

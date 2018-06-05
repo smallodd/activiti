@@ -70,7 +70,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("接口创建任务操作")
     @ApiOperation(httpMethod = "POST", value = "生成任务接口")
-    public Result startProcessInstance(@ApiParam(value = "创建任务必传信息", name = "processParam", required = true) @RequestBody ProcessParam processParam) {
+    public Result startProcessInstance(@ApiParam(value = "创建任务必传信息", name = "processParam", required = true) @ModelAttribute ProcessParam processParam) {
         logger.info("接口创建任务开始，请求参数{}", JSONObject.toJSONString(processParam));
 
         //校验参数是否合法
@@ -102,7 +102,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("设置审批人接口")
     @ApiOperation(httpMethod = "POST", value = "设置审批人接口")
-    public Object setAssignee(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @RequestBody TaskParam taskParam) {
+    public Object setAssignee(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @ModelAttribute TaskParam taskParam) {
         logger.info("设置审批人接口调用，参数{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         if (StringUtils.isBlank(taskParam.getAssignee()) || StringUtils.isBlank(taskParam.getTaskId())) {
@@ -166,7 +166,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "审批任务接口")
-    public Object approveTask(@RequestBody TaskParam taskParam) {
+    public Object approveTask(@ModelAttribute("taskParam") TaskParam taskParam) {
 
         Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
         if (task == null) {
@@ -527,7 +527,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("任务操作接口")
     @ApiOperation(httpMethod = "POST", value = "任务操作接口")
-    public Object taskAction(@ApiParam(name = "taskActionParam", required = true, value = "操作类型参数") @RequestBody TaskActionParam taskActionParam) {
+    public Object taskAction(@ApiParam(name = "taskActionParam", required = true, value = "操作类型参数") @ModelAttribute TaskActionParam taskActionParam) {
         String actionType = taskActionParam.getActionType();
         if (StringUtils.isBlank(actionType)) {
             return renderError("操作类型不能为空");
