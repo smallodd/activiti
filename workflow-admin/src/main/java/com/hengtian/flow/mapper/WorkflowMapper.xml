@@ -42,6 +42,7 @@
         trp.CREATOR_DEPT AS creatorDept,
         ahp.ID_ AS processInstanceId,
         ahp.NAME_ AS processInstanceTitle,
+        ahp.PROC_DEF_ID_ AS processDefinitionId,
         trp.PROC_DEF_NAME AS processDefinitionName,
         ahp.DELETE_REASON_ AS processInstanceState,
     </sql>

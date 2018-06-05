@@ -68,23 +68,23 @@ public class TaskQueryParam {
     /**
      * 业务系统主键
      */
-    @ApiModelProperty(value = "业务系统主键", required = true, example="业务系统主键")
+    @ApiModelProperty(value = "业务系统主键", example="业务系统主键")
     private String businessKey;
     /**
      * 流程实例状态 1：运行结束；0：正在运行
      */
-    @ApiModelProperty(value = "流程实例状态", required = true, example="0")
+    @ApiModelProperty(value = "流程实例状态", example="0")
     private Integer procInstState;
     /**
      * 创建日期-开始
      */
-    @ApiModelProperty(value = "创建日期-开始", required = true, example="2018-05-01")
+    @ApiModelProperty(value = "创建日期-开始", example="2018-05-01")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private String createTimeStart;
     /**
      * 创建日期-结束
      */
-    @ApiModelProperty(value = "创建日期-结束", required = true, example="2018-05-30")
+    @ApiModelProperty(value = "创建日期-结束", example="2018-05-30")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private String createTimeEnd;
     /**

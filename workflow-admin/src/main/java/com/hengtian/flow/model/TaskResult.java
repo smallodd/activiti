@@ -54,6 +54,10 @@ public class TaskResult {
      */
     private String processInstanceTitle;
     /**
+     * 流程定义ID
+     */
+    private String processDefinitionId;
+    /**
      * 流程名称
      */
     private String processDefinitionName;
@@ -188,5 +192,13 @@ public class TaskResult {
 
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
+    }
+
+    public String getProcessDefinitionId() {
+        return processDefinitionId;
+    }
+
+    public void setProcessDefinitionId(String processDefinitionId) {
+        this.processDefinitionId = processDefinitionId;
     }
 }
