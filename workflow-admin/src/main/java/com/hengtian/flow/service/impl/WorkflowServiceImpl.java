@@ -1588,6 +1588,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         Result result = new Result();
         result.setSuccess(true);
+        result.setCode(Constant.SUCCESS);
         result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
         return result;
     }
