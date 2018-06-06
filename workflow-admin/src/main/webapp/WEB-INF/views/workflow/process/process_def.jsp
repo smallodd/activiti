@@ -27,6 +27,7 @@
         <table id="processDefDataGrid" data-options="fit:true,border:false"></table>
     </div>
 </div>
+<div id="processDetailWindow"></div>
 <div id="processDefToolbar" style="display: none;">
     <shiro:hasPermission name="/activiti/deploy">
         <a onclick="processDefDeployFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-upload icon-green'">流程部署</a>
@@ -54,7 +55,11 @@
             }, {
                 width : '200',
                 title : '流程定义名称',
-                field : 'name'
+                field : 'name',
+                formatter : function(value, row, index){
+                    var str = $.formatString('<a target="_blank" href="javascript:processDetail(\'{0}\')">{1}</a>', row.id, row.name==null?"/":row.name);
+                    return str;
+                }
             }, {
                 width : '200',
                 title : '流程定义KEY',
@@ -64,10 +69,6 @@
                 title : '版本',
                 field : 'version'
             }, {
-                width : '130',
-                title : '部署时间',
-                field : 'deployTime'
-            }, {
                 width : '140',
                 title : '资源名称',
                 field : 'resourceName',
@@ -76,13 +77,9 @@
                     return str;
                 }
             }, {
-                width : '140',
-                title : '流程图片名称',
-                field : 'imageName',
-                formatter : function(value, row, index){
-                    var str = $.formatString('<a target="_blank" href="${ctx}/workflow/page/diagram?processDefinitionId={0}">{1}</a>', row.id ,row.imageName);
-                    return str;
-                }
+                width : '130',
+                title : '部署时间',
+                field : 'deployTime'
             }, {
                 width : '80',
                 title : '挂起状态',
@@ -158,7 +155,7 @@
         }
         parent.$.modalDialog({
             title : '设定人员',
-            width : 900,
+            width : 960,
             height : 450,
             href :  '${ctx}/assignee/config/page/' + id,
             buttons : [ {
@@ -242,6 +239,21 @@
                     progressClose();
                 }, 'JSON');
             }
+        });
+    }
+
+    /**
+     * 查看流程图
+     */
+    function processDetail(processDefinitionId) {
+        var contentStr = $.formatString('<iframe width="100%" height="100%" src="${ctx}/workflow/page/diagram?processDefinitionId={0}"></iframe>', processDefinitionId);
+        $("#processDetailWindow").window({
+            title: '任务进度',
+            width: 900,
+            height: 500,
+            content: contentStr,
+            fit: "true",
+            modal: true
         });
     }
 

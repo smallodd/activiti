@@ -70,12 +70,12 @@ public class TUserTask implements Serializable {
     @TableField(value = "version_")
     private int version;
     /**
-     * 版本号
+     * 有权限审批的人数
      */
     @TableField(value = "user_count_total")
     private int userCountTotal;
     /**
-     * 版本号
+     * 审批通过需要的人数
      */
     @TableField(value = "user_count_need")
     private int userCountNeed;
@@ -90,10 +90,15 @@ public class TUserTask implements Serializable {
     @TableField(value = "percentage")
     private Double percentage;
     /**
-     * 审批人为角色时，是否需要签收：0不需要；1需要
+     * 审批人为角色时 是否需要签收：0不需要；1需要
      */
     @TableField(value = "need_sign")
     private short needSign;
+    /**
+     * 是否需要指定下一节点审批人 0:不需要；1需要
+     */
+    @TableField(value = "need_set_next")
+    private short needSetNext;
     /**
      * 表达式
      */
@@ -226,5 +231,13 @@ public class TUserTask implements Serializable {
 
     public void setNeedSign(short needSign) {
         this.needSign = needSign;
+    }
+
+    public short getNeedSetNext() {
+        return needSetNext;
+    }
+
+    public void setNeedSetNext(short needSetNext) {
+        this.needSetNext = needSetNext;
     }
 }
