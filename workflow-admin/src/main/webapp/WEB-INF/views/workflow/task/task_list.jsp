@@ -114,7 +114,6 @@
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                         str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-complateTask" data-options="plain:true,iconCls:\'fi-monitor icon-purple\'" onclick="completeTaskFun(\'{0}\');" >办理</a>', row.id);
                     </shiro:hasPermission>
-
                     <shiro:hasPermission name="/task/transfer">
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                         str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-transferTask" data-options="plain:true,iconCls:\'fi-rewind-ten icon-red\'" onclick="transferTaskFun(\'{0}\');" >转办</a>', row.id);
@@ -129,7 +128,7 @@
                     </shiro:hasPermission>
                     <shiro:hasPermission name="/task/progress">
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-taskProgress" data-options="plain:true,iconCls:\'fi-arrow-right icon-grey\'" onclick="showTaskFun(\'{0}\');" >进度</a>', row.processInstanceId);
+                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-taskProgress" data-options="plain:true,iconCls:\'fi-arrow-right icon-grey\'" onclick="showTaskFun(\'{0}\', \'{1}\');" >进度</a>',row.processDefinitionId, row.processInstanceId);
                     </shiro:hasPermission>
                     return str;
                 }
@@ -343,13 +342,14 @@
     /**
      * 查看任务进度
      */
-    function showTaskFun(processInstanceId) {
-        var contentStr = $.formatString('<img src="${ctx}/rest/process/schedule?processInstanceId={0}"></img>', processInstanceId);
+    function showTaskFun(processDefinitionId, processInstanceId) {
+        var contentStr = $.formatString('<iframe width="100%" height="100%" src="${ctx}/workflow/page/diagram?processDefinitionId={0}&processInstanceId={1}"></iframe>', processDefinitionId, processInstanceId);
         $("#showTaskWindow").window({
             title: '任务进度',
             width: 900,
             height: 500,
             content: contentStr,
+            fit: "true",
             modal: true
         });
     }
