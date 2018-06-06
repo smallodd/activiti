@@ -32,6 +32,7 @@ import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
 import com.rbac.service.UserService;
 import com.user.entity.emp.Emp;
+import com.user.entity.emp.EmpVO;
 import com.user.service.emp.EmpService;
 import org.activiti.bpmn.model.FlowNode;
 import org.activiti.engine.*;
@@ -948,14 +949,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult) {
+    public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId) {
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
         if (task == null) {
             log.error("问询的任务不存在 processInstanceId:{},taskDefinitionKey:{}", processInstanceId, currentTaskDefKey);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        //todo
-
 
         //校验是否是上级节点
         List<String> parentNodes = getBeforeTaskDefinitionKeys(task, true);
@@ -966,20 +965,20 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //校验是否已有问询
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("proc_inst_id={0}", processInstanceId)
-                .where("execution_id={0}", task.getExecutionId())
                 .where("current_task_key={0}", currentTaskDefKey)
                 .where("ask_task_key={0}", targetTaskDefKey)
+                .where("asked_user_id={0}",askedUserId)
                 .where("is_ask_end=0");
         List<TAskTask> list = tAskTaskService.selectList(wrapper);
         if (CollectionUtils.isNotEmpty(list)) {
-            return new Result(false, "已存在问询任务");
+            return new Result(false,Constant.ASK_TASK_EXIT, "已存在问询任务");
         }
 
         TAskTask askTask = new TAskTask();
         askTask.setProcInstId(task.getProcessInstanceId());
         askTask.setCurrentTaskId(task.getId());
         askTask.setCurrentTaskKey(task.getTaskDefinitionKey());
-        askTask.setExecutionId(task.getExecutionId());
+
         askTask.setIsAskEnd(0);
         askTask.setAskTaskKey(targetTaskDefKey);
         askTask.setCreateTime(new Date());
@@ -988,9 +987,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         askTask.setUpdateId(userId);
         askTask.setAskUserId(userId);
         askTask.setAskComment(commentResult);
+        askTask.setAskedUserId(askedUserId);
         boolean success = tAskTaskService.insert(askTask);
         if (!success) {
-            return new Result(false, "问询失败");
+            return new Result(false, Constant.FAIL,"问询失败");
         }
         ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         TWorkDetail tWorkDetail = new TWorkDetail();
@@ -1001,14 +1001,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setDetail("工号【" + userId + "】问询了该任务，问询内容是【" + commentResult + "】");
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
-        return new Result(true, "问询成功");
+        return new Result(true,Constant.SUCCESS, "问询成功");
     }
 
     /**
      * 问询确认
      *
      * @param userId        操作人ID
-     * @param askId         问询
+     * @param askId        流程实例id
      * @param answerComment 确认信息
      * @return
      * @author houjinrong@chtwm.com
@@ -1018,8 +1018,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Transactional(rollbackFor = Exception.class)
     public Result taskConfirmEnquire(String userId, String askId, String answerComment) {
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
-        wrapper.where("`ask_user_id`={0}", userId)
+        wrapper.where("`asked_user_id`={0}", userId)
                 .where("id={0}", askId)
+
                 .where("is_ask_end={0}", 0);
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         if (tAskTask == null) {
@@ -1028,7 +1029,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).list();
         if (CollectionUtils.isEmpty(list)) {
-            log.error("确认问询的任务不存在 askId:{}", askId);
+            log.error("确认问询的任务不存在 processInstanceId:{}", askId);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         tAskTask.setUpdateTime(new Date());
@@ -1036,7 +1037,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tAskTask.setIsAskEnd(1);
         boolean success = tAskTaskService.updateById(tAskTask);
         if (!success) {
-            return new Result(false, "问询确认失败");
+            return new Result(false,Constant.FAIL, "问询确认失败");
         }
         ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(tAskTask.getProcInstId()).singleResult();
         TWorkDetail tWorkDetail = new TWorkDetail();
@@ -1047,7 +1048,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         tWorkDetail.setDetail("工号【" + userId + "】回复了该问询，回复内容是【" + answerComment + "】");
         workDetailService.insert(tWorkDetail);
-        return new Result(true, "问询确认成功");
+        return new Result(true, Constant.SUCCESS,"问询确认成功");
     }
 
     /**
@@ -1502,7 +1503,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @return
      */
     @Override
-    public Result getBeforeNodes(String taskId, String userId, boolean isAll) {
+    public Result getBeforeNodes(String taskId, String userId, boolean isAll,boolean needPerson) {
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
             log.warn("任务不存在 taskId {}", taskId);
@@ -1519,7 +1520,25 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 TaskVo taskVo = new TaskVo();
                 taskVo.setTaskDefinitionKey(node.getId());
                 taskVo.setTaskName(node.getName());
+                if(needPerson){
+                    List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(node.getId()).orderByTaskCreateTime().desc().list();
+                    if(historicTaskInstances!=null&&historicTaskInstances.size()>0){
+                        HistoricTaskInstance historicTaskInstance=historicTaskInstances.get(0);
+                        String assigns=historicTaskInstance.getAssignee();
+                        String [] arrayAssign=assigns.replace("_Y","").replace("_N","").split(",");
+                        List<EmpVO> list=new ArrayList<>();
+                        for(String assign:arrayAssign){
+                            Emp emp=empService.selectByCode(assign);
+                            EmpVO empVO=new EmpVO();
+                            empVO.setCode(assign);
+                            empVO.setName(emp.getName());
+                            empVO.setDeptName(emp.getDeptName());
+                            list.add(empVO);
+                        }
+                        taskVo.setEmps(list);
+                    }
 
+                }
                 taskList.add(taskVo);
             }
             Result result = new Result(true, "查询成功");

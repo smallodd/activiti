@@ -2,8 +2,11 @@ package com.hengtian.flow.vo;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.user.entity.emp.Emp;
+import com.user.entity.emp.EmpVO;
 
 /**
  * 工作流用户任务VO
@@ -74,7 +77,19 @@ public class TaskVo implements Serializable{
 	 * 业务主键
 	 */
 	private String businessKey;
-    
+	/**
+	 * 节点对应的人员信息
+	 */
+	List<EmpVO> emps;
+
+	public List<EmpVO> getEmps() {
+		return emps;
+	}
+
+	public void setEmps(List<EmpVO> emps) {
+		this.emps = emps;
+	}
+
 	public String getId() {
 		return id;
 	}

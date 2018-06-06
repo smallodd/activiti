@@ -3,7 +3,9 @@ package com.hengtian.flow.controller;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import org.activiti.engine.TaskService;
@@ -65,7 +67,7 @@ public class AskController extends BaseController {
             request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
             request.setAttribute("processInstanceId", task.getProcessInstanceId());
         }
-        Result result = workflowService.getBeforeNodes(taskId, getUserId(), true);
+        Result result = workflowService.getBeforeNodes(taskId, getUserId(), true,false);
         request.setAttribute("tasks", result.getObj());
         return "ask/comment";
     }
@@ -138,9 +140,30 @@ public class AskController extends BaseController {
      */
     @PostMapping(value = "askTask")
     @ResponseBody
-    public Result askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey) {
+    public Object askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey,@RequestParam String askedUserId,@RequestParam String userId) {
         try {
-            return workflowService.taskEnquire(getUserId(), processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult);
+            if(StringUtils.isBlank(userId)&&getShiroUser()==null){
+                return renderError("请传问询人员工号");
+            }
+            if(StringUtils.isBlank(processInstanceId)){
+                return renderError("流程实例id不能为空");
+            }
+            if(StringUtils.isBlank(currentTaskDefKey)){
+                return renderError("当前节点信息不能为空");
+            }
+            if(StringUtils.isBlank(commentResult)){
+                return renderError("问询信息不能为空");
+            }
+            if(StringUtils.isBlank(targetTaskDefKey)){
+                return renderError("被问询节点key不能为空");
+            }
+            if(StringUtils.isBlank(askedUserId)){
+                return renderError("被问询人员");
+            }
+            if(StringUtils.isBlank(userId)){
+                userId=getUserId();
+            }
+            return workflowService.taskEnquire(userId, processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult,askedUserId);
         } catch (Exception e) {
             log.error("", e);
             return new Result(false, "操作失败");
@@ -157,9 +180,9 @@ public class AskController extends BaseController {
      */
     @RequestMapping(value = "askConfirm", method = RequestMethod.POST)
     @ResponseBody
-    public Result askConfirm(@RequestParam String askId, @RequestParam String commentResult) {
+    public Result askConfirm(@RequestParam String askId,@RequestParam String userId,@RequestParam String commentResult ) {
         try {
-            return workflowService.taskConfirmEnquire(getUserId(), askId, commentResult);
+            return workflowService.taskConfirmEnquire(userId, askId,commentResult);
         } catch (Exception e) {
             log.error("", e);
             return new Result(false, "操作失败");

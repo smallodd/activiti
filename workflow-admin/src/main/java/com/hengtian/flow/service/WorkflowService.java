@@ -123,19 +123,20 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult);
+    Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId);
 
     /**
      * 问询确认
      *
      * @param userId        操作人ID
      * @param askId         问询id
-     * @param answerComment 确认信息
+     * @param answerCommen 确认信息
+
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskConfirmEnquire(String userId, String askId, String answerComment);
+    Result taskConfirmEnquire(String userId, String askId, String answerCommen);
 
     /**
      * 驳回
@@ -245,9 +246,10 @@ public interface WorkflowService extends IService<TaskResult> {
      * @param taskId 当前任务节点id
      * @param userId 操作人ID
      * @param isAll  是否递归获取全部父节点
+     * @param  needPerson 是否需要街道带出人员来
      * @return
      */
-    Result getBeforeNodes(String taskId, String userId, boolean isAll);
+    Result getBeforeNodes(String taskId, String userId, boolean isAll,boolean needPerson);
 
     /**
      * 我的任务信息
