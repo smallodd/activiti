@@ -18,6 +18,7 @@
                 <td><strong>配置选项类型</strong></td>
                 <td><strong>人员 | 部门 | 角色 | 表达式选项</strong></td>
                 <td><strong>操作权限</strong></td>
+                <td><strong>下一节点</strong></td>
                 <td><strong>通过条件</strong></td>
                 <td><strong>条件参数</strong></td>
             </tr>
@@ -40,7 +41,13 @@
                     <td><input id="taskUser${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configAssignee('${ut.taskDefKey}')"/></td>
 				    <td><input id="taskButton${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configButton('${ut.taskDefKey}')"/></td>
                     <td>
-                        <select id="passType${ut.taskDefKey}" class="easyui-combobox passType" data-options="width:60,height:29,panelHeight:'auto'"onchange="selectPassType('${ut.taskDefKey}')">
+                        <select id="needSetNext${ut.taskDefKey}" class="easyui-combobox needSetNext" data-options="width:60,height:29,panelHeight:'auto'">
+                            <option value="0" <c:if test="${ut.needSetNext == 0}">selected="selected"</c:if>>默认</option>
+                            <option value="1" <c:if test="${ut.needSetNext == 1}">selected="selected"</c:if>>指定</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select id="passType${ut.taskDefKey}" class="easyui-combobox passType" data-options="width:60,height:29,panelHeight:'auto'">
                             <option value="1" <c:if test="${ut.percentage != 0}">selected="selected"</c:if>>比例</option>
                             <option value="2" <c:if test="${ut.percentage == 0}">selected="selected"</c:if>>人数</option>
                         </select>
@@ -84,7 +91,7 @@
                 }
         	}
     	}
-    	
+
     	//Form表单提交
         $('#configAssigneeForm').form({
             url : '${ctx}/assignee/config',
@@ -99,6 +106,9 @@
             	for(var i=0;i<taskJsonVal.length;i++){
                     taskJsonVal[i].taskType = $("#taskType"+taskJsonVal[i].taskDefKey).val();
                     taskJsonVal[i].assignType = $("#assignType"+taskJsonVal[i].taskDefKey).val();
+
+                    taskJsonVal[i].needSetNext = $("#needSetNext"+taskJsonVal[i].taskDefKey).val();
+
                     var passType = $("#passType"+taskJsonVal[i].taskDefKey).val();
                     if(passType == 1){
                         taskJsonVal[i].percentage = $("#percentage"+taskJsonVal[i].taskDefKey).val();
@@ -172,7 +182,7 @@
             $("#taskJson").val(JSON.stringify(taskJsonVal));
         }
     }
-    
+
     //配置人员
     function configAssignee(taskDefKey){
         $("#taskKey").val(taskDefKey);
