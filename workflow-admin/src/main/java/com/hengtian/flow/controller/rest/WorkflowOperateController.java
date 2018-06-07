@@ -626,4 +626,65 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
         return new Result(true,"用户【"+taskActionParam.getUserId()+"】"+TaskActionEnum.getDesc(taskActionParam.getActionType())+"成功");
     }
+
+
+    /**
+     * 问询
+     *
+     * @param processInstanceId 流程实例ID
+     * @param commentResult     问询详情
+     * @param currentTaskDefKey 当前任务节点KEY
+     * @param targetTaskDefKey  目标任务节点KEY
+     * @return
+     */
+    @PostMapping(value = "askTask")
+    @ResponseBody
+    public Object askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey,@RequestParam String askedUserId,@RequestParam(required = false) String userId) {
+        try {
+            if(com.hengtian.common.utils.StringUtils.isBlank(userId)&&getShiroUser()==null){
+                return renderError("请传问询人员工号");
+            }
+            if(com.hengtian.common.utils.StringUtils.isBlank(processInstanceId)){
+                return renderError("流程实例id不能为空");
+            }
+            if(com.hengtian.common.utils.StringUtils.isBlank(currentTaskDefKey)){
+                return renderError("当前节点信息不能为空");
+            }
+            if(com.hengtian.common.utils.StringUtils.isBlank(commentResult)){
+                return renderError("问询信息不能为空");
+            }
+            if(com.hengtian.common.utils.StringUtils.isBlank(targetTaskDefKey)){
+                return renderError("被问询节点key不能为空");
+            }
+            if(com.hengtian.common.utils.StringUtils.isBlank(askedUserId)){
+                return renderError("被问询人员");
+            }
+            if(com.hengtian.common.utils.StringUtils.isBlank(userId)){
+                userId=getUserId();
+            }
+            return workflowService.taskEnquire(userId, processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult,askedUserId);
+        } catch (Exception e) {
+            logger.error("", e);
+            return new Result(false, "操作失败");
+        }
+    }
+
+
+    /**
+     * 确认问询
+     *
+     * @param askId         问询ID
+     * @param commentResult 回复
+     * @return
+     */
+    @RequestMapping(value = "askConfirm", method = RequestMethod.POST)
+    @ResponseBody
+    public Result askConfirm(@RequestParam String askId,@RequestParam String userId,@RequestParam String commentResult ) {
+        try {
+            return workflowService.taskConfirmEnquire(userId, askId,commentResult);
+        } catch (Exception e) {
+            logger.error("", e);
+            return new Result(false, "操作失败");
+        }
+    }
 }
