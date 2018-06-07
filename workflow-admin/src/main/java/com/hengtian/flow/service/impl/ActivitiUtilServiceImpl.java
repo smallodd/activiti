@@ -1092,12 +1092,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     }
 
     public Result validateApproveParam(TRuTask ruTask, TaskParam taskParam) {
-        if (!ruTask.getAssigneeType().equals(taskParam.getAssignType())) {
-            return new Result(Constant.PARAM_ERROR, "审批人类型参数错误！");
-        }
-        if (!ruTask.getTaskType().equals(taskParam.getTaskType())) {
-            return new Result(Constant.PARAM_ERROR, "任务类型参数错误！");
-        }
+
         if (taskParam.getPass() != TaskStatusEnum.COMPLETE_AGREE.status && taskParam.getPass() != TaskStatusEnum.COMPLETE_REFUSE.status) {
             return new Result(Constant.PARAM_ERROR, "任务类型参数错误！");
         }

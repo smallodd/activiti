@@ -519,7 +519,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 String assignee = task.getAssignee();
                 taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_Y"):(assignee+","+taskParam.getAssignee()+"_Y"));
                 taskService.complete(task.getId(), map);
-                if(AssignTypeEnum.PERSON.code.equals(taskParam.getAssignType())){
+                if(AssignTypeEnum.PERSON.code.equals(ruTask.getAssigneeType())){
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(TaskStatusEnum.SKIP.status);
                     EntityWrapper wrapper_ = new EntityWrapper();
@@ -542,7 +542,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     String assignee = task.getAssignee();
                     taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_N"):(assignee+","+taskParam.getAssignee()+"_N"));
                     deleteProcessInstance(task.getProcessInstanceId(), "refused");
-                    if(AssignTypeEnum.PERSON.code.equals(taskParam.getAssignType())){
+                    if(AssignTypeEnum.PERSON.code.equals(ruTask.getAssigneeType())){
                         TRuTask tRuTask = new TRuTask();
                         tRuTask.setStatus(TaskStatusEnum.SKIP.status);
                         EntityWrapper wrapper_ = new EntityWrapper();

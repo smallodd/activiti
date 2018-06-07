@@ -183,13 +183,13 @@ public class WorkflowActionController extends BaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg,ResultEnum.PARAM_ERROR.code);
         }
 
-        TRuTask tRuTask = tRuTasks.get(0);
+
         taskParam.setAssignee(assignee);
-        taskParam.setAssignType(tRuTask.getAssigneeType());
+
         taskParam.setComment("【管理员代办】"+commentContent);
         taskParam.setPass(commentResult);
         taskParam.setTaskId(taskId);
-        taskParam.setTaskType(tRuTask.getTaskType());
+
         taskParam.setJsonVariables(jsonVariable);
         Object result = workflowService.approveTask(task,taskParam);
         return JSONObject.toJSONString(result);

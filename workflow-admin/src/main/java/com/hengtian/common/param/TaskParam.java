@@ -13,16 +13,8 @@ public class TaskParam {
      */
     @ApiModelProperty(value = "任务id", required = true, example="100001")
     private String taskId;
-    /**
-     * 任务类型
-     */
-    @ApiModelProperty(value = "任务类型", example="assignee/candidateUser/counterSign")
-    private String taskType;
-    /**
-     * 审批人类型
-     */
-    @ApiModelProperty(value = "审批人类型", example="1,2,3,4")
-    private Integer assignType;
+
+
     /**
      * 审批人
      */
@@ -57,21 +49,8 @@ public class TaskParam {
         this.taskId = taskId;
     }
 
-    public String getTaskType() {
-        return taskType;
-    }
 
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
-    }
 
-    public Integer getAssignType() {
-        return assignType;
-    }
-
-    public void setAssignType(Integer assignType) {
-        this.assignType = assignType;
-    }
 
     public String getAssignee() {
         return assignee;
