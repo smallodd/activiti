@@ -17,8 +17,7 @@ public class TAskTask {
     private String id;
     @TableField(value = "proc_inst_id")
     private String procInstId;
-    @TableField(value = "execution_id")
-    private String executionId;
+
     @TableField(value = "current_task_id")
     private String currentTaskId;
     @TableField(value = "current_task_key")
@@ -42,6 +41,8 @@ public class TAskTask {
     @TableField(value = "answer_comment")
     private String answerComment;
 
+    @TableField(value = "asked_user_id")
+    private String askedUserId;
     public String getId() {
         return id;
     }
@@ -58,12 +59,12 @@ public class TAskTask {
         this.procInstId = procInstId;
     }
 
-    public String getExecutionId() {
-        return executionId;
+    public String getAskedUserId() {
+        return askedUserId;
     }
 
-    public void setExecutionId(String executionId) {
-        this.executionId = executionId;
+    public void setAskedUserId(String askedUserId) {
+        this.askedUserId = askedUserId;
     }
 
     public String getCurrentTaskId() {
@@ -159,7 +160,7 @@ public class TAskTask {
         return "TAskTask{" +
                 "id='" + id + '\'' +
                 ", procInstId='" + procInstId + '\'' +
-                ", executionId='" + executionId + '\'' +
+                ", askedUserId='" + askedUserId + '\'' +
                 ", currentTaskId='" + currentTaskId + '\'' +
                 ", currentTaskKey='" + currentTaskKey + '\'' +
                 ", askTaskKey='" + askTaskKey + '\'' +

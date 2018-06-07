@@ -101,7 +101,7 @@
                 }
             } ] ],
             onLoadSuccess:function(data){
-                $('.task-easyui-linkbutton-answerComment').linkbutton({text:'回复详情'});
+              //  $('.task-easyui-linkbutton-answerComment').linkbutton({text:'回复详情'});
             },
             toolbar : '#taskToolbar'
         });

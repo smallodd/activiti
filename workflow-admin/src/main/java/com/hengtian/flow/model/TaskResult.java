@@ -73,6 +73,14 @@ public class TaskResult {
      * 结束时间
      */
     private Date endTime;
+    /**
+     * 是否是问询的任务
+     */
+    private int asked;
+    /**
+     * 问询主键
+     */
+    private String askId;
 
     public String getTaskId() {
         return taskId;
@@ -200,5 +208,21 @@ public class TaskResult {
 
     public void setProcessDefinitionId(String processDefinitionId) {
         this.processDefinitionId = processDefinitionId;
+    }
+
+    public int getAsked() {
+        return asked;
+    }
+
+    public void setAsked(int asked) {
+        this.asked = asked;
+    }
+
+    public String getAskId() {
+        return askId;
+    }
+
+    public void setAskId(String askId) {
+        this.askId = askId;
     }
 }

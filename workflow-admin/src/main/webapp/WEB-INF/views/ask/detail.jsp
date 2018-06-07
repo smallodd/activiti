@@ -28,7 +28,7 @@
 <script type="text/javascript">
     $(function() {
         $('#taskJumpForm').form({
-            url : '${ctx}/ask/askConfirm',
+            url : '${ctx}/rest/flow/operate/askConfirm',
             success : function(result) {
                 result = $.parseJSON(result);
                 progressClose();

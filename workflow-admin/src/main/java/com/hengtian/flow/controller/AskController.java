@@ -3,7 +3,9 @@ package com.hengtian.flow.controller;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import org.activiti.engine.TaskService;
@@ -21,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author chenzhangyan  on 2018/4/18.
  */
-@RequestMapping("/rest/ask")
+@RequestMapping("/ask")
 @Controller
 public class AskController extends BaseController {
     private static final Logger log = LoggerFactory.getLogger(AskController.class);
@@ -65,7 +67,7 @@ public class AskController extends BaseController {
             request.setAttribute("currentTaskDefKey", task.getTaskDefinitionKey());
             request.setAttribute("processInstanceId", task.getProcessInstanceId());
         }
-        Result result = workflowService.getBeforeNodes(taskId, getUserId(), true);
+        Result result = workflowService.getBeforeNodes(taskId, getUserId(), true,false);
         request.setAttribute("tasks", result.getObj());
         return "ask/comment";
     }
@@ -107,7 +109,10 @@ public class AskController extends BaseController {
     public PageInfo askTaskDataGrid(AskTaskParam askTaskParam, Integer page, Integer rows) {
         askTaskParam.setPageNum(page);
         askTaskParam.setPageSize(rows);
-        askTaskParam.setCreateId(getUserId());
+        String currentUserId= getShiroUser().getId();
+        if(StringUtils.isNotBlank(currentUserId)&&!currentUserId.contains("admin")) {
+            askTaskParam.setCreateId(getUserId());
+        }
         return tAskTaskService.enquireTaskList(askTaskParam);
     }
 
@@ -123,46 +128,12 @@ public class AskController extends BaseController {
     public PageInfo askedTaskDataGrid(AskTaskParam askTaskParam, Integer page, Integer rows) {
         askTaskParam.setPageNum(page);
         askTaskParam.setPageSize(rows);
-        askTaskParam.setAskUserId(getUserId());
+        String currentUserId= getShiroUser().getId();
+        if(StringUtils.isNotBlank(currentUserId)&&!currentUserId.contains("admin")) {
+            askTaskParam.setCreateId(getUserId());
+        }
         return tAskTaskService.enquiredTaskList(askTaskParam);
     }
 
-    /**
-     * 问询
-     *
-     * @param processInstanceId 流程实例ID
-     * @param commentResult     问询详情
-     * @param currentTaskDefKey 当前任务节点KEY
-     * @param targetTaskDefKey  目标任务节点KEY
-     * @return
-     */
-    @PostMapping(value = "askTask")
-    @ResponseBody
-    public Result askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey) {
-        try {
-            return workflowService.taskEnquire(getUserId(), processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult);
-        } catch (Exception e) {
-            log.error("", e);
-            return new Result(false, "操作失败");
-        }
-    }
 
-
-    /**
-     * 确认问询
-     *
-     * @param askId         问询ID
-     * @param commentResult 回复
-     * @return
-     */
-    @RequestMapping(value = "askConfirm", method = RequestMethod.POST)
-    @ResponseBody
-    public Result askConfirm(@RequestParam String askId, @RequestParam String commentResult) {
-        try {
-            return workflowService.taskConfirmEnquire(getUserId(), askId, commentResult);
-        } catch (Exception e) {
-            log.error("", e);
-            return new Result(false, "操作失败");
-        }
-    }
 }

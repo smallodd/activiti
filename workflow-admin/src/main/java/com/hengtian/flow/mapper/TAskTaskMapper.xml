@@ -7,7 +7,6 @@
         SELECT
         tat.id id,
         tat.proc_inst_id procInstId,
-        tat.execution_id executionId,
         tat.current_task_id currentTaskId ,
         tat.current_task_key currentTaskKey,
         tat.ask_task_key askTaskKey,
@@ -18,9 +17,14 @@
         tat.update_id updateId,
         tat.ask_user_id askUserId,
         tat.ask_comment askComment,
-        tat.answer_comment answerComment
+        tat.answer_comment answerComment,
+        tat.asked_user_id askedUserId
         FROM t_ask_task tat
-        WHERE tat.create_id = #{createId}
+        WHERE 1=1
+        <if test="createId!=null and createId!=''">
+            and tat.create_id = #{createId}
+        </if>
+
         <if test="askUserId!=null and askUserId!=''">
             AND tat.ask_user_id = #{askUserId}
         </if>
@@ -40,7 +44,6 @@
         SELECT
         tat.id id,
         tat.proc_inst_id procInstId,
-        tat.execution_id executionId,
         tat.current_task_id currentTaskId ,
         tat.current_task_key currentTaskKey,
         tat.ask_task_key askTaskKey,
@@ -51,9 +54,13 @@
         tat.update_id updateId,
         tat.ask_user_id askUserId,
         tat.ask_comment askComment,
-        tat.answer_comment answerComment
+        tat.answer_comment answerComment,
+        tat.asked_user_id askedUserId
         FROM t_ask_task tat
-        WHERE tat.ask_user_id = #{askUserId}
+        WHERE 1=1
+        <if test="askUserId!=null and askUserId!=''">
+            and tat.ask_user_id = #{askUserId}
+        </if>
         <if test="createId!=null and createId!=''">
             AND tat.create_id = #{createId}
         </if>

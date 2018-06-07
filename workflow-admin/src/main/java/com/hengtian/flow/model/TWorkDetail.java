@@ -52,6 +52,45 @@ public class TWorkDetail implements Serializable {
 
     @TableField(value = "business_key")
     private String businessKey;
+    /**
+     * 操作动作
+     */
+    @TableField(value = "oper_action")
+    private String operateAction;
+    /**
+     * 操作节点
+     */
+    @TableField(value = "oper_task_key")
+    private String operTaskKey;
+    /**
+     * 审批意见
+     */
+    @TableField(value = "aprrove_info")
+    private String aprroveInfo;
+
+    public String getOperateAction() {
+        return operateAction;
+    }
+
+    public void setOperateAction(String operateAction) {
+        this.operateAction = operateAction;
+    }
+
+    public String getOperTaskKey() {
+        return operTaskKey;
+    }
+
+    public void setOperTaskKey(String operTaskKey) {
+        this.operTaskKey = operTaskKey;
+    }
+
+    public String getAprroveInfo() {
+        return aprroveInfo;
+    }
+
+    public void setAprroveInfo(String aprroveInfo) {
+        this.aprroveInfo = aprroveInfo;
+    }
 
     public String getBusinessKey() {
         return businessKey;

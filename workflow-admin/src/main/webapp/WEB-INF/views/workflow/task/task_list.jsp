@@ -122,7 +122,7 @@
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                         str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-jumpTask" data-options="plain:true,iconCls:\'fi-share icon-yellow\'" onclick="jumpTaskFun(\'{0}\');" >跳转</a>', row.id);
                     </shiro:hasPermission>
-                    <shiro:hasPermission name="/task/ask">
+                    <shiro:hasPermission name="/ask/comment">
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                         str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askTask" data-options="plain:true,iconCls:\'fi-share icon-green\'" onclick="askTaskFun(\'{0}\');" >问询</a>', row.id);
                     </shiro:hasPermission>
