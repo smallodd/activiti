@@ -59,7 +59,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
 
             tUserTask.setTaskType(obj.getString("taskType"));
             tUserTask.setAssignType(obj.getInteger("assignType"));
-            tUserTask.setNeedSetNext(obj.getShort("needSetNext"));
+            tUserTask.setNeedSetNext(obj.getInteger("needSetNext"));
 
             String assignee = obj.getString("code");
             int assigneeCount = StringUtils.isBlank(assignee)?0:assignee.split(",").length;

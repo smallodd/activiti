@@ -34,7 +34,12 @@ public class RuProcinst {
     @TableField(value = "creator")
     private String creator;
     /**
-     * 流程创建人部门
+     * 流程创建人部门编号
+     */
+    @TableField(value = "creator_dept_code")
+    private String creatorDeptCode;
+    /**
+     * 流程创建人部门名称
      */
     @TableField(value = "creator_dept")
     private String creatorDept;
@@ -56,10 +61,11 @@ public class RuProcinst {
 
     public RuProcinst(){}
 
-    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorDept, String procDefName, String currentTaskKey) {
+    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorDeptCode, String creatorDept, String procDefName, String currentTaskKey) {
         this.appKey = appKey;
         this.procInstId = procInstId;
         this.creator = creator;
+        this.creatorDeptCode = creatorDeptCode;
         this.creatorDept = creatorDept;
         this.procDefName = procDefName;
         this.currentTaskKey = currentTaskKey;
@@ -127,5 +133,13 @@ public class RuProcinst {
 
     public void setCurrentTaskKey(String currentTaskKey) {
         this.currentTaskKey = currentTaskKey;
+    }
+
+    public String getCreatorDeptCode() {
+        return creatorDeptCode;
+    }
+
+    public void setCreatorDeptCode(String creatorDeptCode) {
+        this.creatorDeptCode = creatorDeptCode;
     }
 }

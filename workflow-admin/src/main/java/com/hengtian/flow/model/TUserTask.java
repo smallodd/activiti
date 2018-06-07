@@ -50,12 +50,12 @@ public class TUserTask implements Serializable {
     @TableField(value="task_type")
     private String taskType;
     /**
-     * 候选人名称(多个)
+     * 审批人名称(多个)
      */
     @TableField(value="candidate_name")
     private String candidateName;
     /**
-     * 候选人ID(多个)
+     * 审批人ID(多个)
      */
     @TableField(value="candidate_ids")
     private String candidateIds;
@@ -93,12 +93,12 @@ public class TUserTask implements Serializable {
      * 审批人为角色时 是否需要签收：0不需要；1需要
      */
     @TableField(value = "need_sign")
-    private short needSign;
+    private Integer needSign;
     /**
      * 是否需要指定下一节点审批人 0:不需要；1需要
      */
     @TableField(value = "need_set_next")
-    private short needSetNext;
+    private Integer needSetNext;
     /**
      * 表达式
      */
@@ -225,19 +225,19 @@ public class TUserTask implements Serializable {
         this.percentage = percentage;
     }
 
-    public short getNeedSign() {
+    public Integer getNeedSign() {
         return needSign;
     }
 
-    public void setNeedSign(short needSign) {
+    public void setNeedSign(Integer needSign) {
         this.needSign = needSign;
     }
 
-    public short getNeedSetNext() {
+    public Integer getNeedSetNext() {
         return needSetNext;
     }
 
-    public void setNeedSetNext(short needSetNext) {
+    public void setNeedSetNext(Integer needSetNext) {
         this.needSetNext = needSetNext;
     }
 }

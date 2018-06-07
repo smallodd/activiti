@@ -117,6 +117,7 @@ public class WorkflowBaseController extends BaseRestController {
             return null;
         }
 
+        //获取已审批人
         List<String> assigneeList = Lists.newArrayList();
         if(StringUtils.isNotBlank(task.getAssignee())){
             String assignee = task.getAssignee().replaceAll("_N","").replaceAll("_Y","");
@@ -136,18 +137,28 @@ public class WorkflowBaseController extends BaseRestController {
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.where("task_id={0}", taskId);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+
         if(tUserTask.getNeedSign() == 0 && AssignTypeEnum.ROLE.code.equals(tUserTask.getAssignType())){
-            EntityWrapper<RuProcinst> wrapper1 = new EntityWrapper<>();
-            wrapper1.eq("proc_inst_id", task.getProcessInstanceId());
-            RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper1);
+            EntityWrapper<RuProcinst> _wrapper = new EntityWrapper<>();
+            _wrapper.eq("proc_inst_id", task.getProcessInstanceId());
+            RuProcinst ruProcinst = ruProcinstService.selectOne(_wrapper);
             Integer appKey = ruProcinst==null?null:ruProcinst.getAppKey();
 
             for(TRuTask t : tRuTasks){
-                List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(t.getAssignee()));
-                if(CollectionUtils.isNotEmpty(users)){
-                    for(RbacUser u : users){
-                        if(!assigneeList.contains(u.getCode())){
-                            result.add(u.getCode());
+                if(StringUtils.isNotBlank(t.getAssigneeReal())){
+                    String[] array = t.getAssigneeReal().split(",");
+                    for(String a : array){
+                        if(!assigneeList.contains(a)){
+                            result.add(a);
+                        }
+                    }
+                }else{
+                    List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(t.getAssignee()));
+                    if(CollectionUtils.isNotEmpty(users)){
+                        for(RbacUser u : users){
+                            if(!assigneeList.contains(u.getCode())){
+                                result.add(u.getCode());
+                            }
                         }
                     }
                 }

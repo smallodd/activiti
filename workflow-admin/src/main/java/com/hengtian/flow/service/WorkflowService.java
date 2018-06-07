@@ -1,5 +1,6 @@
 package com.hengtian.flow.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.service.IService;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskParam;
@@ -256,6 +257,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/5/15 11:12
      */
+    @Deprecated
     PageInfo myTaskPage(TaskQueryParam taskQueryParam, String type);
 
     /**
@@ -294,4 +296,12 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/6/1 9:44
      */
     Result taskDetail(String userId, String taskId);
+
+    /**
+     * 在当前任务节点获取下一步审批人
+     * @param taskId 任务ID
+     * @author houjinrong@chtwm.com
+     * date 2018/6/6 19:14
+     */
+    JSONArray getNextAssigneeWhenRoleApprove(Task task);
 }

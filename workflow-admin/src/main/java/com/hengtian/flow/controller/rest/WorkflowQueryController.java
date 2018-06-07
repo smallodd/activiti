@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller.rest;
 
+import com.alibaba.fastjson.JSONArray;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ApproveResultEnum;
@@ -521,7 +522,6 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }
     }
 
-
     /**
      * 任务详情
      * @param userId 用户ID
@@ -540,5 +540,30 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         return workflowService.taskDetail(userId, taskId);
+    }
+
+    /**
+     * 下步节点审批人
+     * @param userId 用户ID
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 9:40
+     */
+    @ResponseBody
+    @SysLog("任务详情")
+    @ApiOperation(httpMethod = "POST", value = "下步节点审批人")
+    @RequestMapping(value = "/rest/task/assignee/next", method = RequestMethod.POST)
+    public Object getNextAssignee(@ApiParam(value = "用户ID", name = "userId", required = true) @RequestParam String userId,
+                                  @ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId){
+        if(StringUtils.isBlank(userId) || StringUtils.isBlank(taskId)){
+            return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
+        }
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return renderError("taskId无效");
+        }
+        JSONArray result = workflowService.getNextAssigneeWhenRoleApprove(task);
+        return renderSuccess(result);
     }
 }

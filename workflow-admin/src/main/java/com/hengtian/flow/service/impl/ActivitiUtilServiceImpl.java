@@ -1,14 +1,13 @@
 package com.hengtian.flow.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.hengtian.common.enums.AssignTypeEnum;
-import com.hengtian.common.enums.ProcessStatusEnum;
-import com.hengtian.common.enums.ResultEnum;
-import com.hengtian.common.enums.TaskStatusEnum;
+import com.hengtian.common.enums.*;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
@@ -21,6 +20,7 @@ import com.hengtian.flow.service.TTaskButtonService;
 import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
+import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
@@ -42,6 +42,7 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
@@ -1058,22 +1059,31 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             return null;
         }
 
-        if (tRuTasks.get(0).getAssigneeType().equals(AssignTypeEnum.ROLE.code)) {
-            //角色审批
-            List<Long> roleIds = getAllRoleByUserId(task.getProcessInstanceId(), userId);
-            if (CollectionUtils.isEmpty(roleIds)) {
-                return null;
-            }
-            for (TRuTask rt : tRuTasks) {
-                if (roleIds.contains(Long.parseLong(rt.getAssignee()))) {
+        Integer assigneeType = tRuTasks.get(0).getAssigneeType();
+        List<String> assigneeList;
+        List<Long> roleIds = null;
+        for (TRuTask rt : tRuTasks) {
+            if(StringUtils.isNotBlank(rt.getAssigneeReal())){
+                assigneeList = Arrays.asList(rt.getAssigneeReal().split(","));
+                if(assigneeList.contains(userId)){
                     return rt;
                 }
-            }
-        } else {
-            //人员审批
-            for (TRuTask rt : tRuTasks) {
-                if (userId.equals(rt.getAssignee())) {
-                    return rt;
+            }else{
+                if(AssignTypeEnum.ROLE.code.equals(assigneeType)){
+                    //角色，不需要签收
+                    if(CollectionUtils.isEmpty(roleIds)){
+                        roleIds = getAllRoleByUserId(task.getProcessInstanceId(), userId);
+                    }
+
+                    if (CollectionUtils.isEmpty(roleIds)) {
+                        return null;
+                    }
+
+                    if (roleIds.contains(Long.parseLong(rt.getAssignee()))) {
+                        return rt;
+                    }
+                }else{
+                    //其他情况
                 }
             }
         }
@@ -1127,5 +1137,147 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
 
         return taskNodes;
+    }
+
+    /**
+     * 设置下一步审批人时，校验
+     * @author houjinrong@chtwm.com
+     * date 2018/6/6 18:57
+     */
+    public JSONObject validateSetNextAssignee(JSONObject jsonObject, String processInstanceId, int version){
+        String assignee = null;
+        String candidateIds = null;
+        EntityWrapper<TUserTask> wrapper;
+        Integer appKey = getAppKey(processInstanceId);
+
+        Set<String> keySet = jsonObject.keySet();
+
+        JSONObject resultJson = new JSONObject();
+        TUserTask userTask;
+        for(String key : keySet){
+            JSONArray jsonArray = new JSONArray();
+            wrapper = new EntityWrapper<>();
+            wrapper.eq("version_", version);
+            wrapper.eq("task_def_key", key);
+            userTask = tUserTaskService.selectOne(wrapper);
+
+            //key为任务节点key
+            if(userTask == null){
+                logger.info("任务节点key不存在");
+                return null;
+            }
+            //角色ID，多个逗号隔开
+            candidateIds = userTask.getCandidateIds();
+            assignee = jsonObject.getString(key);
+            String roleCode = null;
+            String roleName = null;
+            if(StringUtils.isBlank(assignee)){
+                //当选择的审批人为空时，审批人设置按配置处理
+                resultJson.put(key, null);
+            }else{
+                //选择多个角色，分别遍历校验
+                for(String a : assignee.split(",")){
+                    //获取用户所有所属角色
+                    List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, a);
+                    if(CollectionUtils.isEmpty(roles)){
+                        logger.info("用户【"+a+"】没有角色权限，无法匹配审批人资格");
+                        return null;
+                    }
+                    for(RbacRole r : roles){
+                        if(candidateIds.indexOf(r.getId()+"") > -1){
+                            roleCode = r.getId()+"";
+                            roleName = r.getRoleName();
+                            break;
+                        }
+                    }
+                    if(roleCode == null){
+                        logger.info("用户【"+a+"】没有权限");
+                        return null;
+                    }
+                }
+
+                JSONObject assigneeJson = new JSONObject();
+                assigneeJson.put("roleCode", roleCode);
+                assigneeJson.put("roleName", roleName);
+                assigneeJson.put("assignee", assignee);
+
+                jsonArray.add(assigneeJson);
+            }
+
+            resultJson.put(key, jsonArray);
+        }
+
+        return resultJson;
+    }
+
+    /**
+     * 设置下一步审批人时，校验
+     * @author houjinrong@chtwm.com
+     * date 2018/6/6 18:57
+     */
+    public JSONObject validateSetNextAssignee(JSONArray jsonArray, String processInstanceId, int version){
+        String assignee = null;
+        JSONObject result = new JSONObject();
+        Integer appKey = getAppKey(processInstanceId);
+        for (int i=0;i<jsonArray.size();i++) {
+            JSONObject json = jsonArray.getJSONObject(i);
+            JSONArray assigneeArray = json.getJSONArray("assignee");
+            for(int k=0;k<assigneeArray.size();k++){
+                JSONObject roleObject = assigneeArray.getJSONObject(k);
+                JSONArray userArray = roleObject.getJSONArray("user");
+                Long roleCode = roleObject.getLong("roleCode");
+
+                //校验角色是否匹配
+                EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+                wrapper.eq("version_", version);
+                wrapper.eq("task_def_key", json.getString("taskDefinitionKey"));
+                TUserTask userTask = tUserTaskService.selectOne(wrapper);
+                if(userTask == null || userTask.getCandidateIds().indexOf(roleCode+"") < 0){
+                    logger.info("角色没有权限");
+                    return null;
+                }
+
+                List<String> userCodeList = getAllUserCodeByRoleCode(appKey, roleCode);
+                if(CollectionUtils.isEmpty(userCodeList)){
+                    logger.info("角色不存在");
+                    return null;
+                }
+                for(int o=0;o<userArray.size();o++){
+                    JSONObject userObject = userArray.getJSONObject(o);
+                    if(!userCodeList.contains(userObject.getString("userCode"))){
+                        logger.info("用户不存在");
+                        return null;
+                    }
+                    assignee = assignee == null?userObject.getString("userCode"):assignee+","+userObject.getString("userCode");
+                }
+                roleObject.put("user", assignee);
+            }
+            result.put(json.getString("taskDefinitionKey"), assigneeArray);
+        }
+        return result;
+    }
+
+    /**
+     * 获取角色编下的所有用户
+     * @author houjinrong@chtwm.com
+     * date 2018/6/6 20:16
+     */
+    private List<String> getAllUserCodeByRoleCode(Integer appKey, Long roleCode){
+        List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, roleCode);
+        if(CollectionUtils.isEmpty(users)){
+            return null;
+        }
+        List<String> userCodeList = Lists.newArrayList();
+        for(RbacUser user : users){
+            userCodeList.add(user.getCode());
+        }
+
+        return userCodeList;
+    }
+
+    protected Integer getVesion(String processDefinitionId){
+        //查询流程定义信息
+        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(processDefinitionId);
+        return processDefinition==null?null:processDefinition.getVersion();
     }
 }

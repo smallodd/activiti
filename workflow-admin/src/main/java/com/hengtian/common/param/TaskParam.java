@@ -8,29 +8,47 @@ import io.swagger.annotations.ApiModelProperty;
  */
 
 public class TaskParam {
-    //任务id
+    /**
+     * 任务id
+     */
     @ApiModelProperty(value = "任务id", required = true, example="100001")
     private String taskId;
-    //任务类型
+    /**
+     * 任务类型
+     */
     @ApiModelProperty(value = "任务类型", example="assignee/candidateUser/counterSign")
     private String taskType;
-    //审批人类型
+    /**
+     * 审批人类型
+     */
     @ApiModelProperty(value = "审批人类型", example="1,2,3,4")
     private Integer assignType;
-    //审批人
+    /**
+     * 审批人
+     */
     @ApiModelProperty(value = "审批人", example="H00001")
     private String assignee;
-
+    /**
+     * 审批意见
+     */
     @ApiModelProperty(value = "审批时传参数", example="审批意见")
     private String comment;
-    //通过状态  1 通过 2 是拒绝 3通过参数流转
-
+    /**
+     * 通过状态  1 通过 2 是拒绝 3通过参数流转
+     */
     @ApiModelProperty(value = "审批时传参", example="1是通过，2是拒绝，3是通过条件参数流转")
     private Integer pass;
-    //参数的json格式
-
+    /**
+     * 参数的json格式
+     */
     @ApiModelProperty(value = "审批时传的条件参数", example="{a:b}")
     private String jsonVariables;
+    /**
+     * 下一节点审批人信息
+     */
+    @ApiModelProperty(value = "下一节点审批人信息", example="下一节点审批人信息")
+    private String assigneeNext;
+
     public String getTaskId() {
         return taskId;
     }
@@ -85,5 +103,13 @@ public class TaskParam {
 
     public void setJsonVariables(String jsonVariables) {
         this.jsonVariables = jsonVariables;
+    }
+
+    public String getAssigneeNext() {
+        return assigneeNext;
+    }
+
+    public void setAssigneeNext(String assigneeNext) {
+        this.assigneeNext = assigneeNext;
     }
 }

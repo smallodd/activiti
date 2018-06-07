@@ -15,6 +15,7 @@ import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
+import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,11 @@ public class WorkflowDataController extends WorkflowBaseController {
             PageInfo pageInfo = workflowService.allTaskPage(taskQueryParam, TaskListEnum.ACTIVE.type);
             return pageInfo;
         } else {
-            PageInfo pageInfo = workflowService.myTaskPage(taskQueryParam, TaskListEnum.ACTIVE.type);
+            PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
+            pageInfo.setCondition(new BeanMap(taskQueryParam));
+
+            setAssigneeAndRole(pageInfo, taskQueryParam.getAssignee(), taskQueryParam.getAppKey());
+            workflowService.openTaskList(pageInfo);
             return pageInfo;
         }
     }
