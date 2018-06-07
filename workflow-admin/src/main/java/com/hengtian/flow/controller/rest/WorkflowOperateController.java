@@ -17,9 +17,11 @@ import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
@@ -55,7 +57,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @Autowired
     TApprovalAgentService tApprovalAgentService;
     @Autowired
-    RepositoryService repositoryService;
+    HistoryService historyService;
     @Autowired
     RuntimeService runtimeService;
     @Autowired
@@ -557,6 +559,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
                     tWorkDetail.setOperator(taskActionParam.getUserId());
                     tWorkDetail.setTaskId(taskActionParam.getTaskId());
+                    tWorkDetail.setAprroveInfo(taskActionParam.getCommentResult());
+                    List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskActionParam.getTaskId()).orderByTaskCreateTime().desc().list();
+                    tWorkDetail.setOperateAction(TaskActionEnum.getDesc(taskActionParam.getActionType()));
+                    tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
                     tWorkDetail.setBusinessKey(processInstanc.getBusinessKey());
                     tWorkDetailService.insert(tWorkDetail);
                 }

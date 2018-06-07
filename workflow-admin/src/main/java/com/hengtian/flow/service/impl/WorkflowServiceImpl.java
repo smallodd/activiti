@@ -211,7 +211,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setOperator(processParam.getCreatorId());
                 tWorkDetail.setTaskId(taskId);
                 tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
-
+                tWorkDetail.setAprroveInfo("生成任务");
+                List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskId).orderByTaskCreateTime().desc().list();
+                tWorkDetail.setOperateAction("提交");
+                tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
                 workDetailService.insert(tWorkDetail);
             } else {
                 log.info("业务平台设置审批人");
@@ -229,6 +232,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setTaskId(taskId);
                 tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
 
+                tWorkDetail.setAprroveInfo("生成任务");
+                List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskId).orderByTaskCreateTime().desc().list();
+                tWorkDetail.setOperateAction("提交");
+                tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
                 workDetailService.insert(tWorkDetail);
             }
 
@@ -427,6 +434,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         tWorkDetail.setCreateTime(new Date());
         tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】审批了该任务，审批意见是【" + taskParam.getComment() + "】");
+
+        tWorkDetail.setAprroveInfo(taskParam.getComment());
+        List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(task.getId()).orderByTaskCreateTime().desc().list();
+
+        tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
         workDetailService.insert(tWorkDetail);
 
         if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
@@ -474,7 +486,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTaskService.update(tRuTask, wrapper_);
 
                     result = new Result(true, "任务已通过！");
-
+                    tWorkDetail.setOperateAction("审批同意");
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务，审批意见是【" + taskParam.getComment() + "】");
                     workDetailService.insert(tWorkDetail);
                 }
@@ -497,6 +509,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         tRuTaskService.update(tRuTask, wrapper_);
                     }
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】拒绝了该任务，审批意见是【" + taskParam.getComment() + "】");
+                    tWorkDetail.setOperateAction("审批拒绝");
                     workDetailService.insert(tWorkDetail);
                     return new Result(true, "任务已拒绝！");
                 }else{
@@ -505,6 +518,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_Y"):(assignee+","+taskParam.getAssignee()+"_Y"));
 
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
+                    tWorkDetail.setOperateAction("审批");
                     workDetailService.insert(tWorkDetail);
 
                     return new Result(true, "办理成功！");
@@ -525,6 +539,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setSuccess(true);
 
                 tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
+                tWorkDetail.setOperateAction("审批通过");
                 workDetailService.insert(tWorkDetail);
             } else if (taskParam.getPass() == TaskStatusEnum.COMPLETE_REFUSE.status) {
                 //拒绝任务
@@ -542,6 +557,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setSuccess(true);
 
                 tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】拒绝了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
+                tWorkDetail.setOperateAction("审批拒绝");
                 workDetailService.insert(tWorkDetail);
 
                 return result;
@@ -992,15 +1008,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!success) {
             return new Result(false, Constant.FAIL,"问询失败");
         }
-        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setTaskId(task.getId());
-        tWorkDetail.setOperator(userId);
-        tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
-        tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setDetail("工号【" + userId + "】问询了该任务，问询内容是【" + commentResult + "】");
-        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
-        workDetailService.insert(tWorkDetail);
+
         return new Result(true,Constant.SUCCESS, "问询成功");
     }
 
@@ -1039,15 +1047,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!success) {
             return new Result(false,Constant.FAIL, "问询确认失败");
         }
-        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(tAskTask.getProcInstId()).singleResult();
-        TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setTaskId(tAskTask.getCurrentTaskId());
-        tWorkDetail.setOperator(userId);
-        tWorkDetail.setProcessInstanceId(tAskTask.getProcInstId());
-        tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
-        tWorkDetail.setDetail("工号【" + userId + "】回复了该问询，回复内容是【" + answerComment + "】");
-        workDetailService.insert(tWorkDetail);
+
+
         return new Result(true, Constant.SUCCESS,"问询确认成功");
     }
 
