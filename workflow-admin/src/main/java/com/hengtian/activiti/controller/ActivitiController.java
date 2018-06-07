@@ -354,7 +354,6 @@ public class ActivitiController extends BaseController{
 		}
 		TRuTask tRuTask=list.get(0);
 		taskParam.setAssignee(tRuTask.getAssigneeReal());
-		taskParam.setAssignType(tRuTask.getAssigneeType());
 		ShiroUser user = getShiroUser();
 		if(user.getLoginName().equals("admin")) {
 			taskParam.setComment("【管理员代办】"+commentContent);
@@ -363,7 +362,7 @@ public class ActivitiController extends BaseController{
 		}
 		taskParam.setPass(commentResult);
 		taskParam.setTaskId(taskId);
-		taskParam.setTaskType(tRuTask.getTaskType());
+
 		taskParam.setJsonVariables(jsonVariable);
 		Object result=workflowService.approveTask(task,taskParam);
 		return JSONObject.toJSONString(result);
