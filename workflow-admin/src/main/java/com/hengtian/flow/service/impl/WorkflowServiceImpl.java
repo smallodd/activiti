@@ -1086,12 +1086,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         EntityWrapper<RuProcinst> wrapper_ = new EntityWrapper<>();
-        wrapper.where("proc_inst_id={}", processInstanceId);
+        wrapper_.where("proc_inst_id={0}", processInstanceId);
 
         RuProcinst ruProcinst = new RuProcinst();
         ruProcinst.setCurrentTaskStatus(2);
         success = ruProcinstService.update(ruProcinst, wrapper_);
-        if(success){
+        if(!success){
             return new Result(false, Constant.FAIL,"问询后，修改任务状态为【问询中：1】失败");
         }
 
@@ -1114,7 +1114,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("`asked_user_id`={0}", userId)
                 .where("id={0}", askId)
-
                 .where("is_ask_end={0}", 0);
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         if (tAskTask == null) {
@@ -1135,11 +1134,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         EntityWrapper<RuProcinst> wrapper_ = new EntityWrapper<>();
-        wrapper.where("proc_inst_id={}", tAskTask.getProcInstId());
+        wrapper_.where("proc_inst_id={0}", tAskTask.getProcInstId());
+
         RuProcinst ruProcinst = new RuProcinst();
         ruProcinst.setCurrentTaskStatus(1);
         success = ruProcinstService.update(ruProcinst, wrapper_);
-        if(success){
+        if(!success){
             return new Result(false, Constant.FAIL,"问询后，修改任务状态为【问询中：1】失败");
         }
         return new Result(true, Constant.SUCCESS,"问询确认成功");
@@ -1302,6 +1302,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
             t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
+            String taskState = t.getTaskState();
+            if("2".equals(taskState)){
+                t.setTaskState("问询中");
+            }else {
+                t.setTaskState("审批中");
+            }
         }
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());

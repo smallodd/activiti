@@ -71,7 +71,7 @@ public class RuProcinst {
 
     public RuProcinst(){}
 
-    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorName, String creatorDeptName, String creatorDept, String procDefName, String currentTaskKey) {
+    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorName, String creatorDept, String creatorDeptName, String procDefName, String currentTaskKey) {
         this.appKey = appKey;
         this.procInstId = procInstId;
         this.creator = creator;
