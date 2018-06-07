@@ -40,13 +40,21 @@ public class TaskResult {
      */
     private String assigneeDelegate;
     /**
-     * 流程创建人
+     * 流程创建人编号
      */
-    private String creator;
+    private String creatorCode;
     /**
-     * 流程创建人所属部门
+     * 流程创建人名称
      */
-    private String creatorDept;
+    private String creatorName;
+    /**
+     * 流程创建人所属部门编号
+     */
+    private String creatorDeptCode;
+    /**
+     * 流程创建人所属部门名称
+     */
+    private String creatorDeptName;
     /**
      * 流程编号
      */
@@ -142,20 +150,36 @@ public class TaskResult {
         this.assigneeDelegate = assigneeDelegate;
     }
 
-    public String getCreator() {
-        return creator;
+    public String getCreatorCode() {
+        return creatorCode;
     }
 
-    public void setCreator(String creator) {
-        this.creator = creator;
+    public void setCreatorCode(String creatorCode) {
+        this.creatorCode = creatorCode;
     }
 
-    public String getCreatorDept() {
-        return creatorDept;
+    public String getCreatorName() {
+        return creatorName;
     }
 
-    public void setCreatorDept(String creatorDept) {
-        this.creatorDept = creatorDept;
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
+    }
+
+    public String getCreatorDeptCode() {
+        return creatorDeptCode;
+    }
+
+    public void setCreatorDeptCode(String creatorDeptCode) {
+        this.creatorDeptCode = creatorDeptCode;
+    }
+
+    public String getCreatorDeptName() {
+        return creatorDeptName;
+    }
+
+    public void setCreatorDeptName(String creatorDeptName) {
+        this.creatorDeptName = creatorDeptName;
     }
 
     public String getProcessInstanceId() {

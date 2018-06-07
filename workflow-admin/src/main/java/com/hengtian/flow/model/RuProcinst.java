@@ -34,15 +34,20 @@ public class RuProcinst {
     @TableField(value = "creator")
     private String creator;
     /**
-     * 流程创建人部门编号
+     * 流程创建人
      */
-    @TableField(value = "creator_dept_code")
-    private String creatorDeptCode;
+    @TableField(value = "creator_name")
+    private String creatorName;
     /**
-     * 流程创建人部门名称
+     * 流程创建人部门编号
      */
     @TableField(value = "creator_dept")
     private String creatorDept;
+    /**
+     * 流程创建人部门名称
+     */
+    @TableField(value = "creator_dept_name")
+    private String creatorDeptName;
     /**
      * 流程名称
      */
@@ -58,14 +63,20 @@ public class RuProcinst {
      */
     @TableField(value = "current_task_key")
     private String currentTaskKey;
+    /**
+     * 流程当前任务状态1:待办；2问询中
+     */
+    @TableField(value = "current_task_status")
+    private Integer currentTaskStatus;
 
     public RuProcinst(){}
 
-    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorDeptCode, String creatorDept, String procDefName, String currentTaskKey) {
+    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorName, String creatorDeptName, String creatorDept, String procDefName, String currentTaskKey) {
         this.appKey = appKey;
         this.procInstId = procInstId;
         this.creator = creator;
-        this.creatorDeptCode = creatorDeptCode;
+        this.creatorName = creatorName;
+        this.creatorDeptName = creatorDeptName;
         this.creatorDept = creatorDept;
         this.procDefName = procDefName;
         this.currentTaskKey = currentTaskKey;
@@ -135,11 +146,27 @@ public class RuProcinst {
         this.currentTaskKey = currentTaskKey;
     }
 
-    public String getCreatorDeptCode() {
-        return creatorDeptCode;
+    public String getCreatorDeptName() {
+        return creatorDeptName;
     }
 
-    public void setCreatorDeptCode(String creatorDeptCode) {
-        this.creatorDeptCode = creatorDeptCode;
+    public void setCreatorDeptName(String creatorDeptName) {
+        this.creatorDeptName = creatorDeptName;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
+    }
+
+    public Integer getCurrentTaskStatus() {
+        return currentTaskStatus;
+    }
+
+    public void setCurrentTaskStatus(Integer currentTaskStatus) {
+        this.currentTaskStatus = currentTaskStatus;
     }
 }
