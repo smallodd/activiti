@@ -242,16 +242,18 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             //添加应用-流程实例对应关系
             String creatorDeptName = "";
             String creatorDeptCode = "";
+            String userName = "";
             RbacUser user = userService.getUserById(creator);
             if(user != null){
                 creatorDeptName = user.getDeptName();
                 creatorDeptCode = user.getDeptCode();
+                userName = user.getName();
             }
             String currentTaskKey = null;
             for(Task t : taskList){
                 currentTaskKey = currentTaskKey == null?t.getTaskDefinitionKey():currentTaskKey+","+t.getTaskDefinitionKey();
             }
-            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator,creatorDeptCode, creatorDeptName,processDefinition.getName(), currentTaskKey);
+            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName,processDefinition.getName(), currentTaskKey);
             ruProcinstService.insert(ruProcinst);
         }
         return result;
@@ -1083,6 +1085,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             return new Result(false, Constant.FAIL,"问询失败");
         }
 
+        EntityWrapper<RuProcinst> wrapper_ = new EntityWrapper<>();
+        wrapper.where("proc_inst_id={}", processInstanceId);
+
+        RuProcinst ruProcinst = new RuProcinst();
+        ruProcinst.setCurrentTaskStatus(2);
+        success = ruProcinstService.update(ruProcinst, wrapper_);
+        if(success){
+            return new Result(false, Constant.FAIL,"问询后，修改任务状态为【问询中：1】失败");
+        }
+
         return new Result(true,Constant.SUCCESS, "问询成功");
     }
 
@@ -1122,7 +1134,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             return new Result(false,Constant.FAIL, "问询确认失败");
         }
 
-
+        EntityWrapper<RuProcinst> wrapper_ = new EntityWrapper<>();
+        wrapper.where("proc_inst_id={}", tAskTask.getProcInstId());
+        RuProcinst ruProcinst = new RuProcinst();
+        ruProcinst.setCurrentTaskStatus(1);
+        success = ruProcinstService.update(ruProcinst, wrapper_);
+        if(success){
+            return new Result(false, Constant.FAIL,"问询后，修改任务状态为【问询中：1】失败");
+        }
         return new Result(true, Constant.SUCCESS,"问询确认成功");
     }
 
