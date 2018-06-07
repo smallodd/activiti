@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.security.cert.TrustAnchor;
 import java.util.*;
 
 /**
@@ -293,5 +294,36 @@ public class WorkflowBaseController extends BaseRestController {
         Map<String, Object> condition = Maps.newHashMap(pageInfo.getCondition());
         condition.put("roleId", roleIds);
         pageInfo.setCondition(condition);
+    }
+
+    /**
+     * 验证审批人权限
+     * @param task
+     * @param assignee
+     * @return
+     */
+    public boolean validateTaskAssignee(Task task, String assignee){
+        EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
+        wrapper.where("task_id={0}", task.getId());
+
+        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+        for(TRuTask rt : tRuTasks){
+            if(StringUtils.isNotBlank(rt.getAssigneeReal())){
+                if(rt.getAssigneeReal().indexOf(assignee) > -1){
+                    return true;
+                }
+            }else{
+                if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
+                    List<RbacUser> users = privilegeService.getUsersByRoleId(rt.getAppKey(), null, Long.parseLong(rt.getAssignee()));
+                    for(RbacUser u : users){
+                        if(u.getCode().equals(assignee)){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }

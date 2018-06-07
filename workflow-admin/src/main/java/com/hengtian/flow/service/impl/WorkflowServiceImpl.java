@@ -1723,7 +1723,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public JSONArray getNextAssigneeWhenRoleApprove(Task task){
         JSONArray result = new JSONArray();
-        Integer version = getVesion(task.getProcessDefinitionId());
+        Integer version = getVersion(task.getProcessDefinitionId());
         Integer appKey = getAppKey(task.getProcessInstanceId());
         List<String> nextTaskDefKeys = findNextTaskDefKeys(task, false);
         if(CollectionUtils.isEmpty(nextTaskDefKeys)){

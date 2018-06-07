@@ -1270,7 +1270,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         return userCodeList;
     }
 
-    protected Integer getVesion(String processDefinitionId){
+    protected Integer getVersion(String processDefinitionId){
         //查询流程定义信息
         ProcessDefinition processDefinition = repositoryService.getProcessDefinition(processDefinitionId);
         return processDefinition==null?null:processDefinition.getVersion();
