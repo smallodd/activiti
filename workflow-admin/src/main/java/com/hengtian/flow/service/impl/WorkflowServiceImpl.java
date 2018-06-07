@@ -1281,6 +1281,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public void openTaskList(PageInfo pageInfo) {
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
+        for(TaskResult t : list){
+            t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
+        }
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
     }
