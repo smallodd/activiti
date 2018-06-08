@@ -465,6 +465,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             logger.info("当前节点需设置下步节点审批人， 未发现审批人信息。");
             result.setMsg("当前节点需设置下步节点审批人， 未发现审批人信息。");
             result.setSuccess(false);
+            result.setCode(Constant.TASK_NOT_SET_APPROVER);
             return result;
         }
 
@@ -585,7 +586,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
                 tRuTaskService.update(ruTask, truWrapper);
                 result.setSuccess(true);
-
+                result.setCode(Constant.SUCCESS);
                 tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
                 tWorkDetail.setOperateAction("审批通过");
                 workDetailService.insert(tWorkDetail);
@@ -1706,12 +1707,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(validateTaskAssignee(task, userId,tRuTasks) == null){
             return new Result("用户【"+userId+"】无权查看任务【"+taskId+"】");
         }
-        List<Task> resultList = Lists.newArrayList(task);
 
         Result result = new Result();
         result.setSuccess(true);
         result.setCode(Constant.SUCCESS);
-        result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
+        result.setObj(setButtons(TaskNodeResult.toTaskNodeResult(task)));
         return result;
     }
 

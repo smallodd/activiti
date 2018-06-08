@@ -21,9 +21,11 @@ import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.activiti.engine.FormService;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmTransition;
@@ -62,6 +64,8 @@ public class WorkflowBaseController extends BaseRestController {
     private RuProcinstService ruProcinstService;
     @Autowired
     private ProcessEngine processEngine;
+    @Autowired
+    FormService formService;
 
     /**
      * 获取需要高亮的线 (适配5.18以上版本；由于mysql5.6.4之后版本时间支持到毫秒，固旧方法比较开始时间的方法不在适合当前系统)
@@ -231,19 +235,6 @@ public class WorkflowBaseController extends BaseRestController {
 
         return json;
     }
-    public List<TaskNodeResult> setButtons(List<TaskNodeResult> list){
-        if(list!=null&&list.size()>0) {
-            String id=list.get(0).getProcessInstanceId();
-            ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
-            for (TaskNodeResult taskNodeResult : list) {
-
-                List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
-
-                taskNodeResult.setButtonKeys(tButtons);
-            }
-        }
-        return  list;
-    }
 
     public TaskNodeResult setButtons(TaskNodeResult taskNodeResult){
 
@@ -252,7 +243,10 @@ public class WorkflowBaseController extends BaseRestController {
 
 
                 List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
-
+        TaskFormData taskFormData=formService.getTaskFormData(taskNodeResult.getTaskId());
+        if(taskFormData!=null){
+            taskNodeResult.setFormKey(taskFormData.getFormKey());
+        }
                 taskNodeResult.setButtonKeys(tButtons);
 
 

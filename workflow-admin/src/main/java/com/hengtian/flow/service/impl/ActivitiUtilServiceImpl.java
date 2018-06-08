@@ -25,6 +25,7 @@ import com.rbac.service.PrivilegeService;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.engine.*;
+import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
@@ -85,16 +86,16 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private PrivilegeService privilegeService;
     @Autowired
     private TUserTaskService tUserTaskService;
+    @Autowired
+    FormService formService;
+
 
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list) {
         if (list != null && list.size() > 0) {
-            String id = list.get(0).getProcessInstanceId();
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
+
             for (TaskNodeResult taskNodeResult : list) {
 
-                List<TButton> tButtons = tTaskButtonService.selectTaskButtons(processInstance.getProcessDefinitionKey(), taskNodeResult.getTaskDefinedKey());
-
-                taskNodeResult.setButtonKeys(tButtons);
+               setButtons(taskNodeResult);
             }
         }
         return list;
@@ -107,7 +108,10 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
 
         List<TButton> tButtons = tTaskButtonService.selectTaskButtons(processInstance.getProcessDefinitionKey(), taskNodeResult.getTaskDefinedKey());
-
+        TaskFormData taskFormData=formService.getTaskFormData(taskNodeResult.getTaskId());
+        if(taskFormData!=null){
+            taskNodeResult.setFormKey(taskFormData.getFormKey());
+        }
         taskNodeResult.setButtonKeys(tButtons);
 
 
