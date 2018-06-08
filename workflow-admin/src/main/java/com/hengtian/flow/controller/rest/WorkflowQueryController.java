@@ -306,7 +306,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("操作流程详细信息")
     @ApiOperation(httpMethod = "POST", value = "操作流程详细信息")
     @RequestMapping(value = "/rest/process/operate/detail", method = RequestMethod.POST)
-    public Object operateDetailInfo(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = false) @RequestParam String processInstanceId,
+    public Object operateDetailInfo(@ApiParam(value = "流程实例ID", name = "processInstanceId") @RequestParam(required = false) String processInstanceId,
                                     @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
         return renderSuccess(tWorkDetailService.operateDetailInfo(processInstanceId, null,businessKey));
     }
@@ -322,7 +322,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("流程实例详情")
     @ApiOperation(httpMethod = "POST", value = "流程实例详情")
     @RequestMapping(value = "/rest/process/detail", method = RequestMethod.POST)
-    public Object processDetail(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = false) @RequestParam String processInstanceId,
+    public Object processDetail(@ApiParam(value = "流程实例ID", name = "processInstanceId") @RequestParam(required = false) String processInstanceId,
                                 @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
         logger.info("入参processInstanceId{0} businessKey{1}", processInstanceId, businessKey);
         if(StringUtils.isNotBlank(processInstanceId)){
