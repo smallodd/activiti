@@ -574,9 +574,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
                 return result;
             }
         }else{
-            result.setMsg("用户未审批过");
+            result.setMsg("任务信息不存在");
             result.setSuccess(false);
-            result.setCode(Constant.SUCCESS);
+            result.setCode(Constant.TASK_NOT_EXIT);
             return result;
         }
     }
