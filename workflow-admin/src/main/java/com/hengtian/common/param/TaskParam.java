@@ -6,15 +6,12 @@ import io.swagger.annotations.ApiModelProperty;
  * Created by ma on 2018/4/18.
  * 任务信息接收参数
  */
-
 public class TaskParam {
     /**
      * 任务id
      */
     @ApiModelProperty(value = "任务id", required = true, example="100001")
     private String taskId;
-
-
     /**
      * 审批人
      */
@@ -48,9 +45,6 @@ public class TaskParam {
     public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
-
-
-
 
     public String getAssignee() {
         return assignee;
