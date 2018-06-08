@@ -1736,6 +1736,50 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         List<TUserTask> userTasks = tUserTaskService.selectList(wrapper);
         String[] assigneeArray;
+        for(TUserTask ut : userTasks){
+            if(!AssignTypeEnum.ROLE.code.equals(ut.getAssignType())){
+                logger.info("审批人类型不是角色，方法不提供支持");
+                return result;
+            }
+            JSONObject json = new JSONObject();
+            json.put("taskDefinitionKey", ut.getTaskDefKey());
+            json.put("taskDefinitionName", ut.getTaskName());
+
+            assigneeArray = ut.getCandidateIds().split(",");
+            JSONArray userArray = new JSONArray();
+            for(int k=0;k<assigneeArray.length;k++){
+                List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(assigneeArray[k]));
+                for(RbacUser user : users){
+                    JSONObject userObject = new JSONObject();
+                    userObject.put("userCode", user.getCode());
+                    userObject.put("userName", user.getName());
+                    userArray.add(userObject);
+                }
+            }
+            json.put("assignee", userArray);
+
+            result.add(json);
+        }
+
+        return result;
+    }
+
+    @Deprecated
+    public JSONArray getNextAssigneeWhenRoleApproveBackUp(Task task){
+        JSONArray result = new JSONArray();
+        Integer version = getVersion(task.getProcessDefinitionId());
+        Integer appKey = getAppKey(task.getProcessInstanceId());
+        List<String> nextTaskDefKeys = findNextTaskDefKeys(task, false);
+        if(CollectionUtils.isEmpty(nextTaskDefKeys)){
+            logger.error("没有下一审批节点");
+            return null;
+        }
+        EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+        wrapper.eq("version_", version);
+        wrapper.in("task_def_key", nextTaskDefKeys);
+
+        List<TUserTask> userTasks = tUserTaskService.selectList(wrapper);
+        String[] assigneeArray;
         String[] assigneeNameArray;
         for(TUserTask ut : userTasks){
             if(!AssignTypeEnum.ROLE.code.equals(ut.getAssignType())){

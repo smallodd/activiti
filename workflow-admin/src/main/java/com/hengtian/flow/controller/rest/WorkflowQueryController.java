@@ -296,16 +296,16 @@ public class WorkflowQueryController extends WorkflowBaseController {
     /**
      * 操作流程详细信息
      *
-     * @param processInstanceId 流程实例
-     * @param operator 操作人
+     * @param processInstanceId 流程实例ID
+     * @param businessKey 业务主键
      * @return
      */
     @ResponseBody
     @SysLog("操作流程详细信息")
     @ApiOperation(httpMethod = "POST", value = "操作流程详细信息")
     @RequestMapping(value = "/rest/process/detail", method = RequestMethod.POST)
-    public Object operateDetailInfo(@ApiParam(value = "任务查询条件", name = "processInstanceId", required = false) @RequestParam String processInstanceId,
-                                    @ApiParam(value = "任务查询条件", name = "businessKey", required = true) @RequestParam String businessKey   ) {
+    public Object operateDetailInfo(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = false) @RequestParam String processInstanceId,
+                                    @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey   ) {
         return renderSuccess(tWorkDetailService.operateDetailInfo(processInstanceId, null,businessKey));
     }
 
@@ -580,7 +580,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError("taskId无效");
         }
 
-        if(validateTaskAssignee(task, userId)){
+        if(!validateTaskAssignee(task, userId)){
             return renderError("【"+userId+"】没有权限");
         }
 
