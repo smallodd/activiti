@@ -46,6 +46,7 @@
         ahp.ID_ AS processInstanceId,
         ahp.NAME_ AS processInstanceTitle,
         ahp.PROC_DEF_ID_ AS processDefinitionId,
+        ahp.BUSINESS_KEY_ AS businessKey,
         trp.PROC_DEF_NAME AS processDefinitionName,
         ahp.DELETE_REASON_ AS processInstanceState,
     </sql>
@@ -169,6 +170,7 @@
         ahp.ID_ AS processInstanceId,
         ahp.NAME_ AS processInstanceTitle,
         ahp.PROC_DEF_ID_ AS processDefinitionId,
+        ahp.BUSINESS_KEY_ AS businessKey,
         trp.PROC_DEF_NAME AS processDefinitionName,
         ahp.DELETE_REASON_ AS processInstanceState,
         aht.START_TIME_ AS startTime,

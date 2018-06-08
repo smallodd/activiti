@@ -76,6 +76,10 @@ public class TaskResult {
      */
     private String processInstanceState;
     /**
+     * 业务主键
+     */
+    private String businessKey;
+    /**
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
@@ -252,5 +256,13 @@ public class TaskResult {
 
     public void setAskId(String askId) {
         this.askId = askId;
+    }
+
+    public String getBusinessKey() {
+        return businessKey;
+    }
+
+    public void setBusinessKey(String businessKey) {
+        this.businessKey = businessKey;
     }
 }

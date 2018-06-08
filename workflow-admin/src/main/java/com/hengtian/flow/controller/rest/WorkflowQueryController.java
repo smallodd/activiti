@@ -1,6 +1,7 @@
 package com.hengtian.flow.controller.rest;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ApproveResultEnum;
@@ -15,6 +16,7 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.controller.WorkflowBaseController;
+import com.hengtian.flow.model.ProcessInstanceResult;
 import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TWorkDetailService;
@@ -24,16 +26,14 @@ import com.rbac.service.PrivilegeService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngineConfiguration;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.TaskService;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
@@ -83,6 +83,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     private TWorkDetailService tWorkDetailService;
     @Autowired
     private PrivilegeService privilegeService;
+    @Autowired
+    private RuntimeService runtimeService;
 
     /**
      * 获取我发起的流程
@@ -303,10 +305,49 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("操作流程详细信息")
     @ApiOperation(httpMethod = "POST", value = "操作流程详细信息")
-    @RequestMapping(value = "/rest/process/detail", method = RequestMethod.POST)
+    @RequestMapping(value = "/rest/process/operate/detail", method = RequestMethod.POST)
     public Object operateDetailInfo(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = false) @RequestParam String processInstanceId,
-                                    @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey   ) {
+                                    @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
         return renderSuccess(tWorkDetailService.operateDetailInfo(processInstanceId, null,businessKey));
+    }
+
+    /**
+     * 流程实例详情
+     *
+     * @param processInstanceId 流程实例ID
+     * @param businessKey 业务主键
+     * @return
+     */
+    @ResponseBody
+    @SysLog("流程实例详情")
+    @ApiOperation(httpMethod = "POST", value = "流程实例详情")
+    @RequestMapping(value = "/rest/process/detail", method = RequestMethod.POST)
+    public Object processDetail(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = false) @RequestParam String processInstanceId,
+                                @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
+        logger.info("入参processInstanceId{0} businessKey{1}", processInstanceId, businessKey);
+        if(StringUtils.isNotBlank(processInstanceId)){
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+            if(processInstance == null){
+                return renderError("流程实例ID【"+processInstanceId+"】无对应的流程实例");
+            }
+            JSONObject result = new JSONObject();
+            result.put("processInstanceId", processInstance.getProcessInstanceId());
+            result.put("processDefinitionId", processInstance.getProcessDefinitionId());
+            result.put("processDefinitionName", processInstance.getProcessDefinitionName());
+            return renderSuccess(result);
+        }else if(StringUtils.isNotBlank(businessKey)){
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult();
+            if(processInstance == null){
+                return renderError("业务主键【"+businessKey+"】无对应的流程实例");
+            }
+            JSONObject result = new JSONObject();
+            result.put("processInstanceId", processInstance.getProcessInstanceId());
+            result.put("processDefinitionId", processInstance.getProcessDefinitionId());
+            result.put("processDefinitionName", processInstance.getProcessDefinitionName());
+            return renderSuccess(result);
+        }else{
+            return renderError("参数异常");
+        }
     }
 
     /**
