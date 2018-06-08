@@ -296,16 +296,16 @@ public class WorkflowQueryController extends WorkflowBaseController {
     /**
      * 操作流程详细信息
      *
-     * @param processInstanceId 流程实例
-     * @param operator 操作人
+     * @param processInstanceId 流程实例ID
+     * @param businessKey 业务主键
      * @return
      */
     @ResponseBody
     @SysLog("操作流程详细信息")
     @ApiOperation(httpMethod = "POST", value = "操作流程详细信息")
     @RequestMapping(value = "/rest/process/detail", method = RequestMethod.POST)
-    public Object operateDetailInfo(@ApiParam(value = "任务查询条件", name = "processInstanceId", required = false) @RequestParam String processInstanceId,
-                                    @ApiParam(value = "任务查询条件", name = "businessKey", required = true) @RequestParam String businessKey   ) {
+    public Object operateDetailInfo(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = false) @RequestParam String processInstanceId,
+                                    @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey   ) {
         return renderSuccess(tWorkDetailService.operateDetailInfo(processInstanceId, null,businessKey));
     }
 
@@ -498,7 +498,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     /**
      * 查询用户某个任务是否审批过
      * @param userCode  用户主键
-     * @param bussinessId  业务主键
+     * @param businessKey  业务主键
      * @param appKey   appKey
      * @return
      */
@@ -506,16 +506,18 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "查询用户是否已经审批过某个任务")
     @RequestMapping(value = "/rest/task/checkUserApproved", method = RequestMethod.POST)
     @ResponseBody
-    public Object checkUserApproved(@ApiParam(value = "用户code", name = "userCode", required = true) @RequestParam("userCode") String userCode,@ApiParam(value = "业务主键", name = "bussinessId", required = true) @RequestParam("bussinessId")String bussinessId,@ApiParam(value = "系统键值", name = "appKey",  required = true) @RequestParam("appKey")String appKey){
+    public Object checkUserApproved(@ApiParam(value = "用户code", name = "userCode", required = true) @RequestParam("userCode") String userCode,
+                                    @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam("businessKey")String businessKey,
+                                    @ApiParam(value = "系统键值", name = "appKey",  required = true) @RequestParam("appKey")String appKey){
         Result result=new Result();
-        if(StringUtils.isBlank(userCode)||StringUtils.isBlank(bussinessId)||StringUtils.isBlank(appKey)){
+        if(StringUtils.isBlank(userCode)||StringUtils.isBlank(businessKey)||StringUtils.isBlank(appKey)){
 
             result.setSuccess(false);
             result.setCode(Constant.PARAM_ERROR);
             result.setMsg("参数错误！");
             return result;
         }
-     List<HistoricTaskInstance> list=   historyService.createHistoricTaskInstanceQuery().processInstanceBusinessKey(bussinessId).processVariableValueEquals("appKey", appKey).taskAssigneeLike("%"+userCode+"").orderByTaskCreateTime().desc().list();
+        List<HistoricTaskInstance> list=   historyService.createHistoricTaskInstanceQuery().processInstanceBusinessKey(businessKey).processVariableValueEquals("appKey", appKey).taskAssigneeLike("%"+userCode+"").orderByTaskCreateTime().desc().list();
 
         if(list!=null&&list.size()>0){
             HistoricTaskInstance historicTaskInstance=list.get(0);
@@ -579,6 +581,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if(task == null){
             return renderError("taskId无效");
         }
+
+        if(!validateTaskAssignee(task, userId)){
+            return renderError("【"+userId+"】没有权限");
+        }
+
         JSONArray result = workflowService.getNextAssigneeWhenRoleApprove(task);
         return renderSuccess(result);
     }
