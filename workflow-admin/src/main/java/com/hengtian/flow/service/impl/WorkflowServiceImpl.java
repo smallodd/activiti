@@ -27,6 +27,8 @@ import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
+import com.hengtian.flow.vo.AssigneeVo;
+import com.hengtian.flow.vo.TaskNodeVo;
 import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
@@ -1728,8 +1730,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/6/6 19:14
      */
     @Override
-    public JSONArray getNextAssigneeWhenRoleApprove(Task task){
-        JSONArray result = new JSONArray();
+    public List<TaskNodeVo> getNextAssigneeWhenRoleApprove(Task task){
+        List<TaskNodeVo> result = Lists.newArrayList();
+
         Integer version = getVersion(task.getProcessDefinitionId());
         Integer appKey = getAppKey(task.getProcessInstanceId());
         List<String> nextTaskDefKeys = findNextTaskDefKeys(task, false);
@@ -1748,24 +1751,23 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 logger.info("审批人类型不是角色，方法不提供支持");
                 return result;
             }
-            JSONObject json = new JSONObject();
-            json.put("taskDefinitionKey", ut.getTaskDefKey());
-            json.put("taskDefinitionName", ut.getTaskName());
+            TaskNodeVo taskNode = new TaskNodeVo();
+            taskNode.setTaskDefinitionKey(ut.getTaskDefKey());
+            taskNode.setTaskDefinitionName(ut.getTaskName());
 
             assigneeArray = ut.getCandidateIds().split(",");
-            JSONArray userArray = new JSONArray();
+            List<AssigneeVo> assigneeList = Lists.newArrayList();
             for(int k=0;k<assigneeArray.length;k++){
                 List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(assigneeArray[k]));
                 for(RbacUser user : users){
-                    JSONObject userObject = new JSONObject();
-                    userObject.put("userCode", user.getCode());
-                    userObject.put("userName", user.getName());
-                    userArray.add(userObject);
+                    AssigneeVo assignee = new AssigneeVo();
+                    assignee.setUserCode(user.getCode());
+                    assignee.setUserName(user.getName());
+                    assigneeList.add(assignee);
                 }
             }
-            json.put("assignee", userArray);
-
-            result.add(json);
+            taskNode.setAssignee(assigneeList);
+            result.add(taskNode);
         }
 
         return result;

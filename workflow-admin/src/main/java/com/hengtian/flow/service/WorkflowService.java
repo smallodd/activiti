@@ -10,6 +10,7 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
+import com.hengtian.flow.vo.TaskNodeVo;
 import org.activiti.engine.task.Task;
 
 import java.util.List;
@@ -301,9 +302,9 @@ public interface WorkflowService extends IService<TaskResult> {
 
     /**
      * 在当前任务节点获取下一步审批人
-     * @param taskId 任务ID
+     * @param task 任务
      * @author houjinrong@chtwm.com
      * date 2018/6/6 19:14
      */
-    JSONArray getNextAssigneeWhenRoleApprove(Task task);
+    List<TaskNodeVo> getNextAssigneeWhenRoleApprove(Task task);
 }
