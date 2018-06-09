@@ -1766,12 +1766,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         List<TUserTask> userTasks = tUserTaskService.selectList(wrapper);
         String[] assigneeArray;
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
         for(TUserTask ut : userTasks){
             if(!AssignTypeEnum.ROLE.code.equals(ut.getAssignType())){
                 logger.info("审批人类型不是角色，方法不提供支持");
                 return result;
             }
             TaskNodeVo taskNode = new TaskNodeVo();
+            taskNode.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
             taskNode.setTaskDefinitionKey(ut.getTaskDefKey());
             taskNode.setTaskDefinitionName(ut.getTaskName());
 

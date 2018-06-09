@@ -21,6 +21,7 @@ import com.hengtian.flow.service.RuProcinstService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TTaskButtonService;
 import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.vo.TaskNodeVo;
 import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
@@ -1120,7 +1121,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @author houjinrong@chtwm.com
      * date 2018/6/8 15:56
      */
-    public List<TaskNode> getCurrentTask(String processInstanceId) {
+    public List<TaskNodeVo> getCurrentTask(String processInstanceId) {
         EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
         wrapper.eq("proc_inst_id", processInstanceId);
         RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
@@ -1128,7 +1129,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         if(StringUtils.isBlank(currentTaskKey)){
             return null;
         }
-        List<TaskNode> taskNodes = Lists.newArrayList();
+        List<TaskNodeVo> taskNodes = Lists.newArrayList();
 
         List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKeyLike(currentTaskKey).orderByTaskCreateTime().desc().list();
         Map<String, Integer> temMap = Maps.newHashMap();
@@ -1138,12 +1139,12 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             if(temMap.containsKey(hisTask.getTaskDefinitionKey())){
                 continue;
             }
-            TaskNode taskNode = new TaskNode();
+            TaskNodeVo taskNode = new TaskNodeVo();
 
             currentAssignee = hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
-            taskNode.setAssignee(currentAssignee);
-            taskNode.setTaskDefinationName(hisTask.getName());
-            taskNode.setTaskDefinationKey(hisTask.getTaskDefinitionKey());
+            taskNode.setAssigneeStr(currentAssignee);
+            taskNode.setTaskDefinitionName(hisTask.getName());
+            taskNode.setTaskDefinitionKey(hisTask.getTaskDefinitionKey());
             taskNodes.add(taskNode);
         }
 

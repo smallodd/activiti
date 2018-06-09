@@ -13,16 +13,26 @@ import java.util.List;
 public class TaskNodeVo {
 
     /**
-     * 节点key
+     * 流程定义key
+     */
+    private String processDefinitionKey;
+
+    /**
+     * 任务节点key
      */
     private String taskDefinitionKey;
 
     /**
-     * 节点名称
+     * 节任务点名称
      */
     private String taskDefinitionName;
     /**
      * 审批人
      */
     private List<AssigneeVo> assignee;
+
+    /**
+     * 审批人 多个逗号隔开
+     */
+    private String assigneeStr;
 }

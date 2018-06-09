@@ -1,6 +1,7 @@
 package com.hengtian.flow.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hengtian.flow.vo.TaskNodeVo;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
@@ -27,7 +28,7 @@ public class ProcessInstanceResult {
     /**
      * 当前节点信息
      */
-    private List<TaskNode> currentTaskNode;
+    private List<TaskNodeVo> currentTaskNode;
     /**
      * 系统标识
      */
@@ -92,11 +93,11 @@ public class ProcessInstanceResult {
         this.endTime = endTime;
     }
 
-    public List<TaskNode> getCurrentTaskNode() {
+    public List<TaskNodeVo> getCurrentTaskNode() {
         return currentTaskNode;
     }
 
-    public void setCurrentTaskNode(List<TaskNode> currentTaskNode) {
+    public void setCurrentTaskNode(List<TaskNodeVo> currentTaskNode) {
         this.currentTaskNode = currentTaskNode;
     }
 
