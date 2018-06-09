@@ -207,6 +207,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
         Map map = JSONObject.parseObject(jsonVariable);
         Result result = new Result();
         result.setMsg("审批成功");
+        result.setSuccess(true);
+        result.setCode(Constant.SUCCESS);
         if (StringUtils.isBlank(taskIds) || pass == null) {
             return renderError("请传正确的参数！", Constant.PARAM_ERROR);
         }
@@ -611,7 +613,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     }
                 }
                 if(!b){
-                    return new Result("流程实例ID与任务ID不对应");
+                    return new Result(false,Constant.ASK_TASK_EXIT,"流程实例ID与任务ID不对应");
                 }
                 EntityWrapper<TRuTask> wrapper = new EntityWrapper();
                 wrapper.where("task_id={0}", taskActionParam.getTaskId());
@@ -623,14 +625,14 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     }
                 }
                 if(!assigneeList.contains(taskActionParam.getUserId())){
-                    return new Result("用户【"+taskActionParam.getUserId()+"】没有权限进行该操作");
+                    return new Result(false,Constant.AGENT_HAVE_EXIST,"用户【"+taskActionParam.getUserId()+"】没有权限进行该操作");
                 }
             }
         }else{
-            return new Result("无效的流程实例ID");
+            return new Result(false,Constant.ASK_TASK_EXIT,"无效的流程实例ID");
         }
 
-        return new Result(true,"用户【"+taskActionParam.getUserId()+"】"+TaskActionEnum.getDesc(taskActionParam.getActionType())+"成功");
+        return new Result(true,Constant.SUCCESS,"用户【"+taskActionParam.getUserId()+"】"+TaskActionEnum.getDesc(taskActionParam.getActionType())+"成功");
     }
 
 
@@ -671,7 +673,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return workflowService.taskEnquire(userId, processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult,askedUserId);
         } catch (Exception e) {
             logger.error("", e);
-            return new Result(false, "操作失败");
+            return new Result(false,Constant.FAIL, "操作失败");
         }
     }
 
@@ -690,7 +692,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return workflowService.taskConfirmEnquire(userId, askId,commentResult);
         } catch (Exception e) {
             logger.error("", e);
-            return new Result(false, "操作失败");
+            return new Result(false, Constant.FAIL,"操作失败");
         }
     }
 }

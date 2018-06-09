@@ -411,13 +411,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Object approveTask(Task task, TaskParam taskParam){
+        Result result = new Result();
         if(StringUtils.isBlank(taskParam.getAssignee())){
-            return new Result("审批人不合法");
+            result.setMsg("审批人不合法");
+            result.setCode(Constant.PARAM_ERROR);
+            result.setSuccess(false);
+            return result;
         }
 
         log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
 
-        Result result = new Result();
+
         result.setCode(Constant.SUCCESS);
 
         EntityWrapper<TRuTask> entityWrapper = new EntityWrapper();
@@ -431,7 +435,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         if(task.getAssignee() != null && task.getAssignee().indexOf(taskParam.getAssignee()) >= 0){
-            return new Result("用户【"+taskParam.getAssignee()+"】已审批，不可重复操作");
+            result.setMsg("用户【"+taskParam.getAssignee()+"】已审批，不可重复操作");
+            result.setCode(Constant.BUSSINESSKEY_EXIST);
+            result.setSuccess(false);
+            return result;
         }
 
         //查询流程定义信息
@@ -534,7 +541,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTask.setStatus(TaskStatusEnum.AGREE.status);
                     tRuTaskService.update(tRuTask, wrapper_);
 
-                    result = new Result(true, "任务已通过！");
+                    result = new Result(true,Constant.SUCCESS, "任务已通过！");
                     tWorkDetail.setOperateAction("审批同意");
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务，审批意见是【" + taskParam.getComment() + "】");
                     workDetailService.insert(tWorkDetail);
@@ -560,7 +567,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】拒绝了该任务，审批意见是【" + taskParam.getComment() + "】");
                     tWorkDetail.setOperateAction("审批拒绝");
                     workDetailService.insert(tWorkDetail);
-                    return new Result(true, "任务已拒绝！");
+                    return new Result(true,Constant.SUCCESS, "任务已拒绝！");
                 }else{
                     //------------任务继续------------
                     String assignee = task.getAssignee();
@@ -570,7 +577,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tWorkDetail.setOperateAction("审批");
                     workDetailService.insert(tWorkDetail);
 
-                    return new Result(true, "办理成功！");
+                    return new Result(true, Constant.SUCCESS,"办理成功！");
                 }
             }
         } else if(TaskTypeEnum.CANDIDATEUSER.value.equals(tUserTask.getTaskType()) || TaskTypeEnum.ASSIGNEE.value.equals(tUserTask.getTaskType())){
@@ -936,7 +943,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }
             }
         }
-        return new Result();
+        return new Result(true,Constant.SUCCESS,"跳转成功");
     }
 
     /**
@@ -960,7 +967,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         RbacUser user = userService.getUserById(targetUserId);
         if(user == null){
-            return new Result(false, "被转办人不存在");
+            return new Result(false,Constant.FAIL, "被转办人不存在");
         }
 
         EntityWrapper<TRuTask> wrapper = new EntityWrapper();
@@ -979,11 +986,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         //用户组权限判断
         if (!ConstantUtils.ADMIN_ID.equals(userId) && tRuTask == null) {
-            return new Result(false, "您所在的用户组没有权限进行该操作");
+            return new Result(false, Constant.FAIL,"您所在的用户组没有权限进行该操作");
         }
 
         if(StringUtils.contains(tRuTask.getAssigneeReal(), targetUserId)){
-            return new Result(false, "办理人已存在，同一办理人只能办理一次");
+            return new Result(false, Constant.FAIL,"办理人已存在，同一办理人只能办理一次");
         }
         if(userId.indexOf(":") < 0){
             tRuTask.setAssignee(targetUserId);
@@ -993,7 +1000,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tRuTask.setAssigneeReal(tRuTask.getAssigneeReal().replace(oldUser, targetUserId));
 
         tRuTaskService.updateById(tRuTask);
-        return new Result(true, "转办任务成功");
+        return new Result(true,Constant.SUCCESS, "转办任务成功");
     }
 
     /**
@@ -1052,7 +1059,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //校验是否是上级节点
         List<String> parentNodes = getBeforeTaskDefinitionKeys(task, true);
         if (!parentNodes.contains(targetTaskDefKey)) {
-            return new Result(false, "无权问询该节点");
+            return new Result(false,Constant.FAIL, "无权问询该节点");
         }
 
         //校验是否已有问询
@@ -1119,7 +1126,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         if (tAskTask == null) {
             log.error("问询不存在或状态为已确认 askId:{}", askId);
-            return new Result(false, "问询确认失败");
+            return new Result(false,Constant.FAIL, "问询确认失败");
         }
         List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).list();
         if (CollectionUtils.isEmpty(list)) {
@@ -1233,7 +1240,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setDetail("工号【" + userId + "】挂起了该流程");
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
-        return new Result(true, "挂起流程成功");
+        return new Result(true,Constant.SUCCESS, "挂起流程成功");
     }
 
     /**
@@ -1257,7 +1264,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         tWorkDetail.setDetail("工号【" + userId + "】激活了该流程");
         workDetailService.insert(tWorkDetail);
-        return new Result(true, "激活流程成功");
+        return new Result(true,Constant.SUCCESS, "激活流程成功");
     }
 
     /**
@@ -1273,13 +1280,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         wrapper.where("id={0}", askId);
         TAskTask askTask = tAskTaskService.selectOne(wrapper);
         if (askTask == null) {
-            return new Result(false, "问询不存在");
+            return new Result(false,Constant.SUCCESS, "问询不存在");
         }
         HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(askTask.getProcInstId()).taskDefinitionKey(askTask.getAskTaskKey()).singleResult();
         if (task == null) {
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        Result result = new Result(true, "查询成功");
+        Result result = new Result(true,Constant.SUCCESS, "查询成功");
         AskCommentDetailVo detailVo = new AskCommentDetailVo();
         detailVo.setAskComment(askTask.getAskComment());
         detailVo.setAnswerComment(askTask.getAnswerComment());
@@ -1645,7 +1652,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }
                 taskList.add(taskVo);
             }
-            Result result = new Result(true, "查询成功");
+            Result result = new Result(true,Constant.SUCCESS, "查询成功");
             result.setObj(taskList);
             return result;
         } catch (Exception e) {
