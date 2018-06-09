@@ -1,8 +1,6 @@
 package com.hengtian.common.result;
 
-
 import com.hengtian.flow.model.TButton;
-import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.task.Task;
 
 import java.io.Serializable;
@@ -27,6 +25,11 @@ public class TaskNodeResult implements Serializable {
     private Integer assignType;
 
     private String processInstanceId;
+
+    /**
+     * 是否需要设置下一节点审批人
+     */
+    private Integer needSetNext;
 
     private List<TButton> buttons;
 
@@ -91,6 +94,22 @@ public class TaskNodeResult implements Serializable {
     }
 
     public void setButtonKeys(List<TButton> buttons) {
+        this.buttons = buttons;
+    }
+
+    public Integer getNeedSetNext() {
+        return needSetNext;
+    }
+
+    public void setNeedSetNext(Integer needSetNext) {
+        this.needSetNext = needSetNext;
+    }
+
+    public List<TButton> getButtons() {
+        return buttons;
+    }
+
+    public void setButtons(List<TButton> buttons) {
         this.buttons = buttons;
     }
 

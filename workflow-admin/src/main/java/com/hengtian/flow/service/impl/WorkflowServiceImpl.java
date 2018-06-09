@@ -640,7 +640,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         throw new WorkFlowException("指定下一节点审批人时，审批人参数不能为空");
                     }
                     try {
-                        assigneeJson = validateSetNextAssignee(JSONObject.parseObject(assignee), task.getProcessInstanceId(), processDefinition.getVersion());
+                        assigneeJson = validateSetNextAssignee(JSONArray.parseArray(assignee), task.getProcessInstanceId(), processDefinition.getVersion());
                         if(assigneeJson == null || assigneeJson.size() == 0){
                             logger.error("审批人信息不正确，请确认是否被篡改");
                             throw new WorkFlowException("审批人信息不正确，请确认是否被篡改");

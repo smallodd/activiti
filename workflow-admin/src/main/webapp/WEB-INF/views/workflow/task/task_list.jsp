@@ -58,7 +58,7 @@
                 width: '60',
                 title: '主键',
                 field: 'id',
-                hidden: true
+                hidden: false
             }, {
                 width: '100',
                 title: '状态',
