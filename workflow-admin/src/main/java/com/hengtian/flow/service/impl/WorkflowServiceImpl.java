@@ -905,6 +905,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         HistoricTaskInstance hisTask = historyService
                 .createHistoricTaskInstanceQuery().taskId(taskId)
                 .singleResult();
+        Integer appkey= (Integer) runtimeService.getVariable(hisTask.getExecutionId(),"appKey");
         //进而获取流程实例
         ProcessInstance instance = runtimeService
                 .createProcessInstanceQuery()
@@ -927,6 +928,26 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         entityWrapper1.where("task_id={0}",taskId);
         tRuTaskService.update(tRuTask,entityWrapper1);
 
+        EntityWrapper wrapper=new EntityWrapper();
+        wrapper.where("app_key={0}",appkey).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
+        RuProcinst ruProcinst=ruProcinstService.selectById(wrapper);
+        if(ruProcinst==null){
+          return   new Result(true,Constant.FAIL,"跳转失败，t_ru_procinst表中不存在流程实例id"+hisTask.getProcessInstanceId());
+        }
+        RuProcinst ruPr=new RuProcinst();
+
+        if(StringUtils.isBlank(ruProcinst.getCurrentTaskKey())){
+            ruPr.setCurrentTaskKey(targetTaskDefKey);
+        }else{
+            if(ruProcinst.getCurrentTaskKey().contains(hisTask.getTaskDefinitionKey())){
+                ruPr.setCurrentTaskKey(ruProcinst.getCurrentTaskKey().replace(hisTask.getTaskDefinitionKey(),targetTaskDefKey));
+            }else{
+                ruPr.setCurrentTaskKey(ruProcinst.getCurrentTaskKey()+","+targetTaskDefKey);
+            }
+        }
+        EntityWrapper entity=new EntityWrapper();
+        entity.where("app_key={0}",appkey).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
+        ruProcinstService.update(ruPr,entity);
         boolean customApprover = (boolean) runtimeService.getVariable(instance.getProcessInstanceId(), "customApprover");
 
         if (!customApprover) {
