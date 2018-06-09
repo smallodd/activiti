@@ -256,7 +256,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/task/enquire", method = RequestMethod.POST)
     public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getCreateId())) {
-            return new Result(false, "createId不能为空");
+            return new Result(false, Constant.PARAM_ERROR,"createId不能为空");
         }
         return renderSuccess(tAskTaskService.enquireTaskList(taskEnquireParam));
     }
@@ -274,7 +274,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/task/enquired", method = RequestMethod.POST)
     public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getAskUserId())) {
-            return new Result(false, "askUserId不能为空");
+            return new Result(false,Constant.PARAM_ERROR, "askUserId不能为空");
         }
         return renderSuccess(tAskTaskService.enquiredTaskList(taskEnquireParam));
     }
