@@ -21,6 +21,7 @@ import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TWorkDetailService;
 import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.vo.TaskNodeVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.service.PrivilegeService;
 import io.swagger.annotations.ApiOperation;
@@ -627,7 +628,6 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError("【"+userId+"】没有权限");
         }
 
-        JSONArray result = workflowService.getNextAssigneeWhenRoleApprove(task);
-        return renderSuccess(result);
+        return renderSuccess(workflowService.getNextAssigneeWhenRoleApprove(task));
     }
 }

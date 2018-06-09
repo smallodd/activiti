@@ -27,6 +27,8 @@ import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AskCommentDetailVo;
+import com.hengtian.flow.vo.AssigneeVo;
+import com.hengtian.flow.vo.TaskNodeVo;
 import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
@@ -647,7 +649,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         throw new WorkFlowException("指定下一节点审批人时，审批人参数不能为空");
                     }
                     try {
-                        assigneeJson = validateSetNextAssignee(JSONObject.parseObject(assignee), task.getProcessInstanceId(), processDefinition.getVersion());
+                        assigneeJson = validateSetNextAssignee(JSONArray.parseArray(assignee), task.getProcessInstanceId(), processDefinition.getVersion());
                         if(assigneeJson == null || assigneeJson.size() == 0){
                             logger.error("审批人信息不正确，请确认是否被篡改");
                             throw new WorkFlowException("审批人信息不正确，请确认是否被篡改");
@@ -1177,20 +1179,40 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 任务撤回
      *
-     * @param userId        用户ID
-     * @param taskId        任务ID
-     * @param targetTaskKey 要撤回到的任务节点key
+     * @param userId 用户ID
+     * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/27 17:03
      */
     @Override
-    public Result taskRevoke(String userId, String taskId, String targetTaskKey) {
-        TaskEntity taskEntity = (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
-        if (!isAllowRollback(taskEntity)) {
-            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
+    public Result taskRevoke(String userId, String taskId) {
+        HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+        if(hisTask == null){
+            return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        return taskJump(userId, taskId, targetTaskKey);
+        if(!hisTask.getAssignee().contains(userId)){
+            return new Result(false,ResultEnum.TASK_ASSIGNEE_ILLEGAL.code,ResultEnum.TASK_ASSIGNEE_ILLEGAL.msg);
+        }
+        List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
+        if(CollectionUtils.isEmpty(nextTaskDefKeys)){
+            return new Result(false, ResultEnum.NEXT_NODE_NOT_EXIST.code, ResultEnum.NEXT_NODE_NOT_EXIST.msg);
+        }
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
+        if(CollectionUtils.isEmpty(taskList)){
+            return new Result(false, ResultEnum.TASK_ROLLBACK_NOT_EXIST.code, ResultEnum.TASK_ROLLBACK_NOT_EXIST.msg);
+        }
+        for(Task t : taskList){
+            if(nextTaskDefKeys.contains(t.getTaskDefinitionKey())){
+                Result result = taskJump(userId, taskId, hisTask.getTaskDefinitionKey());
+                if(result.isSuccess()){
+                    result.setMsg("任务【"+taskId+"】撤回成功");
+                }
+                return result;
+            }
+        }
+
+        return new Result("任务不可撤回");
     }
 
     /**
@@ -1728,8 +1750,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/6/6 19:14
      */
     @Override
-    public JSONArray getNextAssigneeWhenRoleApprove(Task task){
-        JSONArray result = new JSONArray();
+    public List<TaskNodeVo> getNextAssigneeWhenRoleApprove(Task task){
+        List<TaskNodeVo> result = Lists.newArrayList();
+
         Integer version = getVersion(task.getProcessDefinitionId());
         Integer appKey = getAppKey(task.getProcessInstanceId());
         List<String> nextTaskDefKeys = findNextTaskDefKeys(task, false);
@@ -1748,24 +1771,23 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 logger.info("审批人类型不是角色，方法不提供支持");
                 return result;
             }
-            JSONObject json = new JSONObject();
-            json.put("taskDefinitionKey", ut.getTaskDefKey());
-            json.put("taskDefinitionName", ut.getTaskName());
+            TaskNodeVo taskNode = new TaskNodeVo();
+            taskNode.setTaskDefinitionKey(ut.getTaskDefKey());
+            taskNode.setTaskDefinitionName(ut.getTaskName());
 
             assigneeArray = ut.getCandidateIds().split(",");
-            JSONArray userArray = new JSONArray();
+            List<AssigneeVo> assigneeList = Lists.newArrayList();
             for(int k=0;k<assigneeArray.length;k++){
                 List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(assigneeArray[k]));
                 for(RbacUser user : users){
-                    JSONObject userObject = new JSONObject();
-                    userObject.put("userCode", user.getCode());
-                    userObject.put("userName", user.getName());
-                    userArray.add(userObject);
+                    AssigneeVo assignee = new AssigneeVo();
+                    assignee.setUserCode(user.getCode());
+                    assignee.setUserName(user.getName());
+                    assigneeList.add(assignee);
                 }
             }
-            json.put("assignee", userArray);
-
-            result.add(json);
+            taskNode.setAssignee(assigneeList);
+            result.add(taskNode);
         }
 
         return result;
