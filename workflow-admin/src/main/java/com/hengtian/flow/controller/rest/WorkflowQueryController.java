@@ -549,16 +549,16 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     public Object checkUserApproved(@ApiParam(value = "用户code", name = "userCode", required = true) @RequestParam("userCode") String userCode,
                                     @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam("businessKey")String businessKey,
-                                    @ApiParam(value = "系统键值", name = "appKey",  required = true) @RequestParam("appKey")String appKey){
+                                    @ApiParam(value = "系统键值", name = "appKey",  required = true) @RequestParam("appKey")Integer appKey){
         Result result=new Result();
-        if(StringUtils.isBlank(userCode)||StringUtils.isBlank(businessKey)||StringUtils.isBlank(appKey)){
+        if(StringUtils.isBlank(userCode)||StringUtils.isBlank(businessKey)||appKey==null){
 
             result.setSuccess(false);
             result.setCode(Constant.PARAM_ERROR);
             result.setMsg("参数错误！");
             return result;
         }
-        List<HistoricTaskInstance> list=   historyService.createHistoricTaskInstanceQuery().processInstanceBusinessKey(businessKey).processVariableValueEquals("appKey", appKey).taskAssigneeLike("%"+userCode+"").orderByTaskCreateTime().desc().list();
+        List<HistoricTaskInstance> list=   historyService.createHistoricTaskInstanceQuery().processInstanceBusinessKey(businessKey).processVariableValueEquals("appKey", appKey).orderByTaskCreateTime().desc().list();
 
         if(list!=null&&list.size()>0){
             HistoricTaskInstance historicTaskInstance=list.get(0);
