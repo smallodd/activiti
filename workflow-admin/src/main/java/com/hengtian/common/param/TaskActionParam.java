@@ -217,8 +217,8 @@ public class TaskActionParam {
                 }
             } else if (TaskActionEnum.REVOKE.value.equals(actionType)) {
                 //撤回-参数校验
-                if (StringUtils.isBlank(getTaskId()) || StringUtils.isBlank(getTargetTaskDefKey())) {
-                    result.setMsg("参数taskId，targetTaskDefKey不能为空");
+                if (StringUtils.isBlank(getTaskId())) {
+                    result.setMsg("参数taskId不能为空");
                     success = false;
                 }
             } else if (TaskActionEnum.CANCEL.value.equals(actionType)) {

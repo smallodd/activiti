@@ -156,12 +156,11 @@ public interface WorkflowService extends IService<TaskResult> {
      *
      * @param userId        操作人ID
      * @param taskId        任务ID
-     * @param targetTaskKey 要撤回到的任务节点key
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskRevoke(String userId, String taskId, String targetTaskKey);
+    Result taskRevoke(String userId, String taskId);
 
     /**
      * 取消 只有流程发起人方可进行取消操作

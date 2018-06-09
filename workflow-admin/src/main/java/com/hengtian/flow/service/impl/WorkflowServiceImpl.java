@@ -1179,20 +1179,40 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 任务撤回
      *
-     * @param userId        用户ID
-     * @param taskId        任务ID
-     * @param targetTaskKey 要撤回到的任务节点key
+     * @param userId 用户ID
+     * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/27 17:03
      */
     @Override
-    public Result taskRevoke(String userId, String taskId, String targetTaskKey) {
-        TaskEntity taskEntity = (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
-        if (!isAllowRollback(taskEntity)) {
-            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
+    public Result taskRevoke(String userId, String taskId) {
+        HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+        if(hisTask == null){
+            return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        return taskJump(userId, taskId, targetTaskKey);
+        if(!hisTask.getAssignee().contains(userId)){
+            return new Result(false,ResultEnum.TASK_ASSIGNEE_ILLEGAL.code,ResultEnum.TASK_ASSIGNEE_ILLEGAL.msg);
+        }
+        List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
+        if(CollectionUtils.isEmpty(nextTaskDefKeys)){
+            return new Result(false, ResultEnum.NEXT_NODE_NOT_EXIST.code, ResultEnum.NEXT_NODE_NOT_EXIST.msg);
+        }
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
+        if(CollectionUtils.isEmpty(taskList)){
+            return new Result(false, ResultEnum.TASK_ROLLBACK_NOT_EXIST.code, ResultEnum.TASK_ROLLBACK_NOT_EXIST.msg);
+        }
+        for(Task t : taskList){
+            if(nextTaskDefKeys.contains(t.getTaskDefinitionKey())){
+                Result result = taskJump(userId, taskId, hisTask.getTaskDefinitionKey());
+                if(result.isSuccess()){
+                    result.setMsg("任务【"+taskId+"】撤回成功");
+                }
+                return result;
+            }
+        }
+
+        return new Result("任务不可撤回");
     }
 
     /**

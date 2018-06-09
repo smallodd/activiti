@@ -554,7 +554,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 Result result = taskAdapter.taskAction(taskActionParam);
                 //存储操作记录
                 if(result.isSuccess()){
-                 ProcessInstance processInstanc=   runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).singleResult();
+                 ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).singleResult();
                     TWorkDetail tWorkDetail = new TWorkDetail();
                     tWorkDetail.setCreateTime(new Date());
                     tWorkDetail.setDetail("工号为【" + taskActionParam.getUserId() + "】的员工进行了【" + TaskActionEnum.getDesc(taskActionParam.getActionType()) + "】操作");
@@ -565,7 +565,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskActionParam.getTaskId()).orderByTaskCreateTime().desc().list();
                     tWorkDetail.setOperateAction(TaskActionEnum.getDesc(taskActionParam.getActionType()));
                     tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
-                    tWorkDetail.setBusinessKey(processInstanc.getBusinessKey());
+                    tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
                     tWorkDetailService.insert(tWorkDetail);
                 }
                 return result;
@@ -605,27 +605,32 @@ public class WorkflowOperateController extends WorkflowBaseController {
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(taskActionParam.getProcessInstanceId()).list();
         if(CollectionUtils.isNotEmpty(taskList)){
             if(StringUtils.isNotBlank(taskActionParam.getTaskId())){
-                boolean b = false;
-                for(Task t : taskList){
-                    if(t.getId().equals(taskActionParam.getTaskId())){
-                        b = true;
-                        break;
+                if(TaskActionEnum.REVOKE.value.equals(taskActionParam.getActionType())){
+                    //撤回时taskId为已办理完的任务ID
+                }else{
+                    boolean b = false;
+                    for(Task t : taskList){
+                        if(t.getId().equals(taskActionParam.getTaskId())){
+                            b = true;
+                            break;
+                        }
                     }
-                }
-                if(!b){
-                    return new Result(false,Constant.ASK_TASK_EXIT,"流程实例ID与任务ID不对应");
-                }
-                EntityWrapper<TRuTask> wrapper = new EntityWrapper();
-                wrapper.where("task_id={0}", taskActionParam.getTaskId());
-                List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
-                List<String> assigneeList = Lists.newArrayList();
-                for(TRuTask rt : tRuTasks){
-                    if(StringUtils.isNotBlank(rt.getAssigneeReal())){
-                        assigneeList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
+                    if(!b){
+                        return new Result(false,Constant.ASK_TASK_EXIT,"流程实例ID与任务ID不对应");
                     }
-                }
-                if(!assigneeList.contains(taskActionParam.getUserId())){
-                    return new Result(false,Constant.AGENT_HAVE_EXIST,"用户【"+taskActionParam.getUserId()+"】没有权限进行该操作");
+
+                    EntityWrapper<TRuTask> wrapper = new EntityWrapper();
+                    wrapper.where("task_id={0}", taskActionParam.getTaskId());
+                    List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+                    List<String> assigneeList = Lists.newArrayList();
+                    for(TRuTask rt : tRuTasks){
+                        if(StringUtils.isNotBlank(rt.getAssigneeReal())){
+                            assigneeList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
+                        }
+                    }
+                    if(!assigneeList.contains(taskActionParam.getUserId())){
+                        return new Result(false,Constant.AGENT_HAVE_EXIST,"用户【"+taskActionParam.getUserId()+"】没有权限进行该操作");
+                    }
                 }
             }
         }else{
