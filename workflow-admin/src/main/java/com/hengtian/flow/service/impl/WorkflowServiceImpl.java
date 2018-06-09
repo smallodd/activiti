@@ -1674,7 +1674,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<ProcessInstanceResult> list = workflowDao.queryProcessInstance(page, pageInfo.getCondition());
         if(CollectionUtils.isNotEmpty(list)){
             for(ProcessInstanceResult inst : list){
-                inst.setCurrentTaskNode(getCurrentTask(inst.getAppKey(), inst.getProcessInstanceId()));
+                inst.setCurrentTaskNode(getCurrentTask(inst.getProcessInstanceId()));
             }
         }
         pageInfo.setRows(list);

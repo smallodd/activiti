@@ -1107,8 +1107,12 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     /**
      * 获取当前流程实例下的当前任务节点
      * 如果任务已完成，则获取最后节点
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/8 15:56
      */
-    public List<TaskNode> getCurrentTask(Integer appKey, String processInstanceId) {
+    public List<TaskNode> getCurrentTask(String processInstanceId) {
         EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
         wrapper.eq("proc_inst_id", processInstanceId);
         RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
@@ -1118,7 +1122,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
         List<TaskNode> taskNodes = Lists.newArrayList();
 
-        List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKeyLike(currentTaskKey).list();
+        List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKeyLike(currentTaskKey).orderByTaskCreateTime().desc().list();
         Map<String, Integer> temMap = Maps.newHashMap();
 
         String currentAssignee = null;
