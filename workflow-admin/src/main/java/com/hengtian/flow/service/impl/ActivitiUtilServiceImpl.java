@@ -1157,6 +1157,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 for(String key : keySet){
                     TaskNodeVo taskNode = new TaskNodeVo();
 
+                    taskNode.setTaskId(map.get(key).getTaskId());
                     taskNode.setAssigneeStr(assigneeMap.get(key));
                     taskNode.setTaskDefinitionName(map.get(key).getTaskDefName());
                     taskNode.setTaskDefinitionKey(map.get(key).getTaskDefKey());
@@ -1184,6 +1185,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 TaskNodeVo taskNode = new TaskNodeVo();
 
                 currentAssignee = hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
+                taskNode.setTaskId(hisTask.getId());
                 taskNode.setAssigneeStr(currentAssignee);
                 taskNode.setTaskDefinitionName(hisTask.getName());
                 taskNode.setTaskDefinitionKey(hisTask.getTaskDefinitionKey());

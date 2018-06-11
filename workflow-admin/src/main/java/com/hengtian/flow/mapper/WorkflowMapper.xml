@@ -206,6 +206,7 @@
         SELECT
             ahp.ID_ AS processInstanceId,
             ahp.NAME_ AS processInstanceName,
+            ahp.BUSINESS_KEY_ AS businessKey,
             trp.PROC_INST_STATE AS processInstanceState,
             trp.PROC_DEF_NAME AS processDefinitionName,
             trp.APP_KEY AS appKey,
