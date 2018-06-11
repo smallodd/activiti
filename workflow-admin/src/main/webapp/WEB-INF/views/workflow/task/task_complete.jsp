@@ -24,12 +24,18 @@
                     <table class="grid">
                         <tr>
                             <td width="100px">自定义参数<br/>例子：{"a":"b"}</td>
-                            <td><input class="easyui-textbox" data-options="multiline:true" name="jsonVariable" style="width:260px;height: 100px;"></td>
+                            <td><input class="easyui-textbox" data-options="multiline:true" name="jsonVariable" style="width:260px;height: 70px;"></td>
                         </tr>
                         <tr>
                             <td>我的意见</td>
                             <td>
-                                <input class="easyui-textbox" data-options="multiline:true" name="commentContent" style="width:260px;height: 135px;">
+                                <input class="easyui-textbox" data-options="multiline:true" name="commentContent" style="width:260px;height: 80px;">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>下步审批人</td>
+                            <td>
+                                <input class="easyui-textbox" data-options="multiline:true" name="assigneeNext" style="width:260px;height: 70px;">
                             </td>
                         </tr>
                         <tr>

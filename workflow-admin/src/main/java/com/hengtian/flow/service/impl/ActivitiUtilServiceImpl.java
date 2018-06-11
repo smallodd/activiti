@@ -17,10 +17,7 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
-import com.hengtian.flow.service.RuProcinstService;
-import com.hengtian.flow.service.TRuTaskService;
-import com.hengtian.flow.service.TTaskButtonService;
-import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.TaskNodeVo;
 import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
@@ -91,7 +88,9 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     @Autowired
     private TUserTaskService tUserTaskService;
     @Autowired
-    FormService formService;
+    private FormService formService;
+    @Autowired
+    private AssigneeTempService assigneeTempService;
 
 
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list) {
@@ -1197,12 +1196,122 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         return taskNodes;
     }
 
+    /**
+     * 保存下一节点审批人到临时审批人表
+     * @param jsonArray
+     * @param processInstanceId
+     * @param currentAssignee
+     * @param taskDefKeyBefore
+     * @param version
+     * @return
+     */
+    protected boolean setNextAssigneeTemp(Task task, JSONArray jsonArray, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version){
+        List<AssigneeTemp> assigneeTemps = validateSetNextAssignee(task, jsonArray, processInstanceId, currentAssignee, taskDefKeyBefore, version);
+        boolean b = assigneeTempService.insertBatch(assigneeTemps);
+        return b;
+    }
 
     /**
      * 设置下一步审批人时，校验
      * @author houjinrong@chtwm.com
      * date 2018/6/6 18:57
      */
+    public List<AssigneeTemp> validateSetNextAssignee(Task task,JSONArray jsonArray, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version){
+        List<AssigneeTemp> result = Lists.newArrayList();
+
+        String assignee = null;
+        String candidateIds = null;
+        EntityWrapper<TUserTask> wrapper;
+        Integer appKey = getAppKey(processInstanceId);
+
+        TUserTask userTask;
+        String taskDefinitionKey;
+        List<String> nextTaskDefKeys = findNextTaskDefKeys(task, false);
+        for(int i = 0;i<jsonArray.size();i++){
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            taskDefinitionKey = jsonObject.getString("taskDefinitionKey");
+            if(!nextTaskDefKeys.contains(taskDefinitionKey)){
+                logger.info("任务节点KEY不匹配");
+                return null;
+            }
+            wrapper = new EntityWrapper<>();
+            wrapper.eq("version_", version);
+            wrapper.eq("task_def_key", taskDefinitionKey);
+            userTask = tUserTaskService.selectOne(wrapper);
+
+            //key为任务节点key
+            if(userTask == null){
+                logger.info("任务节点key不存在");
+                return null;
+            }
+            //角色ID，多个逗号隔开
+            candidateIds = userTask.getCandidateIds();
+            String roleCode = null;
+            String roleName = null;
+            JSONArray assigneeArray = jsonObject.getJSONArray("assignee");
+            if(assigneeArray == null || assigneeArray.size() == 0){
+                //当选择的审批人为空时，审批人设置按配置处理
+                AssigneeTemp assigneeTemp = new AssigneeTemp();
+                assigneeTemp.setProcInstId(processInstanceId);
+                assigneeTemp.setTaskDefKey(taskDefinitionKey);
+                assigneeTemp.setCreator(currentAssignee);
+                assigneeTemp.setDeleteFlag(0);
+                assigneeTemp.setTaskDefKeyBefore(taskDefKeyBefore);
+                assigneeTemp.setRoleCode(null);
+                assigneeTemp.setRoleName(null);
+                assigneeTemp.setAssigneeCode(null);
+                assigneeTemp.setAssigneeName(null);
+                result.add(assigneeTemp);
+            }else{
+                //选择多个审批人，分别遍历校验
+                String userCode;
+                String userName;
+                for(int k=0;k<assigneeArray.size();k++){
+                    userCode = assigneeArray.getJSONObject(k).getString("userCode");
+                    userName = assigneeArray.getJSONObject(k).getString("userName");
+                    assignee = assignee==null?userCode:assignee+","+userCode;
+                    //获取用户所有所属角色
+                    List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, userCode);
+                    if(CollectionUtils.isEmpty(roles)){
+                        logger.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
+                        return null;
+                    }
+                    for(RbacRole r : roles){
+                        if(candidateIds.indexOf(r.getId()+"") > -1){
+                            roleCode = r.getId()+"";
+                            roleName = r.getRoleName();
+                            break;
+                        }
+                    }
+                    if(roleCode == null){
+                        logger.info("用户【"+userCode+"】没有权限");
+                        return null;
+                    }
+
+                    AssigneeTemp assigneeTemp = new AssigneeTemp();
+                    assigneeTemp.setProcInstId(processInstanceId);
+                    assigneeTemp.setTaskDefKey(taskDefinitionKey);
+                    assigneeTemp.setCreator(currentAssignee);
+                    assigneeTemp.setDeleteFlag(0);
+                    assigneeTemp.setTaskDefKeyBefore(taskDefKeyBefore);
+                    assigneeTemp.setRoleCode(roleCode);
+                    assigneeTemp.setRoleName(roleName);
+                    assigneeTemp.setAssigneeCode(userCode);
+                    assigneeTemp.setAssigneeName(userName);
+                    result.add(assigneeTemp);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 设置下一步审批人时，校验
+     * @author houjinrong@chtwm.com
+     * date 2018/6/6 18:57
+     */
+    @Deprecated
     public JSONObject validateSetNextAssignee(JSONArray jsonArray, String processInstanceId, int version){
         String assignee = null;
         String candidateIds = null;
