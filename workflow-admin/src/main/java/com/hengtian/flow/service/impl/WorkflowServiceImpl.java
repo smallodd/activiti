@@ -493,8 +493,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setProcessInstanceId(task.getProcessInstanceId());
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         tWorkDetail.setCreateTime(new Date());
-        //tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】审批了该任务，审批意见是【" + taskParam.getComment() + "】");
-        //workDetailService.insert(tWorkDetail);
         tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】审批了该任务，审批意见是【" + taskParam.getComment() + "】");
 
         tWorkDetail.setAprroveInfo(taskParam.getComment());
