@@ -300,6 +300,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuTask.setAppKey(appKey);
                 tRuTask.setProcInstId(task.getProcessInstanceId());
                 tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
+                tRuTask.setTaskDefName(task.getName());
                 tRuTask.setAssigneeType(tUserTask.getAssignType());
                 tRuTask.setOwer(task.getOwner());
                 tRuTask.setTaskType(tUserTask.getTaskType());
@@ -395,6 +396,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuTask.setAppKey(appKey);
                 tRuTask.setProcInstId(task.getProcessInstanceId());
                 tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
+                tRuTask.setTaskDefName(task.getName());
                 tRuTaskService.insert(tRuTask);
             }
         }
@@ -1717,7 +1719,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<ProcessInstanceResult> list = workflowDao.queryProcessInstance(page, pageInfo.getCondition());
         if(CollectionUtils.isNotEmpty(list)){
             for(ProcessInstanceResult inst : list){
-                inst.setCurrentTaskNode(getCurrentTask(inst.getProcessInstanceId()));
+                inst.setCurrentTaskNode(getCurrentTask(inst));
             }
         }
         pageInfo.setRows(list);

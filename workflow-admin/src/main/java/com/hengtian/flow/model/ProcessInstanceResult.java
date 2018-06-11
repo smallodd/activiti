@@ -22,7 +22,7 @@ public class ProcessInstanceResult {
      */
     private String processDefinitionName;
     /**
-     * 流程状态
+     * 流程状态 0-进行中；1-通过；2-拒绝
      */
     private String processInstanceState;
     /**

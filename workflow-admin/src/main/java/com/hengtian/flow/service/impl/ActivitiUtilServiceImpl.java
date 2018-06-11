@@ -1116,40 +1116,85 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     /**
      * 获取当前流程实例下的当前任务节点
      * 如果任务已完成，则获取最后节点
-     * @param processInstanceId 流程实例ID
+     * @param processInstance 流程实例
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/6/8 15:56
      */
-    public List<TaskNodeVo> getCurrentTask(String processInstanceId) {
-        EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
-        wrapper.eq("proc_inst_id", processInstanceId);
-        RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
-        String currentTaskKey = ruProcinst.getCurrentTaskKey();
-        if(StringUtils.isBlank(currentTaskKey)){
-            return null;
-        }
+    public List<TaskNodeVo> getCurrentTask(ProcessInstanceResult processInstance) {
         List<TaskNodeVo> taskNodes = Lists.newArrayList();
+        if(processInstance.getProcessInstanceState().equals(ProcessStatusEnum.UNFINISHED.status+"")){
+            //未完成
+            EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
+            wrapper.eq("proc_inst_id", processInstance.getProcessInstanceId());
+            List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+            Map<String, TRuTask> map = Maps.newHashMap();
+            Map<String,String> assigneeMap = Maps.newHashMap();
+            for(TRuTask tr : tRuTasks){
+                map.put(tr.getTaskDefKey(), tr);
+                String assignee = null;
+                if(StringUtils.isNotBlank(tr.getAssigneeReal())){
+                    assignee = tr.getAssigneeReal();
+                }else{
+                    if(AssignTypeEnum.ROLE.code.equals(tr.getAssigneeType())){
+                        List<RbacUser> users = privilegeService.getUsersByRoleId(processInstance.getAppKey(), null, Long.parseLong(tr.getAssignee()));
 
-        List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKeyLike(currentTaskKey).orderByTaskCreateTime().desc().list();
-        Map<String, Integer> temMap = Maps.newHashMap();
+                        for(RbacUser u : users){
+                            assignee = assignee == null?u.getCode():assignee+","+u.getCode();
+                        }
+                    }
+                }
 
-        String currentAssignee = null;
-        for(HistoricTaskInstance hisTask : hisTasks){
-            if(temMap.containsKey(hisTask.getTaskDefinitionKey())){
-                continue;
+                if(assigneeMap.containsKey(tr.getTaskDefKey())){
+                    assigneeMap.put(tr.getTaskDefKey(), assignee+","+assigneeMap.get(tr.getTaskDefKey()));
+                }else{
+                    assigneeMap.put(tr.getTaskDefKey(), assignee);
+                }
             }
-            TaskNodeVo taskNode = new TaskNodeVo();
 
-            currentAssignee = hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
-            taskNode.setAssigneeStr(currentAssignee);
-            taskNode.setTaskDefinitionName(hisTask.getName());
-            taskNode.setTaskDefinitionKey(hisTask.getTaskDefinitionKey());
-            taskNodes.add(taskNode);
+            if(map.size() > 0){
+                Set<String> keySet = map.keySet();
+                for(String key : keySet){
+                    TaskNodeVo taskNode = new TaskNodeVo();
+
+                    taskNode.setAssigneeStr(assigneeMap.get(key));
+                    taskNode.setTaskDefinitionName(map.get(key).getTaskDefName());
+                    taskNode.setTaskDefinitionKey(map.get(key).getTaskDefKey());
+                    taskNodes.add(taskNode);
+                }
+            }
+        }else {
+            //完成（通过/拒绝）
+            EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
+            wrapper.eq("proc_inst_id", processInstance.getProcessInstanceId());
+            RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
+            String currentTaskKey = ruProcinst.getCurrentTaskKey();
+            if(StringUtils.isBlank(currentTaskKey)){
+                return null;
+            }
+
+            List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getProcessInstanceId()).taskDefinitionKeyLike(currentTaskKey).orderByTaskCreateTime().desc().list();
+            Map<String, Integer> temMap = Maps.newHashMap();
+
+            String currentAssignee = null;
+            for(HistoricTaskInstance hisTask : hisTasks){
+                if(temMap.containsKey(hisTask.getTaskDefinitionKey())){
+                    continue;
+                }
+                TaskNodeVo taskNode = new TaskNodeVo();
+
+                currentAssignee = hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
+                taskNode.setAssigneeStr(currentAssignee);
+                taskNode.setTaskDefinitionName(hisTask.getName());
+                taskNode.setTaskDefinitionKey(hisTask.getTaskDefinitionKey());
+                taskNodes.add(taskNode);
+            }
+
         }
 
         return taskNodes;
     }
+
 
     /**
      * 设置下一步审批人时，校验
