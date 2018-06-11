@@ -21,7 +21,7 @@
             var dataGrid;
             $(function () {
                 dataGrid = $('#taskCandidateRoleGrid').datagrid({
-                    url: '${ctx}/emp/role/1',
+                    url: '${ctx}/emp/role/{appKey}',
                     border: true,
                     singleSelect: singleSelect,
                     fitColumns: true,

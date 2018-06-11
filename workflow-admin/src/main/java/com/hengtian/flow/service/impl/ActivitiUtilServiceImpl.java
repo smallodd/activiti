@@ -1227,20 +1227,22 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             }
             //角色ID，多个逗号隔开
             candidateIds = userTask.getCandidateIds();
-            assignee = jsonObject.getString("assignee");
             String roleCode = null;
             String roleName = null;
-            if(StringUtils.isBlank(assignee)){
+            JSONArray assigneeArray = jsonObject.getJSONArray("assignee");
+            if(assigneeArray == null || assigneeArray.size() == 0){
                 //当选择的审批人为空时，审批人设置按配置处理
                 resultJson.put(taskDefinitionKey, null);
             }else{
                 //选择多个角色，分别遍历校验
-                JSONArray assigneeArray = new JSONArray();
-                for(String a : assignee.split(",")){
+                String userCode;
+                for(int k=0;k<assigneeArray.size();k++){
+                    userCode = assigneeArray.getJSONObject(k).getString("userCode");
+                    assignee = assignee==null?userCode:assignee+","+userCode;
                     //获取用户所有所属角色
-                    List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, a);
+                    List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, userCode);
                     if(CollectionUtils.isEmpty(roles)){
-                        logger.info("用户【"+a+"】没有角色权限，无法匹配审批人资格");
+                        logger.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
                         return null;
                     }
                     for(RbacRole r : roles){
@@ -1251,7 +1253,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                         }
                     }
                     if(roleCode == null){
-                        logger.info("用户【"+a+"】没有权限");
+                        logger.info("用户【"+userCode+"】没有权限");
                         return null;
                     }
                 }
@@ -1265,7 +1267,6 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
                 resultJson.put(taskDefinitionKey, assigneeArray);
             }
-
         }
 
         return resultJson;

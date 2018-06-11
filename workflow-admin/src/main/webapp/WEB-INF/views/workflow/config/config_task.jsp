@@ -38,7 +38,7 @@
                             </c:forEach>
                         </select>
                     </td>
-                    <td><input id="taskUser${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configAssignee('${ut.taskDefKey}')"/></td>
+                    <td><input id="taskUser${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configAssignee('${ut.taskDefKey}','${ut.procDefKey}')"/></td>
 				    <td><input id="taskButton${ut.taskDefKey}" placeholder="点击选择" data-options="required:true" style="width:200px;height:29px" onclick="configButton('${ut.taskDefKey}')"/></td>
                     <td>
                         <select id="needSetNext${ut.taskDefKey}" class="easyui-combobox needSetNext" data-options="width:60,height:29,panelHeight:'auto'">
@@ -184,7 +184,7 @@
     }
 
     //配置人员
-    function configAssignee(taskDefKey){
+    function configAssignee(taskDefKey,procDefKey){
         $("#taskKey").val(taskDefKey);
 
     	var taskType = $(document.getElementById("taskType"+taskDefKey)).val();
@@ -230,7 +230,7 @@
                 title : '选择角色',
                 width : 500,
                 height : 450,
-                href :  '${ctx}/assignee/select/role',
+                href :  '${ctx}/assignee/select/role?procDefKey='+procDefKey,
                 buttons : [ {
                     text : '确定',
                     handler : function() {

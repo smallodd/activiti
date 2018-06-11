@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
+import com.hengtian.application.model.AppModel;
+import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.enums.TaskTypeEnum;
@@ -15,6 +17,7 @@ import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -40,6 +43,8 @@ public class UserTaskController extends BaseController{
     private RepositoryService repositoryService;
 	@Autowired
 	private TButtonService tButtonService;
+	@Autowired
+	private AppModelService appModelService;
 
 	/**
 	 * 设定人员页面
@@ -134,7 +139,16 @@ public class UserTaskController extends BaseController{
      * date 2018/5/7 15:50
      */
     @GetMapping("/select/role")
-    public String selectRolePage() {
+    public String selectRolePage(Model model, String procDefKey) {
+    	if(StringUtils.isNotBlank(procDefKey)){
+    		EntityWrapper<AppModel> wrapper = new EntityWrapper<>();
+    		wrapper.eq("model_key", procDefKey);
+			AppModel appModel = appModelService.selectOne(wrapper);
+			if(appModel != null){
+				model.addAttribute("appKey", appModel.getAppKey());
+			}
+		}
+
         return "workflow/config/select_role";
     }
 
