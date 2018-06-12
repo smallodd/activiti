@@ -154,9 +154,11 @@ public class WorkflowActionController extends BaseController {
                                @RequestParam("assignee") String assignee,
                                @RequestParam(value = "jsonVariable",required = false) String jsonVariable,
                                @RequestParam("commentContent") String commentContent,
-                               @RequestParam("commentResult") Integer commentResult){
+                               @RequestParam("commentResult") Integer commentResult,
+                               @RequestParam("assigneeNext") String assigneeNext){
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        TaskParam taskParam=new TaskParam();
+        TaskParam taskParam = new TaskParam();
+        taskParam.setAssigneeNext(assigneeNext);
         if(task==null){
             return renderError(ResultEnum.TASK_NOT_EXIST.msg, ResultEnum.TASK_NOT_EXIST.code) ;
         }

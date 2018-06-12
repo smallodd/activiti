@@ -2,11 +2,13 @@ package com.hengtian.flow.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hengtian.flow.vo.TaskNodeVo;
+import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.List;
 
+@Data
 public class ProcessInstanceResult {
 
     /**
@@ -22,13 +24,17 @@ public class ProcessInstanceResult {
      */
     private String processDefinitionName;
     /**
-     * 流程状态
+     * 流程状态 0-进行中；1-通过；2-拒绝
      */
     private String processInstanceState;
     /**
      * 当前节点信息
      */
     private List<TaskNodeVo> currentTaskNode;
+    /**
+     * 业务主键
+     */
+    private String businessKey;
     /**
      * 系统标识
      */
@@ -44,68 +50,4 @@ public class ProcessInstanceResult {
      */
     @DateTimeFormat(pattern = "YYYY-mm-dd")
     private Date endTime;
-
-    public String getProcessInstanceId() {
-        return processInstanceId;
-    }
-
-    public void setProcessInstanceId(String processInstanceId) {
-        this.processInstanceId = processInstanceId;
-    }
-
-    public String getProcessInstanceName() {
-        return processInstanceName;
-    }
-
-    public void setProcessInstanceName(String processInstanceName) {
-        this.processInstanceName = processInstanceName;
-    }
-
-    public String getProcessDefinitionName() {
-        return processDefinitionName;
-    }
-
-    public void setProcessDefinitionName(String processDefinitionName) {
-        this.processDefinitionName = processDefinitionName;
-    }
-
-    public String getProcessInstanceState() {
-        return processInstanceState;
-    }
-
-    public void setProcessInstanceState(String processInstanceState) {
-        this.processInstanceState = processInstanceState;
-    }
-
-    public Date getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
-
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
-
-    public List<TaskNodeVo> getCurrentTaskNode() {
-        return currentTaskNode;
-    }
-
-    public void setCurrentTaskNode(List<TaskNodeVo> currentTaskNode) {
-        this.currentTaskNode = currentTaskNode;
-    }
-
-    public Integer getAppKey() {
-        return appKey;
-    }
-
-    public void setAppKey(Integer appKey) {
-        this.appKey = appKey;
-    }
 }

@@ -12,6 +12,11 @@ import java.util.List;
 @Data
 public class TaskNodeVo {
 
+
+    /**
+     * 流程定义key
+     */
+    private String taskId;
     /**
      * 流程定义key
      */
