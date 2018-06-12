@@ -548,11 +548,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "查询用户是否已经审批过某个任务")
     @RequestMapping(value = "/rest/task/checkUserApproved", method = RequestMethod.POST)
     @ResponseBody
-    public Object checkUserApproved(@ApiParam(value = "用户code", name = "userCode", required = true) @RequestParam("userCode") String userCode,
+    public Object checkUserApproved(
                                     @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam("businessKey")String businessKey,
                                     @ApiParam(value = "系统键值", name = "appKey",  required = true) @RequestParam("appKey")Integer appKey){
         Result result=new Result();
-        if(StringUtils.isBlank(userCode)||StringUtils.isBlank(businessKey)||appKey==null){
+        if(StringUtils.isBlank(businessKey)||appKey==null){
 
             result.setSuccess(false);
             result.setCode(Constant.PARAM_ERROR);
@@ -629,5 +629,24 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }
 
         return renderSuccess(workflowService.getNextAssigneeWhenRoleApprove(task));
+    }
+    @ResponseBody
+    @SysLog("获取流程实例中自定义参数")
+    @ApiOperation(httpMethod = "POST", value = "获取流程实例中自定义参数")
+    @RequestMapping(value = "/rest/getVariables", method = RequestMethod.POST)
+    public Object getVariables(String processId){
+        Map map=workflowService.getVaraibles(processId);
+
+        return renderSuccess(map);
+    }
+
+    @ResponseBody
+    @SysLog("获取某个用户某个任务的审批意见")
+    @ApiOperation(httpMethod = "POST", value = "获取某个用户某个任务的审批意见")
+    @RequestMapping(value = "/rest/comment", method = RequestMethod.POST)
+    public Object getComments(String taskId,String userId){
+       Comment comment=  workflowService.getComments(taskId,userId);
+
+       return renderSuccess(comment);
     }
 }

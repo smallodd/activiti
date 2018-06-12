@@ -41,7 +41,9 @@ import org.activiti.bpmn.model.FlowNode;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
+import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
@@ -49,6 +51,7 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.NativeTaskQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
@@ -1814,6 +1817,45 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         return result;
+    }
+
+    @Override
+    public Map<String, Object> getVaraibles(String processInstanceId) {
+        List<HistoricVariableInstance> list=historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
+        Map<String,Object> map=new HashMap<>();
+        for(HistoricVariableInstance historicVariableInstance:list){
+            map.put(historicVariableInstance.getVariableName(),historicVariableInstance.getValue());
+        }
+        List<Task> tasks=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        if(tasks!=null&&tasks.size()>0){
+            map.put("lastApprover",tasks.get(0).getAssignee());
+        }else{
+            List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().desc().list();
+            if(historicTaskInstances!=null&&historicTaskInstances.size()>0) {
+                map.put("lastApprover", historicTaskInstances.get(0).getAssignee());
+            }else{
+                map.put("lastApprover","老数据，无法兼容");
+            }
+        }
+        return map;
+    }
+
+    @Override
+    public Comment getComments(String taskId, String userId) {
+
+        List<Comment> list= taskService.getTaskComments(taskId,"1");
+        List<Comment> list1=taskService.getTaskComments(taskId,"2");
+        list.addAll(list1);
+        if(list==null||list.size()==0){
+            return null;
+        }
+        for(Comment comment:list){
+
+            if(comment.getUserId().equals(userId)){
+                return comment;
+            }
+        }
+        return null;
     }
 
     @Deprecated
