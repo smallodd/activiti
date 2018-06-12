@@ -296,7 +296,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 TRuTask tRuTask = new TRuTask();
                 tRuTask.setTaskId(task.getId());
                 tRuTask.setAssignee(assigneeTemp.getRoleCode());
-                tRuTask.setAssigneeName(assigneeTemp.getAssigneeName());
+                tRuTask.setAssigneeName(assigneeTemp.getRoleName());
                 tRuTask.setAssigneeReal(assigneeTemp.getAssigneeCode());
                 tRuTask.setExpireTime(task.getDueDate());
                 tRuTask.setAppKey(appKey);
@@ -473,13 +473,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
 
-        if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext()) && StringUtils.isBlank(taskParam.getAssigneeNext())){
-            //需手动设置审批人
-            logger.info("当前节点需设置下步节点审批人， 未发现审批人信息。");
-            result.setMsg("当前节点需设置下步节点审批人， 未发现审批人信息。");
-            result.setSuccess(false);
-            result.setCode(Constant.TASK_NOT_SET_APPROVER);
-            return result;
+        //设置下步审批人
+        Map<String, Map<String,AssigneeTemp>> assigneeMap = Maps.newHashMap();
+        if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext()) && taskParam.getPass() == TaskStatusEnum.COMPLETE_AGREE.status){
+            result = setNextAssigneeTemp(task, taskParam.getAssigneeNext(), task.getProcessInstanceId(), taskParam.getAssignee(), tUserTask.getTaskDefKey(), processDefinition.getVersion(), assigneeMap);
+            if(!result.isSuccess()){
+                return result;
+            }
         }
 
         identityService.setAuthenticatedUserId(taskParam.getAssignee());
@@ -500,19 +500,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
         workDetailService.insert(tWorkDetail);
-
-        //设置下步审批人
-        if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext()) && taskParam.getPass() == TaskStatusEnum.COMPLETE_AGREE.status){
-            boolean b = setNextAssigneeTemp(task, JSONArray.parseArray(taskParam.getAssigneeNext()), task.getProcessInstanceId(), taskParam.getAssignee(), tUserTask.getTaskDefKey(), processDefinition.getVersion());
-            if(!b){
-                //需手动设置审批人
-                logger.info("设置下步审批人失败");
-                result.setMsg("设置下步审批人失败");
-                result.setSuccess(false);
-                result.setCode(Constant.FAIL);
-                return result;
-            }
-        }
 
         if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
             //会签,表达式
@@ -654,32 +641,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             if (!Boolean.valueOf(map.get("customApprover").toString())) {
                 //是否需要手动设置审批人
                 boolean needSetNext = false;
-                Map<String, Map<String,AssigneeTemp>> assigneeMap = Maps.newHashMap();
                 if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext())){
                     //需手动设置审批人
                     needSetNext = true;
                     EntityWrapper<AssigneeTemp> _wrapper = new EntityWrapper<>();
                     _wrapper.eq("proc_inst_id", task.getProcessInstanceId());
                     _wrapper.eq("task_def_key_before",tUserTask.getTaskDefKey());
-                    _wrapper.eq("delete_flag", 0);
-                    List<AssigneeTemp> assigneeTemps = assigneeTempService.selectList(_wrapper);
-                    for(AssigneeTemp aTemp : assigneeTemps){
-                        if(assigneeMap.containsKey(aTemp.getTaskDefKey())){
-                            Map<String, AssigneeTemp> assigneeTempMap = assigneeMap.get(aTemp.getTaskDefKey());
-                            if(assigneeTempMap.containsKey(aTemp.getRoleCode())){
-                                AssigneeTemp assigneeTemp = assigneeTempMap.get(aTemp.getRoleCode());
-                                assigneeTemp.setAssigneeCode(assigneeTemp.getAssigneeCode()+","+aTemp.getAssigneeCode());
-                                assigneeTemp.setAssigneeName(assigneeTemp.getAssigneeName()+","+aTemp.getAssigneeName());
-                            }else{
-                                assigneeTempMap.put(aTemp.getRoleCode(), aTemp);
-                            }
-
-                        }else{
-                            Map<String,AssigneeTemp> assigneeTempMap = Maps.newHashMap();
-                            assigneeTempMap.put(aTemp.getRoleCode(), aTemp);
-                            assigneeMap.put(aTemp.getTaskDefKey(), assigneeTempMap);
-                        }
-                    }
+                    AssigneeTemp assigneeTemp = new AssigneeTemp();
+                    assigneeTemp.setDeleteFlag(1);
+                    assigneeTempService.update(assigneeTemp, _wrapper);
                 }
 
                 EntityWrapper tUserWrapper;

@@ -1,6 +1,7 @@
 package com.hengtian.flow.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
@@ -1198,17 +1199,59 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     /**
      * 保存下一节点审批人到临时审批人表
-     * @param jsonArray
+     * @param assigneeNext
      * @param processInstanceId
      * @param currentAssignee
      * @param taskDefKeyBefore
      * @param version
      * @return
      */
-    protected boolean setNextAssigneeTemp(Task task, JSONArray jsonArray, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version){
-        List<AssigneeTemp> assigneeTemps = validateSetNextAssignee(task, jsonArray, processInstanceId, currentAssignee, taskDefKeyBefore, version);
-        boolean b = assigneeTempService.insertBatch(assigneeTemps);
-        return b;
+    protected Result setNextAssigneeTemp(Task task, String assigneeNext, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version, Map<String, Map<String,AssigneeTemp>> assigneeMap){
+        Result result = new Result();
+
+        EntityWrapper<AssigneeTemp> _wrapper = new EntityWrapper<>();
+        _wrapper.eq("proc_inst_id", task.getProcessInstanceId());
+        _wrapper.eq("task_def_key_before",taskDefKeyBefore);
+        _wrapper.eq("delete_flag", 0);
+        List<AssigneeTemp> assigneeTemps = assigneeTempService.selectList(_wrapper);
+        if(CollectionUtils.isEmpty(assigneeTemps)){
+            if(StringUtils.isBlank(assigneeNext)){
+                logger.info("当前节点需设置下步节点审批人， 未发现审批人信息。");
+                result.setSuccess(false);
+                result.setMsg("当前节点需设置下步节点审批人， 未发现审批人信息。");
+                return result;
+            }
+            try {
+                JSONArray jsonArray = JSONArray.parseArray(assigneeNext);
+                assigneeTemps = validateSetNextAssignee(task, jsonArray, processInstanceId, currentAssignee, taskDefKeyBefore, version);
+                assigneeTempService.insertBatch(assigneeTemps);
+            } catch (JSONException e) {
+                logger.error("下步审批人参数格式不正确，不是正确的JSON格式", e);
+                result.setSuccess(false);
+                result.setMsg("下步审批人参数格式不正确，不是正确的JSON格式。");
+                return result;
+            }
+        }
+
+        for(AssigneeTemp aTemp : assigneeTemps){
+            if(assigneeMap.containsKey(aTemp.getTaskDefKey())){
+                Map<String, AssigneeTemp> assigneeTempMap = assigneeMap.get(aTemp.getTaskDefKey());
+                if(assigneeTempMap.containsKey(aTemp.getRoleCode())){
+                    AssigneeTemp assigneeTemp = assigneeTempMap.get(aTemp.getRoleCode());
+                    assigneeTemp.setAssigneeCode(assigneeTemp.getAssigneeCode()+","+aTemp.getAssigneeCode());
+                    assigneeTemp.setAssigneeName(assigneeTemp.getAssigneeName()+","+aTemp.getAssigneeName());
+                }else{
+                    assigneeTempMap.put(aTemp.getRoleCode(), aTemp);
+                }
+
+            }else{
+                Map<String,AssigneeTemp> assigneeTempMap = Maps.newHashMap();
+                assigneeTempMap.put(aTemp.getRoleCode(), aTemp);
+                assigneeMap.put(aTemp.getTaskDefKey(), assigneeTempMap);
+            }
+        }
+        result.setSuccess(true);
+        return result;
     }
 
     /**
