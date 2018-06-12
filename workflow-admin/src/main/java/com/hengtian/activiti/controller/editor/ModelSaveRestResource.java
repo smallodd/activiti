@@ -3,6 +3,7 @@ package com.hengtian.activiti.controller.editor;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.hengtian.common.utils.StringUtils;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
@@ -53,6 +54,12 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
             String str = (values.getFirst("json_xml"));
             JSONObject jsonObject = JSONObject.parseObject(str);
             jsonObject.getJSONObject("properties").put("process_id", model.getKey());
+
+            //设置部署后 流程定义名称为空时赋值为模型名称
+            if(StringUtils.isBlank(jsonObject.getJSONObject("properties").getString("name"))){
+                jsonObject.getJSONObject("properties").put("name", values.getFirst("name"));
+            }
+
             //每次修改模型，版本升级
             model.setVersion(model.getVersion() + 1);
             this.repositoryService.saveModel(model);
