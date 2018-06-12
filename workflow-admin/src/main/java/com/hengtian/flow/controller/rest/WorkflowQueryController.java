@@ -331,29 +331,26 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if(StringUtils.isBlank(appKey)){
             return renderError("参数错误：appKey为空");
         }
+        ProcessInstance processInstance = null;
         if(StringUtils.isNotBlank(processInstanceId)){
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+            processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
             if(processInstance == null){
                 return renderError("流程实例ID【"+processInstanceId+"】无对应的流程实例");
             }
-            JSONObject result = new JSONObject();
-            result.put("processInstanceId", processInstance.getProcessInstanceId());
-            result.put("processDefinitionId", processInstance.getProcessDefinitionId());
-            result.put("processDefinitionName", processInstance.getProcessDefinitionName());
-            return renderSuccess(result);
         }else if(StringUtils.isNotBlank(businessKey)){
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).variableValueEquals("appKey", appKey).singleResult();
+            processInstance = runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).variableValueEquals("appKey", appKey).singleResult();
             if(processInstance == null){
                 return renderError("业务主键【"+businessKey+"】无对应的流程实例");
             }
-            JSONObject result = new JSONObject();
-            result.put("processInstanceId", processInstance.getProcessInstanceId());
-            result.put("processDefinitionId", processInstance.getProcessDefinitionId());
-            result.put("processDefinitionName", processInstance.getProcessDefinitionName());
-            return renderSuccess(result);
         }else{
             return renderError("参数异常");
         }
+
+        JSONObject result = new JSONObject();
+        result.put("processInstanceId", processInstance.getProcessInstanceId());
+        result.put("processDefinitionId", processInstance.getProcessDefinitionId());
+        result.put("processDefinitionName", processInstance.getProcessDefinitionName());
+        return renderSuccess(result);
     }
 
     /**
