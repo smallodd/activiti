@@ -324,11 +324,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("流程实例详情")
     @ApiOperation(httpMethod = "POST", value = "流程实例详情")
     @RequestMapping(value = "/rest/process/detail", method = RequestMethod.POST)
-    public Object processDetail(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam String appKey,
+    public Object processDetail(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
                                 @ApiParam(value = "流程实例ID", name = "processInstanceId") @RequestParam(required = false) String processInstanceId,
                                 @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
         logger.info("入参processInstanceId{0} businessKey{1}", processInstanceId, businessKey);
-        if(StringUtils.isBlank(appKey)){
+        if(appKey == null){
             return renderError("参数错误：appKey为空");
         }
         ProcessInstance processInstance = null;
