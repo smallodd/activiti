@@ -2,6 +2,7 @@ package com.hengtian.flow.controller.rest;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ApproveResultEnum;
@@ -17,10 +18,8 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.ProcessInstanceResult;
-import com.hengtian.flow.service.RemindTaskService;
-import com.hengtian.flow.service.TAskTaskService;
-import com.hengtian.flow.service.TWorkDetailService;
-import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.model.RuProcinst;
+import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.TaskNodeVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.service.PrivilegeService;
@@ -86,6 +85,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     private PrivilegeService privilegeService;
     @Autowired
     private RuntimeService runtimeService;
+    @Autowired
+    private RuProcinstService ruProcinstService;
 
     /**
      * 获取我发起的流程
@@ -323,9 +324,13 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("流程实例详情")
     @ApiOperation(httpMethod = "POST", value = "流程实例详情")
     @RequestMapping(value = "/rest/process/detail", method = RequestMethod.POST)
-    public Object processDetail(@ApiParam(value = "流程实例ID", name = "processInstanceId") @RequestParam(required = false) String processInstanceId,
+    public Object processDetail(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam String appKey,
+                                @ApiParam(value = "流程实例ID", name = "processInstanceId") @RequestParam(required = false) String processInstanceId,
                                 @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
         logger.info("入参processInstanceId{0} businessKey{1}", processInstanceId, businessKey);
+        if(StringUtils.isBlank(appKey)){
+            return renderError("参数错误：appKey为空");
+        }
         if(StringUtils.isNotBlank(processInstanceId)){
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
             if(processInstance == null){
@@ -337,7 +342,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             result.put("processDefinitionName", processInstance.getProcessDefinitionName());
             return renderSuccess(result);
         }else if(StringUtils.isNotBlank(businessKey)){
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult();
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).variableValueEquals("appKey", appKey).singleResult();
             if(processInstance == null){
                 return renderError("业务主键【"+businessKey+"】无对应的流程实例");
             }
