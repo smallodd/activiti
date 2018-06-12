@@ -17,7 +17,6 @@
         <result column="processInstanceState" property="processInstanceState" jdbcType="VARCHAR"/>
         <result column="startTime" property="startTime" jdbcType="TIMESTAMP"/>
         <result column="endTime" property="endTime" jdbcType="TIMESTAMP"/>
-
     </resultMap>
 
     <resultMap id="processInstanceResultMap" type="com.hengtian.flow.model.ProcessInstanceResult">
@@ -48,7 +47,7 @@
         ahp.PROC_DEF_ID_ AS processDefinitionId,
         ahp.BUSINESS_KEY_ AS businessKey,
         trp.PROC_DEF_NAME AS processDefinitionName,
-        ahp.DELETE_REASON_ AS processInstanceState,
+        trp.PROC_INST_STATE AS processInstanceState,
     </sql>
 
     <sql id="queryCondition">
@@ -106,100 +105,99 @@
     <!--我的待办任务（待审批和待签收）-->
     <select id="queryActiveTask" resultMap="taskResultMap">
         SELECT
-          <include refid="taskResult"/>
-          art.CREATE_TIME_ AS startTime,
-          art.CREATE_TIME_ AS endTime
+            <include refid="taskResult"/>
+            art.CREATE_TIME_ AS startTime,
+            art.CREATE_TIME_ AS endTime
         FROM
-          act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-          LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-          LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+            act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
+            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
-          trp.APP_KEY = #{appKey} AND art.SUSPENSION_STATE_=1
-          AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (#{roleId})))
+            trp.APP_KEY = #{appKey} AND art.SUSPENSION_STATE_=1
+            AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN(#{roleId})))
     </select>
 
     <!--我的历史任务-->
     <select id="queryCloseTask" resultMap="taskResultMap">
         SELECT
-          <include refid="taskResult"/>
-          art.START_TIME_ AS startTime,
-          art.END_TIME_ AS endTime
+            <include refid="taskResult"/>
+            art.START_TIME_ AS startTime,
+            art.END_TIME_ AS endTime
         FROM
-          act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-          LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-          LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+            act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
+            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
           trp.APP_KEY = #{appKey} AND art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%')
-
           <include refid="queryCondition"/>
     </select>
 
     <!--我的待审批任务及被问询任务-->
     <select id="queryOpenTask" resultMap="taskResultMap">
         SELECT
-          <include refid="taskResult"/>
-          art.CREATE_TIME_ AS startTime,
-          art.CREATE_TIME_ AS endTime,
-          0 as asked,
-          null as askId
+            <include refid="taskResult"/>
+            art.CREATE_TIME_ AS startTime,
+            art.CREATE_TIME_ AS endTime,
+            0 AS asked,
+            NULL AS askId
         FROM
-          act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-          LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-          LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+            act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
+            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
-          trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%') OR (trt.ASSIGNEE_TYPE = 2
-        <if test="roledId!=null">
+            trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%') OR (trt.ASSIGNEE_TYPE = 2
+            <if test="roleId != null">
+                AND trt.ASSIGNEE IN (${roleId})
+            </if>
+            ))
+        AND art.SUSPENSION_STATE_=1
+            <include refid="queryCondition"/>
 
-            AND trt.ASSIGNEE IN (${roleId})
-        </if>
-        ))
-          AND art.SUSPENSION_STATE_=1
-          <include refid="queryCondition"/>
-
-        UNION  SELECT  aht.ID_ AS taskId,
-        aht.NAME_ AS taskName,
-        #{assignee} AS assignee,
-        NULL AS assigneeBefore,
-        NULL AS assigneeNext,
-        trt.OWNER AS assigneeDelegate,
-        trp.CREATOR AS creator,
-        trp.CREATOR_NAME AS creatorNeme,
-        trp.CREATOR_DEPT AS creatorDept,
-        trp.CREATOR_DEPT_NAME AS creatorDeptNeme,
-        trp.CURRENT_TASK_STATUS AS taskState,
-        ahp.ID_ AS processInstanceId,
-        ahp.NAME_ AS processInstanceTitle,
-        ahp.PROC_DEF_ID_ AS processDefinitionId,
-        ahp.BUSINESS_KEY_ AS businessKey,
-        trp.PROC_DEF_NAME AS processDefinitionName,
-        ahp.DELETE_REASON_ AS processInstanceState,
-        aht.START_TIME_ AS startTime,
-        aht.END_TIME_ AS endTime,
-        1 as asked,
-        tat.id as askId
+        UNION SELECT aht.ID_ AS taskId,
+            aht.NAME_ AS taskName,
+            #{assignee} AS assignee,
+            NULL AS assigneeBefore,
+            NULL AS assigneeNext,
+            trt.OWNER AS assigneeDelegate,
+            trp.CREATOR AS creator,
+            trp.CREATOR_NAME AS creatorNeme,
+            trp.CREATOR_DEPT AS creatorDept,
+            trp.CREATOR_DEPT_NAME AS creatorDeptNeme,
+            trp.CURRENT_TASK_STATUS AS taskState,
+            ahp.ID_ AS processInstanceId,
+            ahp.NAME_ AS processInstanceTitle,
+            ahp.PROC_DEF_ID_ AS processDefinitionId,
+            ahp.BUSINESS_KEY_ AS businessKey,
+            trp.PROC_DEF_NAME AS processDefinitionName,
+            trp.PROC_INST_STATE AS processInstanceState,
+            aht.START_TIME_ AS startTime,
+            aht.END_TIME_ AS endTime,
+            1 as asked,
+            tat.id as askId
         FROM
-        act_hi_taskinst AS aht LEFT JOIN t_ru_task AS trt ON aht.ID_ =trt.TASK_ID
-        LEFT JOIN act_hi_procinst AS ahp ON aht.PROC_INST_ID_=ahp.PROC_INST_ID_
-        LEFT JOIN t_ru_procinst AS trp ON aht.PROC_INST_ID_=trp.PROC_INST_ID
-        LEFT JOIN t_ask_task tat on tat.proc_inst_id=ahp.PROC_INST_ID_
-        where
-        trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{assignee} and tat.is_ask_end=0 and tat.id is not null AND aht.END_TIME_ IS NOT NULL
+            act_hi_taskinst AS aht LEFT JOIN t_ru_task AS trt ON aht.ID_ =trt.TASK_ID
+            LEFT JOIN act_hi_procinst AS ahp ON aht.PROC_INST_ID_=ahp.PROC_INST_ID_
+            LEFT JOIN t_ru_procinst AS trp ON aht.PROC_INST_ID_=trp.PROC_INST_ID
+            LEFT JOIN t_ask_task tat on tat.proc_inst_id=ahp.PROC_INST_ID_
+        WHERE
+            trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{assignee} AND tat.is_ask_end=0 and tat.id IS NOT NULL AND
+            aht.END_TIME_ IS NOT NULL
     </select>
 
     <!--我的待签收任务-->
     <select id="queryClaimTask" resultMap="taskResultMap">
         SELECT
-          <include refid="taskResult"/>
-          art.CREATE_TIME_ AS startTime,
-          art.CREATE_TIME_ AS endTime
+            <include refid="taskResult"/>
+            art.CREATE_TIME_ AS startTime,
+            art.CREATE_TIME_ AS endTime
         FROM
-          act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-          LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-          LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+            act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
+            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
-          trp.APP_KEY = #{appKey} AND trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId})
-          AND art.SUSPENSION_STATE_=1
-          <include refid="queryCondition"/>
+            trp.APP_KEY = #{appKey} AND trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId})
+            AND art.SUSPENSION_STATE_=1
+            <include refid="queryCondition"/>
     </select>
 
     <select id="queryProcessInstance" resultMap="processInstanceResultMap">
@@ -251,14 +249,15 @@
     <!--代办任务数量-->
     <select id="activeTaskCount" parameterType="com.hengtian.common.param.TaskQueryParam" resultType="Long">
         SELECT
-            COUNT(*)
+          COUNT(*)
         FROM
             act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
             LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
             trp.APP_KEY = #{appKey}
-            AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId})))
+            AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN
+            (${roleId})))
             AND art.SUSPENSION_STATE_=1
             <include refid="queryCondition"/>
     </select>
