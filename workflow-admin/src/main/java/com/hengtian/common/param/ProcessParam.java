@@ -4,6 +4,9 @@ import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.constraints.NotBlank;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by ma on 2018/4/17.
@@ -14,27 +17,32 @@ public class ProcessParam {
      * 创建人id
      */
     @ApiModelProperty(value = "创建人id", required = true, example="H017830")
+    @NotBlank(message = "创建人不能为空")
     private String creatorId;
 
     /**
      * 创建任务的标题
      */
     @ApiModelProperty(value = "创建任务的标题", required = true, example="测试任务标题")
+    @NotBlank(message = "任务标题不能为空")
     private String title;
     /**
      * 流程定义key
      */
     @ApiModelProperty(value = "流程定义key", required = true, example="流程定义key")
+    @NotBlank(message = "流程定义key不能为空")
     private String processDefinitionKey;
     /**
      * 系统定义的key
      */
     @ApiModelProperty(value = "系统定义的key", required = true, example="系统定义的key")
+    @NotNull(message = "系统定义key不能为空")
     private Integer appKey;
     /**
      * 业务主键，各个业务系统中唯一
      */
     @ApiModelProperty(value = "业务主键，各个业务系统中唯一", required = true, example="业务主键")
+    @NotNull(message = "业务主键不能为空")
     private String businessKey;
     /**
      * 自定义审批人
