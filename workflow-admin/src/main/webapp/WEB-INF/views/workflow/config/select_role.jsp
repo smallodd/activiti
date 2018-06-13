@@ -31,17 +31,17 @@
                     sortName: 'id',
                     sortOrder: 'asc',
                     columns: [[{
+                        width: '50px',
                         title: '主键',
                         field: 'id',
-                        sortable: true,
-                        hidden: true
+                        sortable: true
                     }, {
-                        width: '200px',
+                        width: '180px',
                         title: '角色名称',
                         field: 'roleName',
                         sortable: true
                     }, {
-                        width: '235px',
+                        width: '200px',
                         title: '描述',
                         field: 'description',
                         sortable: true
