@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.*;
 
 /**
@@ -168,7 +169,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "审批任务接口")
-    public Object approveTask(@ModelAttribute("taskParam") TaskParam taskParam) {
+    public Object approveTask(@ModelAttribute("taskParam") @Valid TaskParam taskParam) {
 
         Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
         if (task == null) {
