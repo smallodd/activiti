@@ -1,6 +1,5 @@
 package com.hengtian.flow.controller.rest;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
@@ -17,11 +16,8 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.controller.WorkflowBaseController;
-import com.hengtian.flow.model.ProcessInstanceResult;
-import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
-import com.hengtian.flow.vo.TaskNodeVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.service.PrivilegeService;
 import io.swagger.annotations.ApiOperation;

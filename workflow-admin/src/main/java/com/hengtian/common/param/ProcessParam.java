@@ -44,7 +44,7 @@ public class ProcessParam {
     /**
      * 自定义参数
      */
-    @ApiModelProperty(value = "自定义参数", required = true, example="{'code':'string'}")
+    @ApiModelProperty(value = "自定义参数", example="{'code':'string'}")
     private String  jsonVariables;
 
     public String getCreatorId() {
