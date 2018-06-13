@@ -220,7 +220,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setTaskId(taskId);
                 tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
                 tWorkDetail.setAprroveInfo("生成任务");
-                List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskId).orderByTaskCreateTime().desc().list();
+                List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getProcessInstanceId()).orderByTaskCreateTime().desc().list();
                 tWorkDetail.setOperateAction("提交");
                 tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
                 workDetailService.insert(tWorkDetail);
