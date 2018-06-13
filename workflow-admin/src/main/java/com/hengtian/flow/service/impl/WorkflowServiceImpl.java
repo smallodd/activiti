@@ -420,6 +420,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Object approveTask(Task task, TaskParam taskParam){
+        log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         if(StringUtils.isBlank(taskParam.getAssignee())){
             result.setMsg("审批人不合法");
@@ -427,9 +428,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             result.setSuccess(false);
             return result;
         }
-
-        log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
-
 
         result.setCode(Constant.SUCCESS);
 
@@ -488,7 +486,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         identityService.setAuthenticatedUserId(taskParam.getAssignee());
         taskService.addComment(taskParam.getTaskId(), task.getProcessInstanceId(),taskParam.getPass()+"", taskParam.getComment());
         taskService.setVariables(task.getId(), map);
-        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
         //设置操作的明细备注
         TWorkDetail tWorkDetail = new TWorkDetail();
         tWorkDetail.setTaskId(task.getId());
@@ -503,6 +501,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
         workDetailService.insert(tWorkDetail);
+
+        long currentTaskCount = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).count();
 
         if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
             //会签,表达式
@@ -640,31 +640,33 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(CollectionUtils.isEmpty(resultList)){
             finishProcessInstance(task.getProcessInstanceId(), ProcessStatusEnum.FINISHED_Y.status);
         }else{
-            //设置审批人处理逻辑
-            if (!Boolean.valueOf(map.get("customApprover").toString())) {
-                //是否需要手动设置审批人
-                boolean needSetNext = false;
-                if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext())){
-                    //需手动设置审批人
-                    needSetNext = true;
-                    EntityWrapper<AssigneeTemp> _wrapper = new EntityWrapper<>();
-                    _wrapper.eq("proc_inst_id", task.getProcessInstanceId());
-                    _wrapper.eq("task_def_key_before",tUserTask.getTaskDefKey());
-                    AssigneeTemp assigneeTemp = new AssigneeTemp();
-                    assigneeTemp.setDeleteFlag(1);
-                    assigneeTempService.update(assigneeTemp, _wrapper);
-                }
+            if(currentTaskCount <= 1){
+                //设置审批人处理逻辑
+                if (!Boolean.valueOf(map.get("customApprover").toString())) {
+                    //是否需要手动设置审批人
+                    boolean needSetNext = false;
+                    if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext())){
+                        //需手动设置审批人
+                        needSetNext = true;
+                        EntityWrapper<AssigneeTemp> _wrapper = new EntityWrapper<>();
+                        _wrapper.eq("proc_inst_id", task.getProcessInstanceId());
+                        _wrapper.eq("task_def_key_before",tUserTask.getTaskDefKey());
+                        AssigneeTemp assigneeTemp = new AssigneeTemp();
+                        assigneeTemp.setDeleteFlag(1);
+                        assigneeTempService.update(assigneeTemp, _wrapper);
+                    }
 
-                EntityWrapper tUserWrapper;
-                TUserTask ut;
-                for (Task t : resultList) {
-                    tUserWrapper = new EntityWrapper();
-                    tUserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", t.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
-                    //查询当前任务节点信息
-                    ut = tUserTaskService.selectOne(tUserWrapper);
-                    boolean flag = setAssignee(t, ut, needSetNext, assigneeMap.get(t.getTaskDefinitionKey()));
-                    if(!flag){
-                        throw new WorkFlowException("设置审批人异常");
+                    EntityWrapper tUserWrapper;
+                    TUserTask ut;
+                    for (Task t : resultList) {
+                        tUserWrapper = new EntityWrapper();
+                        tUserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", t.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
+                        //查询当前任务节点信息
+                        ut = tUserTaskService.selectOne(tUserWrapper);
+                        boolean flag = setAssignee(t, ut, needSetNext, assigneeMap.get(t.getTaskDefinitionKey()));
+                        if(!flag){
+                            throw new WorkFlowException("设置审批人异常");
+                        }
                     }
                 }
             }
