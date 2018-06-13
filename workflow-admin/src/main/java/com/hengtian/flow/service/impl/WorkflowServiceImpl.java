@@ -225,6 +225,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
                 workDetailService.insert(tWorkDetail);
             } else {
+                for (int i = 0; i < taskList.size(); i++) {
+                    taskId+=taskList.get(0).getId();
+                }
                 log.info("业务平台设置审批人");
 
                 result.setSuccess(true);
@@ -500,7 +503,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(task.getId()).orderByTaskCreateTime().desc().list();
 
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
-        workDetailService.insert(tWorkDetail);
+
 
         long currentTaskCount = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).count();
 

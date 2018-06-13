@@ -19,6 +19,7 @@ import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerato
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.ProcessInstanceResult;
 import com.hengtian.flow.model.RuProcinst;
+import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.TaskNodeVo;
 import com.rbac.entity.RbacRole;
@@ -87,6 +88,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     private RuntimeService runtimeService;
     @Autowired
     private RuProcinstService ruProcinstService;
+    @Autowired
+    TUserTaskService tUserTaskService;
 
     /**
      * 获取我发起的流程
@@ -650,5 +653,37 @@ public class WorkflowQueryController extends WorkflowBaseController {
        Comment comment=  workflowService.getComments(taskId,userId);
 
        return renderSuccess(comment);
+    }
+    @ResponseBody
+    @SysLog("获取最后审批人")
+    @ApiOperation(httpMethod = "POST", value = "获取最后审批人")
+    @RequestMapping(value = "/rest/getLastApprover", method = RequestMethod.POST)
+    public Object getLastApprover(String processInstanceId){
+        List <HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().desc().list();
+
+        List<Task> taskList=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        JSONObject jsonObject=new JSONObject();
+        jsonObject.put("createTime",list.get(list.size()-1).getStartTime());
+        if(taskList==null||taskList.size()==0){
+            jsonObject.put("lastApprover",list.get(0).getAssignee());
+            jsonObject.put("complete",1);
+            jsonObject.put("taskId",list.get(0).getId());
+        }else{
+            ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+            String assigen="";
+            for(Task task:taskList){
+                EntityWrapper entityWrapper=new EntityWrapper();
+                entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey());
+                TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
+                assigen+=tUserTask.getCandidateIds()+",";
+
+            }
+            jsonObject.put("lastApprover",assigen);
+            jsonObject.put("complete",0);
+
+        }
+        Map map=workflowService.getVaraibles(processInstanceId);
+        map.putAll(jsonObject);
+        return renderSuccess(map);
     }
 }
