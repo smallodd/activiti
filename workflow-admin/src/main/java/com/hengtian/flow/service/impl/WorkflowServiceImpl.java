@@ -502,7 +502,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(task.getId()).orderByTaskCreateTime().desc().list();
 
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
-        workDetailService.insert(tWorkDetail);
+
 
         if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
             //会签,表达式
