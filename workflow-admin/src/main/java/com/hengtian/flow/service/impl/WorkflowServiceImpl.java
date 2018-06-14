@@ -547,7 +547,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTask.setStatus(TaskStatusEnum.AGREE.status);
                     tRuTaskService.update(tRuTask, wrapper_);
 
-                    result = new Result(true,Constant.SUCCESS, "任务已通过！");
+                    result = new Result(true,Constant.SUCCESS, "通过成功");
                     tWorkDetail.setOperateAction("审批同意");
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务，审批意见是【" + taskParam.getComment() + "】");
                     workDetailService.insert(tWorkDetail);
@@ -614,7 +614,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuWrapper.where("task_id={0}", task.getId()).andNew("assignee={0}", ruTask.getAssignee());
                 tRuTaskService.update(tRuTask, tRuWrapper);
 
-                result.setMsg("任务已经拒绝！");
+                result.setMsg("拒绝成功");
                 result.setCode(Constant.SUCCESS);
                 result.setSuccess(true);
 
