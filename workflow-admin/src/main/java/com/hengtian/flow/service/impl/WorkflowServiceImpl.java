@@ -329,7 +329,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 TRuTask tRuTask = new TRuTask();
                 tRuTask.setTaskId(task.getId());
                 tRuTask.setAssignee(assignee);
-                if(assigneeArray==null) {
+                if(assigneeNameArray==null) {
                     tRuTask.setAssigneeName("");
                 }else{
                     tRuTask.setAssigneeName(assigneeNameArray[i]);
