@@ -604,7 +604,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     }
 
     /**
-     * 下步节点审批人
+     * 运行中的任务获取下步节点审批人
      * @param userId 用户ID
      * @param taskId 任务ID
      * @return
@@ -622,7 +622,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if(task == null){
-            return renderError("taskId无效");
+            return renderError("taskId无效或任务已完成");
         }
 
         if(!validateTaskAssignee(task, userId)){
