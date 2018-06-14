@@ -124,15 +124,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result startProcessInstance(ProcessParam processParam) {
+        log.info("创建任务开始入参：{}",JSONObject.toJSONString(processParam));
         Result result = new Result();
         String jsonVariables = processParam.getJsonVariables();
         Map<String, Object> variables = new HashMap<>();
         if (StringUtils.isNotBlank(jsonVariables)) {
             variables = JSON.parseObject(jsonVariables);
         }
-
+        //查询业务系统与模型之间是否存在关联关系
         EntityWrapper<AppModel> wrapperApp = new EntityWrapper();
-
         wrapperApp.where("app_key={0}", processParam.getAppKey()).andNew("model_key={0}", processParam.getProcessDefinitionKey());
         AppModel appModelResult = appModelService.selectOne(wrapperApp);
         //系统与流程定义之间没有配置关系
@@ -155,8 +155,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             result.setCode(Constant.BUSSINESSKEY_EXIST);
             return result;
         } else {
+            //查询流程定义对象
             ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(processParam.getProcessDefinitionKey()).latestVersion().singleResult();
             if(!processParam.isCustomApprover()){
+
                     EntityWrapper entityWrapper = new EntityWrapper();
                     entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("version_={0}", processDefinition.getVersion()).isNull("candidate_ids");
                     //查询当前任务任务节点信息
@@ -165,6 +167,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     query.setVersion(processDefinition.getVersion());
                     long count = tUserTaskService.selectNotSetAssign(query);
                     if(count>0){
+                        log.info("{}有存在未设置审批人的节点",processParam.getProcessDefinitionKey());
                         result.setCode(Constant.TASK_NOT_SET_APPROVER);
                         result.setMsg("节点有存在未设置审批人");
                         result.setSuccess(false);
@@ -180,7 +183,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
             //给对应实例生成标题
             runtimeService.setProcessInstanceName(processInstance.getId(), processParam.getTitle());
-
+            log.info("生成任务成功,生成任务procId为{}",processInstance.getProcessInstanceId());
 
             //查询创建完任务之后生成的任务信息
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
@@ -246,7 +249,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 workDetailService.insert(tWorkDetail);
             }
 
-            //添加应用-流程实例对应关系
+            //添加应用-流程实例对应关系 t_ru_procinst表
             String creatorDeptName = "";
             String creatorDeptCode = "";
             String userName = "";
@@ -263,6 +266,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName,processDefinition.getName(), currentTaskKey);
             ruProcinstService.insert(ruProcinst);
         }
+        log.info("生成任务接口调用成功，出参：{}",JSONObject.toJSONString(result));
         return result;
     }
 

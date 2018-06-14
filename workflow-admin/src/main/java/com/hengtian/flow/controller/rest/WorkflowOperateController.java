@@ -74,7 +74,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @SysLog("接口创建任务操作")
     @ApiOperation(httpMethod = "POST", value = "生成任务接口")
     public Result startProcessInstance(@ApiParam(value = "创建任务必传信息", name = "processParam", required = true) @ModelAttribute ProcessParam processParam) {
-        logger.info("接口创建任务开始，请求参数{}", JSONObject.toJSONString(processParam));
+        logger.info("接口创建任务开始,方法【startProcessInstance】，请求参数{}", JSONObject.toJSONString(processParam));
 
         //校验参数是否合法
         Result result = processParam.validate();
@@ -106,7 +106,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @SysLog("设置审批人接口")
     @ApiOperation(httpMethod = "POST", value = "设置审批人接口")
     public Object setAssignee(@ApiParam(value = "设置审批人信息", name = "taskParam", required = true) @ModelAttribute TaskParam taskParam) {
-        logger.info("设置审批人接口调用，参数{}", JSONObject.toJSONString(taskParam));
+        logger.info("设置审批人接口调用,方法【setAssignee】，参数{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         if (StringUtils.isBlank(taskParam.getAssignee()) || StringUtils.isBlank(taskParam.getTaskId())) {
             logger.info("参数不合法");
@@ -170,7 +170,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @SysLog("审批任务接口")
     @ApiOperation(httpMethod = "POST", value = "审批任务接口")
     public Object approveTask(@ModelAttribute("taskParam") @Valid TaskParam taskParam) {
-
+        logger.info("任务审批方法开始，方法【approveTask】，taskParam：{}",JSONObject.toJSONString(taskParam));
         Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
         if (task == null) {
             return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
@@ -184,8 +184,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
             return renderError("您的问询信息还未得到响应，不能审批通过", Constant.ASK_TASK_EXIT);
         }
         //查询当前任务节点审批人是不是当前人
-
-        return workflowService.approveTask(task, taskParam);
+        Object result=workflowService.approveTask(task, taskParam);
+        logger.info("任务审批方法执行结束出参：{}",JSONObject.toJSONString(result));
+        return result;
     }
 
     /**
@@ -241,6 +242,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "获取任务节点信息")
     public Object taskNodeDetail(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId) {
+        logger.info("=================任务节点信息获取开始，方法【taskNodeDetail】=====================");
+        logger.info("=================入参taskId:{}=====================",taskId);
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
             return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
@@ -261,7 +264,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "获取任务自定义信息或流程实例自定义信息")
     public Object getVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId, @ApiParam(value = "类型是流程实例的还是任务的", name = "taskId", required = true, example = "1是流程实例，2是任务的") @RequestParam("type") Integer type) {
-
+        logger.info("获取任务自定义信息或流程实例自定义信息开始，方法【getVariables】，入参taskId:{},type:{}",taskId,type);
         if (type == null || (type != 1 && type != 2)) {
             return renderError("参数不正确，类型不存在！", Constant.PARAM_ERROR);
         }
@@ -275,7 +278,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         } else {
             map = taskService.getVariablesLocal(taskId);
         }
-
+        logger.info("获取任务自定义信息或流程实例自定义信息开始，出参map:{}",map);
         return resultSuccess("操作成功", map);
     }
 
@@ -290,6 +293,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "设置自定义参数")
     public Object setVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId, @ApiParam(value = "自定义参数的json串", name = "jsonMap", required = true) @RequestParam("jsonMap") String jsonMap, @ApiParam(value = "类型", name = "type", required = true) @RequestParam("type") Integer type) {
+        logger.info("设置自定义参数开始，方法【setVariables】：入参taskId:{},jsonMap:{},type:{}",taskId,jsonMap,type);
         if (StringUtils.isBlank(jsonMap) || type == null || (type != 1 && type != 2)) {
             return renderError("参数错误", Constant.PARAM_ERROR);
         }
@@ -303,6 +307,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         } catch (Exception e) {
             return renderError("jsonMap参数错误！", Constant.PARAM_ERROR);
         }
+        logger.info("设置自定义参数完成");
         return renderSuccess();
     }
 
@@ -311,7 +316,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "获取所有节点")
     public Object getNextTaskNode(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId) {
-
+        logger.info("获取下一个节点信息开始，方法【getNextTaskNode】，入参：taskId:{}",taskId);
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
 
         if (task == null) {
@@ -340,6 +345,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             taskNodeResults.add(taskNodeResult);
 
         }
+        logger.info("获取下一个节点信息结束，出参：{}",JSONObject.toJSONString(taskNodeResults));
         return resultSuccess("成功", taskNodeResults);
     }
 
@@ -359,12 +365,15 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object jumpTask(@ApiParam(name = "taskId", required = true, value = "任务ID") @RequestParam String taskId,
                            @ApiParam(name = "userId", required = true, value = "任务原所属用户ID") @RequestParam String userId,
                            @ApiParam(name = "taskDefinitionKey", required = true, value = "任务节点KEY") @RequestParam String taskDefinitionKey) {
+        logger.info("任务跳转方法执行开始，方法名【jumpTask】,入参：taskId:{},userId:{},taskDefinitionKey:{}",taskId,userId,taskDefinitionKey);
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.JUMP.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setTaskId(taskId);
         taskActionParam.setTargetTaskDefKey(taskDefinitionKey);
-        return taskAction(taskActionParam);
+        Object result=taskAction(taskActionParam);
+        logger.info("任务跳转方法执行完成，出参：{}",JSONObject.toJSONString(result));
+        return result;
     }
 
     /**
@@ -473,6 +482,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @SysLog("任务操作接口")
     @ApiOperation(httpMethod = "POST", value = "任务操作接口")
     public Object taskAction(@ApiParam(name = "taskActionParam", required = true, value = "操作类型参数") @ModelAttribute TaskActionParam taskActionParam) {
+        logger.info("任务操作接口开始调用，方法名【taskAction】，入参{}",JSONObject.toJSONString(taskActionParam));
         String actionType = taskActionParam.getActionType();
         if (StringUtils.isBlank(actionType)) {
             return renderError("操作类型不能为空");
@@ -594,6 +604,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @PostMapping(value = "askTask")
     @ResponseBody
     public Object askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey,@RequestParam String askedUserId,@RequestParam(required = false) String userId) {
+        logger.info("问询接口开始执行，方法【askTask】，入参processInstanceId{},currentTaskDefKey{},commentResult{},targetTaskDefKey{},askedUserId{},userId{}",processInstanceId,currentTaskDefKey,commentResult,targetTaskDefKey,askedUserId,userId);
         try {
             if(com.hengtian.common.utils.StringUtils.isBlank(userId)&&getShiroUser()==null){
                 return renderError("请传问询人员工号");
@@ -634,6 +645,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "askConfirm", method = RequestMethod.POST)
     @ResponseBody
     public Result askConfirm(@RequestParam String askId,@RequestParam String userId,@RequestParam String commentResult ) {
+        logger.info("确认问询开始，方法【askConfirm】，入参：askId:{},userId:{},commentResult{}",askId,userId,commentResult);
         try {
             return workflowService.taskConfirmEnquire(userId, askId,commentResult);
         } catch (Exception e) {

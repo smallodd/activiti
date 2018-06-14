@@ -516,6 +516,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "待处理任务总数")
     @RequestMapping(value = "/rest/task/active/count", method = RequestMethod.POST)
     public Object activeTaskCount(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
+        logger.info("待处理任务总数查询开始，方法【activeTaskCount】，入参：{}",JSONObject.toJSONString(taskQueryParam));
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
@@ -535,6 +536,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             paraMap.put("roleId", roleId);
         }
         Long count = workflowService.activeTaskCount(paraMap);
+        logger.info("查询待办任务总数结束，出参：{}",count);
         return renderSuccess(count);
     }
 
@@ -552,6 +554,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object checkUserApproved(
                                     @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam("businessKey")String businessKey,
                                     @ApiParam(value = "系统键值", name = "appKey",  required = true) @RequestParam("appKey")Integer appKey){
+
         Result result=new Result();
         if(StringUtils.isBlank(businessKey)||appKey==null){
 
