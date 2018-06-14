@@ -930,9 +930,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         EntityWrapper wrapper=new EntityWrapper();
         wrapper.where("app_key={0}",appkey).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
-        RuProcinst ruProcinst=ruProcinstService.selectById(wrapper);
+        RuProcinst ruProcinst=ruProcinstService.selectOne(wrapper);
         if(ruProcinst==null){
-          return   new Result(true,Constant.FAIL,"跳转失败，t_ru_procinst表中不存在流程实例id"+hisTask.getProcessInstanceId());
+          return new Result(true,Constant.FAIL,"跳转失败，t_ru_procinst表中不存在流程实例id"+hisTask.getProcessInstanceId());
         }
         RuProcinst ruPr=new RuProcinst();
 
@@ -1198,7 +1198,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     }
 
     /**
-     * 任务撤回
+     * 任务撤回-任务审批结束后
      *
      * @param userId 用户ID
      * @param taskId 任务ID
@@ -1208,6 +1208,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public Result taskRevoke(String userId, String taskId) {
+        log.info("任务撤回");
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
         if(hisTask == null){
             return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
@@ -1215,21 +1216,28 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(!hisTask.getAssignee().contains(userId)){
             return new Result(false,ResultEnum.TASK_ASSIGNEE_ILLEGAL.code,ResultEnum.TASK_ASSIGNEE_ILLEGAL.msg);
         }
-        List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
-        if(CollectionUtils.isEmpty(nextTaskDefKeys)){
-            return new Result(false, ResultEnum.NEXT_NODE_NOT_EXIST.code, ResultEnum.NEXT_NODE_NOT_EXIST.msg);
-        }
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
-        if(CollectionUtils.isEmpty(taskList)){
-            return new Result(false, ResultEnum.TASK_ROLLBACK_NOT_EXIST.code, ResultEnum.TASK_ROLLBACK_NOT_EXIST.msg);
-        }
-        for(Task t : taskList){
-            if(nextTaskDefKeys.contains(t.getTaskDefinitionKey())){
-                Result result = taskJump(userId, taskId, hisTask.getTaskDefinitionKey());
-                if(result.isSuccess()){
-                    result.setMsg("任务【"+taskId+"】撤回成功");
+
+        if(hisTask.getEndTime() == null){
+            //当前任务未完成
+
+        }else {
+            //当前任务已未完成
+            List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
+            if(CollectionUtils.isEmpty(nextTaskDefKeys)){
+                return new Result(false, ResultEnum.NEXT_NODE_NOT_EXIST.code, ResultEnum.NEXT_NODE_NOT_EXIST.msg);
+            }
+            List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
+            if(CollectionUtils.isEmpty(taskList)){
+                return new Result(false, ResultEnum.TASK_ROLLBACK_NOT_EXIST.code, ResultEnum.TASK_ROLLBACK_NOT_EXIST.msg);
+            }
+            for(Task t : taskList){
+                if(nextTaskDefKeys.contains(t.getTaskDefinitionKey())){
+                    Result result = taskJump(userId, taskId, hisTask.getTaskDefinitionKey());
+                    if(result.isSuccess()){
+                        result.setMsg("任务【"+taskId+"】撤回成功");
+                    }
+                    return result;
                 }
-                return result;
             }
         }
 

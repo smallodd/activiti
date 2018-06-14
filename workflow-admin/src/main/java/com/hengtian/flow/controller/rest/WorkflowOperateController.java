@@ -3,6 +3,7 @@ package com.hengtian.flow.controller.rest;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
+import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.enums.TaskActionEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.ProcessParam;
@@ -15,6 +16,8 @@ import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
+import com.rbac.entity.RbacUser;
+import com.rbac.service.PrivilegeService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.activiti.engine.HistoryService;
@@ -63,6 +66,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     RuntimeService runtimeService;
     @Autowired
     TWorkDetailService tWorkDetailService;
+    @Autowired
+    PrivilegeService privilegeService;
     /**
      * 任务创建接口
      *
@@ -567,6 +572,12 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     for(TRuTask rt : tRuTasks){
                         if(StringUtils.isNotBlank(rt.getAssigneeReal())){
                             assigneeList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
+                        }else if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
+                            Integer appKey = runtimeService.getVariable(taskActionParam.getProcessInstanceId(), "appKey", Integer.class);
+                            List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(rt.getAssignee()));
+                            for(RbacUser u : users){
+                                assigneeList.add(u.getCode());
+                            }
                         }
                     }
                     if(!assigneeList.contains(taskActionParam.getUserId())){
