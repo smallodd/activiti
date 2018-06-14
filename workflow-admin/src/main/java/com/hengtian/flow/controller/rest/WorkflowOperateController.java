@@ -575,7 +575,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 }
             }
         }else{
-            return new Result(false,Constant.ASK_TASK_EXIT,"无效的流程实例ID");
+            return new Result(false,Constant.ASK_TASK_EXIT,"流程实例ID无效或没有可撤回的任务");
         }
 
         return new Result(true,Constant.SUCCESS,"用户【"+taskActionParam.getUserId()+"】"+TaskActionEnum.getDesc(taskActionParam.getActionType())+"成功");
