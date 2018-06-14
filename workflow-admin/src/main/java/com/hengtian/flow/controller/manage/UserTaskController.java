@@ -73,6 +73,8 @@ public class UserTaskController extends BaseController{
 				tUserTask.setTaskDefKey(ut.getId());
 				tUserTask.setTaskName(ut.getName()==null?"":ut.getName());
 				tUserTask.setVersion(pd.getVersion());
+				tUserTask.setTaskType(TaskTypeEnum.ASSIGNEE.getValue());
+				tUserTask.setAssignType(AssignTypeEnum.PERSON.getCode());
 				tUserTaskList.add(tUserTask);
 			}
 
