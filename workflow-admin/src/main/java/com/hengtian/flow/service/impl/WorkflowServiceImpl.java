@@ -1365,12 +1365,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
             t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
-            String taskState = t.getTaskState();
-            if("2".equals(taskState)){
-                t.setTaskState("问询中");
-            }else {
-                t.setTaskState("审批中");
-            }
         }
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
