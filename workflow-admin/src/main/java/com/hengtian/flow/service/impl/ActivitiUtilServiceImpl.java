@@ -28,6 +28,7 @@ import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.engine.*;
 import org.activiti.engine.form.TaskFormData;
+import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
@@ -107,12 +108,16 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     public TaskNodeResult setButtons(TaskNodeResult taskNodeResult) {
         String id = taskNodeResult.getProcessInstanceId();
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
+        //ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(id).singleResult();
 
-        List<TButton> tButtons = tTaskButtonService.selectTaskButtons(processInstance.getProcessDefinitionKey(), taskNodeResult.getTaskDefinedKey());
-        TaskFormData taskFormData=formService.getTaskFormData(taskNodeResult.getTaskId());
-        if(taskFormData!=null){
-            taskNodeResult.setFormKey(taskFormData.getFormKey());
+        List<TButton> tButtons = tTaskButtonService.selectTaskButtons(historicProcessInstance.getProcessDefinitionKey(), taskNodeResult.getTaskDefinedKey());
+        //TaskFormData taskFormData=formService.getTaskFormData(taskNodeResult.getTaskId());
+        HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskNodeResult.getTaskId()).singleResult();
+
+        if(historicTaskInstance!=null){
+            //taskNodeResult.setFormKey(taskFormData.getFormKey());
+            taskNodeResult.setFormKey(historicTaskInstance.getFormKey());
         }
         taskNodeResult.setButtonKeys(tButtons);
 
@@ -1449,9 +1454,9 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     }
 
     protected Integer getVersionByProcessInstanceId(String processInstanceId){
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         //查询流程定义信息
-        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(processInstance.getProcessDefinitionId());
+        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(historicProcessInstance.getProcessDefinitionId());
         return processDefinition==null?null:processDefinition.getVersion();
     }
 }

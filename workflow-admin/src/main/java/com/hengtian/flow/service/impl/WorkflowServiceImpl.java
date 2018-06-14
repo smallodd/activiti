@@ -43,7 +43,6 @@ import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
-import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
@@ -51,10 +50,7 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Comment;
-import org.activiti.engine.task.NativeTaskQuery;
-import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
+import org.activiti.engine.task.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -1742,10 +1738,20 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public Result taskDetail(String userId, String taskId){
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(task == null){
+//        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().taskId(taskId).orderByTaskCreateTime().desc().list();
+        if(list == null||list.size()==0){
             return new Result("任务ID【"+taskId+"】对应的任务不能存在");
         }
+
+        HistoricTaskInstance historicTaskInstance=list.get(0);
+        TaskEntity task= (TaskEntity) taskService.newTask(historicTaskInstance.getId());
+        task.setTaskDefinitionKey(historicTaskInstance.getTaskDefinitionKey());
+        task.setProcessInstanceId(historicTaskInstance.getProcessInstanceId());
+
+
+        task.setFormKey(historicTaskInstance.getFormKey());
+        task.setName(historicTaskInstance.getName());
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.eq("task_id", taskId);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
@@ -1753,7 +1759,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(validateTaskAssignee(task, userId,tRuTasks) == null){
             return new Result("用户【"+userId+"】无权查看任务【"+taskId+"】");
         }
-
         Result result = new Result();
         result.setSuccess(true);
         result.setCode(Constant.SUCCESS);
@@ -1767,7 +1772,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/6/6 19:14
      */
     @Override
-    public List<TaskNodeVo> getNextAssigneeWhenRoleApprove(Task task){
+    public List<TaskNodeVo> getNextAssigneeWhenRoleApprove(TaskInfo task){
         List<TaskNodeVo> result = Lists.newArrayList();
 
         Integer version = getVersion(task.getProcessDefinitionId());

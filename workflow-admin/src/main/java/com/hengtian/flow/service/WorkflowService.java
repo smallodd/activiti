@@ -13,6 +13,7 @@ import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.vo.TaskNodeVo;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -306,7 +307,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/6/6 19:14
      */
-    List<TaskNodeVo> getNextAssigneeWhenRoleApprove(Task task);
+    List<TaskNodeVo> getNextAssigneeWhenRoleApprove(TaskInfo task);
 
     Map getVaraibles(String processInstanceId);
 

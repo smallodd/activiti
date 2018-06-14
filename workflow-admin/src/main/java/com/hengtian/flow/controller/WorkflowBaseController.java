@@ -32,6 +32,7 @@ import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -296,7 +297,7 @@ public class WorkflowBaseController extends BaseRestController {
      * @param assignee
      * @return
      */
-    public boolean validateTaskAssignee(Task task, String assignee){
+    public boolean validateTaskAssignee(TaskInfo task, String assignee){
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.where("task_id={0}", task.getId());
 
