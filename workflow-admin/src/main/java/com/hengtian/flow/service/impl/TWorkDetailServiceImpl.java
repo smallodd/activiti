@@ -9,6 +9,8 @@ import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.dao.TWorkDetailDao;
 import com.hengtian.flow.model.TWorkDetail;
 import com.hengtian.flow.service.TWorkDetailService;
+import com.user.entity.emp.Emp;
+import com.user.service.emp.EmpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ import java.util.List;
 public class TWorkDetailServiceImpl extends ServiceImpl<TWorkDetailDao, TWorkDetail> implements TWorkDetailService {
     @Autowired
     private TWorkDetailDao tWorkDetailDao;
+    @Autowired
+    EmpService empService;
 
     /**
      * 操作流程详细信息
@@ -42,7 +46,13 @@ public class TWorkDetailServiceImpl extends ServiceImpl<TWorkDetailDao, TWorkDet
         if(StringUtils.isNotBlank(businessKey)){
             wrapper.where("business_key={0}",businessKey);
         }
-        List list=tWorkDetailDao.selectList(wrapper);
+        List<TWorkDetail> list=tWorkDetailDao.selectList(wrapper);
+        for(TWorkDetail tWorkDetail: list){
+            Emp emp=empService.selectByCode(tWorkDetail.getOperator());
+            if(emp!=null){
+                tWorkDetail.setOperator(emp.getName());
+            }
+        }
         return list;
     }
 }
