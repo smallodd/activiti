@@ -542,7 +542,6 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 查询用户某个任务是否审批过
-     * @param userCode  用户主键
      * @param businessKey  业务主键
      * @param appKey   appKey
      * @return
@@ -639,7 +638,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "获取流程实例中自定义参数")
     @RequestMapping(value = "/rest/getVariables", method = RequestMethod.POST)
     public Object getVariables(String processId){
-        Map map=workflowService.getVaraibles(processId);
+        Map map=workflowService.getVariables(processId);
 
         return renderSuccess(map);
     }
@@ -681,7 +680,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             jsonObject.put("complete",0);
 
         }
-        Map map=workflowService.getVaraibles(processInstanceId);
+        Map map=workflowService.getVariables(processInstanceId);
         map.putAll(jsonObject);
         return renderSuccess(map);
     }

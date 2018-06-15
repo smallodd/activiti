@@ -1832,7 +1832,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     }
 
     @Override
-    public Map<String, Object> getVaraibles(String processInstanceId) {
+    public Map<String, Object> getVariables(String processInstanceId) {
         List<HistoricVariableInstance> list=historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
         Map<String,Object> map=new HashMap<>();
         for(HistoricVariableInstance historicVariableInstance:list){

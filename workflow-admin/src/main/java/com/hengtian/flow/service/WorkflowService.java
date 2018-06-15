@@ -309,7 +309,7 @@ public interface WorkflowService extends IService<TaskResult> {
      */
     List<TaskNodeVo> getNextAssigneeWhenRoleApprove(TaskInfo task);
 
-    Map getVaraibles(String processInstanceId);
+    Map getVariables(String processInstanceId);
 
     Comment  getComments(String taskId,String userId);
 }
