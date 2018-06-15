@@ -101,7 +101,7 @@
                 }
             } ] ],
             onLoadSuccess:function(data){
-              //  $('.task-easyui-linkbutton-answerComment').linkbutton({text:'回复详情'});
+                $('.task-easyui-linkbutton-answerComment').linkbutton({text:'回复详情'});
             },
             toolbar : '#taskToolbar'
         });
@@ -113,8 +113,8 @@
     function answerComment(askId) {
         parent.$.modalDialog({
             title : '回复详情',
-            width : 800,
-            height : 600,
+            width : 600,
+            height : 400,
             modal : true,
             href :  '${ctx}/ask/answer?askId='+askId
         });
