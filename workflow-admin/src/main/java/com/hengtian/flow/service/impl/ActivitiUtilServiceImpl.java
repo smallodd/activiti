@@ -1229,7 +1229,9 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             try {
                 JSONArray jsonArray = JSONArray.parseArray(assigneeNext);
                 assigneeTemps = validateSetNextAssignee(task, jsonArray, processInstanceId, currentAssignee, taskDefKeyBefore, version);
-                assigneeTempService.insertBatch(assigneeTemps);
+                if(CollectionUtils.isNotEmpty(assigneeTemps)){
+                    assigneeTempService.insertBatch(assigneeTemps);
+                }
             } catch (JSONException e) {
                 logger.error("下步审批人参数格式不正确，不是正确的JSON格式", e);
                 result.setSuccess(false);
