@@ -114,8 +114,8 @@
     function askComment(askId) {
         parent.$.modalDialog({
             title : '问询详情',
-            width : 800,
-            height : 600,
+            width : 600,
+            height : 400,
             modal : true,
             href :  '${ctx}/ask/detail?askId='+askId,
             buttons : [ {
