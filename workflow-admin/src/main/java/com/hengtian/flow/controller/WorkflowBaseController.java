@@ -19,6 +19,7 @@ import com.hengtian.flow.service.TUserTaskService;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.activiti.engine.FormService;
@@ -46,9 +47,9 @@ import java.util.*;
  * @author houjinrong@chtwm.com
  * date 2018/5/29 17:34
  */
+@Slf4j
 public class WorkflowBaseController extends BaseRestController {
 
-    Logger logger = Logger.getLogger(getClass());
 
     @Autowired
     private TaskService taskService;
@@ -106,20 +107,25 @@ public class WorkflowBaseController extends BaseRestController {
         return highFlows;
     }
 
+    protected Set<String> getAssigneeUserByTaskId(String taskId){
+        if(StringUtils.isBlank(taskId)){
+            log.info("参数错误：taskId为空");
+            return null;
+        }
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        return getAssigneeUserByTaskId(task);
+    }
+
     /**
      * 获取任务办理人
-     * @param taskId 任务ID
+     * @param task 任务
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/5/18 15:58
      */
-    protected Set<String> getAssigneeUserByTaskId(String taskId){
-        if(StringUtils.isBlank(taskId)){
-            return null;
-        }
-
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+    protected Set<String> getAssigneeUserByTaskId(TaskInfo task){
         if(task == null){
+            log.info("任务不存在");
             return null;
         }
 
@@ -141,7 +147,7 @@ public class WorkflowBaseController extends BaseRestController {
         Set<String> result = Sets.newHashSet();
 
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
-        wrapper.where("task_id={0}", taskId);
+        wrapper.where("task_id={0}", task.getId());
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
 
         if(tUserTask.getNeedSign() == 0 && AssignTypeEnum.ROLE.code.equals(tUserTask.getAssignType())){

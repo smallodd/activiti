@@ -306,7 +306,7 @@
             width: 300,
             height: 200,
             modal: true,
-            href: '${ctx}/activiti/taskJump?taskId=' + id,
+            href: '${ctx}/workflow/page/task/jump?taskId=' + id,
             buttons: [{
                 text: '确定',
                 handler: function () {

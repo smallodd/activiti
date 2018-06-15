@@ -30,6 +30,7 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
@@ -82,8 +83,6 @@ public class WorkflowQueryController extends WorkflowBaseController {
     private PrivilegeService privilegeService;
     @Autowired
     private RuntimeService runtimeService;
-    @Autowired
-    private RuProcinstService ruProcinstService;
     @Autowired
     TUserTaskService tUserTaskService;
 
@@ -349,6 +348,34 @@ public class WorkflowQueryController extends WorkflowBaseController {
         result.put("processInstanceId", processInstance.getProcessInstanceId());
         result.put("processDefinitionId", processInstance.getProcessDefinitionId());
         result.put("processDefinitionName", processInstance.getProcessDefinitionName());
+        return renderSuccess(result);
+    }
+
+    /**
+     * 流程实例详情
+     *
+     * @param appKey 应用系统key
+     * @param processDefinitionKey 流程定义主键
+     * @return
+     */
+    @ResponseBody
+    @SysLog("流程实例详情")
+    @ApiOperation(httpMethod = "POST", value = "流程实例详情")
+    @RequestMapping(value = "/rest/process/def/detail", method = RequestMethod.POST)
+    public Object processDefDetail(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
+                                   @ApiParam(value = "流程实例ID", name = "processDefinitionKey") @RequestParam String processDefinitionKey) {
+        logger.info("appKey{0} processDefinitionKey{1}", appKey, processDefinitionKey);
+        if(appKey == null){
+            return renderError("参数错误：appKey为空");
+        }
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(processDefinitionKey).latestVersion().singleResult();
+        if(processDefinition == null){
+            return renderError("没找到对应的流程定义");
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("processDefinitionId", processDefinition.getId());
+        result.put("processDefinitionName", processDefinition.getName());
         return renderSuccess(result);
     }
 

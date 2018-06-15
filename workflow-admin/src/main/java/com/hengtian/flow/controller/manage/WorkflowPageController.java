@@ -1,6 +1,7 @@
 package com.hengtian.flow.controller.manage;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.DateUtils;
 import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.controller.WorkflowBaseController;
@@ -8,10 +9,10 @@ import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.RuProcinstService;
 import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.CommentVo;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.UserService;
-import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.task.Comment;
@@ -22,12 +23,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 工作流程相关-页面
@@ -41,7 +44,7 @@ public class WorkflowPageController extends WorkflowBaseController{
     @Autowired
     private TRuTaskService tRuTaskService;
     @Autowired
-    private RepositoryService repositoryService;
+    private WorkflowService workflowService;
     @Autowired
     private RuProcinstService ruProcinstService;
     @Autowired
@@ -184,5 +187,23 @@ public class WorkflowPageController extends WorkflowBaseController{
     public String transferTaskPage(Model model,@PathVariable("taskId") String taskId){
         model.addAttribute("taskId", taskId);
         return "workflow/task/task_delegate";
+    }
+
+    /**
+     * 任务跳转页面
+     * @param taskId 任务ID
+     */
+    @GetMapping("/task/jump")
+    public String taskJump(Model model,@RequestParam("taskId") String taskId) {
+        Result result = workflowService.getBeforeNodes(taskId, getUserId(),true,false);
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task != null){
+            model.addAttribute("processInstanceId", task.getProcessInstanceId());
+        }
+        Set<String> assignee = getAssigneeUserByTaskId(task);
+        model.addAttribute("tasks", result.getObj());
+        model.addAttribute("assignee", assignee);
+        model.addAttribute("taskId",taskId);
+        return "workflow/task/task_jump";
     }
 }
