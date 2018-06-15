@@ -27,7 +27,7 @@
                 <tr height="30px">
                     <td>节点</td>
                     <td>
-                        <select name="taskDefinitionKey" id="taskDefinitionKey" class="easyui-combobox" data-options="width:230,height:29,panelHeight:'auto'">
+                        <select name="targetTaskDefKey" id="targetTaskDefKey" class="easyui-combobox" data-options="width:230,height:29,panelHeight:'auto'">
                             <c:forEach items="${tasks}" var="task">
                                 <option value="${task.taskDefinitionKey}">${task.taskName}</option>
                             </c:forEach>
