@@ -267,7 +267,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "getVariables", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "获取任务自定义信息或流程实例自定义信息")
-    public Object getVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId, @ApiParam(value = "类型是流程实例的还是任务的", name = "taskId", required = true, example = "1是流程实例，2是任务的") @RequestParam("type") Integer type) {
+    public Object getVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId,
+                               @ApiParam(value = "类型是流程实例的还是任务的", name = "type", required = true, example = "1是流程实例，2是任务的") @RequestParam("type") Integer type) {
         logger.info("获取任务自定义信息或流程实例自定义信息开始，方法【getVariables】，入参taskId:{},type:{}",taskId,type);
         if (type == null || (type != 1 && type != 2)) {
             return renderError("参数不正确，类型不存在！", Constant.PARAM_ERROR);
