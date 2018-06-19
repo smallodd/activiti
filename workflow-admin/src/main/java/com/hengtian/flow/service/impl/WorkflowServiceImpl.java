@@ -1136,7 +1136,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(!success){
             return new Result(false, Constant.FAIL,"问询后，修改任务状态为【问询中：1】失败");
         }
-
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult() ;
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号为【" + userId + "】的员工进行了【问询】操作");
+        tWorkDetail.setProcessInstanceId(processInstanceId);
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setTaskId(task.getId());
+        tWorkDetail.setAprroveInfo(commentResult);
+        List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(task.getId()).orderByTaskCreateTime().desc().list();
+        tWorkDetail.setOperateAction("问询");
+        tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
+        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
+        workDetailService.insert(tWorkDetail);
         return new Result(true,Constant.SUCCESS, "问询成功");
     }
 
@@ -1162,7 +1174,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.error("问询不存在或状态为已确认 askId:{}", askId);
             return new Result(false,Constant.FAIL, "问询确认失败");
         }
-        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).list();
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).orderByTaskCreateTime().desc().list();
         if (CollectionUtils.isEmpty(list)) {
             log.error("确认问询的任务不存在 processInstanceId:{}", askId);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
@@ -1184,6 +1196,20 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(!success){
             return new Result(false, Constant.FAIL,"问询后，修改任务状态为【问询中：1】失败");
         }
+
+        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(tAskTask.getProcInstId()).singleResult() ;
+        TWorkDetail tWorkDetail = new TWorkDetail();
+        tWorkDetail.setCreateTime(new Date());
+        tWorkDetail.setDetail("工号为【" + userId + "】的员工进行了【问询】操作");
+        tWorkDetail.setProcessInstanceId(tAskTask.getProcInstId());
+        tWorkDetail.setOperator(userId);
+        tWorkDetail.setTaskId(list.get(0).getId());
+        tWorkDetail.setAprroveInfo(answerComment);
+
+        tWorkDetail.setOperateAction("确认问询");
+        tWorkDetail.setOperTaskKey(list.get(0).getName());
+        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
+        workDetailService.insert(tWorkDetail);
         return new Result(true, Constant.SUCCESS,"问询确认成功");
     }
 
