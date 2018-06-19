@@ -1082,13 +1082,20 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.error("问询的任务不存在 processInstanceId:{},taskDefinitionKey:{}", processInstanceId, currentTaskDefKey);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-
         //校验是否是上级节点
         List<String> parentNodes = getBeforeTaskDefinitionKeys(task, true);
         if (!parentNodes.contains(targetTaskDefKey)) {
             return new Result(false,Constant.FAIL, "无权问询该节点");
         }
-
+        List<HistoricTaskInstance> taskInstanceList=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(targetTaskDefKey).orderByTaskCreateTime().desc().list();
+        if(taskInstanceList==null||taskInstanceList.size()==0){
+            return new Result(false,Constant.FAIL, "该任务不存在或该节点不存在");
+        }else{
+            HistoricTaskInstance historicTaskInstance=taskInstanceList.get(0);
+            if(historicTaskInstance.getAssignee().contains(askedUserId)){
+                return new Result(false,Constant.FAIL, "被问询节点该任务没有被用户"+askedUserId+"审批");
+            }
+        }
         //校验是否已有问询
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("proc_inst_id={0}", processInstanceId)

@@ -91,12 +91,12 @@ public class TaskQueryParam {
      * 分页-当前页
      */
     @ApiModelProperty(value = "当前页", required = true, example="1")
-    private int page;
+    private int page=1;
     /**
      * 分页-每页条数
      */
     @ApiModelProperty(value = "每页条数", required = true, example="10")
-    private int rows;
+    private int rows=10;
 
     public String getCreator() {
         return creator;

@@ -638,6 +638,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
             if(com.hengtian.common.utils.StringUtils.isBlank(userId)){
                 userId=getUserId();
             }
+            Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
+          boolean flag=  validateTaskAssignee(task,userId);
+          if(!flag){
+              return new  Result(false,Constant.FAIL, "当前用户没有操作此任务的权限");
+          }
             return workflowService.taskEnquire(userId, processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult,askedUserId);
         } catch (Exception e) {
             logger.error("", e);
