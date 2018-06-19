@@ -3,7 +3,9 @@ package com.hengtian.common.result;
 import java.util.List;
 
 /**
- * @description：TreeVO
+ * 树形结构实体类
+ * @author houjinrong@chtwm.com
+ * date 2018/5/25 9:16
  */
 public class Tree implements java.io.Serializable {
 

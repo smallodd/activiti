@@ -13,7 +13,7 @@
 			<input type="hidden" name="taskId" id="taskId" value="${taskId}"/>
 			 <select name="taskDefinitionKey" id="taskDefinitionKey" class="easyui-combobox" data-options="width:240,height:29,panelHeight:'auto'">
 				 <c:forEach items="${tasks}" var="task">
-					<option value="${task.taskDefKey}">${task.taskName}</option>
+					<option value="${task.taskDefinitionKey}">${task.taskName}</option>
 				 </c:forEach>
 			 </select>
 		</form>

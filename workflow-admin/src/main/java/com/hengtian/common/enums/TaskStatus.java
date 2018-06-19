@@ -1,5 +1,6 @@
 package com.hengtian.common.enums;
 
+@Deprecated
 public enum TaskStatus {
 
     //未完成

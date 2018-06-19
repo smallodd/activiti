@@ -9,15 +9,7 @@
        http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd"
        default-autowire="byName">
-    <task:annotation-driven />
-    <bean id="sqlService" class="com.hengtian.thirdparty.service.SqlService"/>
-    <bean id="myTask" class="com.hengtian.thirdparty.Scheduler"></bean>
-
-    <task:scheduled-tasks>
-        <!-- 这里表示的是每隔五秒执行一次 -->
-        <task:scheduled ref="myTask" method="executeUser" cron="0 */10 * * * ?" />
-        <task:scheduled ref="myTask" method="executeDepartment" cron="0 */10 * * * ?"/>
-    </task:scheduled-tasks>
+    <task:annotation-driven/>
 
     <!-- 自动扫描的包名 -->
 
@@ -33,7 +25,7 @@
     <context:annotation-config/>
     <context:component-scan base-package="com.hengtian"/>
 
-	<import resource="classpath*:activiti-context.xml"/>
+    <import resource="classpath*:activiti-context.xml"/>
     <import resource="classpath*:spring-mybatis.xml"/>
     <import resource="classpath*:spring-shiro.xml"/>
     <import resource="dubbo-server-consumer.xml"/>

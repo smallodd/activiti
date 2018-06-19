@@ -21,17 +21,17 @@ public class SwaggerConfig {
 	@Bean
     public Docket buildDocket(){
         return new Docket(DocumentationType.SWAGGER_2).apiInfo(buildApiInf()).select()
-		                .apis(RequestHandlerSelectors.basePackage("com.hengtian.thirdparty.controller"))
+		                .apis(RequestHandlerSelectors.basePackage("com.hengtian.flow.controller"))
 		                .paths(PathSelectors.any())
 		                .build();
     }
 
     private ApiInfo buildApiInf(){
         return new ApiInfoBuilder()
-                .title("魔盾钉钉开发接口文档")
-                .termsOfServiceUrl("http://localhost:8081")
+                .title("恒天工作流开发接口文档")
+                .termsOfServiceUrl("")
                 .description("接口文档")
-                .contact(new Contact("liujunyang", "http://localhost:8081", "2205511679@qq.com"))
+                .contact(new Contact("hengtian", "", "houjinrong@chtwm.com"))
                 .build();
 
     }

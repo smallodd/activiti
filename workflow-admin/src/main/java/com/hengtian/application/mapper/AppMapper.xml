@@ -15,20 +15,18 @@
 
     <select id="selectAppList" resultMap="appMap">
         SELECT
-        ta.id,ta.name,ta.key,ta.description,ta.create_time,ta.update_time,
-        cu.login_name AS creator,uu.login_name AS updater
+          ta.id,ta.name,ta.key,ta.description,ta.create_time,ta.update_time,
+          cu.login_name AS creator,uu.login_name AS updater
         FROM t_app ta
-        LEFT JOIN sys_user cu ON cu.id = ta.creator
-        LEFT JOIN sys_user uu ON uu.id = ta.updater
+          LEFT JOIN sys_user cu ON cu.id = ta.creator
+          LEFT JOIN sys_user uu ON uu.id = ta.updater
     </select>
     <select id="findModelKeyListByAppId" resultType="String" parameterType="String">
         SELECT
-        tam.model_key AS modelKey
+          tam.model_key AS modelKey
         FROM
-        t_app_model tam
-
-        LEFT JOIN   t_app ta ON ta.key = tam.app_key
+          t_app_model tam LEFT JOIN t_app ta ON ta.key = tam.app_key
         WHERE
-        ta.id = #{id}
+          ta.id = #{id}
     </select>
 </mapper>
