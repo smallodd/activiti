@@ -155,6 +155,12 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
+        if(StringUtils.isNotBlank(taskQueryParam.getTaskState())){
+            if(!(TaskStatusEnum.UNFINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState()) && !(TaskStatusEnum.UNFINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())){
+                logger.info("审批人状态不正确，重置为空");
+                taskQueryParam.setTaskState("");
+            }
+        }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
 
@@ -190,11 +196,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
                 taskQueryParam.setTaskState("");
             }
         }
-        if(taskQueryParam.getTaskState() == null){
-            taskQueryParam.setTaskState("");
-        }else if (ApproveResultEnum.AGREE.result.equals(taskQueryParam.getTaskState()) || ApproveResultEnum.REFUSE.result.equals(taskQueryParam.getTaskState())){
-            return renderError(ResultEnum.PARAM_ERROR.msg+"必须为_Y或_N或为''", ResultEnum.PARAM_ERROR.code);
-        }
+
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
         workflowService.closeTaskList(pageInfo);

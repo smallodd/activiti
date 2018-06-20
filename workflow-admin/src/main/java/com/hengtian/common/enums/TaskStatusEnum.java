@@ -31,6 +31,12 @@ public enum TaskStatusEnum {
     SKIP(3, "略过"),
 
     /**
+     * 待办任务查询状态
+     */
+    UNFINISHED_AGREE(1, "待审批"),
+    UNFINISHED_REFUSE(2, "问询中"),
+
+    /**
      * 已办任务查询状态
      */
     FINISHED_AGREE(1, "_Y"),
