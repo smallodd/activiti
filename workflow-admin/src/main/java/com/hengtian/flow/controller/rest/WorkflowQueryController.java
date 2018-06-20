@@ -679,6 +679,12 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
        return renderSuccess(comment);
     }
+
+    /**
+     * 仅仅营销活动调用此接口
+     * @param processInstanceId
+     * @return
+     */
     @ResponseBody
     @SysLog("获取最后审批人")
     @ApiOperation(httpMethod = "POST", value = "获取最后审批人")
@@ -690,7 +696,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         JSONObject jsonObject=new JSONObject();
         jsonObject.put("createTime",list.get(list.size()-1).getStartTime());
         if(taskList==null||taskList.size()==0){
-            jsonObject.put("lastApprover",list.get(0).getAssignee());
+            jsonObject.put("lastApprover",list.get(0).getAssignee().replace("_Y",""));
             jsonObject.put("complete",1);
             jsonObject.put("taskId",list.get(0).getId());
         }else{
@@ -703,7 +709,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
                 assigen+=tUserTask.getCandidateIds()+",";
 
             }
-            jsonObject.put("lastApprover",assigen);
+            jsonObject.put("lastApprover",assigen.replace("_Y",""));
             jsonObject.put("complete",0);
 
         }
