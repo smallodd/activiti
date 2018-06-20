@@ -25,6 +25,7 @@
         <result column="processDefinitionName" property="processDefinitionName" jdbcType="VARCHAR"/>
         <result column="processInstanceState" property="processInstanceState" jdbcType="VARCHAR"/>
         <result column="assignee" property="assignee" jdbcType="VARCHAR"/>
+        <result column="processDefinitionId" property="processDefinitionId" jdbcType="VARCHAR"/>
         <result column="taskDefinitionName" property="taskDefinitionName" jdbcType="VARCHAR"/>
         <result column="startTime" property="startTime" jdbcType="DATE"/>
         <result column="endTime" property="endTime" jdbcType="DATE"/>
@@ -209,7 +210,8 @@
             trp.PROC_DEF_NAME AS processDefinitionName,
             trp.APP_KEY AS appKey,
             ahp.START_TIME_ AS startTime,
-            ahp.END_TIME_ AS endTime
+            ahp.END_TIME_ AS endTime,
+            ahp.proc_def_id_ as processDefinitionId
         FROM
             act_hi_procinst AS ahp LEFT JOIN t_ru_procinst AS trp ON ahp.ID_ = trp.PROC_INST_ID
         WHERE
