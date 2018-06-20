@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ApproveResultEnum;
 import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.ProcessInstanceQueryParam;
@@ -178,6 +179,16 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object closeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
+        }
+        if(StringUtils.isNotBlank(taskQueryParam.getTaskState())){
+            if((TaskStatusEnum.FINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState())){
+                taskQueryParam.setTaskState(TaskStatusEnum.FINISHED_AGREE.desc);
+            }else if((TaskStatusEnum.FINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())){
+                taskQueryParam.setTaskState(TaskStatusEnum.FINISHED_REFUSE.desc);
+            }else{
+                logger.info("审批人状态不正确，重置为空");
+                taskQueryParam.setTaskState("");
+            }
         }
         if(taskQueryParam.getTaskState() == null){
             taskQueryParam.setTaskState("");
@@ -402,6 +413,10 @@ public class WorkflowQueryController extends WorkflowBaseController {
         try {
             //获取历史流程实例
             HistoricProcessInstance processInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+            if(processInstance == null){
+                logger.info("流程实例ID【"+processInstanceId+"】对应的流程实例不存在");
+                return;
+            }
             //获取流程图
             BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
             processEngineConfiguration = processEngine.getProcessEngineConfiguration();
