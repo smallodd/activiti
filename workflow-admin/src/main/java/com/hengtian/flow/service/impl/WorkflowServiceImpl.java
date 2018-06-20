@@ -199,6 +199,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                     //查询当前任务任务节点信息
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+                    if(tUserTask == null){
+                        throw new WorkFlowException("设置审批人异常：未设置审批人");
+                    }
                     //将流程创建人暂存到expr字段
                     tUserTask.setExpr(creator);
                     boolean flag = setAssignee(task, tUserTask);
