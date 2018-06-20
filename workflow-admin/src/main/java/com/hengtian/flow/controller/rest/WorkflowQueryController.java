@@ -37,6 +37,7 @@ import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.beanutils.BeanMap;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -702,7 +703,10 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/getLastApprover", method = RequestMethod.POST)
     public Object getLastApprover(String processInstanceId){
         List <HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().desc().list();
-
+        if(CollectionUtils.isEmpty(list)){
+            logger.info("历史纪录为空");
+            return renderError("历史纪录为空");
+        }
         List<Task> taskList=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         JSONObject jsonObject=new JSONObject();
         jsonObject.put("createTime",list.get(list.size()-1).getStartTime());
