@@ -127,7 +127,7 @@ public class ProcessParam {
         }else if(getAppKey()==null){
             result.setMsg("appKey系统定义key属于必传字段！");
         }else if(StringUtils.isBlank(getBusinessKey())){
-            result.setMsg("bussinessKey业务主键属于必传字段！");
+            result.setMsg("businessKey业务主键属于必传字段！");
         }else{
             result.setCode(Constant.SUCCESS);
             result.setSuccess(true);
