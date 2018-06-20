@@ -27,6 +27,12 @@ public class ProcessInstanceResult {
      * 流程状态 0-进行中；1-通过；2-拒绝
      */
     private String processInstanceState;
+
+    /**
+     * 流程定义id
+     */
+    private String processDefinitionId;
+
     /**
      * 当前节点信息
      */

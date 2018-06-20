@@ -74,6 +74,8 @@ public class AskTaskVo implements Serializable {
      */
     private String answerComment;
 
+    private String askedUserId;
+
     public String getId() {
         return id;
     }
@@ -208,6 +210,14 @@ public class AskTaskVo implements Serializable {
 
     public void setAnswerComment(String answerComment) {
         this.answerComment = answerComment;
+    }
+
+    public String getAskedUserId() {
+        return askedUserId;
+    }
+
+    public void setAskedUserId(String askedUserId) {
+        this.askedUserId = askedUserId;
     }
 
     @Override
