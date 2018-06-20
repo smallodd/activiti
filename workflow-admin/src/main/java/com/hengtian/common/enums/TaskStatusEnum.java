@@ -28,7 +28,19 @@ public enum TaskStatusEnum {
     OPEN(0, "待处理"),
     AGREE(1, "同意"),
     REFUSE(2, "拒绝"),
-    SKIP(3, "略过");
+    SKIP(3, "略过"),
+
+    /**
+     * 待办任务查询状态
+     */
+    UNFINISHED_AGREE(1, "待审批"),
+    UNFINISHED_REFUSE(2, "问询中"),
+
+    /**
+     * 已办任务查询状态
+     */
+    FINISHED_AGREE(1, "_Y"),
+    FINISHED_REFUSE(2, "_N");
 
     public int status;
 

@@ -199,6 +199,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                     //查询当前任务任务节点信息
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+                    if(tUserTask == null){
+                        throw new WorkFlowException("设置审批人异常：未设置审批人");
+                    }
                     //将流程创建人暂存到expr字段
                     tUserTask.setExpr(creator);
                     boolean flag = setAssignee(task, tUserTask);
@@ -512,9 +515,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
 
-
-        long currentTaskCount = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).count();
-
         if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
             //会签,表达式
             JSONObject approveCountJson = new JSONObject();
@@ -651,33 +651,39 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(CollectionUtils.isEmpty(resultList)){
             finishProcessInstance(task.getProcessInstanceId(), ProcessStatusEnum.FINISHED_Y.status);
         }else{
-            if(currentTaskCount <= 1){
-                //设置审批人处理逻辑
-                if (!Boolean.valueOf(map.get("customApprover").toString())) {
-                    //是否需要手动设置审批人
-                    boolean needSetNext = false;
-                    if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext())){
-                        //需手动设置审批人
-                        needSetNext = true;
-                        EntityWrapper<AssigneeTemp> _wrapper = new EntityWrapper<>();
-                        _wrapper.eq("proc_inst_id", task.getProcessInstanceId());
-                        _wrapper.eq("task_def_key_before",tUserTask.getTaskDefKey());
-                        AssigneeTemp assigneeTemp = new AssigneeTemp();
-                        assigneeTemp.setDeleteFlag(1);
-                        assigneeTempService.update(assigneeTemp, _wrapper);
-                    }
+            Set<String> taskIdSet = Sets.newHashSet();
+            for(TRuTask tr : tRuTasks){
+                taskIdSet.add(tr.getTaskId());
+            }
 
-                    EntityWrapper tUserWrapper;
-                    TUserTask ut;
-                    for (Task t : resultList) {
-                        tUserWrapper = new EntityWrapper();
-                        tUserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", t.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
-                        //查询当前任务节点信息
-                        ut = tUserTaskService.selectOne(tUserWrapper);
-                        boolean flag = setAssignee(t, ut, needSetNext, assigneeMap.get(t.getTaskDefinitionKey()));
-                        if(!flag){
-                            throw new WorkFlowException("设置审批人异常");
-                        }
+            //设置审批人处理逻辑
+            if (!Boolean.valueOf(map.get("customApprover").toString())) {
+                //是否需要手动设置审批人
+                boolean needSetNext = false;
+                if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext())){
+                    //需手动设置下步节点审批人，当前节点审批完成后，更新临时审批人状态为1
+                    needSetNext = true;
+                    EntityWrapper<AssigneeTemp> _wrapper = new EntityWrapper<>();
+                    _wrapper.eq("proc_inst_id", task.getProcessInstanceId());
+                    _wrapper.eq("task_def_key_before",tUserTask.getTaskDefKey());
+                    AssigneeTemp assigneeTemp = new AssigneeTemp();
+                    assigneeTemp.setDeleteFlag(1);
+                    assigneeTempService.update(assigneeTemp, _wrapper);
+                }
+
+                EntityWrapper tUserWrapper;
+                TUserTask ut;
+                for (Task t : resultList) {
+                    if(taskIdSet.contains(t.getId())){
+                        continue;
+                    }
+                    tUserWrapper = new EntityWrapper();
+                    tUserWrapper.where("proc_def_key={0}", processDefinition.getKey()).andNew("task_def_key={0}", t.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
+                    //查询当前任务节点信息
+                    ut = tUserTaskService.selectOne(tUserWrapper);
+                    boolean flag = setAssignee(t, ut, needSetNext, assigneeMap.get(t.getTaskDefinitionKey()));
+                    if(!flag){
+                        throw new WorkFlowException("设置审批人异常");
                     }
                 }
             }
