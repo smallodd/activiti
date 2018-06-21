@@ -196,6 +196,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
                 logger.info("审批人状态不正确，重置为空");
                 taskQueryParam.setTaskState("");
             }
+        }else {
+            logger.info("审批人状态不正确，重置为空");
+            taskQueryParam.setTaskState("");
         }
 
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
