@@ -167,7 +167,7 @@
                 NULL AS assigneeBefore,
                 NULL AS assigneeNext,
                 trt.OWNER AS assigneeDelegate,
-                trp.CREATOR AS creator,
+                trp.CREATOR AS creatorCode,
                 trp.CREATOR_NAME AS creatorNeme,
                 trp.CREATOR_DEPT AS creatorDept,
                 trp.CREATOR_DEPT_NAME AS creatorDeptNeme,
