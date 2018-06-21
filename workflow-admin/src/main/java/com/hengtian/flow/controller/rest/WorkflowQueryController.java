@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.common.enums.ApproveResultEnum;
 import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.param.ProcessInstanceQueryParam;
@@ -36,6 +37,7 @@ import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.beanutils.BeanMap;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,6 +156,12 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
+        if(StringUtils.isNotBlank(taskQueryParam.getTaskState())){
+            if(!(TaskStatusEnum.UNFINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState()) && !(TaskStatusEnum.UNFINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())){
+                logger.info("审批人状态不正确，重置为空");
+                taskQueryParam.setTaskState("");
+            }
+        }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
 
@@ -179,11 +187,20 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
-        if(taskQueryParam.getTaskState() == null){
+        if(StringUtils.isNotBlank(taskQueryParam.getTaskState())){
+            if((TaskStatusEnum.FINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState())){
+                taskQueryParam.setTaskState(TaskStatusEnum.FINISHED_AGREE.desc);
+            }else if((TaskStatusEnum.FINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())){
+                taskQueryParam.setTaskState(TaskStatusEnum.FINISHED_REFUSE.desc);
+            }else{
+                logger.info("审批人状态不正确，重置为空");
+                taskQueryParam.setTaskState("");
+            }
+        }else {
+            logger.info("审批人状态不正确，重置为空");
             taskQueryParam.setTaskState("");
-        }else if (ApproveResultEnum.AGREE.result.equals(taskQueryParam.getTaskState()) || ApproveResultEnum.REFUSE.result.equals(taskQueryParam.getTaskState())){
-            return renderError(ResultEnum.PARAM_ERROR.msg+"必须为_Y或_N或为''", ResultEnum.PARAM_ERROR.code);
         }
+
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
         workflowService.closeTaskList(pageInfo);
@@ -402,6 +419,10 @@ public class WorkflowQueryController extends WorkflowBaseController {
         try {
             //获取历史流程实例
             HistoricProcessInstance processInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+            if(processInstance == null){
+                logger.info("流程实例ID【"+processInstanceId+"】对应的流程实例不存在");
+                return;
+            }
             //获取流程图
             BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
             processEngineConfiguration = processEngine.getProcessEngineConfiguration();
@@ -531,7 +552,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     }
 
     /**
-     * 待处理任务列表
+     * 待处理任务总数
      *
      * @param taskQueryParam 任务查询条件实体类
      * @return
@@ -691,7 +712,10 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/getLastApprover", method = RequestMethod.POST)
     public Object getLastApprover(String processInstanceId){
         List <HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().desc().list();
-
+        if(CollectionUtils.isEmpty(list)){
+            logger.info("历史纪录为空");
+            return renderError("历史纪录为空");
+        }
         List<Task> taskList=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         JSONObject jsonObject=new JSONObject();
         jsonObject.put("createTime",list.get(list.size()-1).getStartTime());
@@ -701,15 +725,15 @@ public class WorkflowQueryController extends WorkflowBaseController {
             jsonObject.put("taskId",list.get(0).getId());
         }else{
             ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-            String assigen="";
+            String assignee="";
             for(Task task:taskList){
                 EntityWrapper entityWrapper=new EntityWrapper();
                 entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey());
                 TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
-                assigen+=tUserTask.getCandidateIds()+",";
+                assignee+=tUserTask.getCandidateIds()+",";
 
             }
-            jsonObject.put("lastApprover",assigen.replace("_Y",""));
+            jsonObject.put("lastApprover",assignee.replace("_Y",""));
             jsonObject.put("complete",0);
 
         }

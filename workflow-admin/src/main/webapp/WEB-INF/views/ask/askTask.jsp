@@ -77,11 +77,11 @@
             },{
                 width : 200,
                 title : '问询人',
-                field : 'createId'
+                field : 'askUserId'
             }, {
                 width : 200,
                 title : '被问询人',
-                field : 'askUserId'
+                field : 'askedUserId'
             }, {
                 width : 200,
                 title : '被问询任务节点名称',

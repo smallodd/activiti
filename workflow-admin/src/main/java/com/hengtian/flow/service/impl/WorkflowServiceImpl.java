@@ -199,6 +199,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     entityWrapper.where("proc_def_key={0}", processParam.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processDefinition.getVersion());
                     //查询当前任务任务节点信息
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+                    if(tUserTask == null){
+                        throw new WorkFlowException("设置审批人异常：未设置审批人");
+                    }
                     //将流程创建人暂存到expr字段
                     tUserTask.setExpr(creator);
                     boolean flag = setAssignee(task, tUserTask);
@@ -1090,12 +1093,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!parentNodes.contains(targetTaskDefKey)) {
             return new Result(false,Constant.FAIL, "无权问询该节点");
         }
-        List<HistoricTaskInstance> taskInstanceList=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(targetTaskDefKey).orderByTaskCreateTime().desc().list();
+        List<HistoricTaskInstance> taskInstanceList=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(targetTaskDefKey).finished().orderByTaskCreateTime().desc().list();
         if(taskInstanceList==null||taskInstanceList.size()==0){
             return new Result(false,Constant.FAIL, "该任务不存在或该节点不存在");
         }else{
             HistoricTaskInstance historicTaskInstance=taskInstanceList.get(0);
-            if(historicTaskInstance.getAssignee().contains(askedUserId)){
+            if(!historicTaskInstance.getAssignee().contains(askedUserId)){
                 return new Result(false,Constant.FAIL, "被问询节点该任务没有被用户"+askedUserId+"审批");
             }
         }
