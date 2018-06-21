@@ -316,45 +316,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
         return renderSuccess();
     }
 
-    @SysLog(value = "获取下一节点信息")
-    @RequestMapping(value = "getNextTaskNode", method = RequestMethod.POST)
-    @ResponseBody
-    @ApiOperation(httpMethod = "POST", value = "获取所有节点")
-    public Object getNextTaskNode(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId) {
-        logger.info("获取下一个节点信息开始，方法【getNextTaskNode】，入参：taskId:{}",taskId);
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-
-        if (task == null) {
-            return renderError("查询失败，任务不存在", Constant.PARAM_ERROR);
-        }
-        List<TaskNodeResult> taskNodeResults = new ArrayList<>();
-        //List<TaskDefinition> list = getTaskDefinitionList(task.getProcessInstanceId());
-        List<TaskDefinition> list = null;
-        for (TaskDefinition taskDefinition : list) {
-            TaskNodeResult taskNodeResult = new TaskNodeResult();
-            if (taskDefinition.getFormKeyExpression() != null) {
-
-                taskNodeResult.setFormKey(taskDefinition.getFormKeyExpression().getExpressionText());
-
-            }
-            taskNodeResult.setName(taskDefinition.getNameExpression().getExpressionText());
-            taskNodeResult.setTaskDefinedKey(taskDefinition.getKey());
-            EntityWrapper entityWrapper = new EntityWrapper();
-            entityWrapper.where("task_def_key={0}", taskDefinition.getKey());
-            TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
-            if (tUserTask != null && StringUtils.isNotBlank(tUserTask.getCandidateIds())) {
-
-                taskNodeResult.setApprover(tUserTask.getCandidateIds());
-                taskNodeResult.setAssignType(tUserTask.getAssignType());
-            }
-            taskNodeResults.add(taskNodeResult);
-
-        }
-        logger.info("获取下一个节点信息结束，出参：{}",JSONObject.toJSONString(taskNodeResults));
-        return resultSuccess("成功", taskNodeResults);
-    }
-
-
     /**
      * 任务跳转
      *
