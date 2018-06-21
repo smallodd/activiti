@@ -552,7 +552,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     }
 
     /**
-     * 待处理任务列表
+     * 待处理任务总数
      *
      * @param taskQueryParam 任务查询条件实体类
      * @return
@@ -733,7 +733,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
                 assignee+=tUserTask.getCandidateIds()+",";
 
             }
-            jsonObject.put("lastApprover",assignee);
+            jsonObject.put("lastApprover",assignee.replace("_Y",""));
             jsonObject.put("complete",0);
 
         }
