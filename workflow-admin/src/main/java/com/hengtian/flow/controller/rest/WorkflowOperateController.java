@@ -526,7 +526,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 }
                 return result;
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(TaskActionEnum.getDesc(taskActionParam.getActionType())+"失败：{}", e);
                 return renderError("操作失败");
             }
         } else {
