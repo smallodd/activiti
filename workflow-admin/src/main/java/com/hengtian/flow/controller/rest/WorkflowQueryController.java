@@ -729,7 +729,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             String taskId="";
             for(Task task:taskList){
                 EntityWrapper entityWrapper=new EntityWrapper();
-                entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={}",processInstance.getProcessDefinitionVersion());
+                entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={0}",processInstance.getProcessDefinitionVersion());
                 TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
                 assignee+=tUserTask.getCandidateIds()+",";
                 taskId+=task.getId()+",";
