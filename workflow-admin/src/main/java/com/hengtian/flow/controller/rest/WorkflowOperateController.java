@@ -526,7 +526,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 }
                 return result;
             } catch (Exception e) {
-                logger.error("", e);
+                e.printStackTrace();
                 return renderError("操作失败");
             }
         } else {
