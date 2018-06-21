@@ -200,12 +200,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     //查询当前任务任务节点信息
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
                     if(tUserTask == null){
+                        log.info("设置审批人异常");
                         throw new WorkFlowException("设置审批人异常：未设置审批人");
                     }
                     //将流程创建人暂存到expr字段
                     tUserTask.setExpr(creator);
                     boolean flag = setAssignee(task, tUserTask);
                     if(!flag){
+                        log.info("设置审批人失败!");
                         throw new WorkFlowException("设置审批人异常");
                     }
                 }
@@ -298,6 +300,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         String assignee = null;
         //生成扩展任务信息
         if(needSetNext && assigneeTempMap != null && assigneeTempMap.size() > 0){
+            log.info("手动设置审批人，前段传来参数：{}",assigneeTempMap);
             //需手动设置审批人，不从流程配置表中设置
             Set<String> keySet = assigneeTempMap.keySet();
             for(String key : keySet){
@@ -318,6 +321,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuTaskService.insert(tRuTask);
             }
         }else {
+            log.info("通过工作流平台设置审批人");
             String assignees = tUserTask.getCandidateIds();
             String assigneeNames = tUserTask.getCandidateName();
             String[] assigneeArray = assignees.split(",");
@@ -437,6 +441,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         if(StringUtils.isBlank(taskParam.getAssignee())){
+            log.info("审批人参数不合法！");
             result.setMsg("审批人不合法");
             result.setCode(Constant.PARAM_ERROR);
             result.setSuccess(false);
@@ -450,6 +455,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<TRuTask> tRuTasks = tRuTaskService.selectList(entityWrapper);
         TRuTask ruTask = validateTaskAssignee(task, taskParam.getAssignee(), tRuTasks);
         if(ruTask == null){
+            log.info("{}没有操作任务{}的权限",taskParam.getAssignee(),task.getId());
             result.setMsg("该用户没有操作此任务的权限");
             result.setCode(Constant.TASK_NOT_BELONG_USER);
             return result;
