@@ -726,15 +726,18 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }else{
             ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
             String assignee="";
+            String taskId="";
             for(Task task:taskList){
                 EntityWrapper entityWrapper=new EntityWrapper();
                 entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={}",processInstance.getProcessDefinitionVersion());
                 TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
                 assignee+=tUserTask.getCandidateIds()+",";
+                taskId+=task.getId()+",";
 
             }
             jsonObject.put("lastApprover",assignee.replace("_Y",""));
             jsonObject.put("complete",0);
+            jsonObject.put("taskId",taskId);
 
         }
         Map map=workflowService.getVariables(processInstanceId);
