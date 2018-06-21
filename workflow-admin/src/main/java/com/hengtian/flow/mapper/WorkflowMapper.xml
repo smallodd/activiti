@@ -9,8 +9,9 @@
         <result column="assigneeBefore" property="assigneeBefore" jdbcType="VARCHAR"/>
         <result column="assigneeNext" property="assigneeNext" jdbcType="VARCHAR"/>
         <result column="assigneeDelegate" property="assigneeDelegate" jdbcType="VARCHAR"/>
-        <result column="creator" property="creator" jdbcType="VARCHAR"/>
-        <result column="creatorDept" property="creatorDept" jdbcType="VARCHAR"/>
+        <result column="creatorCode" property="creatorCode" jdbcType="VARCHAR"/>
+        <result column="creatorName" property="creatorName" jdbcType="VARCHAR"/>
+        <result column="creatorDeptCode" property="creatorDeptCode" jdbcType="VARCHAR"/>
         <result column="processInstanceId" property="processInstanceId" jdbcType="VARCHAR"/>
         <result column="processInstanceTitle" property="processInstanceTitle" jdbcType="VARCHAR"/>
         <result column="processDefinitionName" property="processDefinitionName" jdbcType="VARCHAR"/>
@@ -168,9 +169,9 @@
                 NULL AS assigneeBefore,
                 NULL AS assigneeNext,
                 trt.OWNER AS assigneeDelegate,
-                trp.CREATOR AS creator,
+                trp.CREATOR AS creatorCode,
                 trp.CREATOR_NAME AS creatorNeme,
-                trp.CREATOR_DEPT AS creatorDept,
+                trp.CREATOR_DEPT AS creatorDeptCode,
                 trp.CREATOR_DEPT_NAME AS creatorDeptNeme,
                 trp.CURRENT_TASK_STATUS AS taskState,
                 ahp.ID_ AS processInstanceId,
