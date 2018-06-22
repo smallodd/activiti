@@ -624,7 +624,9 @@ public class WorkTaskServiceImpl implements WorkTaskService {
         if(StringUtils.isBlank(taskQueryEntity.getBussinessType())){
             throw new RuntimeException("参数不合法，业务系统key必须传值");
         }
-        if(!"maket".equals(taskQueryEntity.getBussinessType())) {
+        if("maket".equals(taskQueryEntity.getBussinessType())) {
+            historicTaskInstanceQuery.processVariableValueLike("proDefinedKey", "%"+taskQueryEntity.getBussinessType()+"%");
+        }else{
             historicTaskInstanceQuery.processVariableValueEquals("businessType", taskQueryEntity.getBussinessType());
         }
         if(StringUtils.isNotBlank(taskQueryEntity.getModelKey())) {
