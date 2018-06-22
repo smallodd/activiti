@@ -533,7 +533,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                         }
                     }
                     if(!b){
-                        return new Result(false,Constant.ASK_TASK_EXIT,"流程实例ID与任务ID不对应");
+                        return new Result(false,Constant.ASK_TASK_EXIT,"任务ID【"+taskActionParam.getTaskId()+"】没有对应的任务");
                     }
 
                     EntityWrapper<TRuTask> wrapper = new EntityWrapper();
