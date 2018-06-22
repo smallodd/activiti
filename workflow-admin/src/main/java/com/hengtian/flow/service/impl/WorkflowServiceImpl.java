@@ -316,7 +316,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
                 tRuTask.setTaskDefName(task.getName());
                 tRuTask.setAssigneeType(tUserTask.getAssignType());
-                tRuTask.setOwer(task.getOwner());
+                tRuTask.setOwner(task.getOwner());
                 tRuTask.setTaskType(tUserTask.getTaskType());
                 tRuTaskService.insert(tRuTask);
             }
@@ -352,7 +352,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     continue;
                 }
                 tRuTask.setAssigneeType(tUserTask.getAssignType());
-                tRuTask.setOwer(task.getOwner());
+                tRuTask.setOwner(task.getOwner());
 
                 tRuTask.setTaskType(tUserTask.getTaskType());
 

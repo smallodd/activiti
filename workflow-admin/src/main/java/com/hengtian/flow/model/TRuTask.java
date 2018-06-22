@@ -33,7 +33,7 @@ public class TRuTask implements Serializable {
     @TableField(value = "task_type")
     private String taskType;
     @TableField(value = "owner")
-    private String ower;
+    private String owner;
     @TableField(value = "expire_time")
     private Date expireTime;
     @TableField(value = "updater")
@@ -44,6 +44,8 @@ public class TRuTask implements Serializable {
     private Integer appKey;
     @TableField(value = "assignee_real")
     private String assigneeReal;
+    @TableField(value = "assignee_name_real")
+    private String assigneeNameReal;
     @TableField(value = "proc_inst_id")
     private String procInstId;
 }
