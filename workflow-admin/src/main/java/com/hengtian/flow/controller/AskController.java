@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 问询
+ * 意见征询
  *
  * @author chenzhangyan  on 2018/4/18.
  */
@@ -35,7 +35,7 @@ public class AskController extends BaseController {
     private TaskService taskService;
 
     /**
-     * 问询列表
+     * 意见征询列表
      *
      * @return
      */
@@ -45,7 +45,7 @@ public class AskController extends BaseController {
     }
 
     /**
-     * 被问询列表
+     * 被意见征询列表
      *
      * @return
      */
@@ -55,7 +55,7 @@ public class AskController extends BaseController {
     }
 
     /**
-     * 问询意见查询接口
+     * 意见征询意见查询接口
      *
      * @param taskId 任务id
      * @return
@@ -73,9 +73,9 @@ public class AskController extends BaseController {
     }
 
     /**
-     * 问询意见查询接口
+     * 意见征询意见查询接口
      *
-     * @param askId 问询id
+     * @param askId 意见征询id
      * @return
      */
     @GetMapping("detail")
@@ -89,7 +89,7 @@ public class AskController extends BaseController {
     /**
      * 回复意见查询接口
      *
-     * @param askId 问询id
+     * @param askId 意见征询id
      * @return
      */
     @GetMapping("answer")
@@ -100,7 +100,7 @@ public class AskController extends BaseController {
     }
 
     /**
-     * 问询任务列表
+     * 意见征询任务列表
      *
      * @return
      */
@@ -118,7 +118,7 @@ public class AskController extends BaseController {
 
 
     /**
-     * 被问询任务列表
+     * 被意见征询任务列表
      *
      * @param askTaskParam 任务查询条件实体类
      * @return

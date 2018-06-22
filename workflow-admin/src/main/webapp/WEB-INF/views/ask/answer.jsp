@@ -4,12 +4,12 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>问询回复</title>
+    <title>意见征询回复</title>
 </head>
 <body>
 
 <div style="width:575px;height:auto;background:#7190E0;padding:5px;">
-    <div class="easyui-panel" title="问询内容" collapsible="true" style="width:100%;height:auto;padding:10px;">
+    <div class="easyui-panel" title="意见征询内容" collapsible="true" style="width:100%;height:auto;padding:10px;">
         ${askComment.askComment}
     </div>
     <br/>

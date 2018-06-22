@@ -34,7 +34,7 @@ public class TAskTaskServiceImpl extends ServiceImpl<TAskTaskDao, TAskTask> impl
     private TAskTaskDao tAskTaskDao;
 
     /**
-     * 问询任务列表
+     * 意见征询任务列表
      *
      * @param askTaskParam 查询参数
      *                     createId   操作人ID
@@ -80,10 +80,10 @@ public class TAskTaskServiceImpl extends ServiceImpl<TAskTaskDao, TAskTask> impl
     }
 
     /**
-     * 被问询任务列表
+     * 被意见征询任务列表
      *
      * @param taskEnquireParam 查询参数
-     *                         askUserId   被问询的人id
+     *                         askUserId   被意见征询的人id
      *                         pageNum 当前页数
      *                         pageSize 每页条数
      * @return

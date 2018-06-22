@@ -1,7 +1,7 @@
 package com.hengtian.common.enums;
 
 /**
- * 任务所属不同状态  催办的状态 / 问询的状态 / 任务状态
+ * 任务所属不同状态  催办的状态 / 意见征询的状态 / 任务状态
  * @author houjinrong@chtwm.com
  * date 2018/4/20 9:51
  */
@@ -34,7 +34,7 @@ public enum TaskStatusEnum {
      * 待办任务查询状态
      */
     UNFINISHED_AGREE(1, "待审批"),
-    UNFINISHED_REFUSE(2, "问询中"),
+    UNFINISHED_REFUSE(2, "意见征询中"),
 
     /**
      * 已办任务查询状态

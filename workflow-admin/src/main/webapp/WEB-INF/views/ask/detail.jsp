@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>问询</title>
+    <title>意见征询</title>
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
@@ -12,7 +12,7 @@
         <form id="taskJumpForm" method="post">
             <dl>
                 <dt>
-                    <dd style="float:left;">问询内容:</dd>
+                    <dd style="float:left;">意见征询内容:</dd>
                     <dd>
                         <div style="width: 200px;height: auto;">${askComment.askComment}</div>
                     </dd>

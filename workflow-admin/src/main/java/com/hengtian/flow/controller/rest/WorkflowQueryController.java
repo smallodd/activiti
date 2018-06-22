@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.hengtian.common.enums.ApproveResultEnum;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.operlog.SysLog;
@@ -43,10 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -98,8 +97,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ResponseBody
     @SysLog("获取我发起的流程")
     @ApiOperation(httpMethod = "POST", value = "获取我发起的流程")
-    @RequestMapping(value = "/rest/procInst", method = RequestMethod.POST)
-    public Object processInstanceList(@ApiParam(value = "流程查询条件", name = "processInstanceQueryParam", required = true) @ModelAttribute @Validated ProcessInstanceQueryParam processInstanceQueryParam) {
+    @RequestMapping(value = "/rest/process/instance", method = RequestMethod.POST)
+    public Object processInstanceList(@ApiParam(value = "流程查询条件", name = "processInstanceQueryParam", required = true) @ModelAttribute @Valid ProcessInstanceQueryParam processInstanceQueryParam) {
         logger.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", processInstanceQueryParam.toString());
         PageInfo pageInfo = new PageInfo(processInstanceQueryParam.getPage(), processInstanceQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(processInstanceQueryParam));
@@ -262,14 +261,14 @@ public class WorkflowQueryController extends WorkflowBaseController {
     }
 
     /**
-     * 问询任务列表
+     * 意见征询任务列表
      *
      * @param taskEnquireParam 任务查询条件实体类
      * @return
      */
     @ResponseBody
-    @SysLog("问询任务列表")
-    @ApiOperation(httpMethod = "POST", value = "问询任务列表")
+    @SysLog("意见征询任务列表")
+    @ApiOperation(httpMethod = "POST", value = "意见征询任务列表")
     @RequestMapping(value = "/rest/task/enquire", method = RequestMethod.POST)
     public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getCreateId())) {
@@ -280,14 +279,14 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
 
     /**
-     * 被问询任务列表
+     * 被意见征询任务列表
      *
      * @param taskEnquireParam 任务查询条件实体类
      * @return
      */
     @ResponseBody
-    @SysLog("被问询任务列表")
-    @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
+    @SysLog("被意见征询任务列表")
+    @ApiOperation(httpMethod = "POST", value = "被意见征询任务列表")
     @RequestMapping(value = "/rest/task/enquired", method = RequestMethod.POST)
     public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getAskUserId())) {
@@ -297,18 +296,18 @@ public class WorkflowQueryController extends WorkflowBaseController {
     }
 
     /**
-     * 问询意见查询接口
+     * 意见征询意见查询接口
      *
      * @param userId 操作人ID
-     * @param askId  问询id
+     * @param askId  意见征询id
      * @return
      */
     @ResponseBody
-    @SysLog("问询意见查询接口")
-    @ApiOperation(httpMethod = "POST", value = "问询意见查询接口")
+    @SysLog("意见征询意见查询接口")
+    @ApiOperation(httpMethod = "POST", value = "意见征询意见查询接口")
     @RequestMapping(value = "/rest/task/enquire/comment", method = RequestMethod.POST)
     public Object enquireComment(@ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
-                                 @ApiParam(value = "问询id", name = "askId", required = true) @RequestParam String askId) {
+                                 @ApiParam(value = "意见征询id", name = "askId", required = true) @RequestParam String askId) {
         return workflowService.askComment(userId, askId);
     }
 
@@ -492,7 +491,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if (StringUtils.isBlank(processInstanceId)) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
-        List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
+        List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId,"1");
+        List<Comment> commentList2 = taskService.getProcessInstanceComments(processInstanceId,"2");
+        commentList.addAll(commentList2);
         return renderSuccess(commentList);
     }
 
@@ -513,7 +514,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if (StringUtils.isBlank(taskId)) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
-        List<Comment> commentList = taskService.getTaskComments(taskId);
+
+        List<Comment> commentList = taskService.getTaskComments(taskId,"1");
+        commentList.addAll(taskService.getTaskComments(taskId,"2"));
         return renderSuccess(commentList);
     }
 
@@ -535,19 +538,19 @@ public class WorkflowQueryController extends WorkflowBaseController {
         return workflowService.getBeforeNodes(taskId, userId, isAll != 0,false);
     }
     /**
-     * 获取可问询任务节点
+     * 获取可意见征询任务节点
      * @param taskId 任务ID
      * @return
      *
      * date 2018/5/29 14:38
      */
     @ResponseBody
-    @SysLog("获取可问询任务节点")
-    @ApiOperation(httpMethod = "POST", value = "获取可问询任务节点")
+    @SysLog("获取可意见征询任务节点")
+    @ApiOperation(httpMethod = "POST", value = "获取可意见征询任务节点")
     @RequestMapping(value = "/rest/askNodes", method = RequestMethod.POST)
     public Object getAskNodes(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
                                  @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId) {
-        logger.info("----------------获取可问询任务节点,入参 taskId：{}----------------", taskId);
+        logger.info("----------------获取可意见征询任务节点,入参 taskId：{}----------------", taskId);
         return workflowService.getBeforeNodes(taskId, userId, true,true);
     }
 
@@ -615,12 +618,12 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if(list!=null&&list.size()>0){
             HistoricTaskInstance historicTaskInstance=list.get(0);
             if(historicTaskInstance.getEndTime()!=null){
-                result.setMsg("用户已经审批过");
+                result.setMsg("任务已经审批结束");
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
                 return result;
             }else{
-                result.setMsg("用户未审批过");
+                result.setMsg("任务未审批结束");
                 result.setSuccess(false);
                 result.setCode(Constant.SUCCESS);
                 return result;
@@ -726,15 +729,18 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }else{
             ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
             String assignee="";
+            String taskId="";
             for(Task task:taskList){
                 EntityWrapper entityWrapper=new EntityWrapper();
-                entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey());
+                entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={0}",processInstance.getProcessDefinitionVersion());
                 TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
                 assignee+=tUserTask.getCandidateIds()+",";
+                taskId+=task.getId()+",";
 
             }
             jsonObject.put("lastApprover",assignee.replace("_Y",""));
             jsonObject.put("complete",0);
+            jsonObject.put("taskId",taskId);
 
         }
         Map map=workflowService.getVariables(processInstanceId);

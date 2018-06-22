@@ -10,10 +10,10 @@ import com.hengtian.flow.model.TAskTask;
  */
 public interface TAskTaskService extends IService<TAskTask> {
     /**
-     * 问询任务列表
+     * 意见征询任务列表
      *
      * @param taskEnquireParam 查询参数
-     *                         createId   问询人id
+     *                         createId   意见征询人id
      *                         pageNum 当前页数
      *                         pageSize 每页条数
      * @return
@@ -22,10 +22,10 @@ public interface TAskTaskService extends IService<TAskTask> {
 
 
     /**
-     * 被问询任务列表
+     * 被意见征询任务列表
      *
      * @param taskEnquireParam 查询参数
-     *                         askUserId   被问询的人id
+     *                         askUserId   被意见征询的人id
      *                         pageNum 当前页数
      *                         pageSize 每页条数
      * @return

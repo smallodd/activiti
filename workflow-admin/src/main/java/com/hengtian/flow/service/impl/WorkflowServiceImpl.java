@@ -200,12 +200,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     //查询当前任务任务节点信息
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
                     if(tUserTask == null){
+                        log.info("设置审批人异常");
                         throw new WorkFlowException("设置审批人异常：未设置审批人");
                     }
                     //将流程创建人暂存到expr字段
                     tUserTask.setExpr(creator);
                     boolean flag = setAssignee(task, tUserTask);
                     if(!flag){
+                        log.info("设置审批人失败!");
                         throw new WorkFlowException("设置审批人异常");
                     }
                 }
@@ -298,6 +300,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         String assignee = null;
         //生成扩展任务信息
         if(needSetNext && assigneeTempMap != null && assigneeTempMap.size() > 0){
+            log.info("手动设置审批人，前段传来参数：{}",assigneeTempMap);
             //需手动设置审批人，不从流程配置表中设置
             Set<String> keySet = assigneeTempMap.keySet();
             for(String key : keySet){
@@ -318,6 +321,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuTaskService.insert(tRuTask);
             }
         }else {
+            log.info("通过工作流平台设置审批人");
             String assignees = tUserTask.getCandidateIds();
             String assigneeNames = tUserTask.getCandidateName();
             String[] assigneeArray = assignees.split(",");
@@ -437,6 +441,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         if(StringUtils.isBlank(taskParam.getAssignee())){
+            log.info("审批人参数不合法！");
             result.setMsg("审批人不合法");
             result.setCode(Constant.PARAM_ERROR);
             result.setSuccess(false);
@@ -450,6 +455,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<TRuTask> tRuTasks = tRuTaskService.selectList(entityWrapper);
         TRuTask ruTask = validateTaskAssignee(task, taskParam.getAssignee(), tRuTasks);
         if(ruTask == null){
+            log.info("{}没有操作任务{}的权限",taskParam.getAssignee(),task.getId());
             result.setMsg("该用户没有操作此任务的权限");
             result.setCode(Constant.TASK_NOT_BELONG_USER);
             return result;
@@ -1069,12 +1075,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     }
 
     /**
-     * 问询
+     * 意见征询
      *
      * @param userId            操作人ID
      * @param processInstanceId 任务流程实例ID
-     * @param currentTaskDefKey 当前问询任务节点KEY
-     * @param targetTaskDefKey  目标问询任务节点KEY
+     * @param currentTaskDefKey 当前意见征询任务节点KEY
+     * @param targetTaskDefKey  目标意见征询任务节点KEY
      * @param commentResult     意见
      * @return
      * @author houjinrong@chtwm.com
@@ -1085,13 +1091,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId) {
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
         if (task == null) {
-            log.error("问询的任务不存在 processInstanceId:{},taskDefinitionKey:{}", processInstanceId, currentTaskDefKey);
+            log.error("意见征询的任务不存在 processInstanceId:{},taskDefinitionKey:{}", processInstanceId, currentTaskDefKey);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         //校验是否是上级节点
         List<String> parentNodes = getBeforeTaskDefinitionKeys(task, true);
         if (!parentNodes.contains(targetTaskDefKey)) {
-            return new Result(false,Constant.FAIL, "无权问询该节点");
+            return new Result(false,Constant.FAIL, "无权意见征询该节点");
         }
         List<HistoricTaskInstance> taskInstanceList=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(targetTaskDefKey).finished().orderByTaskCreateTime().desc().list();
         if(taskInstanceList==null||taskInstanceList.size()==0){
@@ -1099,10 +1105,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }else{
             HistoricTaskInstance historicTaskInstance=taskInstanceList.get(0);
             if(!historicTaskInstance.getAssignee().contains(askedUserId)){
-                return new Result(false,Constant.FAIL, "被问询节点该任务没有被用户"+askedUserId+"审批");
+                return new Result(false,Constant.FAIL, "被意见征询节点该任务没有被用户"+askedUserId+"审批");
             }
         }
-        //校验是否已有问询
+        //校验是否已有意见征询
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("proc_inst_id={0}", processInstanceId)
                 .where("current_task_key={0}", currentTaskDefKey)
@@ -1111,7 +1117,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 .where("is_ask_end=0");
         List<TAskTask> list = tAskTaskService.selectList(wrapper);
         if (CollectionUtils.isNotEmpty(list)) {
-            return new Result(false,Constant.ASK_TASK_EXIT, "已存在问询任务");
+            return new Result(false,Constant.ASK_TASK_EXIT, "已存在意见征询任务");
         }
 
         TAskTask askTask = new TAskTask();
@@ -1130,7 +1136,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         askTask.setAskedUserId(askedUserId);
         boolean success = tAskTaskService.insert(askTask);
         if (!success) {
-            return new Result(false, Constant.FAIL,"问询失败");
+            return new Result(false, Constant.FAIL,"意见征询失败");
         }
 
         EntityWrapper<RuProcinst> wrapper_ = new EntityWrapper<>();
@@ -1140,26 +1146,26 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         ruProcinst.setCurrentTaskStatus(2);
         success = ruProcinstService.update(ruProcinst, wrapper_);
         if(!success){
-            return new Result(false, Constant.FAIL,"问询后，修改任务状态为【问询中：1】失败");
+            return new Result(false, Constant.FAIL,"意见征询后，修改任务状态为【意见征询中：1】失败");
         }
         ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult() ;
         TWorkDetail tWorkDetail = new TWorkDetail();
         tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setDetail("工号为【" + userId + "】的员工进行了【问询】操作");
+        tWorkDetail.setDetail("工号为【" + userId + "】的员工进行了【意见征询】操作");
         tWorkDetail.setProcessInstanceId(processInstanceId);
         tWorkDetail.setOperator(userId);
         tWorkDetail.setTaskId(task.getId());
         tWorkDetail.setAprroveInfo(commentResult);
         List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(task.getId()).orderByTaskCreateTime().desc().list();
-        tWorkDetail.setOperateAction("问询");
+        tWorkDetail.setOperateAction("意见征询");
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
-        return new Result(true,Constant.SUCCESS, "问询成功");
+        return new Result(true,Constant.SUCCESS, "意见征询成功");
     }
 
     /**
-     * 问询确认
+     * 意见征询确认
      *
      * @param userId        操作人ID
      * @param askId        流程实例id
@@ -1177,12 +1183,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 .where("is_ask_end={0}", 0);
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         if (tAskTask == null) {
-            log.error("问询不存在或状态为已确认 askId:{}", askId);
-            return new Result(false,Constant.FAIL, "问询确认失败");
+            log.error("意见征询不存在或状态为已确认 askId:{}", askId);
+            return new Result(false,Constant.FAIL, "意见征询确认失败");
         }
         List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(tAskTask.getProcInstId()).taskDefinitionKey(tAskTask.getCurrentTaskKey()).orderByTaskCreateTime().desc().list();
         if (CollectionUtils.isEmpty(list)) {
-            log.error("确认问询的任务不存在 processInstanceId:{}", askId);
+            log.error("确认意见征询的任务不存在 processInstanceId:{}", askId);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
         tAskTask.setUpdateTime(new Date());
@@ -1190,7 +1196,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tAskTask.setIsAskEnd(1);
         boolean success = tAskTaskService.updateById(tAskTask);
         if (!success) {
-            return new Result(false,Constant.FAIL, "问询确认失败");
+            return new Result(false,Constant.FAIL, "意见征询确认失败");
         }
 
         EntityWrapper<RuProcinst> wrapper_ = new EntityWrapper<>();
@@ -1200,23 +1206,23 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         ruProcinst.setCurrentTaskStatus(1);
         success = ruProcinstService.update(ruProcinst, wrapper_);
         if(!success){
-            return new Result(false, Constant.FAIL,"问询后，修改任务状态为【问询中：1】失败");
+            return new Result(false, Constant.FAIL,"意见征询后，修改任务状态为【意见征询中：1】失败");
         }
 
         ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(tAskTask.getProcInstId()).singleResult() ;
         TWorkDetail tWorkDetail = new TWorkDetail();
         tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setDetail("工号为【" + userId + "】的员工进行了【问询】操作");
+        tWorkDetail.setDetail("工号为【" + userId + "】的员工进行了【意见征询】操作");
         tWorkDetail.setProcessInstanceId(tAskTask.getProcInstId());
         tWorkDetail.setOperator(userId);
         tWorkDetail.setTaskId(list.get(0).getId());
         tWorkDetail.setAprroveInfo(answerComment);
 
-        tWorkDetail.setOperateAction("确认问询");
+        tWorkDetail.setOperateAction("确认意见征询");
         tWorkDetail.setOperTaskKey(list.get(0).getName());
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
-        return new Result(true, Constant.SUCCESS,"问询确认成功");
+        return new Result(true, Constant.SUCCESS,"意见征询确认成功");
     }
 
     /**
@@ -1362,10 +1368,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     }
 
     /**
-     * 问询意见查询接口
+     * 意见征询意见查询接口
      *
      * @param userId 操作人ID
-     * @param askId  问询id
+     * @param askId  意见征询id
      * @return
      */
     @Override
@@ -1374,7 +1380,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         wrapper.where("id={0}", askId);
         TAskTask askTask = tAskTaskService.selectOne(wrapper);
         if (askTask == null) {
-            return new Result(false,Constant.SUCCESS, "问询不存在");
+            return new Result(false,Constant.SUCCESS, "意见征询不存在");
         }
         HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(askTask.getProcInstId()).taskDefinitionKey(askTask.getAskTaskKey()).singleResult();
         if (task == null) {

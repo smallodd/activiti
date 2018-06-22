@@ -42,7 +42,7 @@ public class Constant {
      */
     public static final String TASK_NOT_EXIT="1005";
     /**
-     * 问询的任务不能继续审批
+     * 意见征询的任务不能继续审批
      */
     public static final String ASK_TASK_EXIT="1006";
     /**

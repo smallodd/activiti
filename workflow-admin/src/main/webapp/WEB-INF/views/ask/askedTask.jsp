@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>被问询列表</title>
+    <title>被意见征询列表</title>
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
@@ -12,12 +12,12 @@
         <form id="taskSearchForm">
             <table>
                 <tr>
-                    <th>问询人:</th>
-                    <td><input name="createId" placeholder="问询人"/></td>
-                    <th>问询任务节点:</th>
-                    <td><input name="currentTaskKey" placeholder="问询任务节点key"/></td>
-                    <th>被问询任务节点:</th>
-                    <td><input name="askTaskKey" placeholder="被问询任务节点key"/></td>
+                    <th>意见征询人:</th>
+                    <td><input name="createId" placeholder="意见征询人"/></td>
+                    <th>意见征询任务节点:</th>
+                    <td><input name="currentTaskKey" placeholder="意见征询任务节点key"/></td>
+                    <th>被意见征询任务节点:</th>
+                    <td><input name="askTaskKey" placeholder="被意见征询任务节点key"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="taskSearchFun();">查询</a>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="taskCleanFun();">清空</a>
@@ -56,7 +56,7 @@
                 hidden:true
             }, {
                 width : '80',
-                title : '问询是否结束',
+                title : '意见征询是否结束',
                 field : 'isAskEnd',
                 formatter : function(value, row, index) {
                     switch (value) {
@@ -72,19 +72,19 @@
                 field : 'procInstName'
             },{
                 width : 200,
-                title : '问询任务节点名称',
+                title : '意见征询任务节点名称',
                 field : 'currentTaskName'
             },{
                 width : '200',
-                title : '问询人',
+                title : '意见征询人',
                 field : 'askUserId'
             }, {
                 width : '200',
-                title : '被问询人',
+                title : '被意见征询人',
                 field : 'askedUserId'
             }, {
                 width : 200,
-                title : '被问询任务节点名称',
+                title : '被意见征询任务节点名称',
                 field : 'askTaskName'
             }, {
                 field : 'action',
@@ -94,14 +94,14 @@
                     var str = "";
                     if (row.isAskEnd == 0) {
                         <shiro:hasPermission name="/ask/askConfirm">
-                         str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="askComment(\'{0}\');" >问询详情</a>', row.id);
+                         str = $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askComment" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="askComment(\'{0}\');" >意见征询详情</a>', row.id);
                         </shiro:hasPermission>
                     }
                     return str;
                 }
             } ] ],
             onLoadSuccess:function(data){
-                $('.task-easyui-linkbutton-askComment').linkbutton({text:'问询详情'});
+                $('.task-easyui-linkbutton-askComment').linkbutton({text:'意见征询详情'});
             },
             toolbar : '#taskToolbar'
         });
@@ -109,17 +109,17 @@
 
 
     /**
-     * 问询详情
+     * 意见征询详情
      */
     function askComment(askId) {
         parent.$.modalDialog({
-            title : '问询详情',
+            title : '意见征询详情',
             width : 600,
             height : 400,
             modal : true,
             href :  '${ctx}/ask/detail?askId='+askId,
             buttons : [ {
-                text : '确定问询',
+                text : '确定意见征询',
                 handler : function() {
                     parent.$.modalDialog.openner_dataGrid = taskDataGrid;
                     var f = parent.$.modalDialog.handler.find('#taskJumpForm');

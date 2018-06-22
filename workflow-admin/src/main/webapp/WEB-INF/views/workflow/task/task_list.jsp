@@ -124,7 +124,7 @@
                     </shiro:hasPermission>
                     <shiro:hasPermission name="/ask/comment">
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
-                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askTask" data-options="plain:true,iconCls:\'fi-share icon-green\'" onclick="askTaskFun(\'{0}\');" >问询</a>', row.id);
+                        str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askTask" data-options="plain:true,iconCls:\'fi-share icon-green\'" onclick="askTaskFun(\'{0}\');" >意见征询</a>', row.id);
                     </shiro:hasPermission>
                     <shiro:hasPermission name="/task/progress">
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
@@ -140,7 +140,7 @@
                 $('.task-easyui-linkbutton-transferTask').linkbutton({text: '转办'});
                 $('.task-easyui-linkbutton-jumpTask').linkbutton({text: '跳转'});
                 $('.task-easyui-linkbutton-taskProgress').linkbutton({text: '进度'});
-                $('.task-easyui-linkbutton-askTask').linkbutton({text: '问询'});
+                $('.task-easyui-linkbutton-askTask').linkbutton({text: '意见征询'});
             },
             toolbar: '#taskToolbar'
         });
@@ -319,11 +319,11 @@
     }
 
     /**
-     *问询
+     *意见征询
      */
     function askTaskFun(id) {
         parent.$.modalDialog({
-            title: '问询',
+            title: '意见征询',
             width: 500,
             height: 400,
             modal: true,

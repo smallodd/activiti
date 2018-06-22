@@ -64,7 +64,7 @@ public class RuProcinst {
     @TableField(value = "current_task_key")
     private String currentTaskKey;
     /**
-     * 流程当前任务状态1:待办；2问询中
+     * 流程当前任务状态1:待办；2意见征询中
      */
     @TableField(value = "current_task_status")
     private Integer currentTaskStatus;

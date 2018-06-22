@@ -33,7 +33,7 @@
     </resultMap>
 
     <sql id="taskResult">
-        art.ID_ AS taskId,
+        DISTINCT art.ID_ AS taskId,
         art.NAME_ AS taskName,
         #{assignee} AS assignee,
         NULL AS assigneeBefore,
@@ -117,6 +117,7 @@
         WHERE
             trp.APP_KEY = #{appKey} AND art.SUSPENSION_STATE_=1
             AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN(#{roleId})))
+        ORDER BY endTime DESC
     </select>
 
     <!--我的历史任务-->
@@ -130,12 +131,12 @@
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
             LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
-          trp.APP_KEY = #{appKey} AND art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%')
-          <include refid="queryCondition"/>
+            trp.APP_KEY = #{appKey} AND art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%')
+            <include refid="queryCondition"/>
         ORDER BY endTime DESC
     </select>
 
-    <!--我的待审批任务及被问询任务-->
+    <!--我的待审批任务及被意见征询任务-->
     <select id="queryOpenTask" resultMap="taskResultMap">
         <if test="taskState != 2">
             SELECT

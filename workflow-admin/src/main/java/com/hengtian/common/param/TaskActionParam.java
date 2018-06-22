@@ -64,9 +64,9 @@ public class TaskActionParam {
     private String targetTaskDefKey;
 
     /**
-     * 问询ID
+     * 意见征询ID
      */
-    @ApiModelProperty(value = "问询ID", required = false, example = "askId")
+    @ApiModelProperty(value = "意见征询ID", required = false, example = "askId")
     private String askId;
 
     /**
@@ -204,13 +204,13 @@ public class TaskActionParam {
                     success = false;
                 }
             } else if (TaskActionEnum.ENQUIRE.value.equals(actionType)) {
-                //问询-参数校验
+                //意见征询-参数校验
                 if (StringUtils.isBlank(getProcessInstanceId()) || StringUtils.isBlank(getCurrentTaskDefKey()) || StringUtils.isBlank(getTargetTaskDefKey()) || StringUtils.isBlank(getCommentResult())) {
                     result.setMsg("参数processInstanceId，currentTaskDefKey, targetTaskDefKey , commentResult 都不能为空");
                     success = false;
                 }
             } else if (TaskActionEnum.CONFIRMENQUIRE.value.equals(actionType)) {
-                //问询确认-参数校验
+                //意见征询确认-参数校验
                 if (StringUtils.isBlank(getAskId()) || StringUtils.isBlank(getCommentResult())) {
                     result.setMsg("参数askId , commentResult 不能为空");
                     success = false;

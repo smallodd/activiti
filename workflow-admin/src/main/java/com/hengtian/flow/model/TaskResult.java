@@ -90,11 +90,11 @@ public class TaskResult {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date endTime;
     /**
-     * 是否是问询的任务
+     * 是否是意见征询的任务
      */
     private int asked;
     /**
-     * 问询主键
+     * 意见征询主键
      */
     private String askId;
 

@@ -1,7 +1,7 @@
 package com.hengtian.flow.vo;
 
 /**
- * 问询详情
+ * 意见征询详情
  *
  * @author chenzhangyan  on 2018/4/28.
  */
@@ -11,15 +11,15 @@ public class AskCommentDetailVo {
      */
     private String procInstId;
     /**
-     * 问询所在任务节点key
+     * 意见征询所在任务节点key
      */
     private String currentTaskKey;
     /**
-     * 问询所在任务节点key
+     * 意见征询所在任务节点key
      */
     private String askTaskKey;
     /**
-     * 问询详情
+     * 意见征询详情
      */
     private String askComment;
     /**

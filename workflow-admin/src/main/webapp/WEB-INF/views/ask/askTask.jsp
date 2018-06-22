@@ -4,7 +4,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>问询列表</title>
+	<title>意见征询列表</title>
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
@@ -12,12 +12,12 @@
         <form id="taskSearchForm">
             <table>
                 <tr>
-                    <th>被问询人:</th>
-                    <td><input name="askUserId" placeholder="被问询人"/></td>
-                    <th>问询任务节点key:</th>
-                    <td><input name="currentTaskKey" placeholder="问询任务节点key"/></td>
-                    <th>被问询任务节点key:</th>
-                    <td><input name="askTaskKey" placeholder="被问询任务节点key"/></td>
+                    <th>被意见征询人:</th>
+                    <td><input name="askUserId" placeholder="被意见征询人"/></td>
+                    <th>意见征询任务节点key:</th>
+                    <td><input name="currentTaskKey" placeholder="意见征询任务节点key"/></td>
+                    <th>被意见征询任务节点key:</th>
+                    <td><input name="askTaskKey" placeholder="被意见征询任务节点key"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="taskSearchFun();">查询</a>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="taskCleanFun();">清空</a>
@@ -56,7 +56,7 @@
                 hidden:true
             }, {
                 width : '80',
-                title : '问询是否结束',
+                title : '意见征询是否结束',
                 field : 'isAskEnd',
                 formatter : function(value, row, index) {
                     switch (value) {
@@ -72,19 +72,19 @@
                 field : 'procInstName'
             },{
                 width : '200',
-                title : '问询任务节点名称',
+                title : '意见征询任务节点名称',
                 field : 'currentTaskName'
             },{
                 width : 200,
-                title : '问询人',
+                title : '意见征询人',
                 field : 'askUserId'
             }, {
                 width : 200,
-                title : '被问询人',
+                title : '被意见征询人',
                 field : 'askedUserId'
             }, {
                 width : 200,
-                title : '被问询任务节点名称',
+                title : '被意见征询任务节点名称',
                 field : 'askTaskName'
             }, {
                 field : 'action',
