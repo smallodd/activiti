@@ -49,11 +49,9 @@ public class ProcessInstanceResult {
     /**
      * 发起时间
      */
-    @DateTimeFormat(pattern = "YYYY-mm-dd")
     private Date startTime;
     /**
      * 完成时间
      */
-    @DateTimeFormat(pattern = "YYYY-mm-dd")
     private Date endTime;
 }
