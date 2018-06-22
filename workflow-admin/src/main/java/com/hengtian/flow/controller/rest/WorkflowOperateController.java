@@ -181,7 +181,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         }
         //查询是否当前审批人是否在当前结点有问询信息
         EntityWrapper entityWrapper = new EntityWrapper();
-        entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getAssignee());
+        entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getAssignee()).andNew("proc_inst_id={0}",task.getProcessInstanceId());
         //查询是否有正在问询的节点
         TAskTask tAskTask = tAskTaskService.selectOne(entityWrapper);
         if (tAskTask != null) {

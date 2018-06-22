@@ -619,12 +619,12 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if(list!=null&&list.size()>0){
             HistoricTaskInstance historicTaskInstance=list.get(0);
             if(historicTaskInstance.getEndTime()!=null){
-                result.setMsg("用户已经审批过");
+                result.setMsg("任务已经审批结束");
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
                 return result;
             }else{
-                result.setMsg("用户未审批过");
+                result.setMsg("任务未审批结束");
                 result.setSuccess(false);
                 result.setCode(Constant.SUCCESS);
                 return result;
