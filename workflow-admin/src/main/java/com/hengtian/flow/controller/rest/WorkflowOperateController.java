@@ -83,6 +83,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         //校验参数是否合法
         Result result = processParam.validate();
         if (!result.isSuccess()) {
+            logger.info("参数不合法：{}",JSONObject.toJSONString(result));
             return result;
         } else {
             try {
@@ -210,6 +211,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                                    @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "pass", required = true) @RequestParam("pass") Integer pass,
                                    @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable,
                                    @ApiParam(value = "审批人信息", name = "assignee", required = true) @RequestParam("assignee") String assignee) {
+        logger.info("批量审批任务开始：入参pass:{}，jsonVariable:{},assignee:{}",pass,jsonVariable,assignee);
         Map map = JSONObject.parseObject(jsonVariable);
         Result result = new Result();
         result.setMsg("审批成功");
@@ -232,6 +234,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             taskParam.setAssignee(assignee);
             workflowService.approveTask(task, taskParam);
         }
+        logger.info("批量审批任务结束，出参：{}",JSONObject.toJSONString(result));
         return result;
     }
 
