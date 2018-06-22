@@ -179,13 +179,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
         if (task == null) {
             return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
         }
-        //查询是否当前审批人是否在当前结点有问询信息
+        //查询是否当前审批人是否在当前结点有意见征询信息
         EntityWrapper entityWrapper = new EntityWrapper();
         entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getAssignee()).andNew("proc_inst_id={0}",task.getProcessInstanceId());
-        //查询是否有正在问询的节点
+        //查询是否有正在意见征询的节点
         TAskTask tAskTask = tAskTaskService.selectOne(entityWrapper);
         if (tAskTask != null) {
-            return renderError("您的问询信息还未得到响应，不能审批通过", Constant.ASK_TASK_EXIT);
+            return renderError("您的意见征询信息还未得到响应，不能审批通过", Constant.ASK_TASK_EXIT);
         }
         //查询当前任务节点审批人是不是当前人
         Object result=workflowService.approveTask(task, taskParam);
@@ -433,8 +433,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
      *                        1跳转 jump
      *                        2转办 transfer
      *                        3催办 remind
-     *                        4问询 enquire
-     *                        5确认问询 confirmEnquire
+     *                        4意见征询 enquire
+     *                        5确认意见征询 confirmEnquire
      *                        6撤回 revoke
      *                        7取消 cancel
      *                        8挂起流程 suspend
@@ -565,10 +565,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
 
     /**
-     * 问询
+     * 意见征询
      *
      * @param processInstanceId 流程实例ID
-     * @param commentResult     问询详情
+     * @param commentResult     意见征询详情
      * @param currentTaskDefKey 当前任务节点KEY
      * @param targetTaskDefKey  目标任务节点KEY
      * @return
@@ -576,10 +576,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @PostMapping(value = "askTask")
     @ResponseBody
     public Object askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey,@RequestParam String askedUserId,@RequestParam(required = false) String userId) {
-        logger.info("问询接口开始执行，方法【askTask】，入参processInstanceId{},currentTaskDefKey{},commentResult{},targetTaskDefKey{},askedUserId{},userId{}",processInstanceId,currentTaskDefKey,commentResult,targetTaskDefKey,askedUserId,userId);
+        logger.info("意见征询接口开始执行，方法【askTask】，入参processInstanceId{},currentTaskDefKey{},commentResult{},targetTaskDefKey{},askedUserId{},userId{}",processInstanceId,currentTaskDefKey,commentResult,targetTaskDefKey,askedUserId,userId);
         try {
             if(com.hengtian.common.utils.StringUtils.isBlank(userId)&&getShiroUser()==null){
-                return renderError("请传问询人员工号");
+                return renderError("请传意见征询人员工号");
             }
             if(com.hengtian.common.utils.StringUtils.isBlank(processInstanceId)){
                 return renderError("流程实例id不能为空");
@@ -588,13 +588,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 return renderError("当前节点信息不能为空");
             }
             if(com.hengtian.common.utils.StringUtils.isBlank(commentResult)){
-                return renderError("问询信息不能为空");
+                return renderError("意见征询信息不能为空");
             }
             if(com.hengtian.common.utils.StringUtils.isBlank(targetTaskDefKey)){
-                return renderError("被问询节点key不能为空");
+                return renderError("被意见征询节点key不能为空");
             }
             if(com.hengtian.common.utils.StringUtils.isBlank(askedUserId)){
-                return renderError("被问询人员");
+                return renderError("被意见征询人员");
             }
             if(com.hengtian.common.utils.StringUtils.isBlank(userId)){
                 userId=getUserId();
@@ -613,16 +613,16 @@ public class WorkflowOperateController extends WorkflowBaseController {
 
 
     /**
-     * 确认问询
+     * 确认意见征询
      *
-     * @param askId         问询ID
+     * @param askId         意见征询ID
      * @param commentResult 回复
      * @return
      */
     @RequestMapping(value = "askConfirm", method = RequestMethod.POST)
     @ResponseBody
     public Result askConfirm(@RequestParam String askId,@RequestParam String userId,@RequestParam String commentResult ) {
-        logger.info("确认问询开始，方法【askConfirm】，入参：askId:{},userId:{},commentResult{}",askId,userId,commentResult);
+        logger.info("确认意见征询开始，方法【askConfirm】，入参：askId:{},userId:{},commentResult{}",askId,userId,commentResult);
         try {
             return workflowService.taskConfirmEnquire(userId, askId,commentResult);
         } catch (Exception e) {

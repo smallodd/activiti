@@ -3,30 +3,30 @@ package com.hengtian.common.param;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * 问询任务接受参数
+ * 意见征询任务接受参数
  *
  * @author chenzhangyan  on 2018/4/24.
  */
 public class AskTaskParam {
 
-    //当前问询的任务节点key
-    @ApiModelProperty(value = "问询所在任务节点key", example = "问询所在任务节点key")
+    //当前意见征询的任务节点key
+    @ApiModelProperty(value = "意见征询所在任务节点key", example = "意见征询所在任务节点key")
     private String currentTaskKey;
 
-    //要问询的节点key
-    @ApiModelProperty(value = "被问询的节点key", example = "H00001")
+    //要意见征询的节点key
+    @ApiModelProperty(value = "被意见征询的节点key", example = "H00001")
     private String askTaskKey;
 
-    //问询是否结束
-    @ApiModelProperty(value = "问询是否结束", example = "0,1")
+    //意见征询是否结束
+    @ApiModelProperty(value = "意见征询是否结束", example = "0,1")
     private Integer askEnd;
 
-    //问询人id
-    @ApiModelProperty(value = "被问询的人id", example = "H00001")
+    //意见征询人id
+    @ApiModelProperty(value = "被意见征询的人id", example = "H00001")
     private String askUserId;
 
     //创建人id
-    @ApiModelProperty(value = "问询人id", example = "H00001")
+    @ApiModelProperty(value = "意见征询人id", example = "H00001")
     private String createId;
 
     /**

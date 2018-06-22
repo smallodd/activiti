@@ -116,12 +116,12 @@ public interface WorkflowService extends IService<TaskResult> {
     Result taskRemind(String userId, String taskId);
 
     /**
-     * 问询
+     * 意见征询
      *
      * @param userId            操作人ID
      * @param processInstanceId 流程实例ID
-     * @param currentTaskDefKey 问询任务节点KEY
-     * @param targetTaskDefKey  问询任务节点KEY
+     * @param currentTaskDefKey 意见征询任务节点KEY
+     * @param targetTaskDefKey  意见征询任务节点KEY
      * @param commentResult     意见
      * @return
      * @author houjinrong@chtwm.com
@@ -130,10 +130,10 @@ public interface WorkflowService extends IService<TaskResult> {
     Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId);
 
     /**
-     * 问询确认
+     * 意见征询确认
      *
      * @param userId        操作人ID
-     * @param askId         问询id
+     * @param askId         意见征询id
      * @param answerCommen 确认信息
 
      * @return
@@ -198,10 +198,10 @@ public interface WorkflowService extends IService<TaskResult> {
     Result processActivate(String userId, String processInstanceId);
 
     /**
-     * 问询意见查询接口
+     * 意见征询意见查询接口
      *
      * @param userId 操作人ID
-     * @param askId  问询id
+     * @param askId  意见征询id
      * @return
      */
     Result askComment(String userId, String askId);

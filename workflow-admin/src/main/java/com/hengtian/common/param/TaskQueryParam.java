@@ -41,7 +41,7 @@ public class TaskQueryParam {
     /**
      * 任务状态
      * 已办任务状态：1-同意；2-拒绝
-     * 待办任务状态：1：待审批；2-问询中
+     * 待办任务状态：1：待审批；2-意见征询中
      */
     @ApiModelProperty(value = "任务状态", example="110")
     private String taskState;

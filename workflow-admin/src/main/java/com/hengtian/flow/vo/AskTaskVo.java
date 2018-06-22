@@ -22,31 +22,31 @@ public class AskTaskVo implements Serializable {
      */
     private String procInstName;
     /**
-     * 问询所在任务节点ID
+     * 意见征询所在任务节点ID
      */
     private String currentTaskId;
     /**
-     * 问询所在任务节点key
+     * 意见征询所在任务节点key
      */
     private String currentTaskKey;
     /**
-     * 问询所在任务节点名称
+     * 意见征询所在任务节点名称
      */
     private String currentTaskName;
     /**
-     * 被问询的任务节点key
+     * 被意见征询的任务节点key
      */
     private String askTaskKey;
     /**
-     * 被问询的任务节点名称
+     * 被意见征询的任务节点名称
      */
     private String askTaskName;
     /**
-     * 被问询人的id
+     * 被意见征询人的id
      */
     private String askUserId;
     /**
-     * 问询人id
+     * 意见征询人id
      */
     private String createId;
     /**
@@ -62,11 +62,11 @@ public class AskTaskVo implements Serializable {
      */
     private Date updateTime;
     /**
-     * 问询是否结束
+     * 意见征询是否结束
      */
     private Integer isAskEnd;
     /**
-     * 问询详情
+     * 意见征询详情
      */
     private String askComment;
     /**

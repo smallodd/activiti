@@ -261,14 +261,14 @@ public class WorkflowQueryController extends WorkflowBaseController {
     }
 
     /**
-     * 问询任务列表
+     * 意见征询任务列表
      *
      * @param taskEnquireParam 任务查询条件实体类
      * @return
      */
     @ResponseBody
-    @SysLog("问询任务列表")
-    @ApiOperation(httpMethod = "POST", value = "问询任务列表")
+    @SysLog("意见征询任务列表")
+    @ApiOperation(httpMethod = "POST", value = "意见征询任务列表")
     @RequestMapping(value = "/rest/task/enquire", method = RequestMethod.POST)
     public Object enquireTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getCreateId())) {
@@ -279,14 +279,14 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
 
     /**
-     * 被问询任务列表
+     * 被意见征询任务列表
      *
      * @param taskEnquireParam 任务查询条件实体类
      * @return
      */
     @ResponseBody
-    @SysLog("被问询任务列表")
-    @ApiOperation(httpMethod = "POST", value = "被问询任务列表")
+    @SysLog("被意见征询任务列表")
+    @ApiOperation(httpMethod = "POST", value = "被意见征询任务列表")
     @RequestMapping(value = "/rest/task/enquired", method = RequestMethod.POST)
     public Object enquiredTaskList(@ApiParam(value = "任务查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         if (StringUtils.isBlank(taskEnquireParam.getAskUserId())) {
@@ -296,18 +296,18 @@ public class WorkflowQueryController extends WorkflowBaseController {
     }
 
     /**
-     * 问询意见查询接口
+     * 意见征询意见查询接口
      *
      * @param userId 操作人ID
-     * @param askId  问询id
+     * @param askId  意见征询id
      * @return
      */
     @ResponseBody
-    @SysLog("问询意见查询接口")
-    @ApiOperation(httpMethod = "POST", value = "问询意见查询接口")
+    @SysLog("意见征询意见查询接口")
+    @ApiOperation(httpMethod = "POST", value = "意见征询意见查询接口")
     @RequestMapping(value = "/rest/task/enquire/comment", method = RequestMethod.POST)
     public Object enquireComment(@ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
-                                 @ApiParam(value = "问询id", name = "askId", required = true) @RequestParam String askId) {
+                                 @ApiParam(value = "意见征询id", name = "askId", required = true) @RequestParam String askId) {
         return workflowService.askComment(userId, askId);
     }
 
@@ -538,19 +538,19 @@ public class WorkflowQueryController extends WorkflowBaseController {
         return workflowService.getBeforeNodes(taskId, userId, isAll != 0,false);
     }
     /**
-     * 获取可问询任务节点
+     * 获取可意见征询任务节点
      * @param taskId 任务ID
      * @return
      *
      * date 2018/5/29 14:38
      */
     @ResponseBody
-    @SysLog("获取可问询任务节点")
-    @ApiOperation(httpMethod = "POST", value = "获取可问询任务节点")
+    @SysLog("获取可意见征询任务节点")
+    @ApiOperation(httpMethod = "POST", value = "获取可意见征询任务节点")
     @RequestMapping(value = "/rest/askNodes", method = RequestMethod.POST)
     public Object getAskNodes(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
                                  @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId) {
-        logger.info("----------------获取可问询任务节点,入参 taskId：{}----------------", taskId);
+        logger.info("----------------获取可意见征询任务节点,入参 taskId：{}----------------", taskId);
         return workflowService.getBeforeNodes(taskId, userId, true,true);
     }
 

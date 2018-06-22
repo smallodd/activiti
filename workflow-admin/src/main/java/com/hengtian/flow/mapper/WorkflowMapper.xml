@@ -136,7 +136,7 @@
         ORDER BY endTime DESC
     </select>
 
-    <!--我的待审批任务及被问询任务-->
+    <!--我的待审批任务及被意见征询任务-->
     <select id="queryOpenTask" resultMap="taskResultMap">
         <if test="taskState != 2">
             SELECT
