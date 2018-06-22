@@ -44,8 +44,6 @@ public class TRuTask implements Serializable {
     private Integer appKey;
     @TableField(value = "assignee_real")
     private String assigneeReal;
-    @TableField(value = "assignee_name_real")
-    private String assigneeNameReal;
     @TableField(value = "proc_inst_id")
     private String procInstId;
 }
