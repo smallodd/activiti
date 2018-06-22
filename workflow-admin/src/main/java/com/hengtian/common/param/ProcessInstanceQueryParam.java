@@ -83,13 +83,13 @@ public class ProcessInstanceQueryParam {
      */
     @ApiModelProperty(value = "当前页", required = true, example="1")
     @NotNull(message = "当前页不能为空！")
-    private int page;
+    private Integer page;
     /**
      * 分页-每页条数
      */
     @ApiModelProperty(value = "每页条数", required = true, example="10")
     @NotNull(message = "每页条数不能为空！")
-    private int rows;
+    private Integer rows;
 
     public String getAppKey() {
         return appKey;

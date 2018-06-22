@@ -20,8 +20,14 @@
             }
             var dataGrid;
             $(function () {
+                var appKey = '${appKey}';
+                if(!appKey){
+                    $("#configRoleDialog").dialog('close');
+                    parent.$.messager.alert('提示', "请绑定应用", 'info');
+                    return;
+                }
                 dataGrid = $('#taskCandidateRoleGrid').datagrid({
-                    url: '${ctx}/emp/role/${appKey}',
+                    url: '${ctx}/emp/role/'+appKey,
                     border: true,
                     singleSelect: singleSelect,
                     fitColumns: true,
