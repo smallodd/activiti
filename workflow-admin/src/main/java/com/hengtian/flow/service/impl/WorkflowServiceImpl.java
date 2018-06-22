@@ -480,6 +480,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //参数校验
         result = validateApproveParam(ruTask, taskParam);
         if(!result.isSuccess()){
+            log.info("参数校验失败，{}",JSONObject.toJSONString(result));
             return result;
         }
 
@@ -499,6 +500,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext()) && taskParam.getPass() == TaskStatusEnum.COMPLETE_AGREE.status){
             result = setNextAssigneeTemp(task, taskParam.getAssigneeNext(), task.getProcessInstanceId(), taskParam.getAssignee(), tUserTask.getTaskDefKey(), processDefinition.getVersion(), assigneeMap);
             if(!result.isSuccess()){
+                log.info("设置下一审批人失败，{}",JSONObject.toJSONString(result));
                 return result;
             }
         }
@@ -917,6 +919,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result taskJump(String userId, String taskId, String targetTaskDefKey) {
+        log.info("跳转任务开始，入参：userId:{},taskId:{},targetTaskDefKey:{}",userId,taskId,targetTaskDefKey);
         //根据要跳转的任务ID获取其任务
         HistoricTaskInstance hisTask = historyService
                 .createHistoricTaskInstanceQuery().taskId(taskId)
@@ -948,6 +951,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         wrapper.where("app_key={0}",appkey).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
         RuProcinst ruProcinst=ruProcinstService.selectOne(wrapper);
         if(ruProcinst==null){
+            log.info("跳转失败，t_ru_procinst表中不存在流程实例id"+hisTask.getProcessInstanceId());
           return new Result(true,Constant.FAIL,"跳转失败，t_ru_procinst表中不存在流程实例id"+hisTask.getProcessInstanceId());
         }
         RuProcinst ruPr=new RuProcinst();
@@ -982,6 +986,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }
             }
         }
+        log.info("跳转成功");
         return new Result(true,Constant.SUCCESS,"跳转成功");
     }
 
@@ -999,13 +1004,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result taskTransfer(String userId, String taskId, String targetUserId) {
+        log.info("转办任务开始，入参userId:{},taskId:{},targetUserId:{}",userId,taskId,targetUserId);
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
+            log.info("任务不存在");
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
 
         RbacUser user = userService.getUserById(targetUserId);
         if(user == null){
+            log.info("被转办人不存在");
             return new Result(false,Constant.FAIL, "被转办人不存在");
         }
 
@@ -1025,10 +1033,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         //用户组权限判断
         if (!ConstantUtils.ADMIN_ID.equals(userId) && tRuTask == null) {
+            log.info("您所在的用户组没有权限进行该操作");
             return new Result(false, Constant.FAIL,"您所在的用户组没有权限进行该操作");
         }
 
         if(StringUtils.contains(tRuTask.getAssigneeReal(), targetUserId)){
+            log.info("办理人已存在，同一办理人只能办理一次");
             return new Result(false, Constant.FAIL,"办理人已存在，同一办理人只能办理一次");
         }
         if(userId.indexOf(":") < 0){
@@ -1053,8 +1063,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public Result taskRemind(String userId, String taskId) {
+        log.info("催办任务开始：入参：userId{},taskId{}",userId,taskId);
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
+            log.info("任务不存在");
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
 
@@ -1089,6 +1101,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId) {
+        log.info("意见征询开始：入参：userId{},processInstanceId{},currentTaskDefKey{},targetTaskDefKey{},commentResult{},askedUserId{}",userId,processInstanceId,currentTaskDefKey,targetTaskDefKey,commentResult,askedUserId);
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
         if (task == null) {
             log.error("意见征询的任务不存在 processInstanceId:{},taskDefinitionKey:{}", processInstanceId, currentTaskDefKey);
@@ -1097,14 +1110,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //校验是否是上级节点
         List<String> parentNodes = getBeforeTaskDefinitionKeys(task, true);
         if (!parentNodes.contains(targetTaskDefKey)) {
+            log.info("无权意见征询该节点");
             return new Result(false,Constant.FAIL, "无权意见征询该节点");
         }
         List<HistoricTaskInstance> taskInstanceList=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(targetTaskDefKey).finished().orderByTaskCreateTime().desc().list();
         if(taskInstanceList==null||taskInstanceList.size()==0){
+            log.info("该任务不存在或该节点不存在");
             return new Result(false,Constant.FAIL, "该任务不存在或该节点不存在");
         }else{
             HistoricTaskInstance historicTaskInstance=taskInstanceList.get(0);
             if(!historicTaskInstance.getAssignee().contains(askedUserId)){
+                log.info("被意见征询节点该任务没有被用户"+askedUserId+"审批");
                 return new Result(false,Constant.FAIL, "被意见征询节点该任务没有被用户"+askedUserId+"审批");
             }
         }
@@ -1117,6 +1133,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 .where("is_ask_end=0");
         List<TAskTask> list = tAskTaskService.selectList(wrapper);
         if (CollectionUtils.isNotEmpty(list)) {
+            log.info("已存在意见征询任务");
             return new Result(false,Constant.ASK_TASK_EXIT, "已存在意见征询任务");
         }
 
@@ -1136,6 +1153,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         askTask.setAskedUserId(askedUserId);
         boolean success = tAskTaskService.insert(askTask);
         if (!success) {
+            log.info("意见征询失败");
             return new Result(false, Constant.FAIL,"意见征询失败");
         }
 
@@ -1146,6 +1164,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         ruProcinst.setCurrentTaskStatus(2);
         success = ruProcinstService.update(ruProcinst, wrapper_);
         if(!success){
+            log.info("意见征询后，修改任务状态为【意见征询中：1】失败");
             return new Result(false, Constant.FAIL,"意见征询后，修改任务状态为【意见征询中：1】失败");
         }
         ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult() ;
@@ -1161,6 +1180,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
+        log.info("意见征询成功");
         return new Result(true,Constant.SUCCESS, "意见征询成功");
     }
 
@@ -1177,6 +1197,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result taskConfirmEnquire(String userId, String askId, String answerComment) {
+        log.info("确认意见征询开始，入参：userId{},askId{},answerComment{}",userId,askId,answerComment);
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
         wrapper.where("`asked_user_id`={0}", userId)
                 .where("id={0}", askId)
@@ -1206,6 +1227,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         ruProcinst.setCurrentTaskStatus(1);
         success = ruProcinstService.update(ruProcinst, wrapper_);
         if(!success){
+            log.info("意见征询后，修改任务状态为【意见征询中：1】失败");
             return new Result(false, Constant.FAIL,"意见征询后，修改任务状态为【意见征询中：1】失败");
         }
 
@@ -1222,6 +1244,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setOperTaskKey(list.get(0).getName());
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
+        log.info("意见征询确认成功");
         return new Result(true, Constant.SUCCESS,"意见征询确认成功");
     }
 
