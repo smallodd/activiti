@@ -299,9 +299,8 @@ public class ActivitiController extends BaseController{
     	String processInstanceId = task.getProcessInstanceId();
 
 		List<CommentVo> comments = new ArrayList<CommentVo>();
-		List<Comment> commentList= taskService.getProcessInstanceComments(processInstanceId,"1");
-		List<Comment> commentList2= taskService.getProcessInstanceComments(processInstanceId,"2");
-		commentList.addAll(commentList2);
+		List<Comment> commentList= taskService.getProcessInstanceComments(processInstanceId);
+
 		for(Comment comment : commentList){
 			CommentEntity c = (CommentEntity)comment;
 			CommentVo vo = new CommentVo();
