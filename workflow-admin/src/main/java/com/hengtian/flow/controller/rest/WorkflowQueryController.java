@@ -491,9 +491,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if (StringUtils.isBlank(processInstanceId)) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
-        List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId,"1");
-        List<Comment> commentList2 = taskService.getProcessInstanceComments(processInstanceId,"2");
-        commentList.addAll(commentList2);
+        List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
+
         return renderSuccess(commentList);
     }
 
