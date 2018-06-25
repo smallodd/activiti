@@ -1766,7 +1766,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public Result getBeforeNodes(String taskId, String userId, boolean isAll,boolean needPerson) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        HistoricTaskInstance task =historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
         if (task == null) {
             log.warn("任务不存在 taskId {}", taskId);
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
