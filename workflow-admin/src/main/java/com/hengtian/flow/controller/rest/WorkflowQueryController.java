@@ -13,11 +13,14 @@ import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.utils.BeanUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.controller.WorkflowBaseController;
+import com.hengtian.flow.model.ProcessInstanceResult;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
+import com.hengtian.flow.vo.TaskNodeVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.service.PrivilegeService;
 import io.swagger.annotations.ApiOperation;
@@ -329,10 +332,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 流程实例详情
-     *
      * @param processInstanceId 流程实例ID
      * @param businessKey 业务主键
      * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/25 17:48
      */
     @ResponseBody
     @SysLog("流程实例详情")
@@ -360,11 +364,24 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError("参数异常");
         }
 
-        JSONObject result = new JSONObject();
-        result.put("processInstanceId", processInstance.getProcessInstanceId());
-        result.put("processDefinitionId", processInstance.getProcessDefinitionId());
-        result.put("processDefinitionName", processInstance.getProcessDefinitionName());
-        return renderSuccess(result);
+        ProcessInstanceResult processInstanceResult = new ProcessInstanceResult();
+        /*processInstanceResult.setProcessInstanceId(processInstance.getProcessInstanceId());
+        processInstanceResult.setProcessDefinitionId(processInstance.getProcessDefinitionId());
+        processInstanceResult.setProcessDefinitionName(processInstance.getProcessDefinitionName());*/
+
+        BeanUtils.copy(processInstance, processInstanceResult);
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        List<TaskNodeVo> taskNodeVoList = Lists.newArrayList();
+        for(Task task : taskList){
+            TaskNodeVo taskNodeVo = new TaskNodeVo();
+            taskNodeVo.setTaskId(task.getId());
+            taskNodeVo.setTaskDefinitionKey(task.getTaskDefinitionKey());
+            taskNodeVo.setTaskDefinitionName(task.getName());
+
+            taskNodeVoList.add(taskNodeVo);
+        }
+        processInstanceResult.setCurrentTaskNode(taskNodeVoList);
+        return renderSuccess(processInstanceResult);
     }
 
     /**
