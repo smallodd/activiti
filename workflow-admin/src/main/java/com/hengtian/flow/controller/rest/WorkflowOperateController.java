@@ -12,6 +12,7 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.*;
@@ -83,6 +84,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         //校验参数是否合法
         Result result = processParam.validate();
         if (!result.isSuccess()) {
+            logger.info("参数不合法：{}",JSONObject.toJSONString(result));
             return result;
         } else {
             try {
@@ -142,7 +144,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         }
         //判断此节点可以设置审批人
         Map<String, Object> map = taskService.getVariables(task.getId());
-        if (!Boolean.valueOf(map.get("customApprover").toString())) {
+        if (!Boolean.valueOf(map.get(ConstantUtils.SET_ASSIGNEE_FLAG).toString())) {
             return renderError("此任务不可以设置审批人！审批人由操作后台设置", Constant.PARAM_ERROR);
         }
         ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
@@ -210,6 +212,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                                    @ApiParam(value = "1是通过，2是拒绝，3通过自定义参数流转", name = "pass", required = true) @RequestParam("pass") Integer pass,
                                    @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable,
                                    @ApiParam(value = "审批人信息", name = "assignee", required = true) @RequestParam("assignee") String assignee) {
+        logger.info("批量审批任务开始：入参pass:{}，jsonVariable:{},assignee:{}",pass,jsonVariable,assignee);
         Map map = JSONObject.parseObject(jsonVariable);
         Result result = new Result();
         result.setMsg("审批成功");
@@ -232,6 +235,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             taskParam.setAssignee(assignee);
             workflowService.approveTask(task, taskParam);
         }
+        logger.info("批量审批任务结束，出参：{}",JSONObject.toJSONString(result));
         return result;
     }
 

@@ -28,8 +28,8 @@
         <result column="assignee" property="assignee" jdbcType="VARCHAR"/>
         <result column="processDefinitionId" property="processDefinitionId" jdbcType="VARCHAR"/>
         <result column="taskDefinitionName" property="taskDefinitionName" jdbcType="VARCHAR"/>
-        <result column="startTime" property="startTime" jdbcType="DATE"/>
-        <result column="endTime" property="endTime" jdbcType="DATE"/>
+        <result column="startTime" property="startTime" jdbcType="TIMESTAMP"/>
+        <result column="endTime" property="endTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="taskResult">
@@ -257,6 +257,7 @@
             <if test="endTimeTo != null">
                 AND ahp.END_TIME_ &lt;= #{endTimeTo}
             </if>
+        ORDER BY endTime DESC
     </select>
 
     <!--代办任务数量-->

@@ -8,11 +8,9 @@ import com.baomidou.mybatisplus.enums.IdType;
 import com.hengtian.common.enums.AssignTypeEnum;
 
 /**
- * <p>
  * 用户任务表
- * </p>
- *
- * @author junyang.liu
+ * @author houjinrong@chtwm.com
+ * date 2018/6/22 16:36
  */
 @TableName("t_user_task")
 public class TUserTask implements Serializable {

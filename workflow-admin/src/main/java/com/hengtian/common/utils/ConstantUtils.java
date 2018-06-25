@@ -10,10 +10,6 @@ public class ConstantUtils {
 	 */
 	public static final int RESOURCE_MENU = 0;
 	/**
-	 * 业务类型为请假业务 TVacation,CounterSign,MailTest,WebserviceTest,SVacation
-	 */
-	public final static String VACATION = "SVacation";
-	/**
 	 * 获取业务实体的KEY
 	 */
 	public final static String MODEL_KEY = "modelkey";
@@ -33,7 +29,11 @@ public class ConstantUtils {
 	 * 管理员ID
 	 */
 	public final static String ADMIN_ID = "admin";
-	
+	/**
+	 * 设置审批人变量标识
+	 */
+	public final static String SET_ASSIGNEE_FLAG = "customApprover";
+
 	/**
 	 * @author liujunyang
 	 * 自动生成编码前缀,必须为两位大写字母
@@ -61,8 +61,7 @@ public class ConstantUtils {
 			this.value = value;
 		}
 	}
-	
-	
+
 	/**
 	 * SysOperLog(系统日志表)
 	 */
@@ -91,9 +90,7 @@ public class ConstantUtils {
 			this.value = value;
 		}
 	}
-	
-	
-	
+
 	/**
 	 * TVacation(请假表) 请假状态
 	 */
