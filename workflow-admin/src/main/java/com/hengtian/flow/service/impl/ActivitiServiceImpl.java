@@ -461,7 +461,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 		EntityWrapper entityWrapper1=new EntityWrapper();
 		entityWrapper1.where("task_id={0}",taskId);
 		tRuTaskService.update(tRuTask,entityWrapper1);
-		boolean customApprover = (boolean)runtimeService.getVariable(instance.getProcessInstanceId(), "customApprover");
+		boolean customApprover = (boolean)runtimeService.getVariable(instance.getProcessInstanceId(), ConstantUtils.SET_ASSIGNEE_FLAG);
 
 		if (!customApprover) {
 			List<TaskEntity> tasks = e.getTasks();

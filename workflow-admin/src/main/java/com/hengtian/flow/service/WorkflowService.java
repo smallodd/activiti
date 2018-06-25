@@ -312,4 +312,13 @@ public interface WorkflowService extends IService<TaskResult> {
     Map getVariables(String processInstanceId);
 
     Comment  getComments(String taskId,String userId);
+
+    /**
+     * 获取用户名称
+     * @param userId
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/25 10:44
+     */
+    String getUserName(String userId);
 }

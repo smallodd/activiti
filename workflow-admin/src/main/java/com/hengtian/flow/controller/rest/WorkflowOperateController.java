@@ -12,6 +12,7 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.extend.TaskAdapter;
 import com.hengtian.flow.model.*;
@@ -143,7 +144,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         }
         //判断此节点可以设置审批人
         Map<String, Object> map = taskService.getVariables(task.getId());
-        if (!Boolean.valueOf(map.get("customApprover").toString())) {
+        if (!Boolean.valueOf(map.get(ConstantUtils.SET_ASSIGNEE_FLAG).toString())) {
             return renderError("此任务不可以设置审批人！审批人由操作后台设置", Constant.PARAM_ERROR);
         }
         ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();

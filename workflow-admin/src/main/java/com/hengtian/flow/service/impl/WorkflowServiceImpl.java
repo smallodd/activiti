@@ -175,7 +175,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     }
             }
             String creator = processParam.getCreatorId();
-            variables.put("customApprover", processParam.isCustomApprover());
+            variables.put(ConstantUtils.SET_ASSIGNEE_FLAG, processParam.isCustomApprover());
             variables.put("appKey", processParam.getAppKey());
             identityService.setAuthenticatedUserId(creator);
             //生成任务
@@ -294,136 +294,170 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     public Boolean setAssignee(Task task, TUserTask tUserTask, boolean needSetNext, Map<String, AssigneeTemp> assigneeTempMap) {
         log.info("进入设置审批人接口,tUserTask参数{}", JSONObject.toJSONString(tUserTask));
-
         //获取任务中的自定义参数
         Integer appKey = (Integer)taskService.getVariable(task.getId(), "appKey");
-        String assignee = null;
-        //生成扩展任务信息
-        if(needSetNext && assigneeTempMap != null && assigneeTempMap.size() > 0){
-            log.info("手动设置审批人，前段传来参数：{}",assigneeTempMap);
-            //需手动设置审批人，不从流程配置表中设置
-            Set<String> keySet = assigneeTempMap.keySet();
-            for(String key : keySet){
-                AssigneeTemp assigneeTemp = assigneeTempMap.get(key);
+        boolean customApprover = (boolean) runtimeService.getVariable(task.getProcessInstanceId(), ConstantUtils.SET_ASSIGNEE_FLAG);
+        List<TRuTask> ruTaskList = Lists.newArrayList();
+        if(customApprover){
+            //应用系统端设置审批人
+            String assignee = tUserTask.getCandidateIds();
+            if(StringUtils.isBlank(assignee)){
+                logger.info("审批人信息为空");
+                throw new WorkFlowException("审批人信息为空");
+            }
+            String[] assigneeArray = assignee.split(",");
+
+            for(String userId : assigneeArray){
                 TRuTask tRuTask = new TRuTask();
                 tRuTask.setTaskId(task.getId());
-                tRuTask.setAssignee(assigneeTemp.getRoleCode());
-                tRuTask.setAssigneeName(assigneeTemp.getRoleName());
-                tRuTask.setAssigneeReal(assigneeTemp.getAssigneeCode());
+                tRuTask.setAssignee(userId);
+                tRuTask.setAssigneeName(getUserName(userId));
+                tRuTask.setAssigneeReal(userId);
                 tRuTask.setExpireTime(task.getDueDate());
                 tRuTask.setAppKey(appKey);
                 tRuTask.setProcInstId(task.getProcessInstanceId());
                 tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
                 tRuTask.setTaskDefName(task.getName());
-                tRuTask.setAssigneeType(tUserTask.getAssignType());
+                tRuTask.setAssigneeType(AssignTypeEnum.PERSON.code);
                 tRuTask.setOwner(task.getOwner());
-                tRuTask.setTaskType(tUserTask.getTaskType());
+                tRuTask.setTaskType(TaskTypeEnum.ASSIGNEE.value);
+
+                ruTaskList.add(tRuTask);
                 tRuTaskService.insert(tRuTask);
             }
-        }else {
-            log.info("通过工作流平台设置审批人");
-            String assignees = tUserTask.getCandidateIds();
-            String assigneeNames = tUserTask.getCandidateName();
-            String[] assigneeArray = assignees.split(",");
-            Set set = new HashSet(Arrays.asList(assigneeArray));
-            assigneeArray = (String[]) set.toArray(new String[0]);
-            String[] assigneeNameArray=null;
-
-            if(StringUtils.isNotBlank(assigneeNames)) {
-                assigneeNameArray = assigneeNames.split(",");
-                set = new HashSet(Arrays.asList(assigneeNameArray));
-                assigneeNameArray = (String[]) set.toArray(new String[0]);
-            }
-
-            for (int i=0;i<assigneeArray.length;i++) {
-                assignee = assigneeArray[i];
-                TRuTask tRuTask = new TRuTask();
-                tRuTask.setTaskId(task.getId());
-                tRuTask.setAssignee(assignee);
-                if(assigneeNameArray==null) {
-                    tRuTask.setAssigneeName("");
-                }else{
-                    tRuTask.setAssigneeName(assigneeNameArray[i]);
+        }else{
+            //根据系统配置设置审批人
+            String assignee = null;
+            //生成扩展任务信息
+            if(needSetNext && assigneeTempMap != null && assigneeTempMap.size() > 0){
+                log.info("手动设置审批人，前段传来参数：{}",assigneeTempMap);
+                //需手动设置审批人，不从流程配置表中设置
+                Set<String> keySet = assigneeTempMap.keySet();
+                for(String key : keySet){
+                    AssigneeTemp assigneeTemp = assigneeTempMap.get(key);
+                    TRuTask tRuTask = new TRuTask();
+                    tRuTask.setTaskId(task.getId());
+                    tRuTask.setAssignee(assigneeTemp.getRoleCode());
+                    tRuTask.setAssigneeName(assigneeTemp.getRoleName());
+                    tRuTask.setAssigneeReal(assigneeTemp.getAssigneeCode());
+                    tRuTask.setExpireTime(task.getDueDate());
+                    tRuTask.setAppKey(appKey);
+                    tRuTask.setProcInstId(task.getProcessInstanceId());
+                    tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
+                    tRuTask.setTaskDefName(task.getName());
+                    tRuTask.setAssigneeType(tUserTask.getAssignType());
+                    tRuTask.setOwner(task.getOwner());
+                    tRuTask.setTaskType(tUserTask.getTaskType());
+                    ruTaskList.add(tRuTask);
                 }
-                EntityWrapper entityWrapper = new EntityWrapper();
-                entityWrapper.where("task_id={0}", task.getId()).andNew("assignee={0}", assignee);
-                TRuTask tRu = tRuTaskService.selectOne(entityWrapper);
-                if (tRu != null) {
-                    continue;
+            }else {
+                log.info("通过工作流平台设置审批人");
+                String assignees = tUserTask.getCandidateIds();
+                String assigneeNames = tUserTask.getCandidateName();
+                String[] assigneeArray = assignees.split(",");
+                Set set = new HashSet(Arrays.asList(assigneeArray));
+                assigneeArray = (String[]) set.toArray(new String[0]);
+                String[] assigneeNameArray=null;
+
+                if(StringUtils.isNotBlank(assigneeNames)) {
+                    assigneeNameArray = assigneeNames.split(",");
+                    set = new HashSet(Arrays.asList(assigneeNameArray));
+                    assigneeNameArray = (String[]) set.toArray(new String[0]);
                 }
-                tRuTask.setAssigneeType(tUserTask.getAssignType());
-                tRuTask.setOwner(task.getOwner());
 
-                tRuTask.setTaskType(tUserTask.getTaskType());
+                for (int i=0;i<assigneeArray.length;i++) {
+                    assignee = assigneeArray[i];
+                    TRuTask tRuTask = new TRuTask();
+                    tRuTask.setTaskId(task.getId());
+                    tRuTask.setAssignee(assignee);
+                    if(assigneeNameArray==null) {
+                        tRuTask.setAssigneeName("");
+                    }else{
+                        tRuTask.setAssigneeName(assigneeNameArray[i]);
+                    }
+                    EntityWrapper entityWrapper = new EntityWrapper();
+                    entityWrapper.where("task_id={0}", task.getId()).andNew("assignee={0}", assignee);
+                    TRuTask tRu = tRuTaskService.selectOne(entityWrapper);
+                    if (tRu != null) {
+                        continue;
+                    }
+                    tRuTask.setAssigneeType(tUserTask.getAssignType());
+                    tRuTask.setOwner(task.getOwner());
 
-                //判断如果是非人员审批中的认领任务，需要认领之后才能审批
-                if (AssignTypeEnum.ROLE.code.intValue() == tUserTask.getAssignType().intValue()) {
-                    tRuTask.setStatus(-1);
-                } else if(AssignTypeEnum.EXPR.code.intValue() == tUserTask.getAssignType().intValue()){
-                    //表达式
-                    List<Emp> empLeader = Lists.newArrayList();
-                    String assigneeReal = null;
-                    if(ExprEnum.LEADER.expr.equals(assignee)){
-                        //上级节点领导
-                        List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(task, false);
-                        if(CollectionUtils.isNotEmpty(beforeTaskDefKeys)){
-                            for(String taskDefKey : beforeTaskDefKeys){
-                                HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list().get(0);
-                                String str = historicTaskInstance.getAssignee().replaceAll("_Y","").replaceAll("_N","");
-                                for(String a : str.split(",")){
-                                    List<Emp> emps = empService.selectDirectSupervisorByCode(a);
-                                    if(CollectionUtils.isNotEmpty(emps)){
-                                        empLeader.addAll(emps);
+                    tRuTask.setTaskType(tUserTask.getTaskType());
+
+                    //判断如果是非人员审批中的认领任务，需要认领之后才能审批
+                    if (AssignTypeEnum.ROLE.code.intValue() == tUserTask.getAssignType().intValue()) {
+                        tRuTask.setStatus(-1);
+                    } else if(AssignTypeEnum.EXPR.code.intValue() == tUserTask.getAssignType().intValue()){
+                        //表达式
+                        List<Emp> empLeader = Lists.newArrayList();
+                        String assigneeReal = null;
+                        if(ExprEnum.LEADER.expr.equals(assignee)){
+                            //上级节点领导
+                            List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(task, false);
+                            if(CollectionUtils.isNotEmpty(beforeTaskDefKeys)){
+                                for(String taskDefKey : beforeTaskDefKeys){
+                                    HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list().get(0);
+                                    String str = historicTaskInstance.getAssignee().replaceAll("_Y","").replaceAll("_N","");
+                                    for(String a : str.split(",")){
+                                        List<Emp> emps = empService.selectDirectSupervisorByCode(a);
+                                        if(CollectionUtils.isNotEmpty(emps)){
+                                            empLeader.addAll(emps);
+                                        }
                                     }
                                 }
                             }
+                        }else if(ExprEnum.LEADER_CREATOR.expr.equals(assignee)){
+                            //流程创建人领导
+                            String creator = tUserTask.getExpr();
+                            if(StringUtils.isBlank(creator)){
+                                EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
+                                wrapper.where("proc_inst_id={0}", task.getProcessInstanceId());
+                                RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
+                                creator = ruProcinst.getCreator();
+                            }
+                            List<Emp> emps = empService.selectDirectSupervisorByCode(creator);
+                            if(CollectionUtils.isNotEmpty(emps)){
+                                empLeader.addAll(emps);
+                            }
                         }
-                    }else if(ExprEnum.LEADER_CREATOR.expr.equals(assignee)){
-                        //流程创建人领导
-                        String creator = tUserTask.getExpr();
-                        if(StringUtils.isBlank(creator)){
-                            EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
-                            wrapper.where("proc_inst_id={0}", task.getProcessInstanceId());
-                            RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
-                            creator = ruProcinst.getCreator();
+
+                        if(CollectionUtils.isNotEmpty(empLeader)){
+                            Set<String> assigneeSet = Sets.newHashSet();
+                            for(Emp emp : empLeader){
+                                assigneeSet.add(emp.getCode());
+                            }
+                            assigneeReal = StringUtils.join(assigneeSet.toArray(), ",");
+                            tRuTask.setAssigneeReal(assigneeReal);
+
+                            JSONObject approveCountJson = new JSONObject();
+                            approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_TOTAL.value, assigneeSet.size());
+                            approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NEED.value, assigneeSet.size());
+                            approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NOW.value, 0);
+                            approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_REFUSE.value, 0);
+
+                            taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value,approveCountJson.toJSONString());
+                        }else{
+                            return false;
                         }
-                        List<Emp> emps = empService.selectDirectSupervisorByCode(creator);
-                        if(CollectionUtils.isNotEmpty(emps)){
-                            empLeader.addAll(emps);
-                        }
+                    } else{
+                        tRuTask.setStatus(0);
+                        tRuTask.setAssigneeReal(assignee);
                     }
-
-                    if(CollectionUtils.isNotEmpty(empLeader)){
-                        Set<String> assigneeSet = Sets.newHashSet();
-                        for(Emp emp : empLeader){
-                            assigneeSet.add(emp.getCode());
-                        }
-                        assigneeReal = StringUtils.join(assigneeSet.toArray(), ",");
-                        tRuTask.setAssigneeReal(assigneeReal);
-
-                        JSONObject approveCountJson = new JSONObject();
-                        approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_TOTAL.value, assigneeSet.size());
-                        approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NEED.value, assigneeSet.size());
-                        approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NOW.value, 0);
-                        approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_REFUSE.value, 0);
-
-                        taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value,approveCountJson.toJSONString());
-                    }else{
-                        return false;
-                    }
-                } else{
-                    tRuTask.setStatus(0);
-                    tRuTask.setAssigneeReal(assignee);
+                    tRuTask.setExpireTime(task.getDueDate());
+                    tRuTask.setAppKey(appKey);
+                    tRuTask.setProcInstId(task.getProcessInstanceId());
+                    tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
+                    tRuTask.setTaskDefName(task.getName());
+                    ruTaskList.add(tRuTask);
                 }
-                tRuTask.setExpireTime(task.getDueDate());
-                tRuTask.setAppKey(appKey);
-                tRuTask.setProcInstId(task.getProcessInstanceId());
-                tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
-                tRuTask.setTaskDefName(task.getName());
-                tRuTaskService.insert(tRuTask);
             }
         }
 
+        if(CollectionUtils.isNotEmpty(ruTaskList)){
+            return tRuTaskService.insertBatch(ruTaskList);
+        }
         log.info("设置审批人结束");
         return true;
     }
@@ -665,7 +699,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
 
             //设置审批人处理逻辑
-            if (!Boolean.valueOf(map.get("customApprover").toString())) {
+            if (!Boolean.valueOf(map.get(ConstantUtils.SET_ASSIGNEE_FLAG).toString())) {
                 //是否需要手动设置审批人
                 boolean needSetNext = false;
                 if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext())){
@@ -968,7 +1002,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         EntityWrapper entity=new EntityWrapper();
         entity.where("app_key={0}",appkey).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
         ruProcinstService.update(ruPr,entity);
-        boolean customApprover = (boolean) runtimeService.getVariable(instance.getProcessInstanceId(), "customApprover");
+        boolean customApprover = (boolean) runtimeService.getVariable(instance.getProcessInstanceId(), ConstantUtils.SET_ASSIGNEE_FLAG);
 
         if (!customApprover) {
             List<TaskEntity> tasks = e.getTasks();
@@ -1990,5 +2024,24 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         return result;
+    }
+
+    /**
+     * 获取用户名称
+     * @param userId
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/25 10:44
+     */
+    @Override
+    public String getUserName(String userId){
+        if(userId == null){
+            return userId;
+        }
+        RbacUser user = userService.getUserById(userId);
+        if(user == null){
+            return userId;
+        }
+        return user.getName();
     }
 }
