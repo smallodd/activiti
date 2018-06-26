@@ -19,11 +19,13 @@ import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
+import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
 import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
+import com.rbac.service.UserService;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.engine.*;
@@ -93,6 +95,8 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private FormService formService;
     @Autowired
     private AssigneeTempService assigneeTempService;
+    @Autowired
+    UserService userService;
 
 
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list) {
@@ -989,8 +993,10 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         wrapper.in("task_def_key", beforeTaskDefKeys);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
         String assignee = "";
+        Set<String> set=new HashSet<>();
         for (TRuTask t : tRuTasks) {
-            assignee = StringUtils.isBlank(assignee) ? t.getAssigneeReal() : assignee + "," + t.getAssigneeReal();
+            set.add(t.getAssigneeReal());
+           // assignee = StringUtils.isBlank(assignee) ? t.getAssigneeReal() : assignee + "," + t.getAssigneeReal();
         }
 
         return assignee;
@@ -1009,20 +1015,32 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         if (hisTask == null) {
             return null;
         }
+        Integer appkey= (Integer) runtimeService.getVariable(hisTask.getExecutionId(),"appKey");
         List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
         if (CollectionUtils.isEmpty(nextTaskDefKeys)) {
             return null;
         }
+        Set<String> set=new HashSet<>();
 
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
-        wrapper.in("task_def_key", nextTaskDefKeys);
+        wrapper.in("task_def_key", nextTaskDefKeys).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
         String assignee = "";
         for (TRuTask t : tRuTasks) {
-            assignee = StringUtils.isBlank(assignee) ? t.getAssigneeReal() : assignee + "," + t.getAssigneeReal();
+            if(StringUtils.isNotBlank(t.getAssigneeReal())) {
+                set.add(t.getAssigneeReal());
+            }else{
+                if(t.getAssigneeType().intValue()==AssignTypeEnum.ROLE.code) {
+                    List<RbacUser> rbacUsers = privilegeService.getUsersByRoleId(appkey, null, Long.parseLong(t.getAssignee()));
+                    for (RbacUser rbacUser : rbacUsers) {
+                        set.add(rbacUser.getCode());
+                    }
+                }
+            }
+//            assignee = StringUtils.isBlank(assignee) ? t.getAssigneeReal() : assignee + "," + t.getAssigneeReal();
         }
 
-        return assignee;
+        return StringUtils.join(set.toArray(),",");
     }
 
     /**
@@ -1161,7 +1179,17 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 Set<String> keySet = map.keySet();
                 for(String key : keySet){
                     TaskNodeVo taskNode = new TaskNodeVo();
-
+                    AssigneeVo assigneeVo;
+                    List<AssigneeVo> list=new ArrayList<>();
+                    String[] assigns=assigneeMap.get(key).split(",");
+                    for(String assign:assigns){
+                        assigneeVo=new AssigneeVo();
+                        RbacUser rbacUser=userService.getUserById(assign);
+                        assigneeVo.setUserCode(rbacUser.getCode());
+                        assigneeVo.setUserName(rbacUser.getName());
+                        list.add(assigneeVo);
+                    }
+                    taskNode.setAssignee(list);
                     taskNode.setTaskId(map.get(key).getTaskId());
                     taskNode.setAssigneeStr(assigneeMap.get(key));
                     taskNode.setTaskDefinitionName(map.get(key).getTaskDefName());
@@ -1192,6 +1220,17 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 currentAssignee = hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
                 taskNode.setTaskId(hisTask.getId());
                 taskNode.setAssigneeStr(currentAssignee);
+                String[] assigns=currentAssignee.split(",");
+                AssigneeVo assigneeVo;
+                List<AssigneeVo> list=new ArrayList<>();
+                for(String assign:assigns){
+                    assigneeVo=new AssigneeVo();
+                    RbacUser rbacUser=userService.getUserById(assign);
+                    assigneeVo.setUserCode(rbacUser.getCode());
+                    assigneeVo.setUserName(rbacUser.getName());
+                    list.add(assigneeVo);
+                }
+                taskNode.setAssignee(list);
                 taskNode.setTaskDefinitionName(hisTask.getName());
                 taskNode.setTaskDefinitionKey(hisTask.getTaskDefinitionKey());
                 taskNodes.add(taskNode);

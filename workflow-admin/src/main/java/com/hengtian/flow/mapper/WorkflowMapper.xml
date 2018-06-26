@@ -43,7 +43,7 @@
         trp.CREATOR_NAME AS creatorName,
         trp.CREATOR_DEPT AS creatorDeptCode,
         trp.CREATOR_DEPT_NAME AS creatorDeptName,
-        trp.CURRENT_TASK_STATUS AS taskState,
+
         ahp.ID_ AS processInstanceId,
         ahp.NAME_ AS processInstanceTitle,
         ahp.PROC_DEF_ID_ AS processDefinitionId,
@@ -109,7 +109,8 @@
         SELECT
             <include refid="taskResult"/>
             art.CREATE_TIME_ AS startTime,
-            art.CREATE_TIME_ AS endTime
+            art.CREATE_TIME_ AS endTime,
+           trp.CURRENT_TASK_STATUS AS taskState
         FROM
             act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -125,7 +126,9 @@
         SELECT
             <include refid="taskResult"/>
             art.START_TIME_ AS startTime,
-            art.END_TIME_ AS endTime
+            art.END_TIME_ AS endTime,
+        (case when art.ASSIGNEE_ LIKE '%_Y%' then 1 else 2 end) AS taskState
+
         FROM
             act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -144,7 +147,8 @@
                 art.CREATE_TIME_ AS startTime,
                 art.CREATE_TIME_ AS endTime,
                 0 AS asked,
-                NULL AS askId
+                NULL AS askId,
+                trp.CURRENT_TASK_STATUS AS taskState
             FROM
                 act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
                 LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -173,7 +177,7 @@
                 trp.CREATOR_NAME AS creatorNeme,
                 trp.CREATOR_DEPT AS creatorDeptCode,
                 trp.CREATOR_DEPT_NAME AS creatorDeptNeme,
-                trp.CURRENT_TASK_STATUS AS taskState,
+
                 ahp.ID_ AS processInstanceId,
                 ahp.NAME_ AS processInstanceTitle,
                 ahp.PROC_DEF_ID_ AS processDefinitionId,
@@ -183,7 +187,8 @@
                 aht.START_TIME_ AS startTime,
                 aht.END_TIME_ AS endTime,
                 1 as asked,
-                tat.id as askId
+                tat.id as askId,
+                trp.CURRENT_TASK_STATUS AS taskState
             FROM
                 act_hi_taskinst AS aht LEFT JOIN t_ru_task AS trt ON aht.ID_ =trt.TASK_ID
                 LEFT JOIN act_hi_procinst AS ahp ON aht.PROC_INST_ID_=ahp.PROC_INST_ID_

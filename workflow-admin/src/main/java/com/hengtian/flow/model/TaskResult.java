@@ -1,8 +1,11 @@
 package com.hengtian.flow.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.hengtian.flow.vo.AssigneeVo;
+import com.hengtian.flow.vo.TaskNodeVo;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 任务信息-返回值
@@ -27,14 +30,20 @@ public class TaskResult {
      * 当前处理人
      */
     private String assignee;
+
+    private String assigneeName;
     /**
      * 前一步处理人
      */
     private String assigneeBefore;
+
+    private String assigneeBeforeName;
     /**
      * 后一步处理人
      */
     private String assigneeNext;
+
+    private String assigneeNextName;
     /**
      * 委托人
      */
@@ -97,6 +106,30 @@ public class TaskResult {
      * 意见征询主键
      */
     private String askId;
+
+    public String getAssigneeName() {
+        return assigneeName;
+    }
+
+    public void setAssigneeName(String assigneeName) {
+        this.assigneeName = assigneeName;
+    }
+
+    public String getAssigneeBeforeName() {
+        return assigneeBeforeName;
+    }
+
+    public void setAssigneeBeforeName(String assigneeBeforeName) {
+        this.assigneeBeforeName = assigneeBeforeName;
+    }
+
+    public String getAssigneeNextName() {
+        return assigneeNextName;
+    }
+
+    public void setAssigneeNextName(String assigneeNextName) {
+        this.assigneeNextName = assigneeNextName;
+    }
 
     public String getTaskId() {
         return taskId;

@@ -18,4 +18,8 @@ public class AssigneeVo {
      * 审批人名称
      */
     private String userName;
+    /**
+     * 是否审批 0：否 1：是
+     */
+    private int isComplete;
 }
