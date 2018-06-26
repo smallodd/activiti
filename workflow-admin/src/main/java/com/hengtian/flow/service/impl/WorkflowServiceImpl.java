@@ -2057,6 +2057,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(appKey == null){
             appKey = runtimeService.getVariable(task.getExecutionId(), "appKey", Integer.class);
         }
+
+        String assignee = task.getAssignee();
+        Set<String> assigneeSet = Sets.newHashSet();
+        if(StringUtils.isNotBlank(assignee)){
+            assignee = assignee.replace("_Y", "").replace("_N", "");
+            String[] split = assignee.split(",");
+            for(String a : split){
+                assigneeSet.add(a);
+            }
+        }
+
         List<AssigneeVo> assigneeVoList = Lists.newArrayList();
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.eq("proc_inst_id", task.getProcessInstanceId());
@@ -2078,6 +2089,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     assigneeVo.setUserName(u.getName());
                 }
             }
+
+            if(assigneeSet.contains(assigneeVo.getUserCode())) {
+                assigneeVo.setIsComplete(1);
+            }else {
+                assigneeVo.setIsComplete(0);
+            }
+
             assigneeVoList.add(assigneeVo);
         }
         return assigneeVoList;
