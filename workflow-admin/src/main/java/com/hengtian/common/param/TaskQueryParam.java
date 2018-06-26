@@ -88,6 +88,11 @@ public class TaskQueryParam {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private String createTimeEnd;
     /**
+     * 流程定义key
+     */
+    @ApiModelProperty(value = "流程定义key", example="0")
+    private String procDefKey;
+    /**
      * 分页-当前页
      */
     @ApiModelProperty(value = "当前页", required = true, example="1")
@@ -97,6 +102,14 @@ public class TaskQueryParam {
      */
     @ApiModelProperty(value = "每页条数", required = true, example="10")
     private int rows=10;
+
+    public String getProcDefKey() {
+        return procDefKey;
+    }
+
+    public void setProcDefKey(String procDefKey) {
+        this.procDefKey = procDefKey;
+    }
 
     public String getCreator() {
         return creator;
