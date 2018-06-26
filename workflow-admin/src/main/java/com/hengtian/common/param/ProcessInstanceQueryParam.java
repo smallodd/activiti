@@ -58,7 +58,7 @@ public class ProcessInstanceQueryParam {
      * 发起日期（从）
      */
     @ApiModelProperty(value = "发起日期（从）", example="2018-05-15")
-    private Date startTimeFrom;
+    private String startTimeFrom;
 
     /**
      * 发起日期（到）
@@ -139,11 +139,11 @@ public class ProcessInstanceQueryParam {
         this.processDefinitionName = processDefinitionName;
     }
 
-    public Date getStartTimeFrom() {
+    public String getStartTimeFrom() {
         return startTimeFrom;
     }
 
-    public void setStartTimeFrom(Date startTimeFrom) {
+    public void setStartTimeFrom(String startTimeFrom) {
         this.startTimeFrom = startTimeFrom;
     }
 
@@ -171,19 +171,19 @@ public class ProcessInstanceQueryParam {
         this.endTimeTo = endTimeTo;
     }
 
-    public int getPage() {
+    public Integer getPage() {
         return page;
     }
 
-    public void setPage(int page) {
+    public void setPage(Integer page) {
         this.page = page;
     }
 
-    public int getRows() {
+    public Integer getRows() {
         return rows;
     }
 
-    public void setRows(int rows) {
+    public void setRows(Integer rows) {
         this.rows = rows;
     }
 

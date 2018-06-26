@@ -135,7 +135,55 @@
             LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         WHERE
             trp.APP_KEY = #{appKey} AND art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%')
-            <include refid="queryCondition"/>
+        <!--任务编号-->
+        <if test="taskId != null and taskId != ''">
+            AND art.ID_ = #{taskId}
+        </if>
+
+        <!--流程实例编号-->
+        <if test="procInstId != null and procInstId != ''">
+            AND ahp.ID_ = #{procInstId}
+        </if>
+
+        <!--任务标题-->
+        <if test="title != null and title != ''">
+            AND ahp.NAME_ LIKE CONCAT('%',#{title},'%')
+        </if>
+
+        <!--流程实例状态-->
+        <if test="procInstState != null and procInstState !=''">
+            AND trp.proc_inst_state = #{procInstState}
+        </if>
+
+        <!--流程名称-->
+        <if test="procDefName != null and procDefName != ''">
+            AND trp.PROC_DEF_NAME = #{procDefName}
+        </if>
+
+        <!--发起人-->
+        <if test="creator != null and creator !=''">
+            AND trp.CREATOR = #{creator}
+        </if>
+
+        <!--发起人部门-->
+        <if test="creatorDept != null and creatorDept != ''">
+            AND trp.CREATOR_DEPT = #{creatorDept}
+        </if>
+
+        <!--当前节点-->
+        <if test="taskName != null and taskName != ''">
+            AND art.NAME_ LIKE CONCAT('%',#{taskName},'%')
+        </if>
+
+        <!--创建日期（从）-->
+        <if test="createTimeStart != null">
+            AND art.START_TIME_ &gt;= #{createTimeStart}
+        </if>
+
+        <!--创建日期（到）-->
+        <if test="createTimeEnd != null">
+            AND art.START_TIME_ &lt;= #{createTimeEnd}
+        </if>
         ORDER BY endTime DESC
     </select>
 
@@ -288,7 +336,7 @@
                 AND trp.CREATOR = #{creator}
             </if>
             <if test="processInstanceId != null and processInstanceId != ''">
-                AND ahp.ID_ = #{processInstancetId}
+                AND ahp.PROC_INST_ID_= #{processInstanceId}
             </if>
             <if test="processInstanceState != null">
                 AND trp.PROC_INST_STATE = #{processInstanceState}
