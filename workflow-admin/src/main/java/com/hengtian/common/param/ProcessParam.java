@@ -55,6 +55,26 @@ public class ProcessParam {
     @ApiModelProperty(value = "自定义参数", example="{'code':'string'}")
     private String  jsonVariables;
 
+    private String  deptCode;
+
+    private String deptName;
+
+    public String getDeptCode() {
+        return deptCode;
+    }
+
+    public void setDeptCode(String deptCode) {
+        this.deptCode = deptCode;
+    }
+
+    public String getDeptName() {
+        return deptName;
+    }
+
+    public void setDeptName(String deptName) {
+        this.deptName = deptName;
+    }
+
     public String getCreatorId() {
         return creatorId;
     }
