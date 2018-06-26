@@ -700,6 +700,30 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
         return renderSuccess(workflowService.getNextAssigneeWhenRoleApprove(task));
     }
+
+    /**
+     * 通过任务ID获取任务节点审批人
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 9:40
+     */
+    @ResponseBody
+    @SysLog("任务详情")
+    @ApiOperation(httpMethod = "POST", value = "节点审批人")
+    @RequestMapping(value = "/rest/task/assignee", method = RequestMethod.POST)
+    public Object getTaskAssignee(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId){
+        if(StringUtils.isBlank(taskId)){
+            return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
+        }
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return renderError("taskId无效或任务已完成");
+        }
+
+        return renderSuccess(workflowService.getTaskAssignee(task, null));
+    }
+
     @ResponseBody
     @SysLog("获取流程实例中自定义参数")
     @ApiOperation(httpMethod = "POST", value = "获取流程实例中自定义参数")

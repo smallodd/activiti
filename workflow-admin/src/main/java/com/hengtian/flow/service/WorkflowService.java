@@ -1,6 +1,5 @@
 package com.hengtian.flow.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.service.IService;
 import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskParam;
@@ -10,6 +9,7 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
+import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
@@ -321,4 +321,13 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/6/25 10:44
      */
     String getUserName(String userId);
+
+    /**
+     * 获取任务节点审批人信息
+     * @param task 任务对象
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/26 10:12
+     */
+    List<AssigneeVo> getTaskAssignee(Task task, Integer appKey);
 }
