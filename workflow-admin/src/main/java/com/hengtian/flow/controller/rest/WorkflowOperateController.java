@@ -25,7 +25,6 @@ import org.activiti.engine.HistoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
@@ -301,13 +300,15 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @RequestMapping(value = "setVariables", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "设置自定义参数")
-    public Object setVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId, @ApiParam(value = "自定义参数的json串", name = "jsonMap", required = true) @RequestParam("jsonMap") String jsonMap, @ApiParam(value = "类型", name = "type", required = true) @RequestParam("type") Integer type) {
-        logger.info("设置自定义参数开始，方法【setVariables】：入参taskId:{},jsonMap:{},type:{}",taskId,jsonMap,type);
-        if (StringUtils.isBlank(jsonMap) || type == null || (type != 1 && type != 2)) {
+    public Object setVariables(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId,
+                               @ApiParam(value = "自定义参数的json串", name = "jsonVariables", required = true) @RequestParam("jsonVariables") String jsonVariables,
+                               @ApiParam(value = "类型", name = "type", required = true) @RequestParam("type") Integer type) {
+        logger.info("设置自定义参数开始，方法【setVariables】：入参taskId:{},jsonMap:{},type:{}",taskId,jsonVariables,type);
+        if (StringUtils.isBlank(jsonVariables) || type == null || (type != 1 && type != 2)) {
             return renderError("参数错误", Constant.PARAM_ERROR);
         }
         try {
-            Map map = JSONObject.parseObject(jsonMap);
+            Map map = JSONObject.parseObject(jsonVariables);
             if (type == 1) {
                 taskService.setVariables(taskId, map);
             } else {
