@@ -345,7 +345,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object processDetail(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
                                 @ApiParam(value = "流程实例ID", name = "processInstanceId") @RequestParam(required = false) String processInstanceId,
                                 @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
-        logger.info("入参processInstanceId{0} businessKey{1}", processInstanceId, businessKey);
+        logger.info("入参appKey：{0} processInstanceId：{1} businessKey：{2}", appKey, processInstanceId, businessKey);
         if(appKey == null){
             return renderError("参数错误：appKey为空");
         }
