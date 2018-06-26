@@ -121,6 +121,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     private AssigneeTempService assigneeTempService;
 
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result startProcessInstance(ProcessParam processParam) {
@@ -1467,6 +1468,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
             t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
+            if(StringUtils.isNotBlank(t.getAssigneeBefore())) {
+                String[] assignsbefores = t.getAssigneeBefore().split(",");
+                String assignName="";
+                for (String assign:assignsbefores){
+                    RbacUser rbacUser=userService.getUserById(assign);
+                    assignName+=rbacUser.getName()+",";
+                }
+                assignName=assignName.substring(0,assignName.length()-1);
+                t.setAssigneeBeforeName(assignName);
+            }
+
         }
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
@@ -1484,7 +1496,22 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryCloseTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
+
             t.setAssigneeNext(getNextAssignee(t.getTaskId()));
+            if(StringUtils.isNotBlank(t.getAssigneeNext())) {
+                String[] getAssigneeNexts = t.getAssigneeNext().split(",");
+                String getAssigneeNextName="";
+                for (String assign:getAssigneeNexts){
+                    RbacUser rbacUser=userService.getUserById(assign);
+                    getAssigneeNextName+=rbacUser.getName()+",";
+                }
+                getAssigneeNextName=getAssigneeNextName.substring(0,getAssigneeNextName.length()-1);
+                t.setAssigneeNextName(getAssigneeNextName);
+            }
+            RbacUser rbacUser=userService.getUserById(t.getAssignee());
+            if(rbacUser!=null){
+                t.setAssigneeName(rbacUser.getName());
+            }
         }
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
@@ -1875,10 +1902,24 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(validateTaskAssignee(task, userId,tRuTasks) == null){
             return new Result("用户【"+userId+"】无权查看任务【"+taskId+"】");
         }
+        TaskNodeResult taskNodeResult=setButtons(TaskNodeResult.toTaskNodeResult(task));
+        EntityWrapper entityWrapper=new EntityWrapper();
+        entityWrapper.where("current_task_id={0}",taskId).andNew("is_ask_end={0}",0);
+        TAskTask tAskTask=tAskTaskService.selectOne(entityWrapper);
+        if(tAskTask!=null){
+           if(tAskTask.getAskUserId().equals(userId)){
+               taskNodeResult.setStatus(0);
+           }else{
+               taskNodeResult.setStatus(1);
+           }
+        }else{
+            taskNodeResult.setStatus(1);
+        }
+
         Result result = new Result();
         result.setSuccess(true);
         result.setCode(Constant.SUCCESS);
-        result.setObj(setButtons(TaskNodeResult.toTaskNodeResult(task)));
+        result.setObj(taskNodeResult);
         return result;
     }
 

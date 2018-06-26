@@ -217,7 +217,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
      */
     @ResponseBody
     @SysLog("待处理任务列表")
-    @ApiOperation(httpMethod = "POST", value = "待处理任务列表")
+    @ApiOperation(httpMethod = "POST", value = "待处理任务列表",hidden = true)
     @RequestMapping(value = "/rest/task/active", method = RequestMethod.POST)
     public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){

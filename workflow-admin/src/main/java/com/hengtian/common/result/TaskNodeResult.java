@@ -32,6 +32,18 @@ public class TaskNodeResult implements Serializable {
     private Integer needSetNext;
 
     private List<TButton> buttons;
+    /**
+     * 此字段只用于问询处，其他地方勿用
+     */
+    private Integer status;
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
 
     public Integer getAssignType() {
         return assignType;
