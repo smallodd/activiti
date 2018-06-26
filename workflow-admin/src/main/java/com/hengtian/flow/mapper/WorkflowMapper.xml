@@ -197,6 +197,55 @@
             WHERE
                 trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{assignee} AND tat.is_ask_end=0 and tat.id IS NOT NULL AND
                 aht.END_TIME_ IS NOT NULL
+            <!--任务编号-->
+            <if test="taskId != null and taskId != ''">
+                AND aht.ID_ = #{taskId}
+            </if>
+
+            <!--流程实例编号-->
+            <if test="procInstId != null and procInstId != ''">
+                AND ahp.ID_ = #{procInstId}
+            </if>
+
+            <!--任务标题-->
+            <if test="title != null and title != ''">
+                AND ahp.NAME_ LIKE CONCAT('%',#{title},'%')
+            </if>
+
+            <!--流程实例状态-->
+            <if test="procInstState != null and procInstState !=''">
+                AND trp.proc_inst_state = #{procInstState}
+            </if>
+
+            <!--流程名称-->
+            <if test="procDefName != null and procDefName != ''">
+                AND trp.PROC_DEF_NAME = #{procDefName}
+            </if>
+
+            <!--发起人-->
+            <if test="creator != null and creator !=''">
+                AND trp.CREATOR = #{creator}
+            </if>
+
+            <!--发起人部门-->
+            <if test="creatorDept != null and creatorDept != ''">
+                AND trp.CREATOR_DEPT = #{creatorDept}
+            </if>
+
+            <!--当前节点-->
+            <if test="taskName != null and taskName != ''">
+                AND aht.NAME_ LIKE CONCAT('%',#{taskName},'%')
+            </if>
+
+            <!--创建日期（从）-->
+            <if test="createTimeStart != null">
+                AND aht.START_TIME_ &gt;= #{createTimeStart}
+            </if>
+
+            <!--创建日期（到）-->
+            <if test="createTimeEnd != null">
+                AND aht.START_TIME_ &lt;= #{createTimeEnd}
+            </if>
         </if>
         ORDER BY endTime DESC
     </select>
