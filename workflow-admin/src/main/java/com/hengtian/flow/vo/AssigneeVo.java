@@ -19,7 +19,7 @@ public class AssigneeVo {
      */
     private String userName;
     /**
-     * 是否审批结束 0：未结束 1：结束
+     * 是否审批 0：否 1：是
      */
     private int isComplete;
 }
