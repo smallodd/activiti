@@ -1181,13 +1181,16 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     TaskNodeVo taskNode = new TaskNodeVo();
                     AssigneeVo assigneeVo;
                     List<AssigneeVo> list=new ArrayList<>();
-                    String[] assigns=assigneeMap.get(key).split(",");
-                    for(String assign:assigns){
-                        assigneeVo=new AssigneeVo();
-                        RbacUser rbacUser=userService.getUserById(assign);
-                        assigneeVo.setUserCode(rbacUser.getCode());
-                        assigneeVo.setUserName(rbacUser.getName());
-                        list.add(assigneeVo);
+                    Object object=assigneeMap.get(key);
+                    String[] assigns=object==null?null:assigneeMap.get(key).split(",");
+                    if(object!=null) {
+                        for (String assign : assigns) {
+                            assigneeVo = new AssigneeVo();
+                            RbacUser rbacUser = userService.getUserById(assign);
+                            assigneeVo.setUserCode(rbacUser.getCode());
+                            assigneeVo.setUserName(rbacUser.getName());
+                            list.add(assigneeVo);
+                        }
                     }
                     taskNode.setAssignee(list);
                     taskNode.setTaskId(map.get(key).getTaskId());
