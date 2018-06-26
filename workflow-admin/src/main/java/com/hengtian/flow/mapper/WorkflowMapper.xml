@@ -133,11 +133,15 @@
             act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
             LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+           LEFT JOIN  act_re_procdef arp on ahp.proc_def_id_=arp.ID_
         WHERE
             trp.APP_KEY = #{appKey} AND art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%')
         <!--任务编号-->
         <if test="taskId != null and taskId != ''">
             AND art.ID_ = #{taskId}
+        </if>
+        <if test="procDefKey!=null and procDefKey!=''">
+            and arp.key=#{procDefKey}
         </if>
 
         <!--流程实例编号-->
@@ -201,6 +205,8 @@
                 act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
                 LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
                 LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+                LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
+
             WHERE
                 trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%') OR (trt.ASSIGNEE_TYPE = 2
                 <if test="roleId != null">
@@ -208,6 +214,9 @@
                 </if>
                 ))
             AND art.SUSPENSION_STATE_=1
+            <if test="procDefKey!=null and procDefKey!=''">
+                and arp.key=#{procDefKey}
+            </if>
                 <include refid="queryCondition"/>
         </if>
         <if test="taskState == null || taskState==''">
@@ -242,9 +251,13 @@
                 LEFT JOIN act_hi_procinst AS ahp ON aht.PROC_INST_ID_=ahp.PROC_INST_ID_
                 LEFT JOIN t_ru_procinst AS trp ON aht.PROC_INST_ID_=trp.PROC_INST_ID
                 LEFT JOIN t_ask_task tat on tat.proc_inst_id=ahp.PROC_INST_ID_
+                LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
             WHERE
                 trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{assignee} AND tat.is_ask_end=0 and tat.id IS NOT NULL AND
                 aht.END_TIME_ IS NOT NULL
+            <if test="procDefKey!=null and procDefKey!=''">
+                and arp.key=#{procDefKey}
+            </if>
             <!--任务编号-->
             <if test="taskId != null and taskId != ''">
                 AND aht.ID_ = #{taskId}
@@ -327,8 +340,12 @@
             ahp.proc_def_id_ as processDefinitionId
         FROM
             act_hi_procinst AS ahp LEFT JOIN t_ru_procinst AS trp ON ahp.ID_ = trp.PROC_INST_ID
+            LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
         WHERE
             1=1
+        <if test="procDefKey!=null and procDefKey!=''">
+            and arp.key=#{procDefKey}
+        </if>
             <if test="appKey != null and appKey != ''">
                 AND trp.APP_KEY = #{appKey}
             </if>
@@ -359,7 +376,7 @@
             <if test="endTimeTo != null">
                 AND ahp.END_TIME_ &lt;= #{endTimeTo}
             </if>
-        ORDER BY endTime DESC
+        ORDER BY startTime DESC
     </select>
 
     <!--代办任务数量-->
@@ -370,11 +387,15 @@
             act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
             LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+        LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
         WHERE
             trp.APP_KEY = #{appKey}
             AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN
             (${roleId})))
             AND art.SUSPENSION_STATE_=1
+        <if test="procDefKey!=null and procDefKey!=''">
+            and arp.key=#{procDefKey}
+        </if>
             <include refid="queryCondition"/>
     </select>
 </mapper>

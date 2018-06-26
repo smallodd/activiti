@@ -77,7 +77,11 @@ public class ProcessInstanceQueryParam {
      */
     @ApiModelProperty(value = "完成日期（到）", example="2018-10-30")
     private String endTimeTo;
-
+    /**
+     * 流程定义key
+     */
+    @ApiModelProperty(value = "流程定义key", example="0")
+    private String procDefKey;
     /**
      * 分页-当前页
      */
@@ -90,6 +94,14 @@ public class ProcessInstanceQueryParam {
     @ApiModelProperty(value = "每页条数", required = true, example="10")
     @NotNull(message = "每页条数不能为空！")
     private Integer rows;
+
+    public String getProcDefKey() {
+        return procDefKey;
+    }
+
+    public void setProcDefKey(String procDefKey) {
+        this.procDefKey = procDefKey;
+    }
 
     public String getAppKey() {
         return appKey;
