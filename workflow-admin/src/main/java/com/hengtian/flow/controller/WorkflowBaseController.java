@@ -271,24 +271,6 @@ public class WorkflowBaseController extends BaseRestController {
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, assignee);
         pageInfo.getCondition().put("assignee", assignee);
         String roleIds = null;
-        /*EntityWrapper<TApprovalAgent> wrapper = new EntityWrapper<>();
-        wrapper.where("agent={0}", assignee);
-        wrapper.and("status={0}", 0);
-        List<TApprovalAgent> tApprovalAgents = tApprovalAgentService.selectList(wrapper);
-        List<String> assigneeList = Lists.newArrayList();
-        assigneeList.add(assignee);
-
-        Map<String,List<RbacRole>> assigneeRoleMap = Maps.newConcurrentMap();
-        if(CollectionUtils.isNotEmpty(tApprovalAgents)){
-            for(TApprovalAgent agent : tApprovalAgents){
-                assigneeList.add(agent.getClient());
-                List<RbacRole> roleList = privilegeService.getAllRoleByUserId(appKey, agent.getClient());
-                roles.addAll(roleList);
-                assigneeRoleMap.put(agent.getAgent(), roleList);
-            }
-        }
-
-        pageInfo.getCondition().put("assigneeList", assigneeList);*/
         for(RbacRole role : roles){
             roleIds = roleIds == null?role.getId()+"":roleIds+","+role.getId();
         }
