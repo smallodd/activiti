@@ -37,6 +37,9 @@
             checkbox: true,
             onClick: function (node) {
             },
+            onBeforeLoad:function(node,param){
+                param.id = ${id};
+            },
             onLoadSuccess: function (node, data) {
                 progressLoad();
                 $.post('${ctx}/app/findModelKeyListByAppId', {

@@ -1027,7 +1027,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }
             }
         }
+       Task task= taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(targetTaskDefKey).singleResult();
         log.info("跳转成功");
+        Result result=new Result(true,Constant.SUCCESS,"跳转成功");
+        if(task!=null) {
+            result.setObj(setButtons(TaskNodeResult.toTaskNodeResult(task)));
+        }
         return new Result(true,Constant.SUCCESS,"跳转成功");
     }
 
