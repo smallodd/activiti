@@ -4,6 +4,10 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.hengtian.application.model.App;
+import com.hengtian.application.model.AppModel;
+import com.hengtian.application.service.AppModelService;
+import com.hengtian.application.service.AppService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.result.Result;
@@ -68,6 +72,12 @@ public class ActivitiModelController extends BaseController {
 
     @Autowired
     private ActivitiModelService activitiModelService;
+
+    @Autowired
+    private AppModelService appModelService;
+
+    @Autowired
+    AppService appService;
 
     @Autowired
     RepositoryService repositoryService;
@@ -452,11 +462,28 @@ public class ActivitiModelController extends BaseController {
      */
     @RequestMapping("/allTrees")
     @ResponseBody
-    public Object allTree() {
+    public Object allTree(String id) {
         List<Tree> trees = new ArrayList<Tree>();
         List<Model> list = repositoryService.createModelQuery().deployed().list();
         if (CollectionUtils.isNotEmpty(list)) {
             for (Model model : list) {
+                App app=appService.selectById(id);
+                EntityWrapper entityWrapper=new EntityWrapper();
+                //entityWrapper.ne("app_key",app.getKey());
+                entityWrapper.eq("model_key",model.getKey());
+                List<AppModel> appModels=appModelService.selectList(entityWrapper);
+                if(appModels!=null&&appModels.size()>0) {
+                    boolean flag = true;
+                    for (AppModel appModel : appModels) {
+                        if (app.getKey().equals(appModel.getAppKey())) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        continue;
+                    }
+                }
                 Tree tree = new Tree();
                 tree.setId(model.getKey());
                 tree.setPid("0");

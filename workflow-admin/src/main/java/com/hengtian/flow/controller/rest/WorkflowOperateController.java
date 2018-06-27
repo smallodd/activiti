@@ -2,6 +2,7 @@ package com.hengtian.flow.controller.rest;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.common.common.CodeConts;
 import com.google.common.collect.Lists;
 import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.enums.TaskActionEnum;
@@ -176,22 +177,27 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "审批任务接口")
     public Object approveTask(@ModelAttribute("taskParam") @Valid TaskParam taskParam) {
         logger.info("任务审批方法开始，方法【approveTask】，taskParam：{}",JSONObject.toJSONString(taskParam));
-        Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
-        if (task == null) {
-            return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
+        try {
+            Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
+            if (task == null) {
+                return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
+            }
+            //查询是否当前审批人是否在当前结点有意见征询信息
+            EntityWrapper entityWrapper = new EntityWrapper();
+            entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getAssignee()).andNew("proc_inst_id={0}",task.getProcessInstanceId());
+            //查询是否有正在意见征询的节点
+            TAskTask tAskTask = tAskTaskService.selectOne(entityWrapper);
+            if (tAskTask != null) {
+                return renderError("您的意见征询信息还未得到响应，不能审批通过", Constant.ASK_TASK_EXIT);
+            }
+            //查询当前任务节点审批人是不是当前人
+            Object result=workflowService.approveTask(task, taskParam);
+            logger.info("任务审批方法执行结束出参：{}",JSONObject.toJSONString(result));
+            return result;
+        } catch (Exception e) {
+            logger.error("审批失败", e);
+            return new Result(CodeConts.FAILURE, e.getMessage());
         }
-        //查询是否当前审批人是否在当前结点有意见征询信息
-        EntityWrapper entityWrapper = new EntityWrapper();
-        entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getAssignee()).andNew("proc_inst_id={0}",task.getProcessInstanceId());
-        //查询是否有正在意见征询的节点
-        TAskTask tAskTask = tAskTaskService.selectOne(entityWrapper);
-        if (tAskTask != null) {
-            return renderError("您的意见征询信息还未得到响应，不能审批通过", Constant.ASK_TASK_EXIT);
-        }
-        //查询当前任务节点审批人是不是当前人
-        Object result=workflowService.approveTask(task, taskParam);
-        logger.info("任务审批方法执行结束出参：{}",JSONObject.toJSONString(result));
-        return result;
     }
 
     /**

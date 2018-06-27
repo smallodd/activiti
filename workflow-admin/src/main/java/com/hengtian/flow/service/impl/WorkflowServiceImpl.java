@@ -261,13 +261,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             String userName = "";
             RbacUser user = userService.getUserById(creator);
             if(user != null){
-
                 userName = user.getName();
             }
             if(StringUtils.isNotBlank(processParam.getDeptCode())) {
                creatorDeptName=processParam.getDeptName();
                creatorDeptCode=processParam.getDeptCode();
-            }else{
+            }else if(user!=null){
+                userName = user.getName();
                 creatorDeptName = user.getDeptName();
                 creatorDeptCode = user.getDeptCode();
             }
@@ -331,7 +331,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuTask.setTaskType(TaskTypeEnum.ASSIGNEE.value);
 
                 ruTaskList.add(tRuTask);
-                tRuTaskService.insert(tRuTask);
             }
         }else{
             //根据系统配置设置审批人
@@ -1028,7 +1027,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }
             }
         }
+       Task task= taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(targetTaskDefKey).singleResult();
         log.info("跳转成功");
+        Result result=new Result(true,Constant.SUCCESS,"跳转成功");
+        if(task!=null) {
+            result.setObj(setButtons(TaskNodeResult.toTaskNodeResult(task)));
+        }
         return new Result(true,Constant.SUCCESS,"跳转成功");
     }
 
