@@ -3,7 +3,6 @@ package com.hengtian.flow.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hengtian.flow.vo.TaskNodeVo;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -34,9 +33,15 @@ public class ProcessInstanceResult {
     private String processDefinitionId;
 
     /**
+     * 当前节点KEY
+     */
+    private String currentTaskKey;
+
+    /**
      * 当前节点信息
      */
     private List<TaskNodeVo> currentTaskNode;
+
     /**
      * 业务主键
      */

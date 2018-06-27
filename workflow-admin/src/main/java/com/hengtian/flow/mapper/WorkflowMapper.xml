@@ -335,9 +335,10 @@
             trp.PROC_INST_STATE AS processInstanceState,
             trp.PROC_DEF_NAME AS processDefinitionName,
             trp.APP_KEY AS appKey,
+            ahp.proc_def_id_ AS processDefinitionId,
+            trp.current_task_key AS currentTaskKey,
             ahp.START_TIME_ AS startTime,
-            ahp.END_TIME_ AS endTime,
-            ahp.proc_def_id_ as processDefinitionId
+            ahp.END_TIME_ AS endTime
         FROM
             act_hi_procinst AS ahp LEFT JOIN t_ru_procinst AS trp ON ahp.ID_ = trp.PROC_INST_ID
             LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
