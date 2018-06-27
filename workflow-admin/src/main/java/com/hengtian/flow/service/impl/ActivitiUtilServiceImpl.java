@@ -1015,7 +1015,8 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         if (hisTask == null) {
             return null;
         }
-        Integer appkey= (Integer) runtimeService.getVariable(hisTask.getExecutionId(),"appKey");
+
+        Integer appkey= getAppKey(hisTask.getProcessInstanceId());
         List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
         if (CollectionUtils.isEmpty(nextTaskDefKeys)) {
             return null;
