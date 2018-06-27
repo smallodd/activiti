@@ -75,7 +75,7 @@
 
         <!--流程名称-->
         <if test="procDefName != null and procDefName != ''">
-            AND trp.PROC_DEF_NAME = #{procDefName}
+            AND arp.key_ = #{procDefName}
         </if>
 
         <!--发起人-->
@@ -161,7 +161,7 @@
 
         <!--流程名称-->
         <if test="procDefName != null and procDefName != ''">
-            AND trp.PROC_DEF_NAME = #{procDefName}
+            AND arp.key_ = #{procDefName}
         </if>
 
         <!--发起人-->
@@ -254,7 +254,7 @@
                 LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
             WHERE
                 trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{assignee} AND tat.is_ask_end=0 and tat.id IS NOT NULL AND
-                aht.END_TIME_ IS NOT NULL
+                aht.END_TIME_ IS NOT NULL AND tat.ask_task_key=aht.TASK_DEF_KEY_
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key=#{procDefKey}
             </if>
@@ -280,7 +280,7 @@
 
             <!--流程名称-->
             <if test="procDefName != null and procDefName != ''">
-                AND trp.PROC_DEF_NAME = #{procDefName}
+                AND arp.key_ = #{procDefName}
             </if>
 
             <!--发起人-->
@@ -362,7 +362,7 @@
                 AND ahp.NAME_ LIKE CONCAT('%',#{processInstanceName},'%')
             </if>
             <if test="processDefinitionName != null and processDefinitionName != ''">
-                AND trp.PROC_DEF_NAME LIKE CONCAT('%',#{processDefinitionName},'%')
+                AND arp.key_ = #{processDefinitionName}
             </if>
             <if test="startTimeFrom != null">
                 AND ahp.START_TIME_ &gt;= #{startTimeFrom}
