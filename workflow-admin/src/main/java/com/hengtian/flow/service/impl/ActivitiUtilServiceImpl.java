@@ -1013,7 +1013,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             return null;
         }
 
-        Integer appkey= getAppKey(hisTask.getProcessInstanceId());
+        Integer appKey = getAppKey(hisTask.getProcessInstanceId());
         List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
         if (CollectionUtils.isEmpty(nextTaskDefKeys)) {
             return null;
@@ -1023,19 +1023,18 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.in("task_def_key", nextTaskDefKeys).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
-        String assignee = "";
+
         for (TRuTask t : tRuTasks) {
             if(StringUtils.isNotBlank(t.getAssigneeReal())) {
                 set.add(t.getAssigneeReal());
             }else{
                 if(t.getAssigneeType().intValue()==AssignTypeEnum.ROLE.code) {
-                    List<RbacUser> rbacUsers = privilegeService.getUsersByRoleId(appkey, null, Long.parseLong(t.getAssignee()));
+                    List<RbacUser> rbacUsers = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(t.getAssignee()));
                     for (RbacUser rbacUser : rbacUsers) {
                         set.add(rbacUser.getCode());
                     }
                 }
             }
-//            assignee = StringUtils.isBlank(assignee) ? t.getAssigneeReal() : assignee + "," + t.getAssigneeReal();
         }
 
         return StringUtils.join(set.toArray(),",");
@@ -1148,28 +1147,45 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             //未完成
             EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
             wrapper.eq("proc_inst_id", processInstance.getProcessInstanceId());
+            wrapper.in("task_def_key", processInstance.getCurrentTaskKey().split(","));
             List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+
             Map<String, TRuTask> map = Maps.newHashMap();
-            Map<String,String> assigneeMap = Maps.newHashMap();
+            Map<String,List<AssigneeVo>> assigneeMap = Maps.newHashMap();
+            Map<String, Set<String>> assigneeNameMap = Maps.newHashMap();
+
             for(TRuTask tr : tRuTasks){
                 map.put(tr.getTaskDefKey(), tr);
-                String assignee = null;
+                List<AssigneeVo> users = Lists.newArrayList();
                 if(StringUtils.isNotBlank(tr.getAssigneeReal())){
-                    assignee = tr.getAssigneeReal();
+                    String assigneeReal = tr.getAssigneeReal();
+                    for(String assignee : assigneeReal.split(",")){
+                        RbacUser rbacUser = userService.getUserById(assignee);
+                        AssigneeVo assigneeVo = new AssigneeVo();
+                        assigneeVo.setUserCode(rbacUser.getCode());
+                        assigneeVo.setUserName(rbacUser.getName());
+                        assigneeVo.setIsComplete(0);
+
+                        users.add(assigneeVo);
+                    }
                 }else{
                     if(AssignTypeEnum.ROLE.code.equals(tr.getAssigneeType())){
-                        List<RbacUser> users = privilegeService.getUsersByRoleId(processInstance.getAppKey(), null, Long.parseLong(tr.getAssignee()));
-
-                        for(RbacUser u : users){
-                            assignee = assignee == null?u.getCode():assignee+","+u.getCode();
-                        }
+                        users = getAllUserByRoleCode(processInstance.getAppKey(), Long.parseLong(tr.getAssignee()));
+                    }
+                }
+                for(AssigneeVo av : users){
+                    if(assigneeNameMap.containsKey(tr.getTaskDefKey())){
+                        assigneeNameMap.get(tr.getTaskDefKey()).add(av.getUserName());
+                    }else{
+                        Set<String> assigneeSet = Sets.newHashSet(av.getUserName());
+                        assigneeNameMap.put(tr.getTaskDefKey(), assigneeSet);
                     }
                 }
 
                 if(assigneeMap.containsKey(tr.getTaskDefKey())){
-                    assigneeMap.put(tr.getTaskDefKey(), assignee+","+assigneeMap.get(tr.getTaskDefKey()));
+                    assigneeMap.get(tr.getTaskDefKey()).addAll(users);
                 }else{
-                    assigneeMap.put(tr.getTaskDefKey(), assignee);
+                    assigneeMap.put(tr.getTaskDefKey(), users);
                 }
             }
 
@@ -1177,22 +1193,9 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 Set<String> keySet = map.keySet();
                 for(String key : keySet){
                     TaskNodeVo taskNode = new TaskNodeVo();
-                    AssigneeVo assigneeVo;
-                    List<AssigneeVo> list=new ArrayList<>();
-                    Object object=assigneeMap.get(key);
-                    String[] assigns=object==null?null:assigneeMap.get(key).split(",");
-                    if(object!=null) {
-                        for (String assign : assigns) {
-                            assigneeVo = new AssigneeVo();
-                            RbacUser rbacUser = userService.getUserById(assign);
-                            assigneeVo.setUserCode(rbacUser.getCode());
-                            assigneeVo.setUserName(rbacUser.getName());
-                            list.add(assigneeVo);
-                        }
-                    }
-                    taskNode.setAssignee(list);
+                    taskNode.setAssignee(assigneeMap.get(key));
+                    taskNode.setAssigneeStr(StringUtils.join(assigneeNameMap.get(key), ","));
                     taskNode.setTaskId(map.get(key).getTaskId());
-                    taskNode.setAssigneeStr(assigneeMap.get(key));
                     taskNode.setTaskDefinitionName(map.get(key).getTaskDefName());
                     taskNode.setTaskDefinitionKey(map.get(key).getTaskDefKey());
                     taskNodes.add(taskNode);
@@ -1200,15 +1203,13 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             }
         }else {
             //完成（通过/拒绝）
-            EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
-            wrapper.eq("proc_inst_id", processInstance.getProcessInstanceId());
-            RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
-            String currentTaskKey = ruProcinst.getCurrentTaskKey();
-            if(StringUtils.isBlank(currentTaskKey)){
-                return null;
+            List<HistoricTaskInstance> hisTasks = Lists.newArrayList();
+            for(String taskDefKey : processInstance.getCurrentTaskKey().split(",")){
+                List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getProcessInstanceId()).taskDefinitionKey(taskDefKey).orderByTaskCreateTime().desc().list();
+                if(CollectionUtils.isNotEmpty(list)){
+                    hisTasks.add(list.get(0));
+                }
             }
-
-            List<HistoricTaskInstance> hisTasks = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getProcessInstanceId()).taskDefinitionKeyLike(currentTaskKey).orderByTaskCreateTime().desc().list();
             Map<String, Integer> temMap = Maps.newHashMap();
 
             String currentAssignee = null;
@@ -1220,25 +1221,27 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
                 currentAssignee = hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
                 taskNode.setTaskId(hisTask.getId());
-                taskNode.setAssigneeStr(currentAssignee);
+
                 String[] assigns=currentAssignee.split(",");
                 AssigneeVo assigneeVo;
                 List<AssigneeVo> list=new ArrayList<>();
+                Set<String> assigneeNameSet = Sets.newHashSet();
                 for(String assign:assigns){
                     assigneeVo=new AssigneeVo();
                     RbacUser rbacUser=userService.getUserById(assign);
                     assigneeVo.setUserCode(rbacUser.getCode());
                     assigneeVo.setUserName(rbacUser.getName());
                     list.add(assigneeVo);
+
+                    assigneeNameSet.add(assigneeVo.getUserName());
                 }
+                taskNode.setAssigneeStr(StringUtils.join(assigneeNameSet, ","));
                 taskNode.setAssignee(list);
                 taskNode.setTaskDefinitionName(hisTask.getName());
                 taskNode.setTaskDefinitionKey(hisTask.getTaskDefinitionKey());
                 taskNodes.add(taskNode);
             }
-
         }
-
         return taskNodes;
     }
 
@@ -1476,14 +1479,17 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @author houjinrong@chtwm.com
      * date 2018/6/6 20:16
      */
-    private List<String> getAllUserCodeByRoleCode(Integer appKey, Long roleCode){
+    private List<AssigneeVo> getAllUserByRoleCode(Integer appKey, Long roleCode){
         List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, roleCode);
         if(CollectionUtils.isEmpty(users)){
             return null;
         }
-        List<String> userCodeList = Lists.newArrayList();
+        List<AssigneeVo> userCodeList = Lists.newArrayList();
         for(RbacUser user : users){
-            userCodeList.add(user.getCode());
+            AssigneeVo assigneeVo = new AssigneeVo();
+            assigneeVo.setUserCode(user.getCode());
+            assigneeVo.setUserName(user.getName());
+            userCodeList.add(assigneeVo);
         }
 
         return userCodeList;

@@ -1476,14 +1476,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         for(TaskResult t : list){
             t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
             if(StringUtils.isNotBlank(t.getAssigneeBefore())) {
-                String[] assignsbefores = t.getAssigneeBefore().split(",");
-                String assignName="";
-                for (String assign:assignsbefores){
-                    RbacUser rbacUser=userService.getUserById(assign);
-                    assignName+=rbacUser.getName()+",";
+                String[] assigneeBefore = t.getAssigneeBefore().split(",");
+                Set<String> assigneeNameSet = Sets.newHashSet();
+                for (String assign : assigneeBefore){
+                    RbacUser rbacUser = userService.getUserById(assign);
+                    assigneeNameSet.add(rbacUser.getName());
                 }
-                assignName=assignName.substring(0,assignName.length()-1);
-                t.setAssigneeBeforeName(assignName);
+
+                t.setAssigneeBeforeName(StringUtils.join(assigneeNameSet, ","));
             }
 
         }
