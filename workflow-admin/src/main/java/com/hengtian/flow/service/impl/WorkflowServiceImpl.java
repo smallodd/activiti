@@ -260,14 +260,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             String creatorDeptCode = "";
             String userName = "";
             RbacUser user = userService.getUserById(creator);
-            if(user != null){
-
-                userName = user.getName();
-            }
             if(StringUtils.isNotBlank(processParam.getDeptCode())) {
                creatorDeptName=processParam.getDeptName();
                creatorDeptCode=processParam.getDeptCode();
-            }else{
+            }else if(user!=null){
+                userName = user.getName();
                 creatorDeptName = user.getDeptName();
                 creatorDeptCode = user.getDeptCode();
             }
