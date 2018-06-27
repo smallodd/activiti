@@ -987,17 +987,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         if (CollectionUtils.isEmpty(beforeTaskDefKeys)) {
             return null;
         }
-
-        EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
-        wrapper.where("proc_inst_id={0}", hisTask.getProcessInstanceId());
-        wrapper.in("task_def_key", beforeTaskDefKeys);
-        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
-
         Set<String> set=new HashSet<>();
-        for (TRuTask t : tRuTasks) {
-            set.add(t.getAssigneeReal());
-           // assignee = StringUtils.isBlank(assignee) ? t.getAssigneeReal() : assignee + "," + t.getAssigneeReal();
+        for(String taskKey:beforeTaskDefKeys){
+            List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(taskKey).orderByTaskCreateTime().desc().list();
+            if(list.size()>0){
+                set.add(list.get(0).getAssignee().replace("_Y","").replace("_N",""));
+            }
         }
+
 
         return StringUtils.join(set.toArray(),",");
     }
