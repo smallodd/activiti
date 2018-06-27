@@ -208,11 +208,11 @@
                 LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
 
             WHERE
-                trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%') OR (trt.ASSIGNEE_TYPE = 2
+                trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
                 <if test="roleId != null">
-                    AND trt.ASSIGNEE IN (${roleId})
+                    OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
                 </if>
-                ))
+                )
             AND art.SUSPENSION_STATE_=1
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key=#{procDefKey}
