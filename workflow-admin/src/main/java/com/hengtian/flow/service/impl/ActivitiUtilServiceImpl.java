@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.common.common.CodeConts;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -16,6 +17,7 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
@@ -1265,6 +1267,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         if(CollectionUtils.isEmpty(assigneeTemps)){
             if(StringUtils.isBlank(assigneeNext)){
                 logger.info("当前节点需设置下步节点审批人， 未发现审批人信息。");
+                result.setCode(CodeConts.FAILURE);
                 result.setSuccess(false);
                 result.setMsg("当前节点需设置下步节点审批人， 未发现审批人信息。");
                 return result;
@@ -1277,27 +1280,27 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 }
             } catch (JSONException e) {
                 logger.error("下步审批人参数格式不正确，不是正确的JSON格式", e);
-                result.setSuccess(false);
-                result.setMsg("下步审批人参数格式不正确，不是正确的JSON格式。");
-                return result;
+                throw new WorkFlowException("下步审批人参数格式不正确，不是正确的JSON格式");
             }
         }
 
-        for(AssigneeTemp aTemp : assigneeTemps){
-            if(assigneeMap.containsKey(aTemp.getTaskDefKey())){
-                Map<String, AssigneeTemp> assigneeTempMap = assigneeMap.get(aTemp.getTaskDefKey());
-                if(assigneeTempMap.containsKey(aTemp.getRoleCode())){
-                    AssigneeTemp assigneeTemp = assigneeTempMap.get(aTemp.getRoleCode());
-                    assigneeTemp.setAssigneeCode(assigneeTemp.getAssigneeCode()+","+aTemp.getAssigneeCode());
-                    assigneeTemp.setAssigneeName(assigneeTemp.getAssigneeName()+","+aTemp.getAssigneeName());
-                }else{
-                    assigneeTempMap.put(aTemp.getRoleCode(), aTemp);
-                }
+        if(CollectionUtils.isNotEmpty(assigneeTemps)){
+            for(AssigneeTemp aTemp : assigneeTemps){
+                if(assigneeMap.containsKey(aTemp.getTaskDefKey())){
+                    Map<String, AssigneeTemp> assigneeTempMap = assigneeMap.get(aTemp.getTaskDefKey());
+                    if(assigneeTempMap.containsKey(aTemp.getRoleCode())){
+                        AssigneeTemp assigneeTemp = assigneeTempMap.get(aTemp.getRoleCode());
+                        assigneeTemp.setAssigneeCode(assigneeTemp.getAssigneeCode()+","+aTemp.getAssigneeCode());
+                        assigneeTemp.setAssigneeName(assigneeTemp.getAssigneeName()+","+aTemp.getAssigneeName());
+                    }else{
+                        assigneeTempMap.put(aTemp.getRoleCode(), aTemp);
+                    }
 
-            }else{
-                Map<String,AssigneeTemp> assigneeTempMap = Maps.newHashMap();
-                assigneeTempMap.put(aTemp.getRoleCode(), aTemp);
-                assigneeMap.put(aTemp.getTaskDefKey(), assigneeTempMap);
+                }else{
+                    Map<String,AssigneeTemp> assigneeTempMap = Maps.newHashMap();
+                    assigneeTempMap.put(aTemp.getRoleCode(), aTemp);
+                    assigneeMap.put(aTemp.getTaskDefKey(), assigneeTempMap);
+                }
             }
         }
         result.setSuccess(true);
