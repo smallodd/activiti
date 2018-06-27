@@ -331,7 +331,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuTask.setTaskType(TaskTypeEnum.ASSIGNEE.value);
 
                 ruTaskList.add(tRuTask);
-                tRuTaskService.insert(tRuTask);
             }
         }else{
             //根据系统配置设置审批人
