@@ -1175,12 +1175,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                         users = getAllUserByRoleCode(processInstance.getAppKey(), Long.parseLong(tr.getAssignee()));
                     }
                 }
-                for(AssigneeVo av : users){
-                    if(assigneeNameMap.containsKey(tr.getTaskDefKey())){
-                        assigneeNameMap.get(tr.getTaskDefKey()).add(av.getUserName());
-                    }else{
-                        Set<String> assigneeSet = Sets.newHashSet(av.getUserName());
-                        assigneeNameMap.put(tr.getTaskDefKey(), assigneeSet);
+                if(CollectionUtils.isNotEmpty(users)){
+                    for(AssigneeVo av : users){
+                        if(assigneeNameMap.containsKey(tr.getTaskDefKey())){
+                            assigneeNameMap.get(tr.getTaskDefKey()).add(av.getUserName());
+                        }else{
+                            Set<String> assigneeSet = Sets.newHashSet(av.getUserName());
+                            assigneeNameMap.put(tr.getTaskDefKey(), assigneeSet);
+                        }
                     }
                 }
 

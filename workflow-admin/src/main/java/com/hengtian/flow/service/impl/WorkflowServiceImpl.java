@@ -1502,17 +1502,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryCloseTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
-
+            Set<String> assigneeNameSet = Sets.newHashSet();
             t.setAssigneeNext(getNextAssignee(t.getTaskId()));
             if(StringUtils.isNotBlank(t.getAssigneeNext())) {
                 String[] getAssigneeNexts = t.getAssigneeNext().split(",");
-                String getAssigneeNextName="";
                 for (String assign:getAssigneeNexts){
-                    RbacUser rbacUser=userService.getUserById(assign);
-                    getAssigneeNextName+=rbacUser.getName()+",";
+                    RbacUser rbacUser = userService.getUserById(assign);
+                    assigneeNameSet.add(rbacUser.getName());
                 }
-                getAssigneeNextName=getAssigneeNextName.substring(0,getAssigneeNextName.length()-1);
-                t.setAssigneeNextName(getAssigneeNextName);
+                t.setAssigneeNextName(StringUtils.join(assigneeNameSet, ","));
             }
             RbacUser rbacUser=userService.getUserById(t.getAssignee());
             if(rbacUser!=null){
