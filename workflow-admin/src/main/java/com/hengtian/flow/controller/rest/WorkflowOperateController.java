@@ -483,7 +483,11 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
                     tWorkDetail.setOperator(taskActionParam.getUserId());
                     tWorkDetail.setTaskId(taskActionParam.getTaskId());
-                    tWorkDetail.setAprroveInfo(taskActionParam.getCommentResult());
+                    if(StringUtils.isNotBlank(taskActionParam.getCommentResult())) {
+                        tWorkDetail.setAprroveInfo(taskActionParam.getCommentResult());
+                    }else{
+                        tWorkDetail.setAprroveInfo(TaskActionEnum.getDesc(taskActionParam.getActionType()));
+                    }
                     List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskActionParam.getTaskId()).orderByTaskCreateTime().desc().list();
                     tWorkDetail.setOperateAction(TaskActionEnum.getDesc(taskActionParam.getActionType()));
                     tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
