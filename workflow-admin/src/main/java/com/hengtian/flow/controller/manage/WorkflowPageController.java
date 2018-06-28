@@ -124,7 +124,7 @@ public class WorkflowPageController extends WorkflowBaseController{
      * date 2018/5/14 13:53
      */
     @GetMapping("/user/claim")
-    public String selectUserClaim(Model model, String taskId, int claimType, String procDefId){
+    public String selectUserClaim(Model model, String taskId, int claimType){
         if(StringUtils.isNotBlank(taskId)){
             Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
             if(task != null){

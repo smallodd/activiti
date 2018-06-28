@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.common.common.CodeConts;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -564,6 +565,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
 
+        boolean customApprover = (boolean) runtimeService.getVariable(task.getProcessInstanceId(), ConstantUtils.SET_ASSIGNEE_FLAG);
+
         if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
             //会签,表达式
             JSONObject approveCountJson = new JSONObject();
@@ -686,12 +689,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 return result;
             }
         } else {
-            //审批类型不正确
-            result.setMsg("审批类型参数错误！");
-            result.setCode(Constant.FAIL);
-            result.setSuccess(false);
+            if(!customApprover){
+                //审批类型不正确
+                result.setMsg("审批类型参数错误！");
+                result.setCode(Constant.FAIL);
+                result.setSuccess(false);
 
-            return result;
+                return result;
+            }
         }
 
         repairNextTaskNode(task,execution);
@@ -753,6 +758,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
         result.setSuccess(true);
+        result.setCode(CodeConts.SUCCESS);
         result.setMsg("任务已办理成功");
         return result;
     }
@@ -1713,14 +1719,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         StringBuffer con = new StringBuffer();
         con.append(" WHERE 1=1 ");
         String re;
-        String reC = "SELECT COUNT(*)";
-        String groupBy = " GROUP BY art.ID_ ";
+        String reC = "SELECT COUNT(DISTINCT art.ID_)";
 
         if (TaskListEnum.CLOSE.type.equals(type)) {
-            re = "SELECT GROUP_CONCAT(art.ASSIGNEE_) AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
+            re = "SELECT DISTINCT art.ID_, art.ASSIGNEE_ AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON trt.TASK_ID=art.ID_ ");
         } else {
-            re = "SELECT GROUP_CONCAT(trt.assignee_real) AS ASSIGNEE_,GROUP_CONCAT(ahp.START_USER_ID_) AS OWNER_,GROUP_CONCAT(trt.STATUS) AS PRIORITY_,GROUP_CONCAT(ahp.NAME_) AS CATEGORY_,GROUP_CONCAT(ahp.BUSINESS_KEY_) AS DESCRIPTION_,art.* ";
+            re = "SELECT DISTINCT art.ID_ AS ID_, trt.assignee_real AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,trt.STATUS AS PRIORITY_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM act_ru_task AS art LEFT JOIN t_ru_task AS trt ON trt.TASK_ID=art.ID_ ");
         }
 
@@ -1769,8 +1774,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
                     .parameter("businessKey", taskQueryParam.getBusinessKey());
 
-            String dataSql = re + sql + groupBy;
-            String countSql = reC + " FROM (" + (reC + sql + groupBy) + ") AS temp";
+            String dataSql = re + sql;
+            String countSql = reC + sql;
             List<HistoricTaskInstance> tasks = query.sql(dataSql).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setTotal((int) query.sql(countSql).count());
             pageInfo.setRows(transferHisTask(taskQueryParam.getAssignee(), tasks, true));
@@ -1782,8 +1787,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
                     .parameter("businessKey", taskQueryParam.getBusinessKey());
 
-            String dataSql = re + sql + groupBy;
-            String countSql = reC + " FROM (" + (reC + sql + groupBy) + ") AS temp";
+            String dataSql = re + sql;
+            String countSql = reC + sql;
             List<Task> tasks = query.sql(dataSql).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setRows(tasks);
             pageInfo.setTotal((int) query.sql(countSql).count());
