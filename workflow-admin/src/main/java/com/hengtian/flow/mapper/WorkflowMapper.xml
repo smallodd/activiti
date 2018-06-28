@@ -95,12 +95,12 @@
 
         <!--创建日期（从）-->
         <if test="createTimeStart != null">
-            AND art.CREATE_TIME_ &gt;= #{createTimeStart}
+            AND DATE(art.CREATE_TIME_) &gt;= #{createTimeStart}
         </if>
 
         <!--创建日期（到）-->
         <if test="createTimeEnd != null">
-            AND art.CREATE_TIME_ &lt;= #{createTimeEnd}
+            AND DATE(art.CREATE_TIME_) &lt;= #{createTimeEnd}
         </if>
     </sql>
 
@@ -181,12 +181,12 @@
 
         <!--创建日期（从）-->
         <if test="createTimeStart != null">
-            AND art.START_TIME_ &gt;= #{createTimeStart}
+            AND DATE(art.START_TIME_) &gt;= #{createTimeStart}
         </if>
 
         <!--创建日期（到）-->
         <if test="createTimeEnd != null">
-            AND art.START_TIME_ &lt;= #{createTimeEnd}
+            AND DATE(art.START_TIME_) &lt;= #{createTimeEnd}
         </if>
         ORDER BY endTime DESC
     </select>
@@ -300,12 +300,12 @@
 
             <!--创建日期（从）-->
             <if test="createTimeStart != null">
-                AND aht.START_TIME_ &gt;= #{createTimeStart}
+                AND DATE(aht.START_TIME_) &gt;= #{createTimeStart}
             </if>
 
             <!--创建日期（到）-->
             <if test="createTimeEnd != null">
-                AND aht.START_TIME_ &lt;= #{createTimeEnd}
+                AND DATE(aht.START_TIME_) &lt;= #{createTimeEnd}
             </if>
         </if>
         ORDER BY endTime DESC
@@ -366,16 +366,16 @@
                 AND arp.key_ = #{processDefinitionName}
             </if>
             <if test="startTimeFrom != null">
-                AND ahp.START_TIME_ &gt;= #{startTimeFrom}
+                AND DATE(ahp.START_TIME_) &gt;= #{startTimeFrom}
             </if>
             <if test="startTimeSTo != null">
-                AND ahp.START_TIME_ &lt;= #{startTimeSTo}
+                AND DATE(ahp.START_TIME_) &lt;= #{startTimeSTo}
             </if>
             <if test="endTimeFrom != null">
-                AND ahp.END_TIME_ &gt;= #{endTimeFrom}
+                AND DATE(ahp.END_TIME_) &gt;= #{endTimeFrom}
             </if>
             <if test="endTimeTo != null">
-                AND ahp.END_TIME_ &lt;= #{endTimeTo}
+                AND DATE(ahp.END_TIME_) &lt;= #{endTimeTo}
             </if>
         ORDER BY startTime DESC
     </select>
