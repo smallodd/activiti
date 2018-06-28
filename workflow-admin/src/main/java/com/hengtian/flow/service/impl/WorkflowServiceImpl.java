@@ -1752,7 +1752,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         if (TaskListEnum.CLOSE.type.equals(type)) {
-            con.append(" AND art.DELETE_REASON_ IN ('completed','refused') ");
+            con.append(" AND art.END_TIME_ IS NOT NULL ");
         } else if (TaskListEnum.CLAIM.type.equals(type)) {
             con.append(" AND art.SUSPENSION_STATE_=1 ");
             con.append(" AND trt.STATUS = " + TaskStatusEnum.BEFORESIGN.status);

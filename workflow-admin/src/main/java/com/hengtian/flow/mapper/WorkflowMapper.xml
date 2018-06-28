@@ -383,20 +383,23 @@
     <!--代办任务数量-->
     <select id="activeTaskCount" parameterType="com.hengtian.common.param.TaskQueryParam" resultType="Long">
         SELECT
-          COUNT(*)
+            COUNT(*)
         FROM
-            act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+        act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
+        LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+        LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
         LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
+
         WHERE
-            trp.APP_KEY = #{appKey}
-            AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN
-            (${roleId})))
-            AND art.SUSPENSION_STATE_=1
+        trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
+        <if test="roleId != null">
+            OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
+        </if>
+        )
+        AND art.SUSPENSION_STATE_=1
         <if test="procDefKey!=null and procDefKey!=''">
             and arp.key=#{procDefKey}
         </if>
-            <include refid="queryCondition"/>
+        <include refid="queryCondition"/>
     </select>
 </mapper>

@@ -596,7 +596,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         String roleId = null;
 
         for(RbacRole role : roles){
-            roleId = roleId == null?role.getId()+"":roleId+""+role.getId();
+            roleId = roleId == null?role.getId()+"":roleId+","+role.getId();
         }
 
         if(StringUtils.isNotBlank(roleId)){
