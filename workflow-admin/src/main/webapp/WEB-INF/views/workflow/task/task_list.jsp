@@ -85,9 +85,12 @@
                 title: '当前任务节点名称',
                 field: 'taskName'
             }, {
-                width: '200',
+                width: '100',
                 title: '当前审批人',
-                field: 'taskAssign'
+                field: 'taskAssign',
+                formatter: function (value, row, index) {
+                    return $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-viewAssignee" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="viewTaskAssigneeFun(\'{0}\',\'{1}\');" >点击产看</a>', row.id, row.processDefinitionId);
+                }
             }, {
                 width: '140',
                 title: '当前任务创建时间',
@@ -141,6 +144,7 @@
                 $('.task-easyui-linkbutton-jumpTask').linkbutton({text: '跳转'});
                 $('.task-easyui-linkbutton-taskProgress').linkbutton({text: '进度'});
                 $('.task-easyui-linkbutton-askTask').linkbutton({text: '意见征询'});
+                $('.task-easyui-linkbutton-viewAssignee').linkbutton({text: '点击查看'});
             },
             toolbar: '#taskToolbar'
         });
@@ -351,6 +355,19 @@
             content: contentStr,
             fit: "true",
             modal: true
+        });
+    }
+
+    /**
+     * 查看当前审批人
+     */
+    function viewTaskAssigneeFun(taskId){
+        parent.$.modalDialog({
+            title: '查看当前审批人',
+            width: 240,
+            height: 450,
+            modal: true,
+            href: '${ctx}/workflow/page/task/assignee/' + taskId
         });
     }
 
