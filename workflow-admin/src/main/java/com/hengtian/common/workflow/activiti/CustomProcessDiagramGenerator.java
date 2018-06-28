@@ -4,7 +4,6 @@ import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Event;
 import org.activiti.bpmn.model.Process;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -339,27 +338,26 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
         });
     }
 
-    public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, List<String> highLightedActivities, List<String> highLightedFlows,
-                                       String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor) {
-
+    @Override
+    public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, List<String> highLightedActivities, List<String> highLightedFlows, String activityFontName, String labelFontName, String annotationFontName, ClassLoader customClassLoader, double scaleFactor, List<String> taskDefKeyList) {
         return generateProcessDiagram(bpmnModel, imageType, highLightedActivities, highLightedFlows,
-                activityFontName, labelFontName, customClassLoader, scaleFactor, null).generateImage(imageType);
+                activityFontName, labelFontName, annotationFontName, customClassLoader, scaleFactor, taskDefKeyList).generateImage(imageType);
     }
 
     public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, List<String> highLightedActivities, List<String> highLightedFlows,
-                                       String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor, List<String> taskDefinitionKeyList) {
+                                       String activityFontName, String labelFontName, String annotationFontName, ClassLoader customClassLoader, double scaleFactor) {
 
         return generateProcessDiagram(bpmnModel, imageType, highLightedActivities, highLightedFlows,
-                activityFontName, labelFontName, customClassLoader, scaleFactor, taskDefinitionKeyList).generateImage(imageType);
+                activityFontName, labelFontName, annotationFontName, customClassLoader, scaleFactor).generateImage(imageType);
     }
 
     public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, List<String> highLightedActivities, List<String> highLightedFlows) {
-        return generateDiagram(bpmnModel, imageType, highLightedActivities, highLightedFlows, null, null, null, 1.0);
+        return generateDiagram(bpmnModel, imageType, highLightedActivities, highLightedFlows, null, null, null, null, 1.0);
     }
 
     public InputStream generateDiagram(BpmnModel bpmnModel, String imageType,
                                        List<String> highLightedActivities, List<String> highLightedFlows, double scaleFactor) {
-        return generateDiagram(bpmnModel, imageType, highLightedActivities, highLightedFlows, null, null, null, scaleFactor);
+        return generateDiagram(bpmnModel, imageType, highLightedActivities, highLightedFlows, null, null, null, null, scaleFactor);
     }
 
     public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, List<String> highLightedActivities) {
@@ -370,16 +368,16 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
         return generateDiagram(bpmnModel, imageType, highLightedActivities, Collections.<String>emptyList(), scaleFactor);
     }
 
-    public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, String activityFontName, String labelFontName, ClassLoader customClassLoader) {
+    public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, String activityFontName, String labelFontName, String annotationFontName, ClassLoader customClassLoader) {
         return generateDiagram(bpmnModel, imageType, Collections.<String>emptyList(), Collections.<String>emptyList(),
-                activityFontName, labelFontName, customClassLoader, 1.0);
+                activityFontName, labelFontName, annotationFontName, customClassLoader, 1.0);
     }
 
     public InputStream generateDiagram(BpmnModel bpmnModel, String imageType, String activityFontName,
-                                       String labelFontName, ClassLoader customClassLoader, double scaleFactor) {
+                                       String labelFontName, String annotationFontName, ClassLoader customClassLoader, double scaleFactor) {
 
         return generateDiagram(bpmnModel, imageType, Collections.<String>emptyList(), Collections.<String>emptyList(),
-                activityFontName, labelFontName, customClassLoader, scaleFactor);
+                activityFontName, labelFontName, annotationFontName, customClassLoader, scaleFactor);
     }
 
     public InputStream generatePngDiagram(BpmnModel bpmnModel) {
@@ -399,16 +397,16 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
     }
 
     public BufferedImage generateImage(BpmnModel bpmnModel, String imageType, List<String> highLightedActivities, List<String> highLightedFlows,
-                                       String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor) {
+                                       String activityFontName, String labelFontName, String annotationFontName, ClassLoader customClassLoader, double scaleFactor) {
 
         return generateProcessDiagram(bpmnModel, imageType, highLightedActivities, highLightedFlows,
-                activityFontName, labelFontName, customClassLoader, scaleFactor, null).generateBufferedImage(imageType);
+                activityFontName, labelFontName, annotationFontName, customClassLoader, scaleFactor).generateBufferedImage(imageType);
     }
 
     public BufferedImage generateImage(BpmnModel bpmnModel, String imageType,
                                        List<String> highLightedActivities, List<String> highLightedFlows, double scaleFactor) {
 
-        return generateImage(bpmnModel, imageType, highLightedActivities, highLightedFlows, null, null, null, scaleFactor);
+        return generateImage(bpmnModel, imageType, highLightedActivities, highLightedFlows, null, null, null, null, scaleFactor);
     }
 
     public BufferedImage generatePngImage(BpmnModel bpmnModel, double scaleFactor) {
@@ -416,12 +414,19 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
     }
 
     protected CustomProcessDiagramCanvas generateProcessDiagram(BpmnModel bpmnModel, String imageType,
-                                                                List<String> highLightedActivities, List<String> highLightedFlows,
-                                                                String activityFontName, String labelFontName, ClassLoader customClassLoader, double scaleFactor, List<String> taskDefinitionKeyList) {
+                                                                 List<String> highLightedActivities, List<String> highLightedFlows,
+                                                                 String activityFontName, String labelFontName, String annotationFontName, ClassLoader customClassLoader, double scaleFactor) {
+
+        return generateProcessDiagram(bpmnModel, imageType,highLightedActivities, highLightedFlows, activityFontName, labelFontName, annotationFontName, customClassLoader, scaleFactor, null);
+    }
+
+    protected CustomProcessDiagramCanvas generateProcessDiagram(BpmnModel bpmnModel, String imageType,
+                                                                 List<String> highLightedActivities, List<String> highLightedFlows,
+                                                                 String activityFontName, String labelFontName, String annotationFontName, ClassLoader customClassLoader, double scaleFactor, List<String> taskDefKeyList) {
 
         prepareBpmnModel(bpmnModel);
 
-        CustomProcessDiagramCanvas processDiagramCanvas = initProcessDiagramCanvas(bpmnModel, imageType, activityFontName, labelFontName, customClassLoader);
+        CustomProcessDiagramCanvas processDiagramCanvas = initProcessDiagramCanvas(bpmnModel, imageType, activityFontName, labelFontName, annotationFontName, customClassLoader);
 
         // Draw pool shape, if process is participant in collaboration
         for (Pool pool : bpmnModel.getPools()) {
@@ -438,14 +443,26 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
         }
 
         // Draw activities and their sequence-flows
-        for (FlowNode flowNode : bpmnModel.getProcesses().get(0).findFlowElementsOfType(FlowNode.class)) {
-            drawActivity(processDiagramCanvas, bpmnModel, flowNode, highLightedActivities, highLightedFlows, scaleFactor, taskDefinitionKeyList);
+        for (Process process: bpmnModel.getProcesses()) {
+            for (FlowNode flowNode : process.findFlowElementsOfType(FlowNode.class)) {
+                drawActivity(processDiagramCanvas, bpmnModel, flowNode, highLightedActivities, highLightedFlows, scaleFactor, taskDefKeyList);
+            }
         }
 
         // Draw artifacts
         for (Process process : bpmnModel.getProcesses()) {
+
             for (Artifact artifact : process.getArtifacts()) {
                 drawArtifact(processDiagramCanvas, bpmnModel, artifact);
+            }
+
+            List<SubProcess> subProcesses = process.findFlowElementsOfType(SubProcess.class, true);
+            if (subProcesses != null) {
+                for (SubProcess subProcess : subProcesses) {
+                    for (Artifact subProcessArtifact : subProcess.getArtifacts()) {
+                        drawArtifact(processDiagramCanvas, bpmnModel, subProcessArtifact);
+                    }
+                }
             }
         }
 
@@ -516,7 +533,13 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
     }
 
     protected void drawActivity(CustomProcessDiagramCanvas processDiagramCanvas, BpmnModel bpmnModel,
-                                FlowNode flowNode, List<String> highLightedActivities, List<String> highLightedFlows, double scaleFactor, List<String> taskDefinitionKeyList) {
+                                FlowNode flowNode, List<String> highLightedActivities, List<String> highLightedFlows, double scaleFactor) {
+
+        drawActivity(processDiagramCanvas, bpmnModel, flowNode, highLightedActivities, highLightedFlows, scaleFactor, null);
+    }
+
+    protected void drawActivity(CustomProcessDiagramCanvas processDiagramCanvas, BpmnModel bpmnModel,
+                                FlowNode flowNode, List<String> highLightedActivities, List<String> highLightedFlows, double scaleFactor, List<String> taskDefKeyList) {
 
         CustomProcessDiagramGenerator.ActivityDrawInstruction drawInstruction = activityDrawInstructions.get(flowNode.getClass());
         if (drawInstruction != null) {
@@ -552,7 +575,7 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
             if (highLightedActivities.contains(flowNode.getId())) {
                 Color color = null;
 
-                if(CollectionUtils.isNotEmpty(taskDefinitionKeyList) && taskDefinitionKeyList.contains(flowNode.getId())){
+                if(CollectionUtils.isNotEmpty(taskDefKeyList) && taskDefKeyList.contains(flowNode.getId())){
                     color = Color.GREEN;
                 }
                 drawHighLight(processDiagramCanvas, bpmnModel.getGraphicInfo(flowNode.getId()),color);
@@ -605,10 +628,6 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
                 GraphicInfo labelGraphicInfo = bpmnModel.getLabelGraphicInfo(sequenceFlow.getId());
                 if (labelGraphicInfo != null) {
                     processDiagramCanvas.drawLabel(sequenceFlow.getName(), labelGraphicInfo, false);
-                }else{
-                    GraphicInfo lineCenter = getLineCenter(graphicInfoList);
-
-                    processDiagramCanvas.drawLabel(sequenceFlow.getName(), lineCenter, false);
                 }
             }
         }
@@ -618,7 +637,7 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
             for (FlowElement nestedFlowElement : ((FlowElementsContainer) flowNode).getFlowElements()) {
                 if (nestedFlowElement instanceof FlowNode) {
                     drawActivity(processDiagramCanvas, bpmnModel, (FlowNode) nestedFlowElement,
-                            highLightedActivities, highLightedFlows, scaleFactor, null);
+                            highLightedActivities, highLightedFlows, scaleFactor, taskDefKeyList);
                 }
             }
         }
@@ -719,7 +738,6 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
     }
 
     protected void drawArtifact(CustomProcessDiagramCanvas processDiagramCanvas, BpmnModel bpmnModel, Artifact artifact) {
-
         CustomProcessDiagramGenerator.ArtifactDrawInstruction drawInstruction = artifactDrawInstructions.get(artifact.getClass());
         if (drawInstruction != null) {
             drawInstruction.draw(processDiagramCanvas, bpmnModel, artifact);
@@ -732,7 +750,7 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
     }
 
     protected static CustomProcessDiagramCanvas initProcessDiagramCanvas(BpmnModel bpmnModel, String imageType,
-                                                                         String activityFontName, String labelFontName, ClassLoader customClassLoader) {
+                                                                          String activityFontName, String labelFontName, String annotationFontName, ClassLoader customClassLoader) {
 
         // We need to calculate maximum values to know how big the image will be in its entirety
         double minX = Double.MAX_VALUE;
@@ -866,7 +884,7 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
         }
 
         return new CustomProcessDiagramCanvas((int) maxX + 10,(int) maxY + 10, (int) minX, (int) minY,
-                imageType, activityFontName, labelFontName, customClassLoader);
+                imageType, activityFontName, labelFontName, annotationFontName, customClassLoader);
     }
 
     protected static List<Artifact> gatherAllArtifacts(BpmnModel bpmnModel) {
@@ -915,8 +933,6 @@ public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagra
             Map<Class<? extends BaseElement>, CustomProcessDiagramGenerator.ArtifactDrawInstruction> artifactDrawInstructions) {
         this.artifactDrawInstructions = artifactDrawInstructions;
     }
-
-
 
     protected interface ActivityDrawInstruction {
         void draw(CustomProcessDiagramCanvas processDiagramCanvas, BpmnModel bpmnModel, FlowNode flowNode);

@@ -3,6 +3,8 @@ package com.hengtian.common.workflow.listener;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.TUserTaskService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
@@ -11,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.hengtian.activiti.model.TUserTask;
-import com.hengtian.activiti.service.TUserTaskService;
+
 
 
 

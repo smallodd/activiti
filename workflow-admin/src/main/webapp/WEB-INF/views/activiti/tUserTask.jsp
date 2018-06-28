@@ -97,16 +97,30 @@
                 <shiro:hasPermission name="/tUserTask/configUser">
                     str += $.formatString('<a href="javascript:void(0)" class="tUserTask-easyui-linkbutton-configUser" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="configUserFun(\'{0}\');" >设定人员</a>', row.id);
                 </shiro:hasPermission>
+                <shiro:hasPermission name="/task/start">
+                str += $.formatString('<a href="javascript:void(0)" class="tUserTask-easyui-linkbutton-start" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="startProcessInstance(\'{0}\');" >模拟流程开启</a>', row.key);
+                </shiro:hasPermission>
                 return str;
             }
         }]],
         onLoadSuccess:function(data){
             $('.tUserTask-easyui-linkbutton-configUser').linkbutton({text:'设定人员'});
+            $('.tUserTask-easyui-linkbutton-start').linkbutton({text:'模拟开启'});
         },
         toolbar : '#tUserTaskToolbar'
     });
 });
-
+    function startProcessInstance(processKey){
+        $.ajax({
+            type: 'POST',
+            dataType : 'json',
+            url: '${ctx}/activiti/startTask',
+            data: {"processKey":processKey},
+            success: function(json){
+                alert(json.msg);
+            }
+        });
+    }
 /**
  * 设定人员
  */

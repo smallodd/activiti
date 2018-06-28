@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hengtian.common.result.Constant;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.web.bind.ServletRequestDataBinder;
@@ -18,7 +19,7 @@ import com.hengtian.common.utils.StringEscapeEditor;
  * @description：基础 controller
  */
 public abstract class BaseController {
-	
+
     @InitBinder
     public void initBinder(ServletRequestDataBinder binder) {
         /**
@@ -63,7 +64,30 @@ public abstract class BaseController {
     public Object renderError(String msg) {
         Result result = new Result();
         result.setMsg(msg);
-
+        result.setCode(Constant.FAIL);
+        return JSONObject.toJSONString(result);
+    }
+    /**
+     * ajax失败
+     * @param msg 失败的消息
+     * @return {Object}
+     */
+    public Object renderError(String msg,String code) {
+        Result result = new Result();
+        result.setMsg(msg);
+        result.setCode(code);
+        return JSONObject.toJSONString(result);
+    }
+    /**
+     * ajax失败
+     * @param msg 失败的消息
+     * @return {Object}
+     */
+    public Object renderError(String msg,String code,Object o) {
+        Result result = new Result();
+        result.setMsg(msg);
+        result.setCode(code);
+        result.setObj(o);
         return JSONObject.toJSONString(result);
     }
 
@@ -74,6 +98,7 @@ public abstract class BaseController {
     public Object renderSuccess() {
         Result result = new Result();
         result.setSuccess(true);
+        result.setCode(Constant.SUCCESS);
         return JSONObject.toJSONString(result);
     }
 
@@ -86,9 +111,36 @@ public abstract class BaseController {
         Result result = new Result();
         result.setSuccess(true);
         result.setMsg(msg);
+        result.setCode(Constant.SUCCESS);
         return JSONObject.toJSONString(result);
     }
 
+
+    /**
+     * ajax成功
+     * @param msg 消息
+     * @return {Object}
+     */
+    public Result resultSuccess(String msg) {
+        Result result = new Result();
+        result.setSuccess(true);
+        result.setMsg(msg);
+        result.setCode(Constant.SUCCESS);
+        return result;
+    }
+    /**
+     * ajax成功
+     * @param msg 消息
+     * @return {Object}
+     */
+    public Result resultSuccess(String msg,Object o) {
+        Result result = new Result();
+        result.setSuccess(true);
+        result.setMsg(msg);
+        result.setObj(o);
+        result.setCode(Constant.SUCCESS);
+        return result;
+    }
     /**
      * ajax成功
      * @param obj 成功时的对象
@@ -98,9 +150,10 @@ public abstract class BaseController {
         Result result = new Result();
         result.setSuccess(true);
         result.setObj(obj);
+        result.setCode(Constant.SUCCESS);
         return JSONObject.toJSONString(result);
     }
-    
+
     public <T> Page<T> getPage(int current, int size, String sort, String order){
         Page<T> page = new Page<T>(current, size, sort);
         if ("desc".equals(order)) {
@@ -110,7 +163,7 @@ public abstract class BaseController {
         }
         return page;
     }
-    
+
     public <T> PageInfo pageToPageInfo(Page<T> page) {
         PageInfo pageInfo = new PageInfo();
         pageInfo.setRows(page.getRecords());

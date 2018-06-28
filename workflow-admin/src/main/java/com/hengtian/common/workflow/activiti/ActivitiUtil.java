@@ -1,8 +1,9 @@
 package com.hengtian.common.workflow.activiti;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.hengtian.activiti.model.TUserTask;
-import com.hengtian.activiti.service.TUserTaskService;
+
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.TUserTaskService;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@Deprecated
 public class ActivitiUtil {
 
     @Autowired

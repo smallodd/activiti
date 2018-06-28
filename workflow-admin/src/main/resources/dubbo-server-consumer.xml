@@ -3,9 +3,9 @@
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans
-						http://www.springframework.org/schema/beans/spring-beans.xsd
-						 http://code.alibabatech.com/schema/dubbo
-						  http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+						   http://www.springframework.org/schema/beans/spring-beans.xsd
+						   http://code.alibabatech.com/schema/dubbo
+						   http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
 
 	<!-- 提供方应用信息，用于计算依赖关系 -->
@@ -15,6 +15,8 @@
 	<!-- 使用zookeeper注册中心暴露服务地址 即zookeeper的所在服务器ip地址和端口号 -->
 	<dubbo:registry protocol="zookeeper" address="${dubbo.registry.address}" check="false" />
 
-
-	<dubbo:reference id="workTaskService" interface="com.activiti.service.WorkTaskService" version="1.0.0" timeout="20000" retries="0" />
+	<dubbo:reference id="privilegeService" interface="com.rbac.service.PrivilegeService" version="1.0.0" timeout="20000" retries="0" />
+	<dubbo:reference id="empService" interface="com.user.service.emp.EmpService" version="1.0.0" timeout="20000" retries="0" />
+	<dubbo:reference id="userService" interface="com.rbac.service.UserService" version="1.0.0" timeout="20000" retries="0" />
+	<dubbo:reference id="orgService" interface="com.user.service.org.OrgService" version="1.0.0" timeout="20000" retries="0" />
 </beans>

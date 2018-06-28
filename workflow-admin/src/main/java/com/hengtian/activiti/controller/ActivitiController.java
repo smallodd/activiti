@@ -6,26 +6,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.hengtian.activiti.model.TMailLog;
-import com.hengtian.activiti.model.TUserTask;
-import com.hengtian.activiti.service.ActivitiService;
-import com.hengtian.activiti.service.TMailLogService;
-import com.hengtian.activiti.service.TUserTaskService;
-import com.hengtian.activiti.vo.CommentVo;
-import com.hengtian.activiti.vo.ProcessDefinitionVo;
-import com.hengtian.activiti.vo.TaskVo;
+
+import com.hengtian.application.model.AppModel;
+import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.TaskStatus;
-import com.hengtian.common.enums.TaskType;
-import com.hengtian.common.enums.TaskVariable;
+import com.hengtian.common.enums.TaskTypeEnum;
+import com.hengtian.common.enums.TaskVariableEnum;
 import com.hengtian.common.operlog.SysLog;
+import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskParam;
+import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.DateUtils;
-import com.hengtian.common.utils.MailTemplateUtils;
+import com.hengtian.common.utils
+		.MailTemplateUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
+import com.hengtian.flow.model.TMailLog;
+import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.service.*;
+import com.hengtian.flow.vo.CommentVo;
+import com.hengtian.flow.vo.ProcessDefinitionVo;
+import com.hengtian.flow.vo.TaskVo;
 import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysDepartmentService;
@@ -74,13 +79,7 @@ public class ActivitiController extends BaseController{
 	@Autowired
 	private TaskService taskService;
 	@Autowired
-	private RuntimeService runtimeService;
-	@Autowired
-	private IdentityService identityService;
-	@Autowired
     private SysUserService sysUserService;
-	@Autowired
-    private TUserTaskService tUserTaskService;
 	@Autowired
 	private TMailLogService tMailLogService;
 	@Autowired
@@ -92,7 +91,12 @@ public class ActivitiController extends BaseController{
 	@Autowired
 	ProcessEngineFactoryBean processEngine;
 	@Autowired
-	private ObjectMapper objectMapper;
+	WorkflowService workflowService;
+	@Autowired
+	AppModelService appModelService;
+
+	@Autowired
+	TRuTaskService tRuTaskService;
 	/**
      * 部署流程定义页
      * @return
@@ -101,6 +105,27 @@ public class ActivitiController extends BaseController{
     public String deployPage() {
         return "activiti/processdefDeploy";
     }
+	@SysLog(value="任务开启模拟")
+	@PostMapping("/startTask")
+	@ResponseBody
+    public Object startTask(String processKey){
+		ProcessParam processParam=new ProcessParam();
+		processParam.setBusinessKey(UUID.randomUUID().toString());
+		processParam.setCustomApprover(false);
+		processParam.setCreatorId("admin");
+		processParam.setProcessDefinitionKey(processKey);
+		EntityWrapper entityWrapper=new EntityWrapper();
+		entityWrapper.where("model_key={0}",processKey);
+		List<AppModel> list=appModelService.selectList(entityWrapper);
+		if(list==null||list.size()==0){
+			return renderError("模拟失败，请将流程配置到系统中！");
+		}
+		processParam.setAppKey(Integer.valueOf(list.get(0).getAppKey()));
+		processParam.setTitle("模拟测试任务title"+UUID.randomUUID().toString());
+		Result result=workflowService.startProcessInstance(processParam);
+
+    	return result;
+	}
 	
 	/**
      * 流程部署(压缩包方式)
@@ -142,7 +167,7 @@ public class ActivitiController extends BaseController{
     @SysLog(value="查询流程定义")
     @PostMapping("/processdefDataGrid")
     @ResponseBody
-    public PageInfo dataGrid(ProcessDefinitionVo processDefinitionVo, Integer page, Integer rows, String sort,String order,String key) {
+    public PageInfo dataGrid(ProcessDefinitionVo processDefinitionVo, Integer page, Integer rows, String sort, String order, String key) {
     	PageInfo pageInfo = new PageInfo(page, rows);
     	pageInfo.setSort(sort);
     	pageInfo.setOrder(order);
@@ -253,7 +278,7 @@ public class ActivitiController extends BaseController{
 	 */
 	@PostMapping("/allHisTaskDataGrid")
 	@ResponseBody
-	public PageInfo allHisTaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort,String order) {
+	public PageInfo allHisTaskDataGrid(TaskVo taskVo, Integer page, Integer rows, String sort, String order) {
 		PageInfo pageInfo = new PageInfo(page, rows);
 		pageInfo.setOrder(order);
 		pageInfo.setSort(sort);
@@ -275,6 +300,7 @@ public class ActivitiController extends BaseController{
 
 		List<CommentVo> comments = new ArrayList<CommentVo>();
 		List<Comment> commentList= taskService.getProcessInstanceComments(processInstanceId);
+
 		for(Comment comment : commentList){
 			CommentEntity c = (CommentEntity)comment;
 			CommentVo vo = new CommentVo();
@@ -289,12 +315,8 @@ public class ActivitiController extends BaseController{
 		model.addAttribute("task", task);
 		model.addAttribute("comments", comments);
 		
-    	String taskKey = task.getTaskDefinitionKey();
-    	if(StringUtils.contains("SVacation_Modify", taskKey)){
-    		return "application/tVacationModify";
-    	}else if(StringUtils.contains("SVacation_Terminate", taskKey)){
-    		return "application/tVacationTerminate";
-    	}
+
+
         return "activiti/taskComplete";
     }
     
@@ -309,10 +331,41 @@ public class ActivitiController extends BaseController{
     @RequestMapping("/completeTask")
     @ResponseBody
     public Object completeTask( @RequestParam("taskId") String taskId,
-								@RequestParam("userId") String userId,
+								@RequestParam(value = "jsonVariable",required = false) String jsonVariable,
 					    		@RequestParam("commentContent") String commentContent,
 					    		@RequestParam("commentResult") Integer commentResult){
-		Result result= activitiService.completeTask(taskId,userId,commentContent,commentResult);
+		Task task=taskService.createTaskQuery().taskId(taskId).singleResult();
+		TaskParam taskParam=new TaskParam();
+		if(task==null){
+			return  renderError("任务不存在！", Constant.TASK_NOT_EXIT) ;
+		}
+		try {
+		if(StringUtils.isNotBlank(jsonVariable)) {
+			JSONObject.parseObject(jsonVariable);
+		}
+		}catch (Exception e){
+			return renderError("自定义参数格式不正确！",Constant.PARAM_ERROR);
+		}
+		EntityWrapper entityWrapper=new EntityWrapper();
+		entityWrapper.where("task_id={0}",taskId).andNew("status={0}",0).isNotNull("assignee_real");
+
+		List<TRuTask> list=tRuTaskService.selectList(entityWrapper);
+		if(list==null||list.size()==0){
+			return renderError("任务没有审批人，请将任务转办给审批人！",Constant.FAIL);
+		}
+		TRuTask tRuTask=list.get(0);
+		taskParam.setAssignee(tRuTask.getAssigneeReal());
+		ShiroUser user = getShiroUser();
+		if(user.getLoginName().equals("admin")) {
+			taskParam.setComment("【管理员代办】"+commentContent);
+		}else{
+			taskParam.setComment(commentContent);
+		}
+		taskParam.setPass(commentResult);
+		taskParam.setTaskId(taskId);
+
+		taskParam.setJsonVariables(jsonVariable);
+		Object result=workflowService.approveTask(task,taskParam);
 		return JSONObject.toJSONString(result);
     }
 
@@ -386,11 +439,11 @@ public class ActivitiController extends BaseController{
 			}
 			ShiroUser user = getShiroUser();
     		if(ConstantUtils.ADMIN_ID.equals(user.getId()) || user.getId().equals(userId)){
-				String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey()+":"+TaskVariable.TASKTYPE.value)+"";
-				if(TaskType.COUNTERSIGN.value.equals(taskType) || TaskType.CANDIDATEUSER.value.equals(taskType)){
+				String taskType = taskService.getVariable(taskId, task.getTaskDefinitionKey()+":"+ TaskVariableEnum.TASKTYPE.value)+"";
+				if(TaskTypeEnum.COUNTERSIGN.value.equals(taskType) || TaskTypeEnum.CANDIDATEUSER.value.equals(taskType)){
 					//会签
 					//修改会签人
-					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+TaskVariable.TASKUSER.value)+"";
+					String candidateIds = taskService.getVariable(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.TASKUSER.value)+"";
 					if(StringUtils.contains(candidateIds, transferUserId)){
 						return renderError("【"+transferUserId+"】已在当前任务中<br/>（同一任务节点同一个人最多可办理一次）");
 					}
@@ -400,13 +453,13 @@ public class ActivitiController extends BaseController{
 					Map<String,Object> variable = Maps.newHashMap();
 					variable.put(task.getTaskDefinitionKey() + ":" + userId, userId+":"+TaskStatus.TRANSFER.value);
 					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
-					variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, candidateIds.replace(userId,transferUserId));
+					variable.put(task.getTaskDefinitionKey() + ":"+ TaskVariableEnum.TASKUSER.value, candidateIds.replace(userId,transferUserId));
 					taskService.setVariablesLocal(taskId, variable);
 				}else{
 					Map<String,Object> variable = Maps.newHashMap();
 					variable.put(task.getTaskDefinitionKey() + ":" + userId, TaskStatus.TRANSFER.value);
 					variable.put(task.getTaskDefinitionKey() + ":" + transferUserId, transferUserId+":"+TaskStatus.UNFINISHED.value);
-					variable.put(task.getTaskDefinitionKey() + ":"+TaskVariable.TASKUSER.value, transferUserId);
+					variable.put(task.getTaskDefinitionKey() + ":"+ TaskVariableEnum.TASKUSER.value, transferUserId);
 					taskService.setVariablesLocal(taskId, variable);
 					activitiService.transferTask(transferUserId, taskId);
 				}
@@ -436,7 +489,7 @@ public class ActivitiController extends BaseController{
 			}
 			Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
 			if(task != null){
-				String candidateIds = taskService.getVariable(taskId, task.getTaskDefinitionKey() + ":" + TaskVariable.TASKUSER.value)+"";
+				String candidateIds = taskService.getVariable(taskId, task.getTaskDefinitionKey() + ":" + TaskVariableEnum.TASKUSER.value)+"";
 				if(StringUtils.isNotBlank(candidateIds)){
 					EntityWrapper<SysUser> wrapper =new EntityWrapper<SysUser>();
 					wrapper.in("id",candidateIds.split(","));
@@ -508,16 +561,8 @@ public class ActivitiController extends BaseController{
      */
     @GetMapping("/taskJump")
     public String taskJump(Model model,@RequestParam("taskId") String taskId) {
-    	Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-    	//查询流程定义
-    	ProcessDefinition pd= repositoryService.createProcessDefinitionQuery()
-    	.processDefinitionId(task.getProcessDefinitionId()).singleResult();
-    	//根据流程定义KEY查询用户任务
-    	EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-		wrapper.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
-		wrapper.orderBy("order_num",true);
-		List<TUserTask> tasks= tUserTaskService.selectList(wrapper);
-    	model.addAttribute("tasks",tasks);
+        Result result = workflowService.getBeforeNodes(taskId, getUserId(),true,false);
+        model.addAttribute("tasks", result.getObj());
 		model.addAttribute("taskId",taskId);
         return "activiti/taskJump";
     }
@@ -563,7 +608,9 @@ public class ActivitiController extends BaseController{
 				InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG",
 						processEngineConfiguration.getLabelFontName(),
 						processEngineConfiguration.getActivityFontName(),
+						"宋体",
 						processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1);
+
 				byte[] b = new byte[1024];
 				int len;
 				while ((len = imageStream.read(b, 0, 1024)) != -1) {
@@ -652,6 +699,7 @@ public class ActivitiController extends BaseController{
 		InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG", highLightedActivitis, highLightedFlows,
 				processEngineConfiguration.getLabelFontName(),
 				processEngineConfiguration.getActivityFontName(),
+				processEngineConfiguration.getAnnotationFontName(),
 				processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1, taskDefinitionKeyList);
 		//5.22.0
 		//InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", highLightedActivitis,highLightedFlows,"宋体","宋体","宋体",null,1.0);

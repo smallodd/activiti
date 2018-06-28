@@ -124,6 +124,10 @@
                             str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                             str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-jumpTask" data-options="plain:true,iconCls:\'fi-share icon-yellow\'" onclick="jumpTaskFun(\'{0}\');" >跳转</a>', row.id);
                         </shiro:hasPermission>
+                    <shiro:hasPermission name="/ask/comment">
+                    str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                    str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-askTask" data-options="plain:true,iconCls:\'fi-share icon-green\'" onclick="askTaskFun(\'{0}\');" >意见征询</a>', row.id);
+                    </shiro:hasPermission>
                     <shiro:hasPermission name="/activiti/adminShowTask">
                         str += '&nbsp;&nbsp;|&nbsp;&nbsp;';
                         str += $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-taskProgress" data-options="plain:true,iconCls:\'fi-arrow-right icon-grey\'" onclick="showTaskFun(\'{0}\');" >进度</a>', row.processInstanceId);
@@ -138,6 +142,7 @@
                 $('.task-easyui-linkbutton-transferTask').linkbutton({text:'转办'});
                 $('.task-easyui-linkbutton-jumpTask').linkbutton({text:'跳转'});
                 $('.task-easyui-linkbutton-taskProgress').linkbutton({text:'进度'});
+                $('.task-easyui-linkbutton-askTask').linkbutton({text:'意见征询'});
             },
             toolbar : '#taskToolbar'
         });
@@ -156,7 +161,7 @@
         }
         parent.$.modalDialog({
             title : '办理',
-            width : 400,
+            width : 570,
             height : 450,
             href : '${ctx}/activiti/completeTaskPage?id='+id,
             buttons : [ {
@@ -164,13 +169,13 @@
                 handler : function() {
                     parent.$.modalDialog.openner_dataGrid = taskDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
                     var f = parent.$.modalDialog.handler.find('#complateTaskForm');
-                    var op = parent.$.modalDialog.handler.find("#taskUser").val();
-                    if(op != null && op != ""){
-                        f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
+//                    var op = parent.$.modalDialog.handler.find("#taskUser").val();
+//                    if(op != null && op != ""){
+//                        f.find("#userId").val(parent.$.modalDialog.handler.find("#taskUser").combobox('getValue'));
                         f.submit();
-                    }else{
-                        parent.$.messager.alert('提示', "没有审批人", 'info');
-                    }
+//                    }else{
+//                        parent.$.messager.alert('提示', "没有审批人", 'info');
+//                    }
                 }
             }]
         });
@@ -258,6 +263,27 @@
             height : 200,
             modal : true,
             href :  '${ctx}/activiti/taskJump?taskId='+id,
+            buttons : [ {
+                text : '确定',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = taskDataGrid;
+                    var f = parent.$.modalDialog.handler.find('#taskJumpForm');
+                    f.submit();
+                }
+            }]
+        });
+    }
+
+    /**
+     *意见征询
+     */
+    function askTaskFun(id){
+        parent.$.modalDialog({
+            title : '意见征询',
+            width : 500,
+            height : 400,
+            modal : true,
+            href :  '${ctx}/ask/comment?taskId='+id,
             buttons : [ {
                 text : '确定',
                 handler : function() {

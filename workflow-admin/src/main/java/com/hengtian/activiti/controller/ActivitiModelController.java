@@ -4,15 +4,19 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.hengtian.activiti.model.TUserTask;
-import com.hengtian.activiti.service.ActivitiModelService;
-import com.hengtian.activiti.service.TUserTaskService;
+import com.hengtian.application.model.App;
+import com.hengtian.application.model.AppModel;
+import com.hengtian.application.service.AppModelService;
+import com.hengtian.application.service.AppService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.Tree;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.ActivitiModelService;
+import com.hengtian.flow.service.TUserTaskService;
 import net.sf.json.JSONObject;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
@@ -50,6 +54,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * 模型管理操作
+ *
+ * @author houjinrong@chtwm.com
+ * date 2018/6/12 9:56
+ */
 @Controller
 @RequestMapping("/activiti/model")
 public class ActivitiModelController extends BaseController {
@@ -62,6 +72,12 @@ public class ActivitiModelController extends BaseController {
 
     @Autowired
     private ActivitiModelService activitiModelService;
+
+    @Autowired
+    private AppModelService appModelService;
+
+    @Autowired
+    AppService appService;
 
     @Autowired
     RepositoryService repositoryService;
@@ -80,80 +96,88 @@ public class ActivitiModelController extends BaseController {
 
     /**
      * 流程模型管理页
-     * @author houjinrong
-     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:56
      */
     @RequestMapping("/modelManager")
-    public String modelManager(){
+    public String modelManager() {
         return "activiti/model/index";
     }
 
     /**
      * 查询流程定义
-     * @author houjinrong
-     * @param page
-     * @param rows
-     * @param sort
-     * @param order
-     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:57
      */
-    @SysLog(value="查询流程模型")
+    @SysLog(value = "查询流程模型")
     @PostMapping("/modelDataGrid")
     @ResponseBody
-    public PageInfo dataGrid(Integer page, Integer rows, String sort, String order,String name) {
-        name = StringUtils.isBlank(name)?null:name.trim();
+    public PageInfo dataGrid(Integer page, Integer rows, String sort, String order, String name) {
+        name = StringUtils.isBlank(name) ? null : name.trim();
         PageInfo pageInfo = new PageInfo(page, rows);
         pageInfo.setOrder(order);
         pageInfo.setSort(sort);
-        activitiModelService.selectActivitiModelDataGrid(pageInfo,name);
+        activitiModelService.selectActivitiModelDataGrid(pageInfo, name);
         return pageInfo;
     }
 
 
     /**
      * 创建流程模型页面
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:57
      */
     @GetMapping("/addPage")
     public String addPage() {
         return "activiti/model/add";
     }
+
     /**
      * 复制流程页面
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:57
      */
     @GetMapping("/copyPage/{modelId}")
     public String copyPage(@PathVariable String modelId, org.springframework.ui.Model model) {
-        model.addAttribute("id",modelId);
+        model.addAttribute("id", modelId);
         return "activiti/model/copy";
-    }  /**
+    }
+
+    /**
      * 重置key页面
+     * @author mayunlaing@chtwm.com
+     * date 2018/6/12 9:57
      */
     @GetMapping("/resetKey/{modelId}")
     public String resetKey(@PathVariable String modelId, org.springframework.ui.Model model) {
-        model.addAttribute("id",modelId);
+        model.addAttribute("id", modelId);
         return "activiti/model/resetKey";
     }
+
     /**
      * 创建模型
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:57
      */
-    @SysLog(value="创建模型")
+    @SysLog(value = "创建模型")
     @PostMapping("/create")
     @ResponseBody
-    public Object create(String name,String key,String description,HttpServletRequest request, HttpServletResponse response) {
+    public Object create(String name, String key, String description, HttpServletRequest request, HttpServletResponse response) {
         Result result = new Result();
         try {
-            if(StringUtils.isNotBlank(key)){
+            if (StringUtils.isNotBlank(key)) {
                 Model model = repositoryService.createModelQuery().modelKey(key).singleResult();
-                if(model != null){
+                if (model != null) {
                     String msg = "创建模型时KEY重复";
                     logger.info(msg);
                     result.setSuccess(false);
                     result.setMsg(msg);
                     return result;
                 }
-            }else{
-                key = RandomStringUtils.randomAlphabetic(3)+System.currentTimeMillis()+ RandomStringUtils.randomNumeric(5);
+            } else {
+                key = RandomStringUtils.randomAlphabetic(3) + System.currentTimeMillis() + RandomStringUtils.randomNumeric(5);
             }
-            name = StringUtils.isBlank(name)?default_model_name:name.trim();
+            name = StringUtils.isBlank(name) ? default_model_name : name.trim();
             ObjectMapper objectMapper = new ObjectMapper();
             ObjectNode editorNode = objectMapper.createObjectNode();
             editorNode.put("id", "canvas");
@@ -182,7 +206,7 @@ public class ActivitiModelController extends BaseController {
             result.setMsg("创建模型成功");
         } catch (Exception e) {
             String msg = "创建模型失败";
-            logger.error(msg,e);
+            logger.error(msg, e);
             result.setSuccess(false);
             result.setMsg(msg);
         }
@@ -192,37 +216,42 @@ public class ActivitiModelController extends BaseController {
 
     /**
      * 修改模型
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:58
      */
     @RequestMapping("/update/{modelId}")
     public void update(@PathVariable String modelId, HttpServletRequest request, HttpServletResponse response) {
         try {
             Model model = repositoryService.getModel(modelId);
-            if(model != null){
+            if (model != null) {
                 response.sendRedirect(request.getContextPath() + "/modeler.html?modelId=" + modelId);
-            }else{
+            } else {
                 response.sendRedirect(request.getContextPath() + "/editor/create");
             }
         } catch (Exception e) {
             System.out.println("编辑模型失败：");
         }
     }
+
     /**
      * 复制流程
+     * @author mayunliang@chtwm.com
+     * date 2018/6/12 9:58
      */
-    @SysLog(value="复制流程")
+    @SysLog(value = "复制流程")
     @ResponseBody
     @RequestMapping(value = "/copy")
-    public Object copy( String id,String name,String key,HttpServletRequest request) {
+    public Object copy(String id, String name, String key, HttpServletRequest request) {
 
         JSONObject result = new JSONObject();
-        if(StringUtils.isNotBlank(key)){
+        if (StringUtils.isNotBlank(key)) {
             Model model = repositoryService.createModelQuery().modelKey(key).singleResult();
-            if(model != null){
+            if (model != null) {
                 String msg = "复制模型时KEY重复";
                 logger.info(msg);
                 return renderError(msg);
             }
-        }else{
+        } else {
             key = uuidGenerator.getNextId();
         }
         try {
@@ -233,45 +262,49 @@ public class ActivitiModelController extends BaseController {
             ObjectNode modelNode = (ObjectNode) new ObjectMapper()
                     .readTree(repositoryService.getModelEditorSource(modelData.getId()));
             ObjectNode properties = (ObjectNode) modelNode.path("properties");
-            properties.put("process_id",key);
-            modelNode.set("properties",properties);
+            properties.put("process_id", key);
+            modelNode.set("properties", properties);
 
-            String metaInfo=modelData.getMetaInfo();
-            JSONObject jsonObject=JSONObject.fromObject(metaInfo);
-            Model model=repositoryService.newModel();
-            jsonObject.put("name",name);
-            jsonObject.put("description",jsonObject.get("description"));
+            String metaInfo = modelData.getMetaInfo();
+            JSONObject jsonObject = JSONObject.fromObject(metaInfo);
+            Model model = repositoryService.newModel();
+            jsonObject.put("name", name);
+            jsonObject.put("description", jsonObject.get("description"));
             model.setMetaInfo(jsonObject.toString());
             model.setKey(key);
             model.setName(name);
             repositoryService.saveModel(model);
 
             repositoryService.addModelEditorSource(model.getId(), modelNode.toString().getBytes("utf-8"));
-            repositoryService.addModelEditorSourceExtra(model.getId(),repositoryService.getModelEditorSourceExtra(modelData.getId()));
+            repositoryService.addModelEditorSourceExtra(model.getId(), repositoryService.getModelEditorSourceExtra(modelData.getId()));
 
             logger.info("复制成功");
             return renderSuccess("复制成功！");
         } catch (Exception e) {
-            logger.error("复制失败",e);
+            logger.error("复制失败", e);
             return renderError("复制失败！");
         }
-    } /**
+    }
+
+    /**
      * 重置key
+     * @author mayunlaing@chtwm.com
+     * date 2018/6/12 9:58
      */
-    @SysLog(value="重置key")
+    @SysLog(value = "重置key")
     @ResponseBody
     @RequestMapping(value = "/resetKey")
-    public Object resetKey( String id,String key) {
+    public Object resetKey(String id, String key) {
 
         JSONObject result = new JSONObject();
-        if(StringUtils.isNotBlank(key)){
+        if (StringUtils.isNotBlank(key)) {
             Model model = repositoryService.createModelQuery().modelKey(key).singleResult();
-            if(model != null){
+            if (model != null) {
                 String msg = "重置key时失败，key已存在";
                 logger.info(msg);
                 return renderError(msg);
             }
-        }else{
+        } else {
             key = uuidGenerator.getNextId();
         }
         try {
@@ -282,8 +315,8 @@ public class ActivitiModelController extends BaseController {
             ObjectNode modelNode = (ObjectNode) new ObjectMapper()
                     .readTree(repositoryService.getModelEditorSource(modelData.getId()));
             ObjectNode properties = (ObjectNode) modelNode.path("properties");
-            properties.put("process_id",key);
-            modelNode.set("properties",properties);
+            properties.put("process_id", key);
+            modelNode.set("properties", properties);
 
             modelData.setKey(key);
 
@@ -295,70 +328,72 @@ public class ActivitiModelController extends BaseController {
             logger.info("重置key成功");
             return renderSuccess("重置key成功！");
         } catch (Exception e) {
-            logger.error("重置key失败",e);
+            logger.error("重置key失败", e);
             return renderError("重置key失败！");
         }
     }
 
     /**
      * 根据模型部署流程
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:58
      */
-    @SysLog(value="根据模型部署流程")
+    @SysLog(value = "根据模型部署流程")
     @ResponseBody
     @RequestMapping(value = "/deploy/{modelId}")
     public Object deploy(@PathVariable("modelId") String modelId) {
-        JSONObject result = new JSONObject();
         try {
             Model modelData = repositoryService.getModel(modelId);
-            ObjectNode modelNode = (ObjectNode) new ObjectMapper()
-                    .readTree(repositoryService.getModelEditorSource(modelData.getId()));
+            ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(modelData.getId()));
             byte[] bpmnBytes = null;
 
             BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
-            Collection<FlowElement> flowElements=model.getMainProcess().getFlowElements();
+            Collection<FlowElement> flowElements = model.getMainProcess().getFlowElements();
 
-            boolean startEvent=false;
-            boolean endEvent=false;
-            for(FlowElement flowElement:flowElements){
-                if(startEvent&&endEvent){
+            boolean startEvent = false;
+            boolean endEvent = false;
+            for (FlowElement flowElement : flowElements) {
+                if (startEvent && endEvent) {
                     break;
                 }
-                if(flowElement instanceof StartEvent){
-                    startEvent=true;
+                if (flowElement instanceof StartEvent) {
+                    startEvent = true;
                 }
-                if(flowElement instanceof EndEvent){
-                    endEvent=true;
+                if (flowElement instanceof EndEvent) {
+                    endEvent = true;
                 }
 
             }
-            if(!startEvent||!endEvent){
-                 return renderError("开始节点和结束节点必须同时拥有才能部署！");
+            if (!startEvent || !endEvent) {
+                return renderError("开始节点和结束节点必须同时拥有才能部署！");
             }
             bpmnBytes = new BpmnXMLConverter().convertToXML(model);
 
             String processName = modelData.getName() + ".bpmn20.xml";
 
             Deployment deployment = repositoryService.createDeployment()
-                    .name(modelData.getName()).addString(processName, new String(bpmnBytes,"UTF-8"))
+                    .name(modelData.getName()).addString(processName, new String(bpmnBytes, "UTF-8"))
                     .deploy();
             modelData.setDeploymentId(deployment.getId());
             repositoryService.saveModel(modelData);
-	        /*Deployment deployment = repositoryService.createDeployment().name(modelData.getName())
-	                .addBpmnModel(modelData.getName(), bpmnModel).deploy();*/
+            /*Deployment deployment = repositoryService.createDeployment().name(modelData.getName())
+                    .addBpmnModel(modelData.getName(), bpmnModel).deploy();*/
 
             logger.info("部署成功");
             return renderSuccess("流程部署成功！");
         } catch (Exception e) {
-            logger.error("部署失败",e);
+            logger.error("部署失败", e);
             return renderError("流程部署失败！");
         }
     }
 
     /**
      * 查看流程图
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:58
      */
     @GetMapping("/image/{modelId}")
-    public void modelImage(@PathVariable String modelId,HttpServletResponse response,HttpServletRequest request){
+    public void modelImage(@PathVariable String modelId, HttpServletResponse response, HttpServletRequest request) {
         try {
             ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(modelId));
             BpmnModel bpmnModel = new BpmnJsonConverter().convertToBpmnModel(modelNode);
@@ -370,6 +405,7 @@ public class ActivitiModelController extends BaseController {
             InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG",
                     processEngineConfiguration.getLabelFontName(),
                     processEngineConfiguration.getActivityFontName(),
+                    "宋体",
                     processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1);
             byte[] b = new byte[1024];
             int len;
@@ -383,6 +419,8 @@ public class ActivitiModelController extends BaseController {
 
     /**
      * 导出model的xml文件
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:59
      */
     @RequestMapping(value = "/export/{modelId}")
     public void export(@PathVariable("modelId") String modelId, HttpServletResponse response) {
@@ -401,11 +439,11 @@ public class ActivitiModelController extends BaseController {
 
             ByteArrayInputStream in = new ByteArrayInputStream(bpmnBytes);
             IOUtils.copy(in, response.getOutputStream());
-//                String filename = bpmnModel.getMainProcess().getId() + ".bpmn20.xml";
+            //String filename = bpmnModel.getMainProcess().getId() + ".bpmn20.xml";
             String filename = modelData.getName() + ".bpmn20.xml";
             response.setHeader("Content-Disposition", "attachment; filename=" + java.net.URLEncoder.encode(filename, "UTF-8"));
             response.flushBuffer();
-        } catch (Exception e){
+        } catch (Exception e) {
             PrintWriter out = null;
             try {
                 out = response.getWriter();
@@ -419,14 +457,33 @@ public class ActivitiModelController extends BaseController {
 
     /**
      * 查询所有的模型tree
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:59
      */
     @RequestMapping("/allTrees")
     @ResponseBody
-    public Object allTree() {
+    public Object allTree(String id) {
         List<Tree> trees = new ArrayList<Tree>();
         List<Model> list = repositoryService.createModelQuery().deployed().list();
-        if(CollectionUtils.isNotEmpty(list)){
-            for(Model model : list){
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (Model model : list) {
+                App app=appService.selectById(id);
+                EntityWrapper entityWrapper=new EntityWrapper();
+                //entityWrapper.ne("app_key",app.getKey());
+                entityWrapper.eq("model_key",model.getKey());
+                List<AppModel> appModels=appModelService.selectList(entityWrapper);
+                if(appModels!=null&&appModels.size()>0) {
+                    boolean flag = true;
+                    for (AppModel appModel : appModels) {
+                        if (app.getKey().equals(appModel.getAppKey())) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        continue;
+                    }
+                }
                 Tree tree = new Tree();
                 tree.setId(model.getKey());
                 tree.setPid("0");
@@ -439,16 +496,22 @@ public class ActivitiModelController extends BaseController {
 
         return trees;
     }
+
+    /**
+     * 删除模型
+     * @author houjinrong@chtwm.com
+     * date 2018/6/12 9:59
+     */
     @ResponseBody
     @RequestMapping(value = "/deleteModel")
-    public Object deleteModel(String id){
-        Model model=repositoryService.getModel(id);
-        if(StringUtils.isNotBlank(model.getDeploymentId())){
-            EntityWrapper<TUserTask> wrapper =new EntityWrapper<TUserTask>();
-            ProcessDefinition processDefinition=repositoryService.createProcessDefinitionQuery().deploymentId(model.getDeploymentId()).singleResult();
-            wrapper.where("proc_def_key={0}",processDefinition.getKey());
+    public Object deleteModel(String id) {
+        Model model = repositoryService.getModel(id);
+        if (StringUtils.isNotBlank(model.getDeploymentId())) {
+            EntityWrapper<TUserTask> wrapper = new EntityWrapper<TUserTask>();
+            ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().deploymentId(model.getDeploymentId()).singleResult();
+            wrapper.where("proc_def_key={0}", processDefinition.getKey());
             tUserTaskService.delete(wrapper);
-            repositoryService.deleteDeployment(model.getDeploymentId(),true);
+            repositoryService.deleteDeployment(model.getDeploymentId(), true);
 
         }
         repositoryService.deleteModel(id);

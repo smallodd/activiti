@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hengtian.flow.dao.TAskTaskDao">
+
+    <select id="enquireTaskList" parameterType="com.hengtian.common.param.AskTaskParam"
+            resultType="com.hengtian.flow.model.TAskTask">
+        SELECT
+        tat.id id,
+        tat.proc_inst_id procInstId,
+        tat.current_task_id currentTaskId ,
+        tat.current_task_key currentTaskKey,
+        tat.ask_task_key askTaskKey,
+        tat.is_ask_end isAskEnd,
+        tat.create_time createTime,
+        tat.update_time updateTime,
+        tat.create_id createId,
+        tat.update_id updateId,
+        tat.ask_user_id askUserId,
+        tat.ask_comment askComment,
+        tat.answer_comment answerComment,
+        tat.asked_user_id askedUserId
+        FROM t_ask_task tat
+        WHERE 1=1
+        <if test="createId!=null and createId!=''">
+            and tat.create_id = #{createId}
+        </if>
+
+        <if test="askUserId!=null and askUserId!=''">
+            AND tat.ask_user_id = #{askUserId}
+        </if>
+        <if test="currentTaskKey!=null and currentTaskKey!=''">
+            AND tat.current_task_key = #{currentTaskKey}
+        </if>
+        <if test="askTaskKey!=null and askTaskKey!=''">
+            AND tat.ask_task_key = #{askTaskKey}
+        </if>
+        <if test="askEnd!=null">
+            AND tat.is_ask_end = #{askEnd}
+        </if>
+    </select>
+
+    <select id="enquiredTaskList" parameterType="com.hengtian.common.param.AskTaskParam"
+            resultType="com.hengtian.flow.model.TAskTask">
+        SELECT
+        tat.id id,
+        tat.proc_inst_id procInstId,
+        tat.current_task_id currentTaskId ,
+        tat.current_task_key currentTaskKey,
+        tat.ask_task_key askTaskKey,
+        tat.is_ask_end isAskEnd,
+        tat.create_time createTime,
+        tat.update_time updateTime,
+        tat.create_id createId,
+        tat.update_id updateId,
+        tat.ask_user_id askUserId,
+        tat.ask_comment askComment,
+        tat.answer_comment answerComment,
+        tat.asked_user_id askedUserId
+        FROM t_ask_task tat
+        WHERE 1=1
+        <if test="askUserId!=null and askUserId!=''">
+            and tat.ask_user_id = #{askUserId}
+        </if>
+        <if test="createId!=null and createId!=''">
+            AND tat.create_id = #{createId}
+        </if>
+        <if test="currentTaskKey!=null and currentTaskKey!=''">
+            AND tat.current_task_key = #{currentTaskKey}
+        </if>
+        <if test="askTaskKey!=null and askTaskKey!=''">
+            AND tat.ask_task_key = #{askTaskKey}
+        </if>
+        <if test="askEnd!=null">
+            AND tat.is_ask_end = #{askEnd}
+        </if>
+    </select>
+</mapper>

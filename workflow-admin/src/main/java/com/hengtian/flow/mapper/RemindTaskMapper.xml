@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hengtian.flow.dao.RemindTaskDao">
+
+    <select id="remindTaskList" parameterType="com.hengtian.common.param.TaskRemindQueryParam" resultType="RemindTask">
+        SELECT
+            trt.*
+        FROM
+            t_remind_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID = art.ID_
+
+            <if test="appKey != null and appKey != ''">
+                LEFT JOIN t_app_procinst AS tap ON tap.PROC_INST_ID=art.PROC_INST_ID_
+            </if>
+            <if test="title != null and title != ''">
+                LEFT JOIN act_hi_procinst AS ahp ON ahp.PROC_INST_ID_=art.PROC_INST_ID_
+            </if>
+            WHERE 1=1
+            <if test="appKey != null and appKey != ''">
+                AND tap.APP_KEY=#{appKey}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND trt.REMINDER_ID=#{userId}
+            </if>
+            <if test="title != null and title != ''">
+                AND ahp.NAME_ LIKE CONCAT("%",#{title},"%")
+            </if>
+            <if test="taskName != null and taskName != ''">
+                AND art.NAME_ LIKE CONCAT("%",#{taskName},"%")
+            </if>
+    </select>
+
+    <select id="remindedTaskList" parameterType="com.hengtian.common.param.TaskRemindQueryParam" resultType="RemindTask">
+        SELECT
+          trt.*
+        FROM
+            t_remind_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID = art.ID_
+
+            <if test="appKey != null and appKey != ''">
+                LEFT JOIN t_app_procinst AS tap ON tap.PROC_INST_ID=art.PROC_INST_ID_
+            </if>
+            <if test="title != null and title != ''">
+                LEFT JOIN act_hi_procinst AS ahp ON ahp.PROC_INST_ID_=art.PROC_INST_ID_
+            </if>
+            WHERE art.ASSIGNEE_ LIKE CONCAT("%",#{userId},"%")
+            <if test="appKey != null and appKey != ''">
+                AND tap.APP_KEY=#{appKey}
+            </if>
+            <if test="title != null and title != ''">
+                AND ahp.NAME_ LIKE CONCAT("%",#{title},"%")
+            </if>
+            <if test="taskName != null and taskName != ''">
+                AND art.NAME_ LIKE CONCAT("%",#{taskName},"%")
+            </if>
+    </select>
+</mapper>
