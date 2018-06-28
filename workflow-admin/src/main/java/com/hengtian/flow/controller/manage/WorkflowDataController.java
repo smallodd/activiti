@@ -84,11 +84,12 @@ public class WorkflowDataController extends WorkflowBaseController {
             PageInfo pageInfo = workflowService.allTaskPage(taskQueryParam, TaskListEnum.ACTIVE.type);
             return pageInfo;
         } else {
-            PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
+            /*PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
             pageInfo.setCondition(new BeanMap(taskQueryParam));
 
             setAssigneeAndRole(pageInfo, taskQueryParam.getAssignee(), taskQueryParam.getAppKey());
-            workflowService.openTaskList(pageInfo);
+            workflowService.openTaskList(pageInfo);*/
+            PageInfo pageInfo = workflowService.myTaskPage(taskQueryParam, TaskListEnum.ACTIVE.type);
             return pageInfo;
         }
     }
