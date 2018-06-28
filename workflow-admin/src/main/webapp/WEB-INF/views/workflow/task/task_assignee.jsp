@@ -8,7 +8,7 @@
 </head>
 <body>
 	<div class="easyui-layout" data-options="fit:true,border:false" style="overflow: auto;padding: 8px;">
-		<table data-options="region:'center'" id="taskAssignee" style="width:310px;height:395px;"></table>
+		<table data-options="region:'center'" id="taskAssignee" style="width:210px;height:395px;"></table>
 	</div>
 	<script>
         var dataGrid;
@@ -23,17 +23,13 @@
                 idField : 'userCode',
                 sortOrder : 'asc',
                 columns : [[{
-                    width : '110px',
+                    width : '100px',
                     title : '工号',
                     field : 'userCode'
                 }, {
-                    width : '110px',
+                    width : '100px',
                     title : '姓名',
                     field : 'userName'
-                }, {
-                    width : '80px',
-                    title : '是否审批',
-                    field : 'isComplete'
                 }]]
             });
         });

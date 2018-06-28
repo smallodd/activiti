@@ -364,7 +364,7 @@
     function viewTaskAssigneeFun(taskId){
         parent.$.modalDialog({
             title: '查看当前审批人',
-            width: 333,
+            width: 240,
             height: 450,
             modal: true,
             href: '${ctx}/workflow/page/task/assignee/' + taskId
