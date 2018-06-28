@@ -992,7 +992,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         Set<String> set=new HashSet<>();
         for(String taskKey : beforeTaskDefKeys){
             List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(taskKey).orderByTaskCreateTime().desc().list();
-            if(CollectionUtils.isNotEmpty(list) && StringUtils.isNotBlank(list.get(0).getAssignee())){
+            if(list != null && list.size()>0 && StringUtils.isNotBlank(list.get(0).getAssignee())){
                 set.add(list.get(0).getAssignee().replace("_Y","").replace("_N",""));
             }
         }
