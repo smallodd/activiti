@@ -19,6 +19,7 @@ import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -175,5 +176,22 @@ public class WorkflowDataController extends WorkflowBaseController {
     @ResponseBody
     public Object transferAssigneeTree(@PathVariable("taskId") String taskId) {
         return getAssigneeUserTreeByTaskId(taskId);
+    }
+
+    /**
+     * 任务审批人
+     * @author houjinrong@chtwm.com
+     * date 2018/6/28 11:39
+     */
+    @PostMapping("/task/assignee/{taskId}")
+    public Object taskAssignee(@PathVariable("taskId") String taskId){
+        if(StringUtils.isBlank(taskId)){
+            return null;
+        }
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return null;
+        }
+        return workflowService.getTaskAssignee(task, null);
     }
 }

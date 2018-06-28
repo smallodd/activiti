@@ -207,4 +207,15 @@ public class WorkflowPageController extends WorkflowBaseController{
         model.addAttribute("taskId",taskId);
         return "workflow/task/task_jump";
     }
+
+    /**
+     * 任务审批人
+     * @author houjinrong@chtwm.com
+     * date 2018/6/28 11:39
+     */
+    @GetMapping("/task/assignee/{taskId}")
+    public String taskAssignee(Model model,@PathVariable("taskId") String taskId){
+        model.addAttribute("taskId",taskId);
+        return  "/workflow/task/task_assignee";
+    }
 }
