@@ -401,6 +401,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         //表达式
                         List<Emp> empLeader = Lists.newArrayList();
                         String assigneeReal = null;
+
                         if(ExprEnum.LEADER.expr.equals(assignee)){
                             //上级节点领导
                             List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(task, false);
@@ -429,6 +430,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             if(CollectionUtils.isNotEmpty(emps)){
                                 empLeader.addAll(emps);
                             }
+                        }else if(ExprEnum.CREATOR.expr.equals(assignee)){
+                            //申请人
+                            EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
+                            wrapper.eq("proc_inst_id", task.getProcessInstanceId());
+                            RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
+                            Emp emp = new Emp();
+                            emp.setCode(ruProcinst.getCreator());
+                            empLeader.add(emp);
                         }
 
                         if(CollectionUtils.isNotEmpty(empLeader)){
