@@ -681,7 +681,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setMsg("拒绝成功");
                 result.setCode(Constant.SUCCESS);
                 result.setSuccess(true);
-
+                result.setObj(new ArrayList<>());
                 tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】拒绝了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
                 tWorkDetail.setOperateAction("审批拒绝");
                 workDetailService.insert(tWorkDetail);
