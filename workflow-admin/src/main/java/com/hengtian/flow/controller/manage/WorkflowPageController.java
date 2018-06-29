@@ -124,7 +124,7 @@ public class WorkflowPageController extends WorkflowBaseController{
      * date 2018/5/14 13:53
      */
     @GetMapping("/user/claim")
-    public String selectUserClaim(Model model, String taskId, int claimType, String procDefId){
+    public String selectUserClaim(Model model, String taskId, int claimType){
         if(StringUtils.isNotBlank(taskId)){
             Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
             if(task != null){
@@ -206,5 +206,16 @@ public class WorkflowPageController extends WorkflowBaseController{
         model.addAttribute("assignee", assignee);
         model.addAttribute("taskId",taskId);
         return "workflow/task/task_jump";
+    }
+
+    /**
+     * 任务审批人
+     * @author houjinrong@chtwm.com
+     * date 2018/6/28 11:39
+     */
+    @GetMapping("/task/assignee/{taskId}")
+    public String taskAssignee(Model model,@PathVariable("taskId") String taskId){
+        model.addAttribute("taskId",taskId);
+        return  "/workflow/task/task_assignee";
     }
 }

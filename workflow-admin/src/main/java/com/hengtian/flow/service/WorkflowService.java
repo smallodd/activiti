@@ -261,7 +261,6 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/5/15 11:12
      */
-    @Deprecated
     PageInfo myTaskPage(TaskQueryParam taskQueryParam, String type);
 
     /**

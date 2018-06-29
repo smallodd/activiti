@@ -990,13 +990,12 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             return null;
         }
         Set<String> set=new HashSet<>();
-        for(String taskKey:beforeTaskDefKeys){
-            List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(taskKey).orderByTaskCreateTime().desc().list();
-            if(list.size()>0){
+        for(String taskKey : beforeTaskDefKeys){
+            List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(taskKey).orderByTaskCreateTime().desc().list();
+            if(list != null && list.size()>0 && StringUtils.isNotBlank(list.get(0).getAssignee())){
                 set.add(list.get(0).getAssignee().replace("_Y","").replace("_N",""));
             }
         }
-
 
         return StringUtils.join(set.toArray(),",");
     }
@@ -1175,12 +1174,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                         users = getAllUserByRoleCode(processInstance.getAppKey(), Long.parseLong(tr.getAssignee()));
                     }
                 }
-                for(AssigneeVo av : users){
-                    if(assigneeNameMap.containsKey(tr.getTaskDefKey())){
-                        assigneeNameMap.get(tr.getTaskDefKey()).add(av.getUserName());
-                    }else{
-                        Set<String> assigneeSet = Sets.newHashSet(av.getUserName());
-                        assigneeNameMap.put(tr.getTaskDefKey(), assigneeSet);
+                if(CollectionUtils.isNotEmpty(users)){
+                    for(AssigneeVo av : users){
+                        if(assigneeNameMap.containsKey(tr.getTaskDefKey())){
+                            assigneeNameMap.get(tr.getTaskDefKey()).add(av.getUserName());
+                        }else{
+                            Set<String> assigneeSet = Sets.newHashSet(av.getUserName());
+                            assigneeNameMap.put(tr.getTaskDefKey(), assigneeSet);
+                        }
                     }
                 }
 
