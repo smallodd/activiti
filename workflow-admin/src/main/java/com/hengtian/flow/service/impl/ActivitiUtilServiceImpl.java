@@ -1222,7 +1222,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 }
                 TaskNodeVo taskNode = new TaskNodeVo();
 
-                currentAssignee = hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
+                currentAssignee = hisTask.getAssignee()==null?"":hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
                 taskNode.setTaskId(hisTask.getId());
 
                 String[] assigns=currentAssignee.split(",");
