@@ -682,7 +682,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         List<HistoricVariableInstance> listVar = historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
         for (SequenceFlow sf : sourceFlowElement.getIncomingFlows()) {
             sourceFlowElement = (FlowNode) process.getFlowElement(sf.getTargetRef());
-            iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
+            iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll,sourceFlowElement);
         }
         List<String> beforeTaskDefKeys = null;
 
@@ -716,7 +716,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         List<HistoricVariableInstance> listVar = historyService.createHistoricVariableInstanceQuery().processInstanceId(task.getProcessInstanceId()).list();
         for (SequenceFlow sf : sourceFlowElement.getIncomingFlows()) {
             sourceFlowElement = (FlowNode) process.getFlowElement(sf.getTargetRef());
-            iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
+            iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll,sourceFlowElement);
         }
 
         return nodeMap;
@@ -736,19 +736,22 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @author houjinrong@chtwm.com
      * date 2018/5/4 10:35
      */
-    private void iteratorBeforeNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar, boolean isAll) {
+    private void iteratorBeforeNodes(Process process, FlowNode sourceFlowElement, Map<String, FlowNode> nodeMap, List<HistoricVariableInstance> listVar, boolean isAll,FlowNode currentSource) {
         for (SequenceFlow sf : sourceFlowElement.getIncomingFlows()) {
             sourceFlowElement = (FlowNode) process.getFlowElement(sf.getSourceRef());
 
             if ((filterExpression(sf.getConditionExpression(), listVar))) {
                 if (sourceFlowElement instanceof UserTask) {
+                    if(nodeMap.containsKey(sourceFlowElement.getId())||sourceFlowElement.getId().equals(currentSource.getId())){
+                        continue;
+                    }
                     nodeMap.put(sourceFlowElement.getId(), sourceFlowElement);
                     if (isAll && sf.getSourceRef() != null) {
-                        iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
+                        iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll,currentSource);
                     }
                 } else {
                     if (sf.getSourceRef() != null) {
-                        iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
+                        iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll,currentSource);
                     }
                 }
             }
@@ -825,7 +828,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             if ((filterExpression(sf.getConditionExpression(), listVar))) {
                 if (sourceFlowElement instanceof UserTask) {
                     if (isAll && sf.getSourceRef() != null) {
-                        iteratorBeforeNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
+                        iteratorNextNodes(process, sourceFlowElement, nodeMap, listVar, isAll);
                     }
                     nodeMap.put(sourceFlowElement.getId(), sourceFlowElement);
                 } else if (sourceFlowElement instanceof ExclusiveGateway) {
@@ -991,12 +994,11 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
         Set<String> set=new HashSet<>();
         for(String taskKey : beforeTaskDefKeys){
-            List<HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(taskKey).orderByTaskCreateTime().desc().list();
-            if(list.size() > 0 || StringUtils.isNotBlank(list.get(0).getAssignee())){
+            List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(taskKey).orderByTaskCreateTime().desc().list();
+            if(list != null && list.size()>0 && StringUtils.isNotBlank(list.get(0).getAssignee())){
                 set.add(list.get(0).getAssignee().replace("_Y","").replace("_N",""));
             }
         }
-
 
         return StringUtils.join(set.toArray(),",");
     }
@@ -1223,7 +1225,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 }
                 TaskNodeVo taskNode = new TaskNodeVo();
 
-                currentAssignee = hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
+                currentAssignee = hisTask.getAssignee()==null?"":hisTask.getAssignee().replaceAll("_Y", "").replaceAll("_N", "");
                 taskNode.setTaskId(hisTask.getId());
 
                 String[] assigns=currentAssignee.split(",");
