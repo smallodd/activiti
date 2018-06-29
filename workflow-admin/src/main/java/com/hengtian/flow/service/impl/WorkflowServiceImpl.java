@@ -1039,7 +1039,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(task!=null) {
             result.setObj(setButtons(TaskNodeResult.toTaskNodeResult(task)));
         }
-        return new Result(true,Constant.SUCCESS,"跳转成功");
+        return result;
     }
 
     /**
