@@ -12,13 +12,11 @@ import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
-import com.hengtian.flow.service.RuProcinstService;
-import com.hengtian.flow.service.TRuTaskService;
-import com.hengtian.flow.service.TTaskButtonService;
-import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.service.*;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
+import com.rbac.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -36,10 +34,8 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.security.cert.TrustAnchor;
 import java.util.*;
 
 /**
@@ -69,6 +65,10 @@ public class WorkflowBaseController extends BaseRestController {
     private ProcessEngine processEngine;
     @Autowired
     FormService formService;
+    @Autowired
+    WorkflowService workflowService;
+    @Autowired
+    UserService userService;
 
     /**
      * 获取需要高亮的线 (适配5.18以上版本；由于mysql5.6.4之后版本时间支持到毫秒，固旧方法比较开始时间的方法不在适合当前系统)
@@ -209,27 +209,45 @@ public class WorkflowBaseController extends BaseRestController {
         }
 
         JSONArray json = new JSONArray();
-
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.where("task_id={0}", taskId);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+        Integer appKey = runtimeService.getVariable(task.getExecutionId(), "appKey", Integer.class);
         for(TRuTask t : tRuTasks){
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("id", t.getAssignee());
             jsonObject.put("text", t.getAssigneeName());
             if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType()) || AssignTypeEnum.EXPR.code.equals(t.getAssigneeType())){
+                JSONArray jsonArray = new JSONArray();
                 if(StringUtils.isNotBlank(t.getAssigneeReal())){
                     String[] array = t.getAssigneeReal().split(",");
                     for(String a : array){
                         JSONObject child = new JSONObject();
                         child.put("id", t.getAssignee()+":"+a);
-                        child.put("text", a);
+                        RbacUser user = userService.getUserById(a);
+                        child.put("text", user == null?a:user.getName());
                         if(!jsonObject.containsKey("children")){
-                            JSONArray jsonArray = new JSONArray();
                             jsonArray.add(child);
                             jsonObject.put("children", jsonArray);
                         }else{
                             jsonObject.accumulate("children", child);
+                        }
+                    }
+                }else{
+                    if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType())){
+                        List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
+                        if(CollectionUtils.isNotEmpty(users)){
+                            for(RbacUser u : users){
+                                JSONObject child = new JSONObject();
+                                child.put("id", t.getAssignee()+":"+u.getCode());
+                                child.put("text", u.getName());
+                                if(!jsonObject.containsKey("children")){
+                                    jsonArray.add(child);
+                                    jsonObject.put("children", jsonArray);
+                                }else{
+                                    jsonObject.accumulate("children", child);
+                                }
+                            }
                         }
                     }
                 }
