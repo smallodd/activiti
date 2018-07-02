@@ -1092,6 +1092,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         wrapper.and("assignee={0}", userId);
         TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
 
+        if(AssignTypeEnum.ROLE.code.equals(tRuTask.getAssigneeType())){
+            log.info("审批类型为角色时不可转办");
+            return new Result(false, Constant.FAIL,"审批类型为角色时不可转办");
+        }
+
         //用户组权限判断
         if (!ConstantUtils.ADMIN_ID.equals(userId) && tRuTask == null) {
             log.info("您所在的用户组没有权限进行该操作");
