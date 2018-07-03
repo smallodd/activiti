@@ -1967,13 +1967,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             logger.error("没有下一审批节点");
             return null;
         }
+
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+
         EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+        wrapper.eq("proc_def_key",  processInstance.getProcessDefinitionKey());
         wrapper.eq("version_", version);
         wrapper.in("task_def_key", nextTaskDefKeys);
 
         List<TUserTask> userTasks = tUserTaskService.selectList(wrapper);
         String[] assigneeArray;
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+
         for(TUserTask ut : userTasks){
             if(!AssignTypeEnum.ROLE.code.equals(ut.getAssignType())){
                 logger.info("审批人类型不是角色，方法不提供支持");
