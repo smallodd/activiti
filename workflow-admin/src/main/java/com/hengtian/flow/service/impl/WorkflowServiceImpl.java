@@ -401,6 +401,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         //表达式
                         List<Emp> empLeader = Lists.newArrayList();
                         String assigneeReal = null;
+
                         if(ExprEnum.LEADER.expr.equals(assignee)){
                             //上级节点领导
                             List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(task, false);
@@ -429,6 +430,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             if(CollectionUtils.isNotEmpty(emps)){
                                 empLeader.addAll(emps);
                             }
+                        }else if(ExprEnum.CREATOR.expr.equals(assignee)){
+                            //申请人
+                            EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
+                            wrapper.eq("proc_inst_id", task.getProcessInstanceId());
+                            RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
+                            Emp emp = new Emp();
+                            emp.setCode(ruProcinst.getCreator());
+                            empLeader.add(emp);
                         }
 
                         if(CollectionUtils.isNotEmpty(empLeader)){
@@ -1082,6 +1091,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         wrapper.and("assignee={0}", userId);
         TRuTask tRuTask = tRuTaskService.selectOne(wrapper);
+
+        if(AssignTypeEnum.ROLE.code.equals(tRuTask.getAssigneeType())){
+            log.info("审批类型为角色时不可转办");
+            return new Result(false, Constant.FAIL,"审批类型为角色时不可转办");
+        }
 
         //用户组权限判断
         if (!ConstantUtils.ADMIN_ID.equals(userId) && tRuTask == null) {
@@ -1953,13 +1967,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             logger.error("没有下一审批节点");
             return null;
         }
+
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+
         EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+        wrapper.eq("proc_def_key",  processInstance.getProcessDefinitionKey());
         wrapper.eq("version_", version);
         wrapper.in("task_def_key", nextTaskDefKeys);
 
         List<TUserTask> userTasks = tUserTaskService.selectList(wrapper);
         String[] assigneeArray;
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+
         for(TUserTask ut : userTasks){
             if(!AssignTypeEnum.ROLE.code.equals(ut.getAssignType())){
                 logger.info("审批人类型不是角色，方法不提供支持");

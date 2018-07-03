@@ -91,7 +91,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                 return workflowService.startProcessInstance(processParam);
             } catch (Exception e) {
                 logger.error("任务生成失败", e);
-                result.setMsg("任务生成失败，请联系管理员进行排查！");
+                result.setMsg("任务生成失败："+e.getMessage());
                 result.setCode(Constant.FAIL);
                 result.setSuccess(false);
                 return result;
