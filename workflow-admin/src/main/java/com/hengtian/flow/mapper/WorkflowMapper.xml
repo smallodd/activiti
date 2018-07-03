@@ -383,7 +383,7 @@
     <!--代办任务数量-->
     <select id="activeTaskCount" parameterType="com.hengtian.common.param.TaskQueryParam" resultType="Long">
         SELECT
-            COUNT(*)
+            COUNT(DISTINCT art.ID_)
         FROM
         act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
         LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
