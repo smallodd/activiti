@@ -1,5 +1,6 @@
 package com.hengtian.activiti.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +36,9 @@ import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -43,15 +46,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -162,7 +167,7 @@ public class ActivitiModelController extends BaseController {
     @SysLog(value = "创建模型")
     @PostMapping("/create")
     @ResponseBody
-    public Object create(String name, String key, String description, HttpServletRequest request, HttpServletResponse response) {
+    public Object create(String name, String key, String description) {
         Result result = new Result();
         try {
             if (StringUtils.isNotBlank(key)) {
@@ -517,5 +522,99 @@ public class ActivitiModelController extends BaseController {
         repositoryService.deleteModel(id);
 
         return renderSuccess("删除成功！");
+    }
+
+    /**
+     * 导出模型
+     * @author houjinrong@chtwm.com
+     * date 2018/6/29 10:38
+     */
+    @RequestMapping(value = "/export")
+    public void exportModel(HttpServletRequest request, HttpServletResponse response, String[] modelIds) {
+        logger.info("模型ID：", StringUtils.join(modelIds, ","));
+        if(modelIds == null || modelIds.length == 0){
+            return;
+        }
+        JSONArray jsonArray = activitiModelService.exportModel(modelIds, "D:/");
+
+        byte[] bytes = jsonArray.toString().getBytes();
+        try {
+            ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String dateNowStr = sdf.format(new Date());
+            String fileName = "模型备份_"+dateNowStr + ".json";
+            String agent = request.getHeader("USER-AGENT");
+            if(null != agent && -1 == agent.indexOf("MSIE")) {
+                //FF
+                fileName = "=?UTF-8?B?" + (new String(Base64.encodeBase64(fileName.getBytes("UTF-8")))) + "?=";
+            } else { //IE
+                fileName = URLEncoder.encode(fileName, "UTF-8");
+            }
+            response.setContentType("application/x-msdownload;");
+            response.setHeader("Content-Disposition","attachment; filename=" + fileName);
+            IOUtils.copy(in, response.getOutputStream());
+            response.flushBuffer();
+        } catch (Exception e) {
+            logger.error("备份模型失败", e);
+        }
+    }
+
+    /**
+     * 导入模型文件
+     * @author houjinrong@chtwm.com
+     * date 2018/7/4 10:00
+     */
+    @PostMapping("/import")
+    @ResponseBody
+    public Object importModel(MultipartFile modelFile){
+        if(modelFile == null || modelFile.getSize() <= 0){
+            return renderError("请选择文件");
+        }
+        CommonsMultipartFile cf= (CommonsMultipartFile)modelFile;
+        DiskFileItem fi = (DiskFileItem)cf.getFileItem();
+
+        File file = fi.getStoreLocation();
+        StringBuilder result = new StringBuilder();
+        try{
+            //构造一个BufferedReader类来读取文件
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String s = null;
+            //使用readLine方法，一次读一行
+            while((s = br.readLine())!=null){
+                result.append(System.lineSeparator()+s);
+            }
+            br.close();
+        }catch(Exception e){
+            logger.error("读取文件失败", e);
+            e.printStackTrace();
+        }
+
+        JSONArray jsonArray = JSONArray.parseArray(result.toString());
+        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+        String modelKey;
+        try {
+            for(int i=0;i<jsonArray.size();i++){
+                jsonObject = jsonArray.getJSONObject(i);
+                modelKey = jsonObject.getString("key");
+                Model model = repositoryService.createModelQuery().modelKey(modelKey).singleResult();
+                if(model != null){
+                    logger.info("模型KEY为【"+modelKey+"】的模型已存在");
+                    continue;
+                }
+
+                Object obj = create(jsonObject.getString("name"), modelKey, "通过备份还原模型");
+                com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject((String)obj);
+                String modelId = json.getString("obj");
+                repositoryService.addModelEditorSource(modelId, jsonObject.getString("modelEditorSource").getBytes("utf-8"));
+                repositoryService.addModelEditorSourceExtra(modelId, Base64.decodeBase64(new String(jsonObject.getString("modelEditorSourceExtra").getBytes("utf-8"))));
+            }
+        } catch (UnsupportedEncodingException e) {
+            logger.error("导入模型异常：数据转换失败", e);
+            return renderError("导入模型异常：数据转换失败");
+        } catch (Exception e) {
+            logger.error("导入模型失败", e);
+            return renderError("导入模型失败");
+        }
+        return resultSuccess("导入模型成功");
     }
 }

@@ -22,7 +22,7 @@
             </table>
         </form>
      </div>
- 
+
     <div data-options="region:'center',border:false" id="dd">
         <table id="modelDataGrid" data-options="fit:true,border:false"></table>
     </div>
@@ -31,40 +31,65 @@
     <shiro:hasPermission name="/activiti/model/create">
         <a onclick="modelCreate();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-plus icon-green'">添加</a>
     </shiro:hasPermission>
+    <shiro:hasPermission name="/activiti/model/create">
+        <a href="javascript:exportModel()" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-upload icon-green'">导出模型</a>
+    </shiro:hasPermission>
+    <shiro:hasPermission name="/activiti/model/create">
+        <a href="javascript:modelImport();" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-download icon-green'">导入模型</a>
+    </shiro:hasPermission>
 </div>
 <div id="modelImage"></div>
+<div id="modelImportDiv" style="display: none">
+    <div data-options="region:'center',border:false" style="overflow: hidden;padding: 3px;" >
+        <form id="importModelForm" method="POST" enctype="multipart/form-data">
+            <table class="grid">
+                <tr>
+                    <td><input class="easyui-filebox" style="width:260px;height:29px;" name="modelFile" id="modelFile" data-options="prompt:'请选择要导入的文件',buttonText:'选择文件',accept:'application/json'"/></td>
+                </tr>
+                <tr><td><a href="javascript:importModel()" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-download icon-green'" style="margin-left: 180px;border: solid 1px #F0F0F0;background-color: #F5F5F5">导入模型</a></td></tr>
+            </table>
+        </form>
+    </div>
+</div>
 <script type="text/javascript">
     var modelDataGrid;
     $(function() {
         modelDataGrid = $('#modelDataGrid').datagrid({
-        url : '${ctx}/activiti/model/modelDataGrid',
-        striped : true,
-        rownumbers : true,
-        pagination : true,
-        singleSelect : true,
-        idField : 'id',
-        sortName : 'id',
-        sortOrder : 'asc',
-        pageSize : 20,
-        pageList : [ 10, 20, 30, 40, 50, 100, 200, 300, 400, 500],
-        columns : [ [ {
-            width : '200',
-            title : '流程模型ID',
-            field : 'id'
+            url : '${ctx}/activiti/model/modelDataGrid',
+            striped : true,
+            rownumbers : true,
+            pagination : true,
+            singleSelect : false,
+            idField : 'id',
+            sortName : 'id',
+            sortOrder : 'asc',
+            checkOnSelect: true,
+            selectOnCheck: true,
+            pageSize : 20,
+            pageList : [ 10, 20, 30, 40, 50, 100, 200, 300, 400, 500],
+            columns : [ [ {
+                width : '30',
+                title : "",
+                field : 'ck',
+                checkbox : true
+            }, {
+                width : '200',
+                title : '流程模型ID',
+                field : 'id'
 
-        }, {
-            width : '200',
-            title : '流程模型名称',
-            field : 'name'
-        }, {
-            width : '140',
-            title : '流程模型KEY',
-            field : 'key'
-        }, {
-            width : '140',
-            title : '流程模型版本',
-            field : 'version'
-        },{
+            }, {
+                width : '200',
+                title : '流程模型名称',
+                field : 'name'
+            }, {
+                width : '140',
+                title : '流程模型KEY',
+                field : 'key'
+            }, {
+                width : '140',
+                title : '流程模型版本',
+                field : 'version'
+            },{
                 width : '140',
                 title : '创建时间',
                 field : 'createTime',
@@ -72,57 +97,55 @@
                     var unixTimestamp = new Date(value);
                     return unixTimestamp.toLocaleString();
                 }
-        },{
-            width : '140',
-            title : '部署id',
-            field : 'deploymentId',
-            hidden:true
-        }, {
-            field : 'action',
-            title : '操作',
-            width : 360,
-            formatter : function(value, row, index) {
-                var str = '';
+            },{
+                width : '140',
+                title : '部署id',
+                field : 'deploymentId',
+                hidden:true
+            }, {
+                field : 'action',
+                title : '操作',
+                width : 360,
+                formatter : function(value, row, index) {
+                    var str = '';
 
-                <shiro:hasPermission name="/activiti/model/edit">
-                    str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-edit" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="modelEdit(\'{0}\');" >编辑</a>', row.id);
-                </shiro:hasPermission>
+                    <shiro:hasPermission name="/activiti/model/edit">
+                        str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-edit" data-options="plain:true,iconCls:\'fi-pencil icon-blue\'" onclick="modelEdit(\'{0}\');" >编辑</a>', row.id);
+                    </shiro:hasPermission>
 
-                <shiro:hasPermission name="/activiti/model/deploy">
-                    str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-sleep" data-options="plain:true,iconCls:\'fi-upload icon-blue\'" onclick="processDeploy(\'{0}\');" >部署</a>', row.id);
-                </shiro:hasPermission>
+                    <shiro:hasPermission name="/activiti/model/deploy">
+                        str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-sleep" data-options="plain:true,iconCls:\'fi-upload icon-blue\'" onclick="processDeploy(\'{0}\');" >部署</a>', row.id);
+                    </shiro:hasPermission>
 
-                <shiro:hasPermission name="/activiti/model/detail">
-                    str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-active" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="modelDetail(\'{0}\');" >详情</a>', row.id);
-                </shiro:hasPermission>
-                <shiro:hasPermission name="/activiti/model/copy">
-                str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-copy" data-options="plain:true,iconCls:\'fi-page-copy icon-blue\'" onclick="modelCopy(\'{0}\');" >复制</a>', row.id);
-                </shiro:hasPermission>
-                <shiro:hasPermission name="/activiti/model/resetKey">
-                if(row.deploymentId==null||row.deploymentId==""){
-                    str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-reset" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="modelResetKey(\'{0}\');" >重置key</a>', row.id);
+                    <shiro:hasPermission name="/activiti/model/detail">
+                        str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-active" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="modelDetail(\'{0}\');" >详情</a>', row.id);
+                    </shiro:hasPermission>
+                    <shiro:hasPermission name="/activiti/model/copy">
+                    str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-copy" data-options="plain:true,iconCls:\'fi-page-copy icon-blue\'" onclick="modelCopy(\'{0}\');" >复制</a>', row.id);
+                    </shiro:hasPermission>
+                    <shiro:hasPermission name="/activiti/model/resetKey">
+                    if(row.deploymentId==null||row.deploymentId==""){
+                        str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-reset" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="modelResetKey(\'{0}\');" >重置key</a>', row.id);
+                    }
+                    </shiro:hasPermission>
+
+                    <shiro:hasPermission name="/activiti/model/delete">
+                        str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-delete" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="deleteModel(\'{0}\');" >删除</a>', row.id);
+                    </shiro:hasPermission>
+                    return str;
                 }
-                </shiro:hasPermission>
-
-                <shiro:hasPermission name="/activiti/model/delete">
-
-                    str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-delete" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="deleteModel(\'{0}\');" >删除</a>', row.id);
-
-                </shiro:hasPermission>
-                return str;
-            }
-        } ] ],
-        onLoadSuccess:function(data){
-            $('.model-easyui-linkbutton-edit').linkbutton({text:'编辑'});
-            $('.model-easyui-linkbutton-sleep').linkbutton({text:'部署'});
-            $('.model-easyui-linkbutton-active').linkbutton({text:'详情'});
-            $('.model-easyui-linkbutton-copy').linkbutton({text:'复制'});
-            $('.model-easyui-linkbutton-reset').linkbutton({text:'重置key'});
-            $('.model-easyui-linkbutton-delete').linkbutton({text:'删除'});
-        },
-        toolbar : '#modelToolbar'
+            } ] ],
+            onLoadSuccess:function(data){
+                $('.model-easyui-linkbutton-edit').linkbutton({text:'编辑'});
+                $('.model-easyui-linkbutton-sleep').linkbutton({text:'部署'});
+                $('.model-easyui-linkbutton-active').linkbutton({text:'详情'});
+                $('.model-easyui-linkbutton-copy').linkbutton({text:'复制'});
+                $('.model-easyui-linkbutton-reset').linkbutton({text:'重置key'});
+                $('.model-easyui-linkbutton-delete').linkbutton({text:'删除'});
+            },
+            toolbar : '#modelToolbar'
+        });
     });
-});
 
 /**
  * 创建流程模型
@@ -307,6 +330,80 @@ function modelDetail(id) {
         } ]
     });
 }
+
+/**
+ * 导出模型
+ */
+function exportModel(){
+    var selections = $('#modelDataGrid').datagrid('getSelections');
+    if(selections == undefined || selections.length <= 0){
+        parent.$.messager.alert('提示', "请选择要导出的模型", 'info');
+        return;
+    }
+    progressLoad();
+    var modelIds = new Array();
+    $(selections).each(function(index, element){
+        modelIds.push(element.id);
+    });
+    window.location.href = "/activiti/model/export?modelIds="+modelIds.join(",");
+    progressClose();
+}
+
+/**
+ * 导入模型-页面
+ */
+function modelImport(){
+    $("#modelImportDiv").window({
+        title : '导入模型',
+        width : 300,
+        height : 135,
+        content : "",
+        modal : true,
+        minimizable : false,
+        maximizable : false,
+        collapsible : false
+    });
+}
+
+/**
+ * 导入模型-实现
+ */
+function importModel(){
+    var file = $("#modelFile").filebox('getValue');
+    if(file == null || file == ""){
+        parent.$.messager.alert('错误', "请选择文件", 'error');
+        return;
+    }
+    $("#importModelForm").submit();
+}
+
+$('#importModelForm').form({
+    url: "/activiti/model/import",
+    method : "POST",
+    onSubmit: function () {
+        progressLoad();
+        var isValid = $(this).form('validate');
+        if (!isValid) {
+            progressClose();
+        }
+        return isValid;
+    },
+    success: function (result) {
+        progressClose();
+        result = $.parseJSON(result);
+        if (result.success) {
+            //清除文件空间中所选文件
+            $("#modelFile").filebox('clear');
+            //关闭窗口
+            $("#modelImportDiv").dialog("close");
+
+            //之所以能在这里调用到parent.$.modalDialog.openner_dataGrid这个对象，是因为user.jsp页面预定义好了
+            modelDataGrid.datagrid('reload');
+        } else {
+            parent.$.messager.alert('错误', result.msg, 'error');
+        }
+    }
+});
 
 /**
  * 清除
