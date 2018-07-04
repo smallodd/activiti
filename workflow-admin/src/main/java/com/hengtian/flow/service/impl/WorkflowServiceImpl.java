@@ -192,6 +192,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
 
             String taskId = "";
+            String assigee="";
             if (!processParam.isCustomApprover()) {
                 log.info("工作流平台设置审批人");
 
@@ -213,6 +214,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         log.info("设置审批人失败!");
                         throw new WorkFlowException("设置审批人异常");
                     }
+                    //如果创建任务后只有一条任务，则记录审批人字段
+                    if(taskList.size()==1){
+                        assigee=tUserTask.getCandidateIds();
+                    }
+
                 }
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
@@ -231,6 +237,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setOperateAction("提交");
                 tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
                 workDetailService.insert(tWorkDetail);
+
+
+                //如果第一个节点是申请人，则审批自动通过
+                if (ExprEnum.CREATOR.expr.equals(assigee)) {
+                    Task taskApprove = taskService.createTaskQuery().taskId(taskId).singleResult();
+                    TaskParam taskParam = new TaskParam();
+                    taskParam.setTaskId(taskApprove.getId());
+                    taskParam.setPass(1);
+                    taskParam.setComment("通过");
+                    taskParam.setAssignee(creator);
+                    approveTask(taskApprove, taskParam);
+                }
+
             } else {
                 for (int i = 0; i < taskList.size(); i++) {
                     taskId+=taskList.get(0).getId();
@@ -280,6 +299,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
             RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName,processDefinition.getName(), currentTaskKey);
             ruProcinstService.insert(ruProcinst);
+
+
+            List<Task> list=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
+            result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(list)));
         }
         log.info("生成任务接口调用成功，出参：{}",JSONObject.toJSONString(result));
         return result;
