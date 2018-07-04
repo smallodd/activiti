@@ -32,6 +32,7 @@ import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
+import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -509,8 +510,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
-
-        return renderSuccess(commentList);
+        List<CommentEntity> list=new ArrayList<CommentEntity>();
+        for(Comment comment:commentList){
+            list.add((CommentEntity)comment);
+        }
+        return renderSuccess(list);
     }
 
     /**
@@ -739,7 +743,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "获取某个用户某个任务的审批意见")
     @RequestMapping(value = "/rest/comment", method = RequestMethod.POST)
     public Object getComments(String taskId,String userId){
-       Comment comment=  workflowService.getComments(taskId,userId);
+       CommentEntity comment= (CommentEntity) workflowService.getComments(taskId,userId);
 
        return renderSuccess(comment);
     }
