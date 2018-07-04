@@ -38,7 +38,7 @@ import com.rbac.service.UserService;
 import com.user.entity.emp.Emp;
 import com.user.entity.emp.EmpVO;
 import com.user.service.emp.EmpService;
-import org.activiti.bpmn.model.FlowNode;
+import org.activiti.bpmn.model.*;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -52,6 +52,7 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.*;
+import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -655,8 +656,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
                     tWorkDetail.setOperateAction("审批");
                     workDetailService.insert(tWorkDetail);
-
-                    return new Result(true, Constant.SUCCESS,"办理成功！");
+                    Result res=new Result(true, Constant.SUCCESS,"办理成功！");
+                    List<Task> l=new ArrayList();
+                    l.add(task);
+                    res.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(l)));
+                    return res;
                 }
             }
         } else if(TaskTypeEnum.CANDIDATEUSER.value.equals(tUserTask.getTaskType()) || TaskTypeEnum.ASSIGNEE.value.equals(tUserTask.getTaskType())){
