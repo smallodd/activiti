@@ -1,5 +1,6 @@
 package com.hengtian.flow.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +24,7 @@ public interface ActivitiModelService  {
      * @author houjinrong@chtwm.com
      * date 2018/6/20 17:09
      */
-    Result exportModel(String[] modelIds);
+    JSONArray exportModel(String[] modelIds, String filePath);
 
     /**
      * 导出模型
