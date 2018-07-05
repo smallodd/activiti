@@ -350,15 +350,15 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if(appKey == null){
             return renderError("参数错误：appKey为空");
         }
-        ProcessInstance processInstance = null;
+        HistoricProcessInstance historicProcessInstance = null;
         if(StringUtils.isNotBlank(processInstanceId)){
-            processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-            if(processInstance == null){
+            historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+            if(historicProcessInstance == null){
                 return renderError("流程实例ID【"+processInstanceId+"】无对应的流程实例");
             }
         }else if(StringUtils.isNotBlank(businessKey)){
-            processInstance = runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).variableValueEquals("appKey", appKey).singleResult();
-            if(processInstance == null){
+            historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceBusinessKey(businessKey).variableValueEquals("appKey", appKey).singleResult();
+            if(historicProcessInstance == null){
                 return renderError("业务主键【"+businessKey+"】无对应的流程实例");
             }
         }else{
@@ -367,8 +367,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
         ProcessInstanceResult processInstanceResult = new ProcessInstanceResult();
 
-        BeanUtils.copy(processInstance, processInstanceResult);
-        processInstanceId = processInstance.getProcessInstanceId();
+        BeanUtils.copy(historicProcessInstance, processInstanceResult);
+        processInstanceId = historicProcessInstance.getId();
         //获取当前节点
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         List<TaskNodeVo> taskNodeVoList = Lists.newArrayList();
