@@ -366,11 +366,10 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }
 
         ProcessInstanceResult processInstanceResult = new ProcessInstanceResult();
-        /*processInstanceResult.setProcessInstanceId(processInstance.getProcessInstanceId());
-        processInstanceResult.setProcessDefinitionId(processInstance.getProcessDefinitionId());
-        processInstanceResult.setProcessDefinitionName(processInstance.getProcessDefinitionName());*/
 
         BeanUtils.copy(processInstance, processInstanceResult);
+        processInstanceId = processInstance.getProcessInstanceId();
+        //获取当前节点
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
         List<TaskNodeVo> taskNodeVoList = Lists.newArrayList();
         for(Task task : taskList){
