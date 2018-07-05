@@ -8,12 +8,20 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.service.ActivitiModelService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Model;
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -56,29 +64,36 @@ public class ActivitiModelServiceImpl implements ActivitiModelService {
      * date 2018/6/20 17:09
      */
     @Override
-    public Result exportModel(String[] modelIds) {
+    public JSONArray exportModel(String[] modelIds, String filePath) {
         Model model = null;
         JSONArray result = new JSONArray();
-        for(String modelId : modelIds){
-            model = repositoryService.getModel(modelId);
-            if(model == null){
-                logger.info("模型ID【"+modelId+"】没有对应的模型存在");
+        try {
+            for(String modelId : modelIds){
+                model = repositoryService.getModel(modelId);
+                if(model == null){
+                    logger.info("模型ID【"+modelId+"】没有对应的模型存在");
+                }
+                byte[] modelEditorSource = repositoryService.getModelEditorSource(modelId);
+                byte[] modelEditorSourceExtra = repositoryService.getModelEditorSourceExtra(modelId);
+                JSONObject modelJson = new JSONObject();
+                String modelEditorSourceStr = new String(modelEditorSource, "utf-8");
+                String modelEditorSourceExtraStr = new String(Base64.encodeBase64(modelEditorSourceExtra));
+                modelJson.put("modelEditorSource", modelEditorSourceStr);
+                modelJson.put("modelEditorSourceExtra", modelEditorSourceExtraStr);
+                modelJson.put("name", model.getName());
+                modelJson.put("key", model.getKey());
+                modelJson.put("mateInfo", model.getMetaInfo());
+                modelJson.put("version", model.getVersion());
+
+                result.add(modelJson);
             }
-            byte[] modelEditorSource = repositoryService.getModelEditorSource(modelId);
-            byte[] modelEditorSourceExtra = repositoryService.getModelEditorSourceExtra(modelId);
-            JSONObject modelJson = new JSONObject();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } finally {
 
-            modelJson.put("modelEditorSource", modelEditorSource);
-            modelJson.put("modelEditorSourceExtra", modelEditorSourceExtra);
-            modelJson.put("name", model.getName());
-            modelJson.put("key", model.getVersion());
-            modelJson.put("mateInfo", model.getMetaInfo());
-            modelJson.put("version", model.getVersion());
-
-            result.add(modelJson);
         }
 
-        return null;
+        return result;
     }
 
     /**

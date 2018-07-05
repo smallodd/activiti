@@ -192,6 +192,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstance.getId()).list();
 
             String taskId = "";
+            String assigee="";
             if (!processParam.isCustomApprover()) {
                 log.info("工作流平台设置审批人");
 
@@ -213,6 +214,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         log.info("设置审批人失败!");
                         throw new WorkFlowException("设置审批人异常");
                     }
+                    //如果创建任务后只有一条任务，则记录审批人字段
+                    if(taskList.size()==1){
+                        assigee=tUserTask.getCandidateIds();
+                    }
+
                 }
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
@@ -231,6 +237,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setOperateAction("提交");
                 tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
                 workDetailService.insert(tWorkDetail);
+
+
+                //如果第一个节点是申请人，则审批自动通过
+                if (ExprEnum.CREATOR.expr.equals(assigee)) {
+                    Task taskApprove = taskService.createTaskQuery().taskId(taskId).singleResult();
+                    TaskParam taskParam = new TaskParam();
+                    taskParam.setTaskId(taskApprove.getId());
+                    taskParam.setPass(1);
+                    taskParam.setComment("通过");
+                    taskParam.setAssignee(creator);
+                    approveTask(taskApprove, taskParam);
+                }
+
             } else {
                 for (int i = 0; i < taskList.size(); i++) {
                     taskId+=taskList.get(0).getId();
@@ -257,6 +276,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 workDetailService.insert(tWorkDetail);
             }
 
+            List<Task> list=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
+            result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(list)));
+
             //添加应用-流程实例对应关系 t_ru_procinst表
             String creatorDeptName = "";
             String creatorDeptCode = "";
@@ -275,11 +297,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
 
             String currentTaskKey = null;
-            for(Task t : taskList){
+            for(Task t : list){
                 currentTaskKey = currentTaskKey == null?t.getTaskDefinitionKey():currentTaskKey+","+t.getTaskDefinitionKey();
             }
             RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName,processDefinition.getName(), currentTaskKey);
             ruProcinstService.insert(ruProcinst);
+
+
         }
         log.info("生成任务接口调用成功，出参：{}",JSONObject.toJSONString(result));
         return result;
@@ -422,10 +446,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             //流程创建人领导
                             String creator = tUserTask.getExpr();
                             if(StringUtils.isBlank(creator)){
-                                EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
-                                wrapper.where("proc_inst_id={0}", task.getProcessInstanceId());
-                                RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
-                                creator = ruProcinst.getCreator();
+                                creator = getProcessCreator(task.getProcessInstanceId());
                             }
                             List<Emp> emps = empService.selectDirectSupervisorByCode(creator);
                             if(CollectionUtils.isNotEmpty(emps)){
@@ -433,11 +454,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             }
                         }else if(ExprEnum.CREATOR.expr.equals(assignee)){
                             //申请人
-                            EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
-                            wrapper.eq("proc_inst_id", task.getProcessInstanceId());
-                            RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
+                            String creator = tUserTask.getExpr();
+                            if(StringUtils.isBlank(creator)){
+                                creator = getProcessCreator(task.getProcessInstanceId());
+                            }
                             Emp emp = new Emp();
-                            emp.setCode(ruProcinst.getCreator());
+                            emp.setCode(creator);
                             empLeader.add(emp);
                         }
 
