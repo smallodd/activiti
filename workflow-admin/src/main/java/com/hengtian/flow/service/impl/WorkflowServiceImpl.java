@@ -276,6 +276,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 workDetailService.insert(tWorkDetail);
             }
 
+            List<Task> list=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
+            result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(list)));
+
             //添加应用-流程实例对应关系 t_ru_procinst表
             String creatorDeptName = "";
             String creatorDeptCode = "";
@@ -294,15 +297,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
 
             String currentTaskKey = null;
-            for(Task t : taskList){
+            for(Task t : list){
                 currentTaskKey = currentTaskKey == null?t.getTaskDefinitionKey():currentTaskKey+","+t.getTaskDefinitionKey();
             }
             RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName,processDefinition.getName(), currentTaskKey);
             ruProcinstService.insert(ruProcinst);
 
 
-            List<Task> list=taskService.createTaskQuery().processInstanceId(processInstance.getProcessInstanceId()).list();
-            result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(list)));
         }
         log.info("生成任务接口调用成功，出参：{}",JSONObject.toJSONString(result));
         return result;
