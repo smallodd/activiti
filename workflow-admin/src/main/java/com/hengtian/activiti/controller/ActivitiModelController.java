@@ -535,7 +535,7 @@ public class ActivitiModelController extends BaseController {
         if(modelIds == null || modelIds.length == 0){
             return;
         }
-        JSONArray jsonArray = activitiModelService.exportModel(modelIds);
+        JSONArray jsonArray = activitiModelService.exportModel(modelIds  );
 
         byte[] bytes = jsonArray.toString().getBytes();
         try {
