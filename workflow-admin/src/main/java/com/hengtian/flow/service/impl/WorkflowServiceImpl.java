@@ -446,10 +446,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             //流程创建人领导
                             String creator = tUserTask.getExpr();
                             if(StringUtils.isBlank(creator)){
-                                EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
-                                wrapper.where("proc_inst_id={0}", task.getProcessInstanceId());
-                                RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
-                                creator = ruProcinst.getCreator();
+                                creator = getProcessCreator(task.getProcessInstanceId());
                             }
                             List<Emp> emps = empService.selectDirectSupervisorByCode(creator);
                             if(CollectionUtils.isNotEmpty(emps)){
@@ -457,11 +454,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             }
                         }else if(ExprEnum.CREATOR.expr.equals(assignee)){
                             //申请人
-                            EntityWrapper<RuProcinst> wrapper = new EntityWrapper<>();
-                            wrapper.eq("proc_inst_id", task.getProcessInstanceId());
-                            RuProcinst ruProcinst = ruProcinstService.selectOne(wrapper);
+                            String creator = tUserTask.getExpr();
+                            if(StringUtils.isBlank(creator)){
+                                creator = getProcessCreator(task.getProcessInstanceId());
+                            }
                             Emp emp = new Emp();
-                            emp.setCode(ruProcinst.getCreator());
+                            emp.setCode(creator);
                             empLeader.add(emp);
                         }
 
