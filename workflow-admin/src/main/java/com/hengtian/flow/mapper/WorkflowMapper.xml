@@ -398,7 +398,7 @@
         )
         AND art.SUSPENSION_STATE_=1
         <if test="procDefKey!=null and procDefKey!=''">
-            and arp.key=#{procDefKey}
+            and arp.key_=#{procDefKey}
         </if>
         <include refid="queryCondition"/>
     </select>
