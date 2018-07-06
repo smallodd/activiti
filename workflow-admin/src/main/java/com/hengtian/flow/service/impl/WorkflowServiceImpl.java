@@ -1619,6 +1619,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         con.append(" WHERE 1=1 ");
         String re;
         String reC = "SELECT COUNT(*)";
+        String orderBy;
 
         String assignee = taskQueryParam.getAssignee();
         String roleId = null;
@@ -1630,9 +1631,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         if (TaskListEnum.CLOSE.type.equals(type)) {
+            orderBy = " ORDER BY art.START_TIME_ DESC ";
             re = "SELECT ahp.START_USER_ID_ AS OWNER_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM act_hi_taskinst AS art ");
         } else {
+            orderBy = " ORDER BY art.CREATE_TIME_ DESC ";
             re = "SELECT trt.assignee_real AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,trt.STATUS AS PRIORITY_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM t_ru_task AS trt LEFT JOIN act_ru_task AS art ON trt.TASK_ID=art.ID_ ");
         }
@@ -1714,6 +1717,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             con.append(" AND trt.STATUS=" + TaskStatusEnum.OPEN.status);
             con.append(" AND trt.ASSIGNEE_REAL LIKE #{assignee} ");
         }
+
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         String sql = sb.toString() + con.toString();
         if (TaskListEnum.CLOSE.type.equals(type)) {
@@ -1725,7 +1729,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     .parameter("assignee", "%" + assignee + "%")
                     //.parameter("departmentId", departmentId)
                     .parameter("roleId", roleId);
-            List<HistoricTaskInstance> tasks = query.sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+            List<HistoricTaskInstance> tasks = query.sql(re + sql + orderBy).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setTotal((int) query.sql(reC + sql).count());
             pageInfo.setRows(transferHisTask(taskQueryParam.getAssignee(), tasks,false));
         } else {
@@ -1737,7 +1741,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     .parameter("assignee", assignee)
                     //.parameter("departmentId", departmentId)
                     .parameter("roleId", roleId);
-            List<Task> tasks = query.sql(re + sql).listPage(pageInfo.getFrom(), pageInfo.getSize());
+            List<Task> tasks = query.sql(re + sql + orderBy).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setRows(tasks);
             pageInfo.setTotal((int) query.sql(reC + sql).count());
             pageInfo.setRows(transferTask(taskQueryParam.getAssignee(), tasks,false));
@@ -1760,11 +1764,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         con.append(" WHERE 1=1 ");
         String re;
         String reC = "SELECT COUNT(DISTINCT art.ID_)";
+        String orderBy;
 
         if (TaskListEnum.CLOSE.type.equals(type)) {
+            orderBy = " ORDER BY art.START_TIME_ DESC ";
             re = "SELECT DISTINCT art.ID_, art.ASSIGNEE_ AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON trt.TASK_ID=art.ID_ ");
         } else {
+            orderBy = " ORDER BY art.CREATE_TIME_ DESC ";
             re = "SELECT DISTINCT art.ID_ AS ID_, trt.assignee_real AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,trt.STATUS AS PRIORITY_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM act_ru_task AS art LEFT JOIN t_ru_task AS trt ON trt.TASK_ID=art.ID_ ");
         }
@@ -1814,7 +1821,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
                     .parameter("businessKey", taskQueryParam.getBusinessKey());
 
-            String dataSql = re + sql;
+            String dataSql = re + sql + orderBy;
             String countSql = reC + sql;
             List<HistoricTaskInstance> tasks = query.sql(dataSql).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setTotal((int) query.sql(countSql).count());
@@ -1827,7 +1834,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     .parameter("taskName", "%" + taskQueryParam.getTaskName() + "%")
                     .parameter("businessKey", taskQueryParam.getBusinessKey());
 
-            String dataSql = re + sql;
+            String dataSql = re + sql + orderBy;
             String countSql = reC + sql;
             List<Task> tasks = query.sql(dataSql).listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setRows(tasks);
