@@ -141,7 +141,7 @@
             AND art.ID_ = #{taskId}
         </if>
         <if test="procDefKey!=null and procDefKey!=''">
-            and arp.key=#{procDefKey}
+            and arp.key_=#{procDefKey}
         </if>
 
         <!--流程实例编号-->
@@ -215,7 +215,7 @@
                 )
             AND art.SUSPENSION_STATE_=1
             <if test="procDefKey!=null and procDefKey!=''">
-                and arp.key=#{procDefKey}
+                and arp.key_=#{procDefKey}
             </if>
                 <include refid="queryCondition"/>
         </if>
@@ -256,7 +256,7 @@
                 trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{assignee} AND tat.is_ask_end=0 and tat.id IS NOT NULL AND
                 aht.END_TIME_ IS NOT NULL AND tat.ask_task_key=aht.TASK_DEF_KEY_
             <if test="procDefKey!=null and procDefKey!=''">
-                and arp.key=#{procDefKey}
+                and arp.key_=#{procDefKey}
             </if>
             <!--任务编号-->
             <if test="taskId != null and taskId != ''">
@@ -345,7 +345,7 @@
         WHERE
             1=1
         <if test="procDefKey!=null and procDefKey!=''">
-            and arp.key=#{procDefKey}
+            and arp.key_=#{procDefKey}
         </if>
             <if test="appKey != null and appKey != ''">
                 AND trp.APP_KEY = #{appKey}
@@ -398,7 +398,7 @@
         )
         AND art.SUSPENSION_STATE_=1
         <if test="procDefKey!=null and procDefKey!=''">
-            and arp.key=#{procDefKey}
+            and arp.key_=#{procDefKey}
         </if>
         <include refid="queryCondition"/>
     </select>

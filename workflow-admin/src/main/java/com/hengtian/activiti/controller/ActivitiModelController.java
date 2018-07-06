@@ -535,7 +535,7 @@ public class ActivitiModelController extends BaseController {
         if(modelIds == null || modelIds.length == 0){
             return;
         }
-        JSONArray jsonArray = activitiModelService.exportModel(modelIds, "D:/");
+        JSONArray jsonArray = activitiModelService.exportModel(modelIds  );
 
         byte[] bytes = jsonArray.toString().getBytes();
         try {
@@ -577,11 +577,16 @@ public class ActivitiModelController extends BaseController {
         StringBuilder result = new StringBuilder();
         try{
             //构造一个BufferedReader类来读取文件
-            BufferedReader br = new BufferedReader(new FileReader(file));
+            //BufferedReader br = new BufferedReader(new FileReader(file));
+            FileInputStream fis = new FileInputStream(file);
+            //最后的"GBK"根据文件属性而定，如果不行，改成"UTF-8"试试
+            InputStreamReader reader = new InputStreamReader(fis,"UTF-8");
+            BufferedReader br = new BufferedReader(reader);
             String s = null;
             //使用readLine方法，一次读一行
             while((s = br.readLine())!=null){
-                result.append(System.lineSeparator()+s);
+                //result.append(System.lineSeparator()+s);
+                result.append(s);
             }
             br.close();
         }catch(Exception e){
@@ -589,10 +594,16 @@ public class ActivitiModelController extends BaseController {
             e.printStackTrace();
         }
 
-        JSONArray jsonArray = JSONArray.parseArray(result.toString());
-        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
-        String modelKey;
+        if(StringUtils.isBlank(result)){
+            return renderError("文件中没有数据");
+        }
+
         try {
+            logger.info(result.toString());
+            //JSONArray jsonArray = JSONArray.parseArray(new String(result.toString().getBytes(), "utf-8"));
+            JSONArray jsonArray = JSONArray.parseArray(result.toString());
+            com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+            String modelKey;
             for(int i=0;i<jsonArray.size();i++){
                 jsonObject = jsonArray.getJSONObject(i);
                 modelKey = jsonObject.getString("key");

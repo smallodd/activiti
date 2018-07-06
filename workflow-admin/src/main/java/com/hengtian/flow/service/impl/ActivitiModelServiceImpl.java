@@ -64,7 +64,7 @@ public class ActivitiModelServiceImpl implements ActivitiModelService {
      * date 2018/6/20 17:09
      */
     @Override
-    public JSONArray exportModel(String[] modelIds, String filePath) {
+    public JSONArray exportModel(String[] modelIds) {
         Model model = null;
         JSONArray result = new JSONArray();
         try {

@@ -1863,8 +1863,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 TaskVo taskVo = new TaskVo();
                 taskVo.setTaskDefinitionKey(node.getId());
                 taskVo.setTaskName(node.getName());
+                List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(node.getId()).orderByTaskCreateTime().desc().list();
                 if(needPerson){
-                    List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(node.getId()).orderByTaskCreateTime().desc().list();
                     if(historicTaskInstances!=null&&historicTaskInstances.size()>0){
                         HistoricTaskInstance historicTaskInstance=historicTaskInstances.get(0);
                         String assigns=historicTaskInstance.getAssignee();
@@ -1882,7 +1882,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     }
 
                 }
-                taskList.add(taskVo);
+                //如果历史表中存在任务，则
+                if(historicTaskInstances!=null&&historicTaskInstances.size()>0){
+                    taskList.add(taskVo);
+                }
+
             }
             Result result = new Result(true,Constant.SUCCESS, "查询成功");
             result.setObj(taskList);
