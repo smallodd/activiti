@@ -846,11 +846,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * date 2018/5/10 14:30
      */
     private boolean filterExpression(String conditionExpression, List<HistoricVariableInstance> listVar) {
-        if (StringUtils.isNotEmpty(conditionExpression)) {
+        if (StringUtils.isNotEmpty(conditionExpression)&&listVar!=null) {
             ExpressionFactory factory = new ExpressionFactoryImpl();
             SimpleContext context = new SimpleContext();
             for (HistoricVariableInstance var : listVar) {
+                if(var!=null&&StringUtils.isNotBlank(var.getVariableName())&&var.getValue()!=null){
+
                 context.setVariable(var.getVariableName(), factory.createValueExpression(var.getValue(), var.getValue().getClass()));
+                }
             }
             ValueExpression e = factory.createValueExpression(context, conditionExpression, boolean.class);
 
