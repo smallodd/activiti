@@ -24,7 +24,7 @@ public interface ActivitiModelService  {
      * @author houjinrong@chtwm.com
      * date 2018/6/20 17:09
      */
-    JSONArray exportModel(String[] modelIds, String filePath);
+    JSONArray exportModel(String[] modelIds);
 
     /**
      * 导出模型
