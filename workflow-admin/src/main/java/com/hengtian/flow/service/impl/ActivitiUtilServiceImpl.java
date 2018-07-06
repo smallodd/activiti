@@ -100,7 +100,6 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     @Autowired
     UserService userService;
 
-
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list) {
         if (list != null && list.size() > 0) {
 
@@ -1513,5 +1512,15 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         //查询流程定义信息
         ProcessDefinition processDefinition = repositoryService.getProcessDefinition(historicProcessInstance.getProcessDefinitionId());
         return processDefinition==null?null:processDefinition.getVersion();
+    }
+
+    /**
+     * processInsrtanceId 流程实例ID
+     * @author houjinrong@chtwm.com
+     * date 2018/7/5 10:46
+     */
+    protected String getProcessCreator(String processInstanceId){
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        return historicProcessInstance.getStartUserId();
     }
 }

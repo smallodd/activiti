@@ -35,7 +35,7 @@
         <a href="javascript:exportModel()" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-upload icon-green'">导出模型</a>
     </shiro:hasPermission>
     <shiro:hasPermission name="/activiti/model/create">
-        <a href="javascript:modelImport();" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-download icon-green'">导入模型</a>
+        <a href="javascript:importModel();" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-download icon-green'">导入模型</a>
     </shiro:hasPermission>
 </div>
 <div id="modelImage"></div>
@@ -46,7 +46,6 @@
                 <tr>
                     <td><input class="easyui-filebox" style="width:260px;height:29px;" name="modelFile" id="modelFile" data-options="prompt:'请选择要导入的文件',buttonText:'选择文件',accept:'application/json'"/></td>
                 </tr>
-                <tr><td><a href="javascript:importModel()" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-download icon-green'" style="margin-left: 180px;border: solid 1px #F0F0F0;background-color: #F5F5F5">导入模型</a></td></tr>
             </table>
         </form>
     </div>
@@ -350,31 +349,27 @@ function exportModel(){
 }
 
 /**
- * 导入模型-页面
+ * 导入模型
  */
-function modelImport(){
-    $("#modelImportDiv").window({
+function importModel(){
+    $("#modelImportDiv").dialog({
         title : '导入模型',
         width : 300,
         height : 135,
         content : "",
         modal : true,
-        minimizable : false,
-        maximizable : false,
-        collapsible : false
+        buttons : [ {
+            text : '确定',
+            handler : function() {
+                var file = $("#modelFile").filebox('getValue');
+                if(file == null || file == ""){
+                    parent.$.messager.alert('错误', "请选择文件", 'error');
+                    return;
+                }
+                $("#importModelForm").submit();
+            }
+        } ]
     });
-}
-
-/**
- * 导入模型-实现
- */
-function importModel(){
-    var file = $("#modelFile").filebox('getValue');
-    if(file == null || file == ""){
-        parent.$.messager.alert('错误', "请选择文件", 'error');
-        return;
-    }
-    $("#importModelForm").submit();
 }
 
 $('#importModelForm').form({
