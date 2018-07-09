@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.common.common.CodeConts;
+import com.common.file.springmvc.FastDFSUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -177,6 +178,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         return result;
                     }
             }
+
             String creator = processParam.getCreatorId();
             variables.put(ConstantUtils.SET_ASSIGNEE_FLAG, processParam.isCustomApprover());
             variables.put("appKey", processParam.getAppKey());
@@ -1863,7 +1865,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 TaskVo taskVo = new TaskVo();
                 taskVo.setTaskDefinitionKey(node.getId());
                 taskVo.setTaskName(node.getName());
+
                 List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(node.getId()).orderByTaskCreateTime().desc().list();
+                if(historicTaskInstances!=null&&historicTaskInstances.size()>0){
+                    taskVo.setFormKey(historicTaskInstances.get(0).getFormKey());
+                }
                 if(needPerson){
                     if(historicTaskInstances!=null&&historicTaskInstances.size()>0){
                         HistoricTaskInstance historicTaskInstance=historicTaskInstances.get(0);
