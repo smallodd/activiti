@@ -529,6 +529,7 @@ public class ActivitiModelController extends BaseController {
      * @author houjinrong@chtwm.com
      * date 2018/6/29 10:38
      */
+    @SysLog(value = "备份模型")
     @RequestMapping(value = "/export")
     public void exportModel(HttpServletRequest request, HttpServletResponse response, String[] modelIds) {
         logger.info("模型ID：", StringUtils.join(modelIds, ","));
@@ -564,6 +565,7 @@ public class ActivitiModelController extends BaseController {
      * @author houjinrong@chtwm.com
      * date 2018/7/4 10:00
      */
+    @SysLog(value = "导入模型")
     @PostMapping("/import")
     @ResponseBody
     public Object importModel(MultipartFile modelFile){
