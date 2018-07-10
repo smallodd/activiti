@@ -1167,12 +1167,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     String assigneeReal = tr.getAssigneeReal();
                     for(String assignee : assigneeReal.split(",")){
                         RbacUser rbacUser = userService.getUserById(assignee);
-                        AssigneeVo assigneeVo = new AssigneeVo();
-                        assigneeVo.setUserCode(rbacUser.getCode());
-                        assigneeVo.setUserName(rbacUser.getName());
-                        assigneeVo.setIsComplete(0);
+                        if(rbacUser!=null) {
+                            AssigneeVo assigneeVo = new AssigneeVo();
+                            assigneeVo.setUserCode(rbacUser.getCode());
+                            assigneeVo.setUserName(rbacUser.getName());
+                            assigneeVo.setIsComplete(0);
 
-                        users.add(assigneeVo);
+                            users.add(assigneeVo);
+                        }
                     }
                 }else{
                     if(AssignTypeEnum.ROLE.code.equals(tr.getAssigneeType())){
@@ -1237,11 +1239,13 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 for(String assign:assigns){
                     assigneeVo=new AssigneeVo();
                     RbacUser rbacUser=userService.getUserById(assign);
-                    assigneeVo.setUserCode(rbacUser.getCode());
-                    assigneeVo.setUserName(rbacUser.getName());
-                    list.add(assigneeVo);
+                    if(rbacUser!=null) {
+                        assigneeVo.setUserCode(rbacUser.getCode());
+                        assigneeVo.setUserName(rbacUser.getName());
+                        list.add(assigneeVo);
 
-                    assigneeNameSet.add(assigneeVo.getUserName());
+                        assigneeNameSet.add(assigneeVo.getUserName());
+                    }
                 }
                 taskNode.setAssigneeStr(StringUtils.join(assigneeNameSet, ","));
                 taskNode.setAssignee(list);
