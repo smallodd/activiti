@@ -346,7 +346,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object processDetail(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
                                 @ApiParam(value = "流程实例ID", name = "processInstanceId") @RequestParam(required = false) String processInstanceId,
                                 @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
-        logger.info("入参appKey：{0} processInstanceId：{1} businessKey：{2}", appKey, processInstanceId, businessKey);
+        logger.info("入参appKey：{} processInstanceId：{} businessKey：{}", appKey, processInstanceId, businessKey);
         if(appKey == null){
             return renderError("参数错误：appKey为空");
         }
@@ -371,16 +371,18 @@ public class WorkflowQueryController extends WorkflowBaseController {
         processInstanceId = historicProcessInstance.getId();
         //获取当前节点
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        List<TaskNodeVo> taskNodeVoList = Lists.newArrayList();
-        for(Task task : taskList){
-            TaskNodeVo taskNodeVo = new TaskNodeVo();
-            taskNodeVo.setTaskId(task.getId());
-            taskNodeVo.setTaskDefinitionKey(task.getTaskDefinitionKey());
-            taskNodeVo.setTaskDefinitionName(task.getName());
+        if(CollectionUtils.isNotEmpty(taskList)){
+            List<TaskNodeVo> taskNodeVoList = Lists.newArrayList();
+            for(Task task : taskList){
+                TaskNodeVo taskNodeVo = new TaskNodeVo();
+                taskNodeVo.setTaskId(task.getId());
+                taskNodeVo.setTaskDefinitionKey(task.getTaskDefinitionKey());
+                taskNodeVo.setTaskDefinitionName(task.getName());
 
-            taskNodeVoList.add(taskNodeVo);
+                taskNodeVoList.add(taskNodeVo);
+            }
+            processInstanceResult.setCurrentTaskNode(taskNodeVoList);
         }
-        processInstanceResult.setCurrentTaskNode(taskNodeVoList);
         return renderSuccess(processInstanceResult);
     }
 
@@ -397,7 +399,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/process/def/detail", method = RequestMethod.POST)
     public Object processDefDetail(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
                                    @ApiParam(value = "流程实例ID", name = "processDefinitionKey") @RequestParam String processDefinitionKey) {
-        logger.info("appKey{0} processDefinitionKey{1}", appKey, processDefinitionKey);
+        logger.info("appKey{} processDefinitionKey{}", appKey, processDefinitionKey);
         if(appKey == null){
             return renderError("参数错误：appKey为空");
         }
