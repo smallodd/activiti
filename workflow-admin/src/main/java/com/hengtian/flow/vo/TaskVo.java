@@ -77,6 +77,17 @@ public class TaskVo implements Serializable{
 	 * 业务主键
 	 */
 	private String businessKey;
+
+	private String formKey;
+
+	public String getFormKey() {
+		return formKey;
+	}
+
+	public void setFormKey(String formKey) {
+		this.formKey = formKey;
+	}
+
 	/**
 	 * 节点对应的人员信息
 	 */

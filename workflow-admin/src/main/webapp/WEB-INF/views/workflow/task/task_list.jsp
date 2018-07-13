@@ -56,11 +56,11 @@
             pageList: [10, 20, 30, 40, 50, 100, 200, 300, 400, 500],
             columns: [[{
                 width: '60',
-                title: '主键',
+                title: '任务ID',
                 field: 'id',
                 hidden: false
             }, {
-                width: '100',
+                width: '60',
                 title: '状态',
                 field: 'taskState',
                 sortable: true,
@@ -73,27 +73,27 @@
                     }
                 }
             }, {
-                width: '100',
+                width: '60',
                 title: '申请人',
                 field: 'processOwner'
             }, {
-                width: '350',
+                width: '250',
                 title: '标题',
                 field: 'businessName'
             }, {
-                width: '140',
+                width: '150',
                 title: '当前任务节点名称',
                 field: 'taskName'
             }, {
-                width: '100',
+                width: '80',
                 title: '当前审批人',
                 field: 'taskAssign',
                 formatter: function (value, row, index) {
                     return $.formatString('<a href="javascript:void(0)" class="task-easyui-linkbutton-viewAssignee" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="viewTaskAssigneeFun(\'{0}\',\'{1}\');" >点击产看</a>', row.id, row.processDefinitionId);
                 }
             }, {
-                width: '140',
-                title: '当前任务创建时间',
+                width: '120',
+                title: '任务创建时间',
                 field: 'taskCreateTime',
                 sortable: true
             }, {
