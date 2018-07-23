@@ -173,7 +173,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     if(count>0){
                         log.info("{}有存在未设置审批人的节点",processParam.getProcessDefinitionKey());
                         result.setCode(Constant.TASK_NOT_SET_APPROVER);
-                        result.setMsg("节点有存在未设置审批人");
+                        result.setMsg("生成任务失败：存在未设置审批人的节点");
                         result.setSuccess(false);
                         return result;
                     }

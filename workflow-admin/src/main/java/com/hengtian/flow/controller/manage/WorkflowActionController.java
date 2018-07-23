@@ -29,10 +29,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 工作流程相关-操作
@@ -77,8 +75,10 @@ public class WorkflowActionController extends BaseController {
             return renderError("模拟失败，请将流程配置到系统中！");
         }
         processParam.setAppKey(Integer.valueOf(list.get(0).getAppKey()));
-        processParam.setTitle("模拟测试任务title"+UUID.randomUUID().toString());
 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String dateNowStr = sdf.format(new Date());
+        processParam.setTitle("模拟测试任务title"+dateNowStr);
 
         try {
             return workflowService.startProcessInstance(processParam);
