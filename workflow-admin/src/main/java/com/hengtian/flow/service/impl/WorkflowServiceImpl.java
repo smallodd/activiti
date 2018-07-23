@@ -1774,7 +1774,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             sb.append(" FROM act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON trt.TASK_ID=art.ID_ ");
         } else {
             orderBy = " ORDER BY art.CREATE_TIME_ DESC ";
-            re = "SELECT DISTINCT art.ID_ AS ID_, trt.assignee_real AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,trt.STATUS AS PRIORITY_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
+            re = "SELECT DISTINCT art.ID_ AS ID_, NULL,ahp.START_USER_ID_ AS OWNER_,trt.STATUS AS PRIORITY_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM act_ru_task AS art LEFT JOIN t_ru_task AS trt ON trt.TASK_ID=art.ID_ ");
         }
 
