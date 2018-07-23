@@ -128,11 +128,14 @@
         });
     });
 
+    /**
+     * 开启流程实例
+     */
     function startProcessInstance(processKey){
         $.ajax({
             type: 'POST',
             dataType : 'json',
-            url: '${ctx}/activiti/startTask',
+            url: '${ctx}/workflow/action/process/start',
             data: {"processKey":processKey},
             success: function(json){
                 if(json.success) {

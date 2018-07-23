@@ -207,7 +207,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
                     if(tUserTask == null){
                         log.info("设置审批人异常");
-                        throw new WorkFlowException("设置审批人异常：未设置审批人");
+                        throw new WorkFlowException("生成任务失败：未设置审批人");
                     }
                     //将流程创建人暂存到expr字段
                     tUserTask.setExpr(creator);
