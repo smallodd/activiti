@@ -71,8 +71,8 @@ public class WorkflowActionController extends BaseController {
         EntityWrapper entityWrapper=new EntityWrapper();
         entityWrapper.where("model_key={0}",processKey);
         List<AppModel> list = appModelService.selectList(entityWrapper);
-        if(list==null||list.size()==0){
-            return renderError("模拟失败，请将流程配置到系统中！");
+        if(list == null || list.size() == 0){
+            return renderError("启动流程失败：模型未关联到应用系统中");
         }
         processParam.setAppKey(Integer.valueOf(list.get(0).getAppKey()));
 
@@ -85,7 +85,7 @@ public class WorkflowActionController extends BaseController {
         } catch (Exception e) {
             Result result = new Result();
 
-            logger.error("任务生成失败", e);
+            logger.error("启动流程失败", e);
             result.setMsg(e.getMessage());
             result.setCode(Constant.FAIL);
             result.setSuccess(false);

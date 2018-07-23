@@ -173,7 +173,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     if(count>0){
                         log.info("{}有存在未设置审批人的节点",processParam.getProcessDefinitionKey());
                         result.setCode(Constant.TASK_NOT_SET_APPROVER);
-                        result.setMsg("生成任务失败：存在未设置审批人的节点");
+                        result.setMsg("启动流程失败：存在未设置审批人的节点");
                         result.setSuccess(false);
                         return result;
                     }
@@ -207,7 +207,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
                     if(tUserTask == null){
                         log.info("设置审批人异常");
-                        throw new WorkFlowException("生成任务失败：未设置审批人");
+                        throw new WorkFlowException("启动流程失败：未设置审批人");
                     }
                     //将流程创建人暂存到expr字段
                     tUserTask.setExpr(creator);
