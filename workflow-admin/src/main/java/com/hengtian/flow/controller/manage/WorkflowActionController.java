@@ -3,9 +3,12 @@ package com.hengtian.flow.controller.manage;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Maps;
+import com.hengtian.application.model.AppModel;
+import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.operlog.SysLog;
+import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
@@ -26,9 +29,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 工作流程相关-操作
@@ -45,8 +47,51 @@ public class WorkflowActionController extends BaseController {
     private TaskService taskService;
     @Autowired
     private TRuTaskService tRuTaskService;
+    @Autowired
+    private AppModelService appModelService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
+     * 启动流程热任务
+     * @param processKey 流程定义KEY
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/7/23 13:23
+     */
+    @SysLog(value="任务开启模拟")
+    @PostMapping("/process/start")
+    @ResponseBody
+    public Object startProcessInstance(String processKey){
+        ProcessParam processParam = new ProcessParam();
+        processParam.setBusinessKey(UUID.randomUUID().toString());
+        processParam.setCustomApprover(false);
+        processParam.setCreatorId("admin");
+        processParam.setProcessDefinitionKey(processKey);
+        EntityWrapper entityWrapper=new EntityWrapper();
+        entityWrapper.where("model_key={0}",processKey);
+        List<AppModel> list = appModelService.selectList(entityWrapper);
+        if(list == null || list.size() == 0){
+            return renderError("启动流程失败：模型未关联到应用系统中");
+        }
+        processParam.setAppKey(Integer.valueOf(list.get(0).getAppKey()));
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String dateNowStr = sdf.format(new Date());
+        processParam.setTitle("模拟测试任务title"+dateNowStr);
+
+        try {
+            return workflowService.startProcessInstance(processParam);
+        } catch (Exception e) {
+            Result result = new Result();
+
+            logger.error("启动流程失败", e);
+            result.setMsg(e.getMessage());
+            result.setCode(Constant.FAIL);
+            result.setSuccess(false);
+            return result;
+        }
+    }
 
     /**
      * 签收任务

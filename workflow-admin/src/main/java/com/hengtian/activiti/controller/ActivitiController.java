@@ -6,28 +6,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
-import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.enums.TaskStatus;
 import com.hengtian.common.enums.TaskTypeEnum;
 import com.hengtian.common.enums.TaskVariableEnum;
 import com.hengtian.common.operlog.SysLog;
-import com.hengtian.common.param.ProcessParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.DateUtils;
-import com.hengtian.common.utils
-		.MailTemplateUtils;
+import com.hengtian.common.utils.MailTemplateUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.model.TMailLog;
 import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.service.*;
+import com.hengtian.flow.service.ActivitiService;
+import com.hengtian.flow.service.TMailLogService;
+import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.CommentVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
 import com.hengtian.flow.vo.TaskVo;
@@ -71,7 +70,7 @@ import java.util.zip.ZipInputStream;
 @RequestMapping("/activiti")
 public class ActivitiController extends BaseController{
 	Logger logger = Logger.getLogger(ActivitiController.class);
-	
+
 	@Autowired
 	private ActivitiService activitiService;
 	@Autowired
@@ -105,27 +104,6 @@ public class ActivitiController extends BaseController{
     public String deployPage() {
         return "activiti/processdefDeploy";
     }
-	@SysLog(value="任务开启模拟")
-	@PostMapping("/startTask")
-	@ResponseBody
-    public Object startTask(String processKey){
-		ProcessParam processParam=new ProcessParam();
-		processParam.setBusinessKey(UUID.randomUUID().toString());
-		processParam.setCustomApprover(false);
-		processParam.setCreatorId("admin");
-		processParam.setProcessDefinitionKey(processKey);
-		EntityWrapper entityWrapper=new EntityWrapper();
-		entityWrapper.where("model_key={0}",processKey);
-		List<AppModel> list=appModelService.selectList(entityWrapper);
-		if(list==null||list.size()==0){
-			return renderError("模拟失败，请将流程配置到系统中！");
-		}
-		processParam.setAppKey(Integer.valueOf(list.get(0).getAppKey()));
-		processParam.setTitle("模拟测试任务title"+UUID.randomUUID().toString());
-		Result result=workflowService.startProcessInstance(processParam);
-
-    	return result;
-	}
 	
 	/**
      * 流程部署(压缩包方式)
