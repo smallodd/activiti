@@ -208,6 +208,13 @@ public class WorkflowBaseController extends BaseRestController {
             return null;
         }
 
+        //获取已审批人
+        List<String> assigneeList = Lists.newArrayList();
+        if(StringUtils.isNotBlank(task.getAssignee())){
+            String assignee = task.getAssignee().replaceAll("_N","").replaceAll("_Y","");
+            assigneeList = Arrays.asList(assignee.split(","));
+        }
+
         JSONArray json = new JSONArray();
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.where("task_id={0}", taskId);
@@ -224,6 +231,9 @@ public class WorkflowBaseController extends BaseRestController {
                 if(StringUtils.isNotBlank(t.getAssigneeReal())){
                     String[] array = t.getAssigneeReal().split(",");
                     for(String a : array){
+                        if(assigneeList.contains(a)){
+                            continue;
+                        }
                         JSONObject child = new JSONObject();
                         child.put("id", t.getAssignee()+":"+a);
                         RbacUser user = userService.getUserById(a);
@@ -240,6 +250,9 @@ public class WorkflowBaseController extends BaseRestController {
                         List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
                         if(CollectionUtils.isNotEmpty(users)){
                             for(RbacUser u : users){
+                                if(assigneeList.contains(u.getCode())){
+                                    continue;
+                                }
                                 JSONObject child = new JSONObject();
                                 child.put("id", t.getAssignee()+":"+u.getCode());
                                 child.put("text", u.getName());
@@ -257,6 +270,9 @@ public class WorkflowBaseController extends BaseRestController {
                     json.add(jsonObject);
                 }
             } else {
+                if(assigneeList.contains(t.getAssignee())){
+                    continue;
+                }
                 json.add(jsonObject);
             }
         }

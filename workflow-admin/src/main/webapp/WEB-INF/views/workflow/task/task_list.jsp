@@ -163,7 +163,7 @@
         }
         parent.$.modalDialog({
             title: '办理',
-            width: 570,
+            width: 780,
             height: 450,
             href: '${ctx}/workflow/page/task/complete/' + id,
             buttons: [{
