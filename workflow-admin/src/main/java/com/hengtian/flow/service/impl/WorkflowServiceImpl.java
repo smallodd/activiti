@@ -1533,7 +1533,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 for (String assign : assigneeBefore){
                     if(StringUtils.isNotBlank(assign)){
                         RbacUser rbacUser = userService.getUserById(assign);
-                        assigneeNameSet.add(rbacUser == null?assign:rbacUser.getName());
+                        if(rbacUser != null){
+                            logger.info("【"+assign+"】：【"+rbacUser.getName()+"】");
+                            assigneeNameSet.add(rbacUser.getName());
+                        }else{
+                            logger.info("工号【"+assign+"】找不到对应的用户信息");
+                            assigneeNameSet.add(assign);
+                        }
                     }
                 }
 
