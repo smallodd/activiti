@@ -1527,12 +1527,21 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
             t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
+            logger.info("任务ID【"+t.getTaskId()+"】的对应的上步审批人为【"+t.getAssigneeBefore()+"】");
             if(StringUtils.isNotBlank(t.getAssigneeBefore())) {
                 String[] assigneeBefore = t.getAssigneeBefore().split(",");
                 Set<String> assigneeNameSet = Sets.newHashSet();
                 for (String assign : assigneeBefore){
-                    RbacUser rbacUser = userService.getUserById(assign);
-                    assigneeNameSet.add(rbacUser.getName());
+                    if(StringUtils.isNotBlank(assign)){
+                        RbacUser rbacUser = userService.getUserById(assign);
+                        if(rbacUser != null){
+                            logger.info("【"+assign+"】：【"+rbacUser.getName()+"】");
+                            assigneeNameSet.add(rbacUser.getName());
+                        }else{
+                            logger.info("工号【"+assign+"】找不到对应的用户信息");
+                            assigneeNameSet.add(assign);
+                        }
+                    }
                 }
 
                 t.setAssigneeBeforeName(StringUtils.join(assigneeNameSet, ","));
