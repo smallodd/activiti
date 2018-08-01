@@ -302,7 +302,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             for(Task t : list){
                 currentTaskKey = currentTaskKey == null?t.getTaskDefinitionKey():currentTaskKey+","+t.getTaskDefinitionKey();
             }
-            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName,processDefinition.getName(), currentTaskKey);
+            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName, processDefinition.getKey(), processDefinition.getName(), currentTaskKey);
             ruProcinstService.insert(ruProcinst);
 
 
