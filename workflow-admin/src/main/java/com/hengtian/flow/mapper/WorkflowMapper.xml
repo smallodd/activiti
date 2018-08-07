@@ -304,11 +304,11 @@
                         </if>
                         )
                         AND trp.proc_def_key IN (#{item.processDefinitionKey})
-                        <if test="agentStartDate != null">
-                            AND DATE(art.CREATE_TIME_) <![CDATA[ >= ]]> DATE(#{item.agentDateStart})
+                        <if test="item.agentStartDate != null">
+                            AND DATE(art.CREATE_TIME_) <![CDATA[ >= ]]> DATE(#{item.agentStartDate})
                         </if>
-                        <if test="agentEndDate != null">
-                            AND DATE(art.CREATE_TIME_) <![CDATA[ <= ]]> DATE(#{item.agentDateEnd})
+                        <if test="item.agentEndDate != null">
+                            AND DATE(art.CREATE_TIME_) <![CDATA[ <= ]]> DATE(#{item.agentEndDate})
                         </if>)
                     </foreach>
                 </if>
@@ -341,15 +341,15 @@
                 <!--代理任务-->
                 <if test="taskAgent != null and taskAgent != ''">
                     OR
-                    <foreach collection="taskAgentList" item="item" index="index" open="(" close=")" separator="OR">
-                        tat.asked_user_id=#{item.assigneeAgent}
+                    <foreach collection="taskAgentList" item="item" index="index" separator="OR">
+                        (tat.asked_user_id=#{item.assigneeAgent}
                         AND trp.proc_def_key IN (#{item.processDefinitionKey})
-                        <if test="agentStartDate != null">
-                            AND DATE(tat.create_time) <![CDATA[ >= ]]> DATE(#{item.agentDateStart})
+                        <if test="item.agentStartDate != null">
+                            AND DATE(tat.create_time) <![CDATA[ >= ]]> DATE(#{item.agentStartDate})
                         </if>
-                        <if test="agentEndDate != null">
-                            AND DATE(tat.create_time) <![CDATA[ <= ]]> DATE(#{item.agentDateEnd})
-                        </if>
+                        <if test="item.agentEndDate != null">
+                            AND DATE(tat.create_time) <![CDATA[ <= ]]> DATE(#{item.agentEndDate})
+                        </if>)
                     </foreach>
                 </if>
                 )
