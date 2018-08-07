@@ -17,6 +17,11 @@ public class TaskAgentQueryParam {
     @ApiModelProperty(value = "代理人工号", example = "H019233")
     private String assigneeAgent;
     /**
+     * 流程定义KEY，多个逗号隔开
+     */
+    @ApiModelProperty(value = "流程定义KEY", example = "procDefKey")
+    private String processDefinitionKey;
+    /**
      * 被代理人角色编号
      */
     @ApiModelProperty(value = "被代理人角色编号",hidden = true, example = "001")

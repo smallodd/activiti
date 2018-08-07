@@ -70,7 +70,7 @@
         aht.END_TIME_ AS endTime,
         1 as asked,
         tat.id as askId,
-        trp.CURRENT_TASK_STATUS AS taskState
+        trp.CURRENT_TASK_STATUS AS taskState,
     </sql>
 
     <sql id="queryTaskCondition">
@@ -233,7 +233,7 @@
             trt.OWNER AS assigneeDelegate,
             art.CREATE_TIME_ AS startTime,
             art.CREATE_TIME_ AS endTime,
-           trp.CURRENT_TASK_STATUS AS taskState
+            trp.CURRENT_TASK_STATUS AS taskState
         FROM
             act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -251,7 +251,7 @@
             art.START_TIME_ AS startTime,
             art.END_TIME_ AS endTime,
             (CASE WHEN art.ASSIGNEE_ LIKE '%_Y%' THEN 1 ELSE 2 END) AS taskState,
-            (CASE WHEN tta.assignee IS NULL THEN trt.OWNER tta.assignee_agent ELSE END) AS assigneeDelegate
+            (CASE WHEN tta.assignee IS NULL THEN trt.OWNER ELSE tta.assignee_agent END) AS assigneeDelegate
         FROM
             act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -268,12 +268,24 @@
         <if test="taskState != 2">
             SELECT
                 <include refid="taskResult"/>
-                trt.OWNER AS assigneeDelegate,
                 art.CREATE_TIME_ AS startTime,
                 art.CREATE_TIME_ AS endTime,
                 0 AS asked,
                 NULL AS askId,
-                trp.CURRENT_TASK_STATUS AS taskState
+                trp.CURRENT_TASK_STATUS AS taskState,
+                <if test="taskAgent != null and taskAgent != ''">
+                    (CASE WHEN
+                    (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
+                    <if test="roleId != null">
+                        OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
+                    </if>)
+                    THEN #{assignee}
+                    ELSE NULL END
+                    ) AS assigneeDelegate
+                </if>
+                <if test="taskAgent == null or taskAgent == ''">
+                    NULL AS assigneeDelegate
+                </if>
             FROM
                 act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
                 LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -283,48 +295,29 @@
                 <if test="roleId != null">
                     OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
                 </if>
+                <if test="taskAgent != null and taskAgent != ''">
+                    OR
+                    <foreach collection="taskAgentList" item="item" index="index" open="(" close=")" separator="OR">
+                        (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{item.assigneeAgent},'%')
+                        <if test="roleId != null">
+                            OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (#{item.agentRoleId}))
+                        </if>
+                        )
+                        AND trp.proc_def_key IN (#{item.processDefinitionKey})
+                        <if test="agentDateStart != null">
+                            AND DATE(art.CREATE_TIME_) <![CDATA[ >= ]]> DATE(#{item.agentDateStart})
+                        </if>
+                        <if test="agentDateEnd != null">
+                            AND DATE(art.CREATE_TIME_) <![CDATA[ <= ]]> DATE(#{item.agentDateEnd})
+                        </if>
+                    </foreach>
+                </if>
                 )
                 AND art.SUSPENSION_STATE_=1
                 <if test="procDefKey!=null and procDefKey!=''">
                     AND trp.proc_def_key=#{procDefKey}
                 </if>
                 <include refid="queryTaskCondition"/>
-            <!--代理任务-->
-            <if test="taskAgent != null and taskAgent != ''">
-                <foreach collection="taskAgentList" item="item" index="index">
-                UNION
-                SELECT
-                    <include refid="taskResult"/>
-                    #{item.assigneeAgent} AS assigneeDelegate,
-                    art.CREATE_TIME_ AS startTime,
-                    art.CREATE_TIME_ AS endTime,
-                    0 AS asked,
-                    NULL AS askId,
-                    trp.CURRENT_TASK_STATUS AS taskState
-                FROM
-                    act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-                    LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-                    LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
-                WHERE
-                    trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{item.assigneeAgent},'%')
-                    <if test="roleId != null">
-                        OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (#{item.agentRoleId}))
-                    </if>
-                    )
-                    AND trp.proc_def_key IN (#{item.processDefinitionKey})
-                    AND art.SUSPENSION_STATE_=1
-                    <if test="procDefKey!=null and procDefKey!=''">
-                        AND trp.proc_def_key=#{procDefKey}
-                    </if>
-                    <include refid="queryTaskCondition"/>
-                    <if test="agentDateStart != null">
-                        DATE(art.CREATE_TIME_) <![CDATA[ >= ]]> DATE(#{item.agentDateStart})
-                    </if>
-                    <if test="agentDateEnd != null">
-                        DATE(art.CREATE_TIME_) <![CDATA[ <= ]]> DATE(#{item.agentDateEnd})
-                    </if>
-                </foreach>
-            </if>
         </if>
         <if test="taskState == null || taskState==''">
             UNION
@@ -333,42 +326,34 @@
         <if test="taskState != 1">
             SELECT
                 <include refid="taskAskResult"/>
-                trt.OWNER AS assigneeDelegate
+                tat.asked_user_id AS assigneeDelegate
             FROM
                 act_hi_taskinst AS aht LEFT JOIN t_ru_task AS trt ON aht.ID_ =trt.TASK_ID
                 LEFT JOIN act_hi_procinst AS ahp ON aht.PROC_INST_ID_=ahp.PROC_INST_ID_
                 LEFT JOIN t_ru_procinst AS trp ON aht.PROC_INST_ID_=trp.PROC_INST_ID
                 LEFT JOIN t_ask_task tat on tat.proc_inst_id=ahp.PROC_INST_ID_
             WHERE
-                trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{assignee} AND tat.is_ask_end=0 AND tat.id IS NOT NULL
-                AND aht.END_TIME_ IS NOT NULL AND tat.ask_task_key=aht.TASK_DEF_KEY_
+                trp.APP_KEY = #{appKey}
+                AND tat.is_ask_end=0 AND tat.id IS NOT NULL
+                AND aht.END_TIME_ IS NOT NULL
+                AND tat.ask_task_key=aht.TASK_DEF_KEY_
+                AND (tat.asked_user_id=#{assignee}
+                <!--代理任务-->
+                <if test="taskAgent != null and taskAgent != ''">
+                    OR
+                    <foreach collection="taskAgentList" item="item" index="index" open="(" close=")" separator="OR">
+                        tat.asked_user_id=#{item.assigneeAgent}
+                        AND trp.proc_def_key IN (#{item.processDefinitionKey})
+                        <if test="agentDateStart != null">
+                            AND DATE(tat.create_time) <![CDATA[ >= ]]> DATE(#{item.agentDateStart})
+                        </if>
+                        <if test="agentDateEnd != null">
+                            AND DATE(tat.create_time) <![CDATA[ <= ]]> DATE(#{item.agentDateEnd})
+                        </if>
+                    </foreach>
+                </if>
+                )
                 <include refid="queryAskCondition"/>
-
-            <!--代理任务-->
-            <if test="taskAgent != null and taskAgent != ''">
-                <foreach collection="taskAgentList" item="item" index="index">
-                UNION
-                SELECT
-                    <include refid="taskAskResult"/>
-                    #{item.assigneeAgent} AS assigneeDelegate
-                FROM
-                    act_hi_taskinst AS aht LEFT JOIN t_ru_task AS trt ON aht.ID_ =trt.TASK_ID
-                    LEFT JOIN act_hi_procinst AS ahp ON aht.PROC_INST_ID_=ahp.PROC_INST_ID_
-                    LEFT JOIN t_ru_procinst AS trp ON aht.PROC_INST_ID_=trp.PROC_INST_ID
-                    LEFT JOIN t_ask_task tat on tat.proc_inst_id=ahp.PROC_INST_ID_
-                WHERE
-                    trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{item.assigneeAgent} AND tat.is_ask_end=0 AND tat.id IS NOT NULL
-                    AND aht.END_TIME_ IS NOT NULL AND tat.ask_task_key=aht.TASK_DEF_KEY_
-                    AND trp.proc_def_key IN (#{item.processDefinitionKey})
-                    <include refid="queryAskCondition"/>
-                    <if test="agentDateStart != null">
-                        DATE(tat.create_time) <![CDATA[ >= ]]> DATE(#{item.agentDateStart})
-                    </if>
-                    <if test="agentDateEnd != null">
-                        DATE(tat.create_time) <![CDATA[ <= ]]> DATE(#{item.agentDateEnd})
-                    </if>
-                </foreach>
-            </if>
         </if>
         ORDER BY endTime DESC
     </select>

@@ -338,7 +338,7 @@ public class WorkflowBaseController extends BaseRestController {
                 taskAgentList.add(taskAgent);
             }
 
-            pageInfo.getCondition().put("taskAgentList", taskAgentList);
+            condition.put("taskAgentList", taskAgentList);
         }
 
         pageInfo.setCondition(condition);
