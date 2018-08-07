@@ -190,8 +190,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
             if (tAskTask != null) {
                 return renderError("您的意见征询信息还未得到响应，不能审批通过", Constant.ASK_TASK_EXIT);
             }
+
             //查询当前任务节点审批人是不是当前人
-            Object result=workflowService.approveTask(task, taskParam);
+            Object result = workflowService.approveTask(task, taskParam);
             logger.info("任务审批方法执行结束出参：{}",JSONObject.toJSONString(result));
             return result;
         } catch (Exception e) {
@@ -590,7 +591,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
      */
     @PostMapping(value = "askTask")
     @ResponseBody
-    public Object askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey,@RequestParam String askedUserId,@RequestParam(required = false) String userId) {
+    public Object askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey,@RequestParam String askedUserId,@RequestParam(required = false) String userId,@RequestParam(required = false) String assigneeAgent) {
         logger.info("意见征询接口开始执行，方法【askTask】，入参processInstanceId{},currentTaskDefKey{},commentResult{},targetTaskDefKey{},askedUserId{},userId{}",processInstanceId,currentTaskDefKey,commentResult,targetTaskDefKey,askedUserId,userId);
         try {
             if(com.hengtian.common.utils.StringUtils.isBlank(userId)&&getShiroUser()==null){
@@ -619,7 +620,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
           if(!flag){
               return new  Result(false,Constant.FAIL, "当前用户没有操作此任务的权限");
           }
-            return workflowService.taskEnquire(userId, processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult,askedUserId);
+            return workflowService.taskEnquire(userId, processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult,askedUserId,assigneeAgent);
         } catch (Exception e) {
             logger.error("", e);
             return new Result(false,Constant.FAIL, "操作失败");

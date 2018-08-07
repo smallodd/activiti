@@ -1,6 +1,7 @@
 package com.hengtian.common.param;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotNull;
  * Created by ma on 2018/4/18.
  * 任务信息接收参数
  */
+@Data
 public class TaskParam {
     /**
      * 任务id
@@ -42,54 +44,11 @@ public class TaskParam {
     /**
      * 下一节点审批人信息
      */
-    @ApiModelProperty(value = "下一节点审批人信息", example="下一节点审批人信息")
+    @ApiModelProperty(value = "下一节点审批人信息", example="H08899")
     private String assigneeNext;
-
-    public String getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
-    }
-
-    public String getAssignee() {
-        return assignee;
-    }
-
-    public void setAssignee(String assignee) {
-        this.assignee = assignee;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public Integer getPass() {
-        return pass;
-    }
-
-    public void setPass(Integer pass) {
-        this.pass = pass;
-    }
-
-    public String getJsonVariables() {
-        return jsonVariables;
-    }
-
-    public void setJsonVariables(String jsonVariables) {
-        this.jsonVariables = jsonVariables;
-    }
-
-    public String getAssigneeNext() {
-        return assigneeNext;
-    }
-
-    public void setAssigneeNext(String assigneeNext) {
-        this.assigneeNext = assigneeNext;
-    }
+    /**
+     * 审批代理人
+     */
+    @ApiModelProperty(value = "审批代理人", example="H08899")
+    private String assigneeAgent;
 }

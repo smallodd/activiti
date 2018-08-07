@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.common.common.CodeConts;
-import com.common.file.springmvc.FastDFSUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -39,7 +38,7 @@ import com.rbac.service.UserService;
 import com.user.entity.emp.Emp;
 import com.user.entity.emp.EmpVO;
 import com.user.service.emp.EmpService;
-import org.activiti.bpmn.model.*;
+import org.activiti.bpmn.model.FlowNode;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -53,7 +52,6 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.*;
-import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -61,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sun.misc.BASE64Encoder;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -123,6 +122,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
     @Autowired
     private AssigneeTempService assigneeTempService;
+
+    @Autowired
+    private TaskAgentService taskAgentService;
 
 
     @Override
@@ -600,6 +602,18 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
 
         boolean customApprover = (boolean) runtimeService.getVariable(task.getProcessInstanceId(), ConstantUtils.SET_ASSIGNEE_FLAG);
+
+        //如果是代理人问询，添加记录
+        if(StringUtils.isNotBlank(taskParam.getAssigneeAgent())){
+            TaskAgent taskAgent = new TaskAgent();
+            taskAgent.setAgentType(2);
+            taskAgent.setAssignee(taskParam.getAssignee());
+            taskAgent.setAssigneeAgent(taskParam.getAssigneeAgent());
+            taskAgent.setTaskId(task.getId());
+            taskAgent.setCreateTime(new Date());
+
+            taskAgentService.insert(taskAgent);
+        }
 
         if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
             //会签,表达式
@@ -1194,7 +1208,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId) {
+    public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId,String assigneeAgent) {
         log.info("意见征询开始：入参：userId{},processInstanceId{},currentTaskDefKey{},targetTaskDefKey{},commentResult{},askedUserId{}",userId,processInstanceId,currentTaskDefKey,targetTaskDefKey,commentResult,askedUserId);
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
         if (task == null) {
@@ -1249,6 +1263,18 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if (!success) {
             log.info("意见征询失败");
             return new Result(false, Constant.FAIL,"意见征询失败");
+        }
+
+        //如果是代理人问询，添加记录
+        if(StringUtils.isNotBlank(assigneeAgent)){
+            TaskAgent taskAgent = new TaskAgent();
+            taskAgent.setAgentType(2);
+            taskAgent.setAssignee(userId);
+            taskAgent.setAssigneeAgent(assigneeAgent);
+            taskAgent.setTaskId(task.getId());
+            taskAgent.setCreateTime(new Date());
+
+            taskAgentService.insert(taskAgent);
         }
 
         EntityWrapper<RuProcinst> wrapper_ = new EntityWrapper<>();
@@ -2215,5 +2241,18 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             assigneeVoList.add(assigneeVo);
         }
         return assigneeVoList;
+    }
+
+    /**
+     * 代理人不为空时，生成加密串，防止爬虫，恶意非法请求
+     * @param assignee 审批人
+     * @param assigneeAgent 被代理人
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/3 15:53
+     */
+    public String getAssigneeSecret(String assignee, String assigneeAgent){
+        BASE64Encoder encoder = new BASE64Encoder();
+        return encoder.encode((assignee+"("+assignee+assigneeAgent+")").getBytes());
     }
 }
