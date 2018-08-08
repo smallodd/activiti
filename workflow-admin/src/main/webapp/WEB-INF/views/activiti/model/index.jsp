@@ -321,6 +321,7 @@ function modelDetail(id) {
         height : 500,
         content : contentStr,
         modal : true,
+        fit:true,
         buttons : [ {
             text : '关闭',
             handler : function() {
