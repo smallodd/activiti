@@ -325,6 +325,7 @@ public class WorkflowBaseController extends BaseRestController {
                 taskAgent.setAssigneeAgent(jsonObject.getString("assigneeAgent"));
                 taskAgent.setAgentStartDate(jsonObject.getString("agentStartDate"));
                 taskAgent.setAgentEndDate(jsonObject.getString("agentEndDate"));
+                taskAgent.setProcessDefinitionKey(jsonObject.getString("processDefinitionKey"));
 
                 roles = privilegeService.getAllRoleByUserId(appKey, taskAgent.getAssigneeAgent());
                 if(CollectionUtils.isNotEmpty(roles)){

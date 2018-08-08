@@ -2251,6 +2251,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @author houjinrong@chtwm.com
      * date 2018/8/3 15:53
      */
+    @Override
     public String getAssigneeSecret(String assignee, String assigneeAgent){
         BASE64Encoder encoder = new BASE64Encoder();
         return encoder.encode((assignee+"("+assignee+assigneeAgent+")").getBytes());
