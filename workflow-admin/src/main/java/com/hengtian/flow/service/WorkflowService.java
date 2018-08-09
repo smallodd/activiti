@@ -82,6 +82,19 @@ public interface WorkflowService extends IService<TaskResult> {
 
     /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
+     * (跳转旧方法，改跳转方法不影响分支，暂时废弃以待他用)
+     *
+     * @param userId           操作人ID
+     * @param taskId           任务ID
+     * @param targetTaskDefKey 跳转到的任务节点KEY
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:00
+     */
+    Result taskJumpOld(String userId, String taskId, String targetTaskDefKey);
+
+    /**
+     * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
      *
      * @param userId           操作人ID
      * @param taskId           任务ID
