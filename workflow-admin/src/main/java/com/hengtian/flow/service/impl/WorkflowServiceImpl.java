@@ -46,6 +46,7 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.activiti.engine.impl.persistence.entity.HistoricTaskInstanceEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
@@ -1004,10 +1005,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Transactional(rollbackFor = Exception.class)
     public Result taskJumpOld(String userId, String taskId, String targetTaskDefKey) {
         log.info("跳转任务开始，入参：userId:{},taskId:{},targetTaskDefKey:{}",userId,taskId,targetTaskDefKey);
+
         //根据要跳转的任务ID获取其任务
         HistoricTaskInstance hisTask = historyService
                 .createHistoricTaskInstanceQuery().taskId(taskId)
                 .singleResult();
+        TaskEntity taskEntity= (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
         Integer appkey= (Integer) runtimeService.getVariable(hisTask.getExecutionId(),"appKey");
         //进而获取流程实例
         ProcessInstance instance = runtimeService
@@ -1020,6 +1023,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         ActivityImpl hisActivity = definition.findActivity(targetTaskDefKey);
         //实现跳转
         ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
+
+
+//        taskEntity.setExecutionId(null);
+//        taskService.saveTask(taskEntity);
+        taskService.deleteTask(taskEntity.getId(), false);
+
 
         TRuTask tRuTask=new TRuTask();
         EntityWrapper en=new EntityWrapper();

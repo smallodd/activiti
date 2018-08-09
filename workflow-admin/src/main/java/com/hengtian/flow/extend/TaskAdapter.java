@@ -22,7 +22,7 @@ public class TaskAdapter implements TaskManager {
             return WorkflowService.taskUnclaim(taskActionParam.getUserId(), taskActionParam.getTaskId(), taskActionParam.getWorkId());
         } else if (TaskActionEnum.JUMP.value.equals(actionType)) {
             //跳转
-            return WorkflowService.taskJump(taskActionParam.getUserId(), taskActionParam.getTaskId(), taskActionParam.getTargetTaskDefKey());
+            return WorkflowService.taskJumpOld(taskActionParam.getUserId(), taskActionParam.getTaskId(), taskActionParam.getTargetTaskDefKey());
         } else if (TaskActionEnum.TRANSFER.value.equals(actionType)) {
             //转办
             return WorkflowService.taskTransfer(taskActionParam.getUserId(), taskActionParam.getTaskId(), taskActionParam.getTargetUserId());
