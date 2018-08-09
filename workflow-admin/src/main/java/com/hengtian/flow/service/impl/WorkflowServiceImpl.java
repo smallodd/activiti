@@ -990,8 +990,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     }
 
     /**
-     * todo 初始化任务属性值
-     * 跳转 管理员权限不受限制，可以任意跳转到已完成任务节点
+     * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
+     * (跳转旧方法，改跳转方法不影响分支，暂时废弃以待他用)
      *
      * @param userId           操作人ID
      * @param taskId           任务ID
@@ -1002,7 +1002,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result taskJump(String userId, String taskId, String targetTaskDefKey) {
+    public Result taskJumpOld(String userId, String taskId, String targetTaskDefKey) {
         log.info("跳转任务开始，入参：userId:{},taskId:{},targetTaskDefKey:{}",userId,taskId,targetTaskDefKey);
         //根据要跳转的任务ID获取其任务
         HistoricTaskInstance hisTask = historyService
@@ -1071,6 +1071,96 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
         }
        Task task= taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(targetTaskDefKey).singleResult();
+        log.info("跳转成功");
+        Result result=new Result(true,Constant.SUCCESS,"跳转成功");
+        if(task!=null) {
+            result.setObj(setButtons(TaskNodeResult.toTaskNodeResult(task)));
+        }
+        return result;
+    }
+
+    /**
+     * todo 初始化任务属性值
+     * 跳转 管理员权限不受限制，可以任意跳转到已完成任务节点
+     *
+     * @param userId           操作人ID
+     * @param taskId           任务ID
+     * @param targetTaskDefKey 跳转到的任务节点KEY
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:00
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result taskJump(String userId, String taskId, String targetTaskDefKey) {
+        log.info("跳转任务开始，入参：userId:{},taskId:{},targetTaskDefKey:{}",userId,taskId,targetTaskDefKey);
+        //根据要跳转的任务ID获取其任务
+        HistoricTaskInstance hisTask = historyService
+                .createHistoricTaskInstanceQuery().taskId(taskId)
+                .singleResult();
+        Integer appkey= (Integer) runtimeService.getVariable(hisTask.getExecutionId(),"appKey");
+        //进而获取流程实例
+        ProcessInstance instance = runtimeService
+                .createProcessInstanceQuery()
+                .processInstanceId(hisTask.getProcessInstanceId())
+                .singleResult();
+        //取得流程定义
+        ProcessDefinitionEntity definition = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(hisTask.getProcessDefinitionId());
+        //获取历史任务的Activity
+        ActivityImpl hisActivity = definition.findActivity(targetTaskDefKey);
+        //实现跳转
+        ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
+
+        TRuTask tRuTask=new TRuTask();
+        EntityWrapper en=new EntityWrapper();
+        en.where("status={0}",-2).andNew("proc_inst_id={0}",instance.getId());
+        tRuTaskService.delete(en);
+
+        tRuTask.setStatus(-2);
+        EntityWrapper entityWrapper1=new EntityWrapper();
+        entityWrapper1.where("task_id={0}",taskId);
+        tRuTaskService.update(tRuTask,entityWrapper1);
+
+        EntityWrapper wrapper=new EntityWrapper();
+        wrapper.where("app_key={0}",appkey).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
+        RuProcinst ruProcinst=ruProcinstService.selectOne(wrapper);
+        if(ruProcinst==null){
+            log.info("跳转失败，t_ru_procinst表中不存在流程实例id"+hisTask.getProcessInstanceId());
+            return new Result(true,Constant.FAIL,"跳转失败，t_ru_procinst表中不存在流程实例id"+hisTask.getProcessInstanceId());
+        }
+        RuProcinst ruPr=new RuProcinst();
+
+        if(StringUtils.isBlank(ruProcinst.getCurrentTaskKey())){
+            ruPr.setCurrentTaskKey(targetTaskDefKey);
+        }else{
+            if(ruProcinst.getCurrentTaskKey().contains(hisTask.getTaskDefinitionKey())){
+                ruPr.setCurrentTaskKey(ruProcinst.getCurrentTaskKey().replace(hisTask.getTaskDefinitionKey(),targetTaskDefKey));
+            }else{
+                ruPr.setCurrentTaskKey(ruProcinst.getCurrentTaskKey()+","+targetTaskDefKey);
+            }
+        }
+        EntityWrapper entity=new EntityWrapper();
+        entity.where("app_key={0}",appkey).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
+        ruProcinstService.update(ruPr,entity);
+        boolean customApprover = (boolean) runtimeService.getVariable(instance.getProcessInstanceId(), ConstantUtils.SET_ASSIGNEE_FLAG);
+
+        if (!customApprover) {
+            List<TaskEntity> tasks = e.getTasks();
+            //设置审批人
+            log.info("工作流平台设置审批人");
+            for (int i = 0; i < tasks.size(); i++) {
+                Task task = tasks.get(i);
+                if (task.getTaskDefinitionKey().equals(targetTaskDefKey)) {
+                    taskId += task.getId();
+                    EntityWrapper entityWrapper = new EntityWrapper();
+                    entityWrapper.where("proc_def_key={0}", definition.getKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
+                    //查询当前任务任务节点信息
+                    TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+                    boolean flag = setAssignee(task, tUserTask);
+                }
+            }
+        }
+        Task task= taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(targetTaskDefKey).singleResult();
         log.info("跳转成功");
         Result result=new Result(true,Constant.SUCCESS,"跳转成功");
         if(task!=null) {
