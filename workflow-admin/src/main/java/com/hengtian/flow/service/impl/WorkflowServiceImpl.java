@@ -1268,6 +1268,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //如果是代理人问询，添加记录
         if(StringUtils.isNotBlank(assigneeAgent)){
             TaskAgent taskAgent = new TaskAgent();
+            taskAgent.setId(null);
             taskAgent.setAgentType(2);
             taskAgent.setAssignee(userId);
             taskAgent.setAssigneeAgent(assigneeAgent);
