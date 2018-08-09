@@ -823,7 +823,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public void repairNextTaskNode(Task t,Execution execution) {
         EntityWrapper ew = new EntityWrapper();
         ew.where("status={0}", -2).andNew("proc_inst_id={0}", t.getProcessInstanceId());
-        TRuTask tRuTask = tRuTaskService.selectOne(ew);
+       List<TRuTask> tRuTasks = tRuTaskService.selectList(ew);
         String notDelete = "";
         List<String> talist= getNextTaskDefinitionKeys(t,false);
 
@@ -862,8 +862,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //处理删除由于跳转/拿回产生冗余的数据
         if (CollectionUtils.isNotEmpty(exlist)) {
 
-            if (tRuTask != null) {
-                HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tRuTask.getTaskId()).singleResult();
+            if (tRuTasks != null&&tRuTasks.size()>0) {
+                HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tRuTasks.get(0).getTaskId()).singleResult();
                 List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().executionId(taskInstance.getExecutionId()).orderByTaskCreateTime().asc().list();
                 notDelete +=","+ list.get(0).getTaskDefinitionKey();
 
@@ -882,7 +882,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     String newDate = (task == null ? "" : sdf.format(task.getCreateTime()));
                     if (notDelete.contains(tas.getTaskDefinitionKey()) ){
                         continue;
-                    }else if(tRuTask != null && olde.equals(newDate)) {
+                    }else if(tRuTasks != null&&tRuTasks.size()>0 && olde.equals(newDate)) {
                         TaskEntity entity = (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
 
                         entity.setExecutionId(null);
@@ -890,7 +890,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         taskService.deleteTask(entity.getId(), true);
 
                         EntityWrapper ewe = new EntityWrapper();
-                        ewe.where("task_id={0}", tRuTask.getTaskId()).andNew("status={0}", -2);
+                        ewe.where("task_id={0}", tRuTasks.get(0).getTaskId()).andNew("status={0}", -2);
                         tRuTaskService.delete(ewe);
                     }
                 }
@@ -1527,12 +1527,21 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
             t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
+            logger.info("任务ID【"+t.getTaskId()+"】的对应的上步审批人为【"+t.getAssigneeBefore()+"】");
             if(StringUtils.isNotBlank(t.getAssigneeBefore())) {
                 String[] assigneeBefore = t.getAssigneeBefore().split(",");
                 Set<String> assigneeNameSet = Sets.newHashSet();
                 for (String assign : assigneeBefore){
-                    RbacUser rbacUser = userService.getUserById(assign);
-                    assigneeNameSet.add(rbacUser.getName());
+                    if(StringUtils.isNotBlank(assign)){
+                        RbacUser rbacUser = userService.getUserById(assign);
+                        if(rbacUser != null){
+                            logger.info("【"+assign+"】：【"+rbacUser.getName()+"】");
+                            assigneeNameSet.add(rbacUser.getName());
+                        }else{
+                            logger.info("工号【"+assign+"】找不到对应的用户信息");
+                            assigneeNameSet.add(assign);
+                        }
+                    }
                 }
 
                 t.setAssigneeBeforeName(StringUtils.join(assigneeNameSet, ","));
