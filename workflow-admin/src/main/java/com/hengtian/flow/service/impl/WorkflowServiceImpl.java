@@ -745,7 +745,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //修复异常节点
         if(1 == taskParam.getJumpType()){
             //跳转影响并行分支
-            repairExceptionTaskNode(task,execution);
+            repairExceptionTaskNode(task);
         }else {
             //跳转不影响并行分支
             repairNextTaskNode(task,execution);
@@ -917,34 +917,38 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * @author houjinrong@chtwm.com
      * date 2018/5/3 16:49
      */
-    public void repairExceptionTaskNode(Task task,Execution execution) {
+    public void repairExceptionTaskNode(Task task) {
         //获取下一步节点KEY集合
         List<String> nextTaskDefKeyList = getNextTaskDefinitionKeys(task,false);
         List<Task> nextTaskList = Lists.newArrayList();
-        //第一步 添加缺失的节点
-        if(nextTaskDefKeyList.size() == 1){
-            String nextTaskDefKey = nextTaskDefKeyList.get(0);
-            //获取与当前节点同级的其他节点KEY
-            List<String> list = findBeforeTask(nextTaskDefKey,task.getProcessInstanceId(),task.getProcessDefinitionId(),true);
+
+        //获取与当前节点下步节点的所有上步节点
+        if(CollectionUtils.isNotEmpty(nextTaskDefKeyList)){
+            List<String> beforeTaskDefKeyList = Lists.newArrayList();
+            for(String taskDefKey : nextTaskDefKeyList){
+                beforeTaskDefKeyList.addAll(findBeforeTask(taskDefKey,task.getProcessInstanceId(),task.getProcessDefinitionId(),true));
+            }
+
             boolean isCreate = true;
-            if(CollectionUtils.isNotEmpty(list)){
+            if(CollectionUtils.isNotEmpty(beforeTaskDefKeyList)){
                 List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
                 if(CollectionUtils.isNotEmpty(taskList)){
                     for(Task t : taskList){
-                        if(nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
-                            isCreate=false;
-                            //break;
+                        if(beforeTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                            isCreate = false;
                         }
-                        if(nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                        if(isCreate && nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
                             nextTaskList.add(t);
                         }
                     }
                 }
             }
             if(isCreate && CollectionUtils.isEmpty(nextTaskList)) {
-                long count = historyService.createHistoricActivityInstanceQuery().processInstanceId(task.getProcessInstanceId()).activityId(nextTaskDefKey).finished().count();
-                if (count >= 1) {
-                    managementService.executeCommand(new CreateCmd(task.getExecutionId(), nextTaskDefKey));
+                for(String taskDefKey : nextTaskDefKeyList){
+                    long count = historyService.createHistoricActivityInstanceQuery().processInstanceId(task.getProcessInstanceId()).activityId(taskDefKey).finished().count();
+                    if (count >= 1) {
+                        managementService.executeCommand(new CreateCmd(task.getExecutionId(), taskDefKey));
+                    }
                 }
             }
         }
