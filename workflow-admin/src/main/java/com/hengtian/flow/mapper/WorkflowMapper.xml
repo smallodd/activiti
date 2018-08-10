@@ -69,7 +69,7 @@
         </if>
 
         <!--流程实例状态-->
-        <if test="procInstState != null and procInstState !=''">
+        <if test="procInstState != null">
             AND trp.proc_inst_state = #{procInstState}
         </if>
 
@@ -347,7 +347,7 @@
         <if test="procDefKey!=null and procDefKey!=''">
             and arp.key_=#{procDefKey}
         </if>
-            <if test="appKey != null and appKey != ''">
+            <if test="appKey != null">
                 AND trp.APP_KEY = #{appKey}
             </if>
             <if test="creator != null and creator != ''">
