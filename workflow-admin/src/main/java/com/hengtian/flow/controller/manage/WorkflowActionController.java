@@ -15,7 +15,10 @@ import com.hengtian.common.result.Result;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -49,6 +52,8 @@ public class WorkflowActionController extends BaseController {
     private TRuTaskService tRuTaskService;
     @Autowired
     private AppModelService appModelService;
+    @Autowired
+    private RepositoryService repositoryService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -63,6 +68,15 @@ public class WorkflowActionController extends BaseController {
     @PostMapping("/process/start")
     @ResponseBody
     public Object startProcessInstance(String processKey){
+        if(StringUtils.isBlank(processKey)){
+            return new Result("流程定义KEY不能为空");
+        }
+
+        Model model = repositoryService.createModelQuery().modelKey(processKey).singleResult();
+        if(model == null){
+            return new Result("模型key【"+processKey+"】对应的模型不存在");
+        }
+
         ProcessParam processParam = new ProcessParam();
         processParam.setBusinessKey(UUID.randomUUID().toString());
         processParam.setCustomApprover(false);
@@ -78,14 +92,14 @@ public class WorkflowActionController extends BaseController {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String dateNowStr = sdf.format(new Date());
-        processParam.setTitle("模拟测试任务title"+dateNowStr);
+        processParam.setTitle(model.getName() + "-" + dateNowStr);
 
         try {
             return workflowService.startProcessInstance(processParam);
         } catch (Exception e) {
-            Result result = new Result();
-
             logger.error("启动流程失败", e);
+
+            Result result = new Result();
             result.setMsg(e.getMessage());
             result.setCode(Constant.FAIL);
             result.setSuccess(false);
