@@ -1171,12 +1171,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         ActivityImpl hisActivity = definition.findActivity(targetTaskDefKey);
         //实现跳转
         ExecutionEntity e = managementService.executeCommand(new TaskJumpCmd(hisTask.getProcessInstanceId(), hisTask.getExecutionId(), hisActivity.getId()));
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).orderByTaskCreateTime().desc().list();
         Set<String> deleteTaskSet = Sets.newHashSet();
+
         if(CollectionUtils.isNotEmpty(taskList)){
+            List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(taskList.get(0), true);
             historyService.deleteHistoricTaskInstance(taskId);
             for(Task t : taskList){
-                if(!t.getTaskDefinitionKey().equals(targetTaskDefKey)) {
+                if(!t.getTaskDefinitionKey().equals(targetTaskDefKey) && beforeTaskDefKeys.contains(t.getTaskDefinitionKey())) {
                     TaskEntity entity = (TaskEntity) taskService.createTaskQuery().taskId(t.getId()).singleResult();
                     entity.setExecutionId(null);
                     taskService.saveTask(entity);
