@@ -1175,10 +1175,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Set<String> deleteTaskSet = Sets.newHashSet();
 
         if(CollectionUtils.isNotEmpty(taskList)){
-            List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(taskList.get(0), true);
+            List<String> nextTaskDefKeys = findNextTaskDefKeys(taskList.get(0), true);
             historyService.deleteHistoricTaskInstance(taskId);
             for(Task t : taskList){
-                if(!t.getTaskDefinitionKey().equals(targetTaskDefKey) && beforeTaskDefKeys.contains(t.getTaskDefinitionKey())) {
+                if(!t.getTaskDefinitionKey().equals(targetTaskDefKey) && nextTaskDefKeys.contains(t.getTaskDefinitionKey())) {
                     TaskEntity entity = (TaskEntity) taskService.createTaskQuery().taskId(t.getId()).singleResult();
                     entity.setExecutionId(null);
                     taskService.saveTask(entity);
@@ -1193,7 +1193,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             List<ExecutionEntity> executionEntityList = Lists.newArrayList();
             if(CollectionUtils.isNotEmpty(exeList)){
                 for(Execution execution : exeList){
-                    if(!execution.getId().equals(e.getId()) && StringUtils.isNotBlank(execution.getParentId())){
+                    if(!execution.getId().equals(e.getId()) && StringUtils.isNotBlank(execution.getParentId()) && nextTaskDefKeys.contains(execution.getActivityId())){
                         ExecutionEntity executionEntity = (ExecutionEntity)execution;
                         executionEntityList.add(executionEntity);
                     }
@@ -1204,8 +1204,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         //删除t_ru_task对应的数据记录
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.in("task_id",deleteTaskSet);
-        tRuTaskService.delete(wrapper);
+        if(CollectionUtils.isNotEmpty(deleteTaskSet)){
+            wrapper.in("task_id",deleteTaskSet);
+            tRuTaskService.delete(wrapper);
+        }
 
         Integer appKey = (Integer) runtimeService.getVariable(hisTask.getExecutionId(),"appKey");
         wrapper = new EntityWrapper();
