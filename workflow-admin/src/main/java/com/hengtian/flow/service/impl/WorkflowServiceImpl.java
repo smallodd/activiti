@@ -25,6 +25,7 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.CreateCmd;
 import com.hengtian.common.workflow.cmd.DestoryExecutionCmd;
 import com.hengtian.common.workflow.cmd.JumpCmd;
+import com.hengtian.common.workflow.cmd.TaskJumpCmd;
 import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
@@ -1169,10 +1170,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //获取历史任务的Activity
         ActivityImpl hisActivity = definition.findActivity(targetTaskDefKey);
         //实现跳转
-        ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
+        ExecutionEntity e = managementService.executeCommand(new TaskJumpCmd(hisTask.getProcessInstanceId(), hisTask.getExecutionId(), hisActivity.getId()));
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
         Set<String> deleteTaskSet = Sets.newHashSet();
-        Set<String> deleteExecutionSet = Sets.newHashSet();
         if(CollectionUtils.isNotEmpty(taskList)){
             historyService.deleteHistoricTaskInstance(taskId);
             for(Task t : taskList){
@@ -1184,7 +1184,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
                     historyService.deleteHistoricTaskInstance(entity.getId());
                     deleteTaskSet.add(t.getId());
-                    deleteExecutionSet.add(t.getExecutionId());
                 }
             }
 
@@ -1192,7 +1191,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             List<ExecutionEntity> executionEntityList = Lists.newArrayList();
             if(CollectionUtils.isNotEmpty(exeList)){
                 for(Execution execution : exeList){
-                    if(deleteExecutionSet.contains(execution.getId())){
+                    if(!execution.getId().equals(e.getId()) && StringUtils.isNotBlank(execution.getParentId())){
                         ExecutionEntity executionEntity = (ExecutionEntity)execution;
                         executionEntityList.add(executionEntity);
                     }
