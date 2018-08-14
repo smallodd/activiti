@@ -385,7 +385,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTask.setProcInstId(task.getProcessInstanceId());
                     tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
                     tRuTask.setTaskDefName(task.getName());
-                    tRuTask.setAssigneeType(tUserTask.getAssignType());
+                    //tRuTask.setAssigneeType(tUserTask.getAssignType());
+                    //指派的任务，assigneeType由角色改为人员
+                    tRuTask.setAssigneeType(AssignTypeEnum.PERSON.code);
                     tRuTask.setOwner(task.getOwner());
                     tRuTask.setTaskType(tUserTask.getTaskType());
                     ruTaskList.add(tRuTask);
