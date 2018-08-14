@@ -155,7 +155,7 @@
         </if>
 
         <!--流程实例状态-->
-        <if test="procInstState != null and procInstState !=''">
+        <if test="procInstState != null ">
             AND trp.proc_inst_state = #{procInstState}
         </if>
 
