@@ -929,10 +929,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             for(String taskDefKey : nextTaskDefKeyList){
                 beforeTaskDefKeyList.addAll(findBeforeTask(taskDefKey,task.getProcessInstanceId(),task.getProcessDefinitionId(),true));
             }
-
+            List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
             boolean isCreate = true;
             if(CollectionUtils.isNotEmpty(beforeTaskDefKeyList)){
-                List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+
                 if(CollectionUtils.isNotEmpty(taskList)){
                     for(Task t : taskList){
                         if(beforeTaskDefKeyList.contains(t.getTaskDefinitionKey())){
@@ -951,8 +951,47 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         managementService.executeCommand(new CreateCmd(task.getExecutionId(), taskDefKey));
                     }
                 }
+            }else {
+                boolean b1  = false;
+                boolean b2 = false;
+
+                for(Task t : taskList){
+                    //判断下一步审批任务中包含正在审批的任务
+                    if(!b1 && nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                        b1 = true;
+                    }
+                    //判断上一步审批任务中包含正在处理的任务
+                    if(!b2 && beforeTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                        b2 = true;
+                    }
+                    if(b1 && b2){
+                        break;
+                    }
+                }
+                //当前任务如存在上个节点的信息，并且也存在下个节点的信息 则删除下个节点列表中在当前任务存在的
+                if(b1 && b2){
+                    List<ExecutionEntity> executionEntityList=new ArrayList<>();
+                    for(Task t : taskList){
+                        if(nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                            TaskEntity entity = (TaskEntity)t;
+                            ExecutionEntity enti= (ExecutionEntity) runtimeService.createExecutionQuery().executionId(t.getExecutionId()).singleResult();
+                            executionEntityList.add(enti);
+
+                            entity.setExecutionId(null);
+                            taskService.saveTask(entity);
+                            taskService.deleteTask(entity.getId(), true);
+                            historyService.deleteHistoricTaskInstance(entity.getId());
+
+
+                        }
+                    }
+                    if(executionEntityList.size()>0) {
+                        managementService.executeCommand(new DestoryExecutionCmd(executionEntityList));
+                    }
+                }
             }
         }
+
     }
 
     /**
