@@ -217,10 +217,8 @@
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key_=#{procDefKey}
             </if>
-            <if test="taskState!=2">
-
+            <if test="taskState!=2 and taskState!=null and taskState!=''">
                 and  trp.CURRENT_TASK_STATUS=#{taskState}
-
             </if>
                 <include refid="queryCondition"/>
         </if>
