@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.common.common.CodeConts;
-import com.common.file.springmvc.FastDFSUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -41,14 +40,13 @@ import com.rbac.service.UserService;
 import com.user.entity.emp.Emp;
 import com.user.entity.emp.EmpVO;
 import com.user.service.emp.EmpService;
-import org.activiti.bpmn.model.*;
+import org.activiti.bpmn.model.FlowNode;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
-import org.activiti.engine.impl.persistence.entity.HistoricTaskInstanceEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
@@ -56,7 +54,6 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.*;
-import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -67,8 +64,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static com.hengtian.common.workflow.cmd.JumpCmd.REASION_DELETE;
 
 @Service
 public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements WorkflowService {
