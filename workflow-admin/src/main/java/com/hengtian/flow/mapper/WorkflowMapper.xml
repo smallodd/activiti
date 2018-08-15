@@ -198,7 +198,7 @@
                 <include refid="taskResult"/>
                 art.CREATE_TIME_ AS startTime,
                 art.CREATE_TIME_ AS endTime,
-                IF(tat.is_ask_end=0,1,0), AS asked,
+                IF(tat.is_ask_end=0,1,0) AS asked,
                 NULL AS askId,
                 trp.CURRENT_TASK_STATUS AS taskState
             FROM
