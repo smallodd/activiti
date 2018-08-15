@@ -160,11 +160,12 @@ public interface WorkflowService extends IService<TaskResult> {
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
+     * @param targetTaskDefKey 退回到的节点key
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskRollback(String userId, String taskId);
+    Result taskRollback(String userId, String taskId, String targetTaskDefKey);
 
     /**
      * 撤回
