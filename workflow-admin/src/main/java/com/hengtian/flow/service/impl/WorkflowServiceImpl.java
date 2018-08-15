@@ -1567,14 +1567,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/4/18 16:01
      */
     @Override
-    public Result taskRollback(String userId, String taskId) {
-        List<String> taskDefKeysForRollback = getTaskDefKeysForRollback(taskId);
-        if (CollectionUtils.isEmpty(taskDefKeysForRollback)) {
-            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
+    public Result taskRollback(String userId, String taskId, String targetTaskDefKey) {
+        if(StringUtils.isNotBlank(targetTaskDefKey)){
+            return taskJump(userId, taskId, targetTaskDefKey);
+        }else{
+            List<String> taskDefKeysForRollback = getTaskDefKeysForRollback(taskId);
+            if (CollectionUtils.isEmpty(taskDefKeysForRollback)) {
+                return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
+            }
+            for (String taskDefKey : taskDefKeysForRollback) {
+                taskJump(userId, taskId, taskDefKey);
+            }
         }
-        for (String taskDefKey : taskDefKeysForRollback) {
-            taskJump(userId, taskId, taskDefKey);
-        }
+
         return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
     }
 
