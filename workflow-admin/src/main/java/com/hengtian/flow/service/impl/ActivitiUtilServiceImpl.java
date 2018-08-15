@@ -1273,6 +1273,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @return
      */
     protected Result setNextAssigneeTemp(Task task, String processDefinitionKey, String assigneeNext, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version, Map<String, Map<String,AssigneeTemp>> assigneeMap){
+        logger.info("setNextAssigneeTemp开始,入参：taskId"+task.getId()+"assigneeNext:"+assigneeNext+"assigneeMap："+assigneeMap+"currentAssignee:"+currentAssignee);
         Result result = new Result();
 
         EntityWrapper<AssigneeTemp> _wrapper = new EntityWrapper<>();
