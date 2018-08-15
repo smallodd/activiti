@@ -19,6 +19,7 @@ import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.common.utils.BeanUtils;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.CreateCmd;
@@ -27,10 +28,7 @@ import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
-import com.hengtian.flow.vo.AskCommentDetailVo;
-import com.hengtian.flow.vo.AssigneeVo;
-import com.hengtian.flow.vo.TaskNodeVo;
-import com.hengtian.flow.vo.TaskVo;
+import com.hengtian.flow.vo.*;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
@@ -48,6 +46,7 @@ import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.repository.NativeProcessDefinitionQuery;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -2256,5 +2255,46 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public String getAssigneeSecret(String assignee, String assigneeAgent){
         BASE64Encoder encoder = new BASE64Encoder();
         return encoder.encode((assignee+"("+assignee+assigneeAgent+")").getBytes());
+    }
+
+    /**
+     * 流程定义列表
+     * @param appKey 应用系统KEY
+     * @param processDefinitionKey 流程定义KEY
+     * @param processDefinitionName 流程定义名称
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/15 17:39
+     */
+    @Override
+    public PageInfo queryProcessDefinitionList(Integer appKey, String processDefinitionKey, String processDefinitionName, Integer pageNum, Integer pageSize){
+        PageInfo pageInfo = new PageInfo(pageNum, pageSize);
+        String select = "SELECT arp.* ";
+        String selectCount = "SELECT COUNT(*) ";
+        StringBuffer sb = new StringBuffer();
+        sb.append("FROM `act_re_procdef` AS arp, `t_app_model` AS tam WHERE tam.`app_key`=#{appKey} AND arp.`KEY_`=tam.`model_key` AND arp.`VERSION_` =(SELECT MAX(`VERSION_`) FROM `act_re_procdef` AS arp_ WHERE arp.`KEY_`=arp_.`KEY_`)");
+        NativeProcessDefinitionQuery query = repositoryService.createNativeProcessDefinitionQuery();
+        query.parameter("appKey", appKey);
+        if(StringUtils.isNotBlank(processDefinitionKey)){
+            query.parameter("processDefinitionKey", processDefinitionKey);
+            sb.append(" AND arp.`KEY_` LIKE CONCAT('%',#{processDefinitionKey},'%')");
+        }
+        if(StringUtils.isNotBlank(processDefinitionName)){
+            query.parameter("processDefinitionName", processDefinitionName);
+            sb.append(" AND arp.`KEY_` LIKE CONCAT('%',#{processDefinitionName},'%')");
+        }
+        List<ProcessDefinition> processDefinitions = query.sql(select + sb.toString()).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        if(CollectionUtils.isNotEmpty(processDefinitions)){
+            List<ProcessDefinitionVo> processDefinitionVos = Lists.newArrayList();
+            for(ProcessDefinition processDefinition : processDefinitions){
+                ProcessDefinitionVo processDefinitionVo = new ProcessDefinitionVo();
+                BeanUtils.copy(processDefinition, processDefinitionVo);
+                processDefinitionVos.add(processDefinitionVo);
+            }
+            pageInfo.setRows(processDefinitionVos);
+        }
+
+        pageInfo.setTotal((int) query.sql(selectCount + sb.toString()).count());
+        return pageInfo;
     }
 }

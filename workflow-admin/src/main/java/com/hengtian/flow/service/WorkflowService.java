@@ -11,6 +11,7 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
@@ -340,4 +341,15 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/8/3 15:53
      */
     String getAssigneeSecret(String assignee, String assigneeAgent);
+
+    /**
+     * 流程定义列表
+     * @param appKey 应用系统KEY
+     * @param processDefinitionKey 流程定义KEY
+     * @param processDefinitionName 流程定义名称
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/15 17:39
+     */
+    PageInfo queryProcessDefinitionList(Integer appKey, String processDefinitionKey, String processDefinitionName, Integer pageNum, Integer pageSize);
 }
