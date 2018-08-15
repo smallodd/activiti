@@ -31,7 +31,6 @@ import com.rbac.service.UserService;
 import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Process;
 import org.activiti.engine.*;
-import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
@@ -57,7 +56,8 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -71,7 +71,7 @@ import java.util.function.Predicate;
  */
 public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult> {
 
-    Logger logger = Logger.getLogger(getClass());
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private HistoryService historyService;
@@ -1272,7 +1272,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @param version
      * @return
      */
-    protected Result setNextAssigneeTemp(Task task, String assigneeNext, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version, Map<String, Map<String,AssigneeTemp>> assigneeMap){
+    protected Result setNextAssigneeTemp(Task task, String processDefinitionKey, String assigneeNext, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version, Map<String, Map<String,AssigneeTemp>> assigneeMap){
         Result result = new Result();
 
         EntityWrapper<AssigneeTemp> _wrapper = new EntityWrapper<>();
@@ -1290,7 +1290,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             }
             try {
                 JSONArray jsonArray = JSONArray.parseArray(assigneeNext);
-                assigneeTemps = validateSetNextAssignee(task, jsonArray, processInstanceId, currentAssignee, taskDefKeyBefore, version);
+                assigneeTemps = validateSetNextAssignee(task, processDefinitionKey, jsonArray, processInstanceId, currentAssignee, taskDefKeyBefore, version);
                 if(CollectionUtils.isNotEmpty(assigneeTemps)){
                     assigneeTempService.insertBatch(assigneeTemps);
                 }
@@ -1328,7 +1328,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @author houjinrong@chtwm.com
      * date 2018/6/6 18:57
      */
-    public List<AssigneeTemp> validateSetNextAssignee(Task task,JSONArray jsonArray, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version){
+    public List<AssigneeTemp> validateSetNextAssignee(Task task, String processDefinitionKey, JSONArray jsonArray, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version){
         List<AssigneeTemp> result = Lists.newArrayList();
 
         String assignee = null;
@@ -1346,7 +1346,9 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 logger.info("任务节点KEY不匹配");
                 return null;
             }
+
             wrapper = new EntityWrapper<>();
+            wrapper.eq("proc_def_key", processDefinitionKey);
             wrapper.eq("version_", version);
             wrapper.eq("task_def_key", taskDefinitionKey);
             userTask = tUserTaskService.selectOne(wrapper);
@@ -1356,6 +1358,9 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 logger.info("任务节点key不存在");
                 return null;
             }
+
+            logger.info("节点配置信息：{}", JSONObject.toJSONString(userTask));
+
             //角色ID，多个逗号隔开
             candidateIds = userTask.getCandidateIds();
             String roleCode = null;
@@ -1388,13 +1393,20 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                         logger.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
                         return null;
                     }
-                    for(RbacRole r : roles){
-                        if(candidateIds.indexOf(r.getId()+"") > -1){
-                            roleCode = r.getId()+"";
-                            roleName = r.getRoleName();
-                            break;
+                    logger.info("审批人信息{}，审批人角色{}",candidateIds,JSONObject.toJSONString(roles));
+                    if(CollectionUtils.isNotEmpty(roles)){
+                        for(RbacRole r : roles){
+                            if(candidateIds.indexOf(r.getId()+"") > -1){
+                                roleCode = r.getId()+"";
+                                roleName = r.getRoleName();
+                                break;
+                            }
                         }
+                    }else{
+                        logger.info("未找到【"+userCode+"】的角色");
+                        return null;
                     }
+
                     if(roleCode == null){
                         logger.info("用户【"+userCode+"】没有权限");
                         return null;

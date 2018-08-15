@@ -578,7 +578,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //设置下步审批人
         Map<String, Map<String,AssigneeTemp>> assigneeMap = Maps.newHashMap();
         if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext()) && taskParam.getPass() == TaskStatusEnum.COMPLETE_AGREE.status){
-            result = setNextAssigneeTemp(task, taskParam.getAssigneeNext(), task.getProcessInstanceId(), taskParam.getAssignee(), tUserTask.getTaskDefKey(), processDefinition.getVersion(), assigneeMap);
+            result = setNextAssigneeTemp(task, processDefinition.getKey(), taskParam.getAssigneeNext(), task.getProcessInstanceId(), taskParam.getAssignee(), tUserTask.getTaskDefKey(), processDefinition.getVersion(), assigneeMap);
             if(!result.isSuccess()){
                 log.info("设置下一审批人失败，{}",JSONObject.toJSONString(result));
                 return result;
