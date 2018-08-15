@@ -193,7 +193,7 @@
 
     <!--我的待审批任务及被意见征询任务-->
     <select id="queryOpenTask" resultMap="taskResultMap">
-        <if test="taskState != 2">
+        <if test="taskState != 1">
             SELECT
                 <include refid="taskResult"/>
                 art.CREATE_TIME_ AS startTime,
@@ -217,15 +217,13 @@
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key_=#{procDefKey}
             </if>
-            <if test="taskState!=2 and taskState!=null and taskState!=''">
-                and  trp.CURRENT_TASK_STATUS=#{taskState}
-            </if>
+
                 <include refid="queryCondition"/>
         </if>
         <if test="taskState == null || taskState==''">
             UNION
         </if>
-        <if test="taskState != 1">
+        <if test="taskState != 0">
             SELECT
                 aht.ID_ AS taskId,
                 aht.NAME_ AS taskName,
