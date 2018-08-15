@@ -365,7 +365,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             String assignee = null;
             //生成扩展任务信息
             if(needSetNext && assigneeTempMap != null && assigneeTempMap.size() > 0){
-                log.info("手动设置审批人，前段传来参数：{}",assigneeTempMap);
+                log.info("手动设置审批人，前端传来参数：{}",JSONObject.toJSONString(assigneeTempMap));
                 //需手动设置审批人，不从流程配置表中设置
                 Set<String> keySet = assigneeTempMap.keySet();
                 for(String key : keySet){
