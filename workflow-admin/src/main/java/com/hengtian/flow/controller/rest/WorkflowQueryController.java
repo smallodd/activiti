@@ -549,8 +549,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
      * date 2018/5/29 14:38
      */
     @ResponseBody
-    @SysLog("获取父级任务节点")
-    @ApiOperation(httpMethod = "POST", value = "获取父级任务节点")
+    @SysLog("获取上一步任务节点")
+    @ApiOperation(httpMethod = "POST", value = "获取上一步任务节点")
     @RequestMapping(value = "/rest/node/before", method = RequestMethod.POST)
     public Object getBeforeNodes(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
                                  @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
