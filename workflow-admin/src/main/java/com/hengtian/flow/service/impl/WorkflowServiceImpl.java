@@ -2260,14 +2260,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 流程定义列表
      * @param appKey 应用系统KEY
-     * @param processDefinitionKey 流程定义KEY
-     * @param processDefinitionName 流程定义名称
+     * @param nameOrKey 流程定义KEY/流程定义名称
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/8/15 17:39
      */
     @Override
-    public PageInfo queryProcessDefinitionList(Integer appKey, String processDefinitionKey, String processDefinitionName, Integer page, Integer rows){
+    public PageInfo queryProcessDefinitionList(Integer appKey, String nameOrKey, Integer page, Integer rows){
         PageInfo pageInfo = new PageInfo(page, rows);
         String select = "SELECT arp.* ";
         String selectCount = "SELECT COUNT(*) ";
@@ -2275,13 +2274,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         sb.append("FROM `act_re_procdef` AS arp, `t_app_model` AS tam WHERE tam.`app_key`=#{appKey} AND arp.`KEY_`=tam.`model_key` AND arp.`VERSION_` =(SELECT MAX(`VERSION_`) FROM `act_re_procdef` AS arp_ WHERE arp.`KEY_`=arp_.`KEY_`)");
         NativeProcessDefinitionQuery query = repositoryService.createNativeProcessDefinitionQuery();
         query.parameter("appKey", appKey);
-        if(StringUtils.isNotBlank(processDefinitionKey)){
-            query.parameter("processDefinitionKey", processDefinitionKey);
-            sb.append(" AND arp.`KEY_` LIKE CONCAT('%',#{processDefinitionKey},'%')");
-        }
-        if(StringUtils.isNotBlank(processDefinitionName)){
-            query.parameter("processDefinitionName", processDefinitionName);
-            sb.append(" AND arp.`NAME_` LIKE CONCAT('%',#{processDefinitionName},'%')");
+        if(StringUtils.isNotBlank(nameOrKey)){
+            query.parameter("nameOrKey", nameOrKey);
+            sb.append(" AND (arp.`KEY_` LIKE CONCAT('%',#{nameOrKey},'%') OR arp.`NAME_` LIKE CONCAT('%',#{nameOrKey},'%'))");
         }
         List<ProcessDefinition> processDefinitions = query.sql(select + sb.toString()).listPage(pageInfo.getFrom(), pageInfo.getSize());
         if(CollectionUtils.isNotEmpty(processDefinitions)){
