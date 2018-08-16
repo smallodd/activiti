@@ -259,6 +259,7 @@
             WHERE
                 trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{assignee} AND tat.is_ask_end=0 and tat.id IS NOT NULL AND
                 aht.END_TIME_ IS NOT NULL AND tat.ask_task_key=aht.TASK_DEF_KEY_
+            AND aht.ID_=(SELECT ID_ FROM act_hi_taskinst AS t WHERE t.proc_inst_id_=tat.proc_inst_id AND t.task_def_key_=tat.ask_task_key ORDER BY t.START_TIME_ DESC LIMIT 1)
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key_=#{procDefKey}
             </if>
