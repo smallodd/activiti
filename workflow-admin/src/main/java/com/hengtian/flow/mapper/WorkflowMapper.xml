@@ -217,7 +217,7 @@
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key_=#{procDefKey}
             </if>
-            <if test="taskState != 1">
+            <if test="taskState!=null and taskState!='' and taskState != 1">
                 and tat.is_ask_end !=0
             </if>
 
