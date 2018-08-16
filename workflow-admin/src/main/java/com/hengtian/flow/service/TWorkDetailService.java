@@ -19,4 +19,13 @@ public interface TWorkDetailService extends IService<TWorkDetail> {
      * @return
      */
     List<TWorkDetail> operateDetailInfo(String processInstanceId, String operator,String businessKey);
+
+    /**
+     * 获取最新的操作记录
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/16 17:18
+     */
+    TWorkDetail queryLastInfo(String processInstanceId);
 }

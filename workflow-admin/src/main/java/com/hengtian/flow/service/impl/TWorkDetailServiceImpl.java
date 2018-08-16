@@ -55,4 +55,16 @@ public class TWorkDetailServiceImpl extends ServiceImpl<TWorkDetailDao, TWorkDet
         }
         return list;
     }
+
+    /**
+     * 获取最新的操作记录
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/16 17:18
+     */
+    @Override
+    public TWorkDetail queryLastInfo(String processInstanceId){
+        return tWorkDetailDao.queryLastInfo(processInstanceId);
+    }
 }
