@@ -42,6 +42,10 @@ public class Result implements Serializable {
      * 数据
      */
     private Object obj = null;
+    /**
+     * 任务是否结束
+     */
+    private boolean end;
 
     public Result(){}
 
@@ -66,6 +70,14 @@ public class Result implements Serializable {
         this.success = success;
         this.code = code;
         this.msg = msg;
+    }
+
+    public boolean isEnd() {
+        return end;
+    }
+
+    public void setEnd(boolean end) {
+        this.end = end;
     }
 
     public String getCode() {
