@@ -2267,8 +2267,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/8/15 17:39
      */
     @Override
-    public PageInfo queryProcessDefinitionList(Integer appKey, String processDefinitionKey, String processDefinitionName, Integer pageNum, Integer pageSize){
-        PageInfo pageInfo = new PageInfo(pageNum, pageSize);
+    public PageInfo queryProcessDefinitionList(Integer appKey, String processDefinitionKey, String processDefinitionName, Integer page, Integer rows){
+        PageInfo pageInfo = new PageInfo(page, rows);
         String select = "SELECT arp.* ";
         String selectCount = "SELECT COUNT(*) ";
         StringBuffer sb = new StringBuffer();

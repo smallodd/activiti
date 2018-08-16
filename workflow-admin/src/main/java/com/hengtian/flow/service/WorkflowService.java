@@ -351,5 +351,5 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/8/15 17:39
      */
-    PageInfo queryProcessDefinitionList(Integer appKey, String processDefinitionKey, String processDefinitionName, Integer pageNum, Integer pageSize);
+    PageInfo queryProcessDefinitionList(Integer appKey, String processDefinitionKey, String processDefinitionName, Integer page, Integer rows);
 }
