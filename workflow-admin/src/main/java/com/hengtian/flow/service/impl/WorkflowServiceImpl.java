@@ -803,10 +803,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             w.eq("proc_inst_id", task.getProcessInstanceId());
             ruProcinstService.update(ruProcinst, w);
         }
-
+        EntityWrapper wrapp=new EntityWrapper();
+        wrapp.eq("pro_inst_id",task.getProcessInstanceId());
+        RuProcinst ruProcinst=ruProcinstService.selectOne(wrapp);
         result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
         result.setSuccess(true);
         result.setCode(CodeConts.SUCCESS);
+        result.setEnd("1".equals(ruProcinst.getProcInstState()));
         result.setMsg("任务已办理成功");
         return result;
     }
