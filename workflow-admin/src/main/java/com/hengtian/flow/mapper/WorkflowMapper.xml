@@ -218,7 +218,7 @@
                 and arp.key_=#{procDefKey}
             </if>
             <if test="taskState!=null and taskState!='' and taskState != 1">
-                and tat.is_ask_end !=0
+                and (tat.is_ask_end !=0 or tat.is_ask_end is null)
             </if>
 
                 <include refid="queryCondition"/>
