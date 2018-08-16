@@ -402,8 +402,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object queryProcessDefinitionList(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
                                @ApiParam(value = "流程定义KEY", name = "processDefinitionKey") @RequestParam(required = false) String processDefinitionKey,
                                @ApiParam(value = "流程定义名称", name = "processDefinitionName") @RequestParam(required = false) String processDefinitionName,
-                               @ApiParam(value = "页码", name = "pageNum") @RequestParam Integer page,
-                               @ApiParam(value = "每页条数", name = "pageSize") @RequestParam Integer rows){
+                               @ApiParam(value = "页码", name = "page") @RequestParam Integer page,
+                               @ApiParam(value = "每页条数", name = "rows") @RequestParam Integer rows){
         logger.info("appKey{} processDefinitionKey{} processDefinitionName{}", appKey, processDefinitionKey, processDefinitionName);
         //参数统一处理
         page = page == null?1:page;
