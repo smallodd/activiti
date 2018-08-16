@@ -1772,8 +1772,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }
 
                 t.setAssigneeBeforeName(StringUtils.join(assigneeNameSet, ","));
+            }else{
+                //发生跳转，问询等打断流程的操作，上一步操作人从操作记录表中获取
+                TWorkDetail tWorkDetail = workDetailService.queryLastInfo(t.getProcessInstanceId());
+                if(tWorkDetail != null){
+                    RbacUser rbacUser = userService.getUserById(tWorkDetail.getOperator());
+                    if(rbacUser != null){
+                        t.setAssigneeBefore(tWorkDetail.getOperator());
+                        t.setAssigneeBeforeName(rbacUser.getName());
+                    }
+                }
             }
-
         }
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());
