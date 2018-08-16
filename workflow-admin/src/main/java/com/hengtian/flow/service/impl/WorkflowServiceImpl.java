@@ -2281,7 +2281,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         if(StringUtils.isNotBlank(processDefinitionName)){
             query.parameter("processDefinitionName", processDefinitionName);
-            sb.append(" AND arp.`KEY_` LIKE CONCAT('%',#{processDefinitionName},'%')");
+            sb.append(" AND arp.`NAME_` LIKE CONCAT('%',#{processDefinitionName},'%')");
         }
         List<ProcessDefinition> processDefinitions = query.sql(select + sb.toString()).listPage(pageInfo.getFrom(), pageInfo.getSize());
         if(CollectionUtils.isNotEmpty(processDefinitions)){
