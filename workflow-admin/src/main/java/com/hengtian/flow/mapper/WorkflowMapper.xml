@@ -198,7 +198,7 @@
                 <include refid="taskResult"/>
                 art.CREATE_TIME_ AS startTime,
                 art.CREATE_TIME_ AS endTime,
-                IF(tat.is_ask_end=0,1,0) AS asked,
+                IF(tat.is_ask_end=0,2,0) AS asked,
                 NULL AS askId,
                 trp.CURRENT_TASK_STATUS AS taskState
             FROM
@@ -217,8 +217,8 @@
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key_=#{procDefKey}
             </if>
-            <if test="taskState!=null and taskState!='' and taskState != 1">
-                and (tat.is_ask_end !=0 or tat.is_ask_end is null)
+            <if test="taskState!=null and taskState!='' and taskState == 2">
+                and (tat.is_ask_end =0 )
             </if>
 
                 <include refid="queryCondition"/>
@@ -226,7 +226,7 @@
         <if test="taskState == null || taskState==''">
             UNION
         </if>
-        <if test="taskState != 0">
+        <if test="taskState != 0 and taskState!=2">
             SELECT
                 aht.ID_ AS taskId,
                 aht.NAME_ AS taskName,
