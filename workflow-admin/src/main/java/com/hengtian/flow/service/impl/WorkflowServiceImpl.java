@@ -809,7 +809,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
         result.setSuccess(true);
         result.setCode(CodeConts.SUCCESS);
-        result.setEnd("1".equals(ruProcinst.getProcInstState()));
+        if(ruProcinst==null){
+            result.setEnd(false);
+        }else {
+            result.setEnd("1".equals(ruProcinst.getProcInstState()));
+        }
         result.setMsg("任务已办理成功");
         return result;
     }
