@@ -804,7 +804,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             ruProcinstService.update(ruProcinst, w);
         }
         EntityWrapper wrapp=new EntityWrapper();
-        wrapp.eq("pro_inst_id",task.getProcessInstanceId());
+        wrapp.eq("proc_inst_id",task.getProcessInstanceId());
         RuProcinst ruProcinst=ruProcinstService.selectOne(wrapp);
         result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
         result.setSuccess(true);
