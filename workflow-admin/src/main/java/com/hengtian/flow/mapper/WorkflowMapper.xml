@@ -251,7 +251,7 @@
             art.CREATE_TIME_ AS endTime,
 
             IF(tat.ask_user_id = #{assignee}, 1, 2) AS asked,
-            NULL AS askId,
+            tat.id AS askId,
             trp.CURRENT_TASK_STATUS AS taskState,
             tat.ask_task_key as askTaskKey
             FROM
