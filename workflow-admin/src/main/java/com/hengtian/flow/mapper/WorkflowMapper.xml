@@ -18,6 +18,7 @@
         <result column="processInstanceState" property="processInstanceState" jdbcType="VARCHAR"/>
         <result column="startTime" property="startTime" jdbcType="TIMESTAMP"/>
         <result column="endTime" property="endTime" jdbcType="TIMESTAMP"/>
+        <result column="askTaskKey" property="askTaskKey" jdbcType="VARCHAR"/>
     </resultMap>
 
     <resultMap id="processInstanceResultMap" type="com.hengtian.flow.model.ProcessInstanceResult">
@@ -200,7 +201,8 @@
                 art.CREATE_TIME_ AS endTime,
                 0 AS asked,
                 NULL AS askId,
-                trp.CURRENT_TASK_STATUS AS taskState
+                trp.CURRENT_TASK_STATUS AS taskState,
+                null as askTaskKey
             FROM
                 act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
                 LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -250,7 +252,8 @@
 
             IF(tat.ask_user_id = #{assignee}, 1, 2) AS asked,
             NULL AS askId,
-            trp.CURRENT_TASK_STATUS AS taskState
+            trp.CURRENT_TASK_STATUS AS taskState,
+            tat.ask_task_key as askTaskKey
             FROM
             act_ru_task AS art
             LEFT JOIN t_ru_task AS trt ON art.ID_ = trt.TASK_ID

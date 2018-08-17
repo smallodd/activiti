@@ -1755,6 +1755,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
             t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
+            if(t.getAsked()==2){
+                t.setAsked(1);
+              List<HistoricTaskInstance> li=  historyService.createHistoricTaskInstanceQuery().processInstanceId(t.getProcessInstanceId()).taskDefinitionKey(t.getAskTaskKey()).orderByTaskCreateTime().desc().list();
+              if(li!=null&&li.size()>0){
+                  t.setTaskId(li.get(0).getId());
+                  t.setTaskName(li.get(0).getName());
+              }
+            }
             logger.info("任务ID【"+t.getTaskId()+"】的对应的上步审批人为【"+t.getAssigneeBefore()+"】");
             if(StringUtils.isNotBlank(t.getAssigneeBefore())) {
                 String[] assigneeBefore = t.getAssigneeBefore().split(",");
