@@ -249,7 +249,7 @@
                 trp.PROC_INST_STATE AS processInstanceState,
                 aht.START_TIME_ AS startTime,
                 aht.END_TIME_ AS endTime,
-                IF(tat.ask_user_id='H000006',1,2) as asked,
+                IF(tat.ask_user_id=#{assignee},1,2) as asked,
                 tat.id as askId,
                 trp.CURRENT_TASK_STATUS AS taskState
             FROM
