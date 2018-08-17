@@ -229,41 +229,39 @@
             UNION
         </if>
         <if test="taskState != 0 ">
-            SELECT
-                aht.ID_ AS taskId,
-                aht.NAME_ AS taskName,
-                #{assignee} AS assignee,
-                NULL AS assigneeBefore,
-                NULL AS assigneeNext,
-                trt.OWNER AS assigneeDelegate,
-                trp.CREATOR AS creatorCode,
-                trp.CREATOR_NAME AS creatorNeme,
-                trp.CREATOR_DEPT AS creatorDeptCode,
-                trp.CREATOR_DEPT_NAME AS creatorDeptNeme,
+            SELECT DISTINCT
+            art.ID_ AS taskId,
+            art.NAME_ AS taskName,
+            #{assignee} AS assignee,
+            NULL AS assigneeBefore,
+            NULL AS assigneeNext,
+            trt.OWNER AS assigneeDelegate,
+            trp.CREATOR AS creatorCode,
+            trp.CREATOR_NAME AS creatorName,
+            trp.CREATOR_DEPT AS creatorDeptCode,
+            trp.CREATOR_DEPT_NAME AS creatorDeptName,
+            ahp.ID_ AS processInstanceId,
+            ahp.NAME_ AS processInstanceTitle,
+            ahp.PROC_DEF_ID_ AS processDefinitionId,
+            ahp.BUSINESS_KEY_ AS businessKey,
+            trp.PROC_DEF_NAME AS processDefinitionName,
+            trp.PROC_INST_STATE AS processInstanceState,
+            art.CREATE_TIME_ AS startTime,
+            art.CREATE_TIME_ AS endTime,
 
-                ahp.ID_ AS processInstanceId,
-                ahp.NAME_ AS processInstanceTitle,
-                ahp.PROC_DEF_ID_ AS processDefinitionId,
-                ahp.BUSINESS_KEY_ AS businessKey,
-                trp.PROC_DEF_NAME AS processDefinitionName,
-                trp.PROC_INST_STATE AS processInstanceState,
-                aht.START_TIME_ AS startTime,
-                aht.END_TIME_ AS endTime,
-                IF(tat.ask_user_id=#{assignee},1,2) as asked,
-                tat.id as askId,
-                trp.CURRENT_TASK_STATUS AS taskState
+            IF(tat.ask_user_id = #{assignee}, 1, 2) AS asked,
+            NULL AS askId,
+            trp.CURRENT_TASK_STATUS AS taskState
             FROM
-                act_hi_taskinst AS aht LEFT JOIN t_ru_task AS trt ON aht.ID_ =trt.TASK_ID
-                LEFT JOIN act_hi_procinst AS ahp ON aht.PROC_INST_ID_=ahp.PROC_INST_ID_
-                LEFT JOIN t_ru_procinst AS trp ON aht.PROC_INST_ID_=trp.PROC_INST_ID
-                LEFT JOIN t_ask_task tat on tat.proc_inst_id=ahp.PROC_INST_ID_
-                LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
-                LEFT JOIN (select * from t_ask_task tkk where tkk.is_ask_end=0 ) tat
-                ON tat.current_task_id = art.ID_
-            WHERE
-                trp.APP_KEY = #{appKey} AND tat.asked_user_id=#{assignee} AND tat.is_ask_end=0 and tat.id IS NOT NULL AND
-                aht.END_TIME_ IS NOT NULL AND tat.ask_task_key=aht.TASK_DEF_KEY_
-            AND aht.ID_=(SELECT ID_ FROM act_hi_taskinst AS t WHERE t.proc_inst_id_=tat.proc_inst_id AND t.task_def_key_=tat.ask_task_key ORDER BY t.START_TIME_ DESC LIMIT 1)
+            act_ru_task AS art
+            LEFT JOIN t_ru_task AS trt ON art.ID_ = trt.TASK_ID
+            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_ = ahp.PROC_INST_ID_
+            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_ = trp.PROC_INST_ID
+            LEFT JOIN act_re_procdef arp ON ahp.PROC_DEF_ID_ = arp.ID_
+            LEFT JOIN (select * from t_ask_task ttk where ttk.is_ask_end=0) tat ON tat.current_task_id = art.ID_
+
+            where   trp.APP_KEY = #{appKey}
+
             AND ((tat.ask_user_id=#{assignee}) OR (tat.asked_user_id=#{assignee}))
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key_=#{procDefKey}
