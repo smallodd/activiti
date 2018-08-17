@@ -35,7 +35,7 @@ public enum TaskStatusEnum {
      */
     UNFINISHED_AGREE(0, "待审批"),
     UNFINISHED_REFUSE(1, "意见征询中"),
-    UNFINISHED_ASKED(2,"被意见征询"),
+
     /**
      * 已办任务查询状态
      */
