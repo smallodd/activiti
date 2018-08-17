@@ -39,18 +39,41 @@
         #{assignee} AS assignee,
         NULL AS assigneeBefore,
         NULL AS assigneeNext,
-        trt.OWNER AS assigneeDelegate,
         trp.CREATOR AS creatorCode,
         trp.CREATOR_NAME AS creatorName,
         trp.CREATOR_DEPT AS creatorDeptCode,
         trp.CREATOR_DEPT_NAME AS creatorDeptName,
-
         ahp.ID_ AS processInstanceId,
         ahp.NAME_ AS processInstanceTitle,
         ahp.PROC_DEF_ID_ AS processDefinitionId,
         ahp.BUSINESS_KEY_ AS businessKey,
         trp.PROC_DEF_NAME AS processDefinitionName,
         trp.PROC_INST_STATE AS processInstanceState,
+    </sql>
+
+    <sql id="taskAskResult">
+        art.ID_ AS taskId,
+        art.NAME_ AS taskName,
+        #{assignee} AS assignee,
+        NULL AS assigneeBefore,
+        NULL AS assigneeNext,
+        trp.CREATOR AS creatorCode,
+        trp.CREATOR_NAME AS creatorName,
+        trp.CREATOR_DEPT AS creatorDeptCode,
+        trp.CREATOR_DEPT_NAME AS creatorDeptName,
+        ahp.ID_ AS processInstanceId,
+        ahp.NAME_ AS processInstanceTitle,
+        ahp.PROC_DEF_ID_ AS processDefinitionId,
+        ahp.BUSINESS_KEY_ AS businessKey,
+        trp.PROC_DEF_NAME AS processDefinitionName,
+        trp.PROC_INST_STATE AS processInstanceState,
+        art.CREATE_TIME_ AS startTime,
+        art.CREATE_TIME_ AS endTime,
+        IF(tat.ask_user_id = #{assignee}, 1, 2) AS asked,
+        tat.id AS askId,
+        trp.CURRENT_TASK_STATUS AS taskState,
+        tat.ask_task_key as askTaskKey,
+        tat.asked_user_id AS assigneeDelegate
     </sql>
 
     <sql id="queryCondition">
@@ -105,44 +128,59 @@
         </if>
     </sql>
 
-    <!--我的待办任务（待审批和待签收）-->
-    <select id="queryActiveTask" resultMap="taskResultMap">
-        SELECT
-        <include refid="taskResult"/>
-        art.CREATE_TIME_ AS startTime,
-        art.CREATE_TIME_ AS endTime,
-        trp.CURRENT_TASK_STATUS AS taskState
-        FROM
-        act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-        LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-        LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
-        WHERE
-        trp.APP_KEY = #{appKey} AND art.SUSPENSION_STATE_=1
-        AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN(#{roleId})))
-        ORDER BY endTime DESC
-    </select>
+    <sql id="queryAskCondition">
+        <if test="procDefKey!=null and procDefKey!=''">
+            AND trp.proc_def_key=#{procDefKey}
+        </if>
+        <!--任务编号-->
+        <if test="taskId != null and taskId != ''">
+            AND aht.ID_ = #{taskId}
+        </if>
+        <!--流程实例编号-->
+        <if test="procInstId != null and procInstId != ''">
+            AND ahp.ID_ = #{procInstId}
+        </if>
+        <!--任务标题-->
+        <if test="title != null and title != ''">
+            AND ahp.NAME_ LIKE CONCAT('%',#{title},'%')
+        </if>
+        <!--流程实例状态-->
+        <if test="procInstState != null">
+            AND trp.proc_inst_state = #{procInstState}
+        </if>
+        <!--流程名称-->
+        <if test="procDefName != null and procDefName != ''">
+            AND trp.proc_def_key = #{procDefName}
+        </if>
+        <!--发起人-->
+        <if test="creator != null and creator !=''">
+            AND trp.CREATOR = #{creator}
+        </if>
+        <!--发起人部门-->
+        <if test="creatorDept != null and creatorDept != ''">
+            AND trp.CREATOR_DEPT = #{creatorDept}
+        </if>
+        <!--当前节点-->
+        <if test="taskName != null and taskName != ''">
+            AND aht.NAME_ LIKE CONCAT('%',#{taskName},'%')
+        </if>
+        <!--创建日期（从）-->
+        <if test="createTimeStart != null">
+            AND DATE(aht.START_TIME_) &gt;= #{createTimeStart}
+        </if>
+        <!--创建日期（到）-->
+        <if test="createTimeEnd != null">
+            AND DATE(aht.START_TIME_) &lt;= #{createTimeEnd}
+        </if>
+    </sql>
 
-    <!--我的历史任务-->
-    <select id="queryCloseTask" resultMap="taskResultMap">
-        SELECT
-        <include refid="taskResult"/>
-        art.START_TIME_ AS startTime,
-        art.END_TIME_ AS endTime,
-        (case when art.ASSIGNEE_ LIKE '%_Y%' then 1 else 2 end) AS taskState
-
-        FROM
-        act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-        LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-        LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
-        LEFT JOIN  act_re_procdef arp on ahp.proc_def_id_=arp.ID_
-        WHERE
-        trp.APP_KEY = #{appKey} AND art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%')
+    <sql id="queryCloseCondition">
         <!--任务编号-->
         <if test="taskId != null and taskId != ''">
             AND art.ID_ = #{taskId}
         </if>
         <if test="procDefKey!=null and procDefKey!=''">
-            and arp.key_=#{procDefKey}
+            AND trp.proc_def_key=#{procDefKey}
         </if>
 
         <!--流程实例编号-->
@@ -156,13 +194,13 @@
         </if>
 
         <!--流程实例状态-->
-        <if test="procInstState != null ">
+        <if test="procInstState != null">
             AND trp.proc_inst_state = #{procInstState}
         </if>
 
         <!--流程名称-->
         <if test="procDefName != null and procDefName != ''">
-            AND arp.key_ = #{procDefName}
+            AND trp.proc_def_key = #{procDefName}
         </if>
 
         <!--发起人-->
@@ -189,6 +227,42 @@
         <if test="createTimeEnd != null">
             AND DATE(art.START_TIME_) &lt;= #{createTimeEnd}
         </if>
+    </sql>
+
+
+    <!--我的待办任务（待审批和待签收）-->
+    <select id="queryActiveTask" resultMap="taskResultMap">
+        SELECT
+            <include refid="taskResult"/>
+            art.CREATE_TIME_ AS startTime,
+            art.CREATE_TIME_ AS endTime,
+            trp.CURRENT_TASK_STATUS AS taskState
+        FROM
+            act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
+            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+        WHERE
+            trp.APP_KEY = #{appKey} AND art.SUSPENSION_STATE_=1
+            AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')) OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN(#{roleId})))
+        ORDER BY endTime DESC
+    </select>
+
+    <!--我的历史任务-->
+    <select id="queryCloseTask" resultMap="taskResultMap">
+        SELECT
+            <include refid="taskResult"/>
+            art.START_TIME_ AS startTime,
+            art.END_TIME_ AS endTime,
+            (CASE WHEN art.ASSIGNEE_ LIKE '%_Y%' THEN 1 ELSE 2 END) AS taskState,
+            (CASE WHEN tta.assignee IS NULL THEN trt.OWNER ELSE tta.assignee_agent END) AS assigneeDelegate
+        FROM
+            act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
+            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+            LEFT JOIN t_task_agent AS tta ON art.ID_=tta.task_id
+        WHERE
+            trp.APP_KEY = #{appKey} AND (art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%') OR art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{tta.assignee_agent},#{taskState}),'%'))
+            <include refid="queryCloseCondition"/>
         ORDER BY endTime DESC
     </select>
 
@@ -196,21 +270,174 @@
     <select id="queryOpenTask" resultMap="taskResultMap">
         <if test="taskState != 1">
             SELECT
+                <include refid="taskResult"/>
+                art.CREATE_TIME_ AS startTime,
+                art.CREATE_TIME_ AS endTime,
+                0 AS asked,
+                NULL AS askId,
+                trp.CURRENT_TASK_STATUS AS taskState,
+                NULL AS askTaskKey,
+                <if test="taskAgent != null and taskAgent != ''">
+                    (CASE WHEN
+                    (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
+                    <if test="roleId != null">
+                        OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
+                    </if>)
+                    THEN #{assignee}
+                    ELSE NULL END
+                    ) AS assigneeDelegate
+                </if>
+                <if test="taskAgent == null or taskAgent == ''">
+                    NULL AS assigneeDelegate
+                </if>
+            FROM
+                act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
+                LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+                LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+                LEFT JOIN (SELECT * FROM t_ask_task tkk WHERE tkk.is_ask_end=0 ) tat ON tat.current_task_id = art.ID_
+            WHERE
+                trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
+                <if test="roleId != null">
+                    OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
+                </if>)
+                <if test="taskAgent != null and taskAgent != ''">
+                    OR
+                    <foreach collection="taskAgentList" item="item" index="index" separator="OR">
+                        ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{item.assigneeAgent},'%')
+                        <if test="roleId != null">
+                            OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${item.agentRoleId}))
+                        </if>
+                        )
+                        AND trp.proc_def_key IN (#{item.processDefinitionKey})
+                        <if test="item.agentStartDate != null">
+                            AND DATE(art.CREATE_TIME_) <![CDATA[ >= ]]> DATE(#{item.agentStartDate})
+                        </if>
+                        <if test="item.agentEndDate != null">
+                            AND DATE(art.CREATE_TIME_) <![CDATA[ <= ]]> DATE(#{item.agentEndDate})
+                        </if>)
+                    </foreach>
+                </if>
+                AND art.SUSPENSION_STATE_=1
+                <if test="procDefKey!=null and procDefKey!=''">
+                    AND arp.key_=#{procDefKey}
+                </if>
+
+                AND (tat.is_ask_end IS NULL OR tat.is_ask_end =1)
+                <include refid="queryCondition"/>
+        </if>
+        <if test="taskState == null || taskState==''">
+            UNION
+        </if>
+        <if test="taskState != 0 ">
+            SELECT DISTINCT
+              <include refid="taskAskResult"/>
+            FROM
+                act_ru_task AS art
+                LEFT JOIN t_ru_task AS trt ON art.ID_ = trt.TASK_ID
+                LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_ = ahp.PROC_INST_ID_
+                LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_ = trp.PROC_INST_ID
+                LEFT JOIN (SELECT * FROM t_ask_task ttk WHERE ttk.is_ask_end=0) tat ON tat.current_task_id = art.ID_
+            WHERE trp.APP_KEY = #{appKey}
+                AND (((tat.ask_user_id=#{assignee}) OR (tat.asked_user_id=#{assignee}))
+                <!--代理任务-->
+                <if test="taskAgent != null and taskAgent != ''">
+                    OR
+                    <foreach collection="taskAgentList" item="item" index="index" separator="OR">
+                        (tat.asked_user_id=#{item.assigneeAgent}
+                        AND trp.proc_def_key IN (#{item.processDefinitionKey})
+                        <if test="item.agentStartDate != null">
+                            AND DATE(tat.create_time) <![CDATA[ >= ]]> DATE(#{item.agentStartDate})
+                        </if>
+                        <if test="item.agentEndDate != null">
+                            AND DATE(tat.create_time) <![CDATA[ <= ]]> DATE(#{item.agentEndDate})
+                        </if>)
+                    </foreach>
+                </if>
+                )
+                <include refid="queryAskCondition"/>
+        </if>
+        ORDER BY endTime DESC
+    </select>
+
+    <!--我的待签收任务-->
+    <select id="queryClaimTask" resultMap="taskResultMap">
+        SELECT
             <include refid="taskResult"/>
             art.CREATE_TIME_ AS startTime,
-            art.CREATE_TIME_ AS endTime,
-            0 AS asked,
-            NULL AS askId,
-            trp.CURRENT_TASK_STATUS AS taskState,
-            null as askTaskKey
-            FROM
+            art.CREATE_TIME_ AS endTime
+        FROM
+            act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
+            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+        WHERE
+            trp.APP_KEY = #{appKey} AND trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId})
+            AND art.SUSPENSION_STATE_=1
+            <include refid="queryCondition"/>
+    </select>
+
+    <select id="queryProcessInstance" resultMap="processInstanceResultMap">
+        SELECT
+            ahp.ID_ AS processInstanceId,
+            ahp.NAME_ AS processInstanceName,
+            ahp.BUSINESS_KEY_ AS businessKey,
+            trp.PROC_INST_STATE AS processInstanceState,
+            trp.PROC_DEF_NAME AS processDefinitionName,
+            trp.APP_KEY AS appKey,
+            ahp.proc_def_id_ AS processDefinitionId,
+            trp.current_task_key AS currentTaskKey,
+            ahp.START_TIME_ AS startTime,
+            ahp.END_TIME_ AS endTime
+        FROM
+            act_hi_procinst AS ahp LEFT JOIN t_ru_procinst AS trp ON ahp.ID_ = trp.PROC_INST_ID
+            LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
+        WHERE
+            1=1
+            <if test="procDefKey!=null and procDefKey!=''">
+                and arp.key_=#{procDefKey}
+            </if>
+            <if test="appKey != null">
+                AND trp.APP_KEY = #{appKey}
+            </if>
+            <if test="creator != null and creator != ''">
+                AND trp.CREATOR = #{creator}
+            </if>
+            <if test="processInstanceId != null and processInstanceId != ''">
+                AND ahp.PROC_INST_ID_= #{processInstanceId}
+            </if>
+            <if test="processInstanceState != null">
+                AND trp.PROC_INST_STATE = #{processInstanceState}
+            </if>
+            <if test="processInstanceName != null and processInstanceName != ''">
+                AND ahp.NAME_ LIKE CONCAT('%',#{processInstanceName},'%')
+            </if>
+            <if test="processDefinitionName != null and processDefinitionName != ''">
+                AND arp.key_ = #{processDefinitionName}
+            </if>
+            <if test="startTimeFrom != null">
+                AND DATE(ahp.START_TIME_) &gt;= #{startTimeFrom}
+            </if>
+            <if test="startTimeSTo != null">
+                AND DATE(ahp.START_TIME_) &lt;= #{startTimeSTo}
+            </if>
+            <if test="endTimeFrom != null">
+                AND DATE(ahp.END_TIME_) &gt;= #{endTimeFrom}
+            </if>
+            <if test="endTimeTo != null">
+                AND DATE(ahp.END_TIME_) &lt;= #{endTimeTo}
+            </if>
+        ORDER BY startTime DESC
+    </select>
+
+    <!--代办任务数量-->
+    <select id="activeTaskCount" parameterType="com.hengtian.common.param.TaskQueryParam" resultType="Long">
+        SELECT
+            COUNT(DISTINCT art.ID_)
+        FROM
             act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
             LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
             LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
-            LEFT JOIN (select * from t_ask_task tkk where tkk.is_ask_end=0 ) tat
-            ON tat.current_task_id = art.ID_
-            WHERE
+        WHERE
             trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
             <if test="roleId != null">
                 OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
@@ -220,196 +447,6 @@
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key_=#{procDefKey}
             </if>
-
-            and (tat.is_ask_end is null or tat.is_ask_end =1)
-
-
             <include refid="queryCondition"/>
-        </if>
-        <if test="taskState == null || taskState==''">
-            UNION
-        </if>
-        <if test="taskState != 0 ">
-            SELECT DISTINCT
-            art.ID_ AS taskId,
-            art.NAME_ AS taskName,
-            #{assignee} AS assignee,
-            NULL AS assigneeBefore,
-            NULL AS assigneeNext,
-            trt.OWNER AS assigneeDelegate,
-            trp.CREATOR AS creatorCode,
-            trp.CREATOR_NAME AS creatorName,
-            trp.CREATOR_DEPT AS creatorDeptCode,
-            trp.CREATOR_DEPT_NAME AS creatorDeptName,
-            ahp.ID_ AS processInstanceId,
-            ahp.NAME_ AS processInstanceTitle,
-            ahp.PROC_DEF_ID_ AS processDefinitionId,
-            ahp.BUSINESS_KEY_ AS businessKey,
-            trp.PROC_DEF_NAME AS processDefinitionName,
-            trp.PROC_INST_STATE AS processInstanceState,
-            art.CREATE_TIME_ AS startTime,
-            art.CREATE_TIME_ AS endTime,
-
-            IF(tat.ask_user_id = #{assignee}, 1, 2) AS asked,
-            tat.id AS askId,
-            trp.CURRENT_TASK_STATUS AS taskState,
-            tat.ask_task_key as askTaskKey
-            FROM
-            act_ru_task AS art
-            LEFT JOIN t_ru_task AS trt ON art.ID_ = trt.TASK_ID
-            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_ = ahp.PROC_INST_ID_
-            LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_ = trp.PROC_INST_ID
-            LEFT JOIN act_re_procdef arp ON ahp.PROC_DEF_ID_ = arp.ID_
-            LEFT JOIN (select * from t_ask_task ttk where ttk.is_ask_end=0) tat ON tat.current_task_id = art.ID_
-
-            where   trp.APP_KEY = #{appKey}
-
-            AND ((tat.ask_user_id=#{assignee}) OR (tat.asked_user_id=#{assignee}))
-            <if test="procDefKey!=null and procDefKey!=''">
-                and arp.key_=#{procDefKey}
-            </if>
-            <!--任务编号-->
-            <if test="taskId != null and taskId != ''">
-                AND aht.ID_ = #{taskId}
-            </if>
-
-            <!--流程实例编号-->
-            <if test="procInstId != null and procInstId != ''">
-                AND ahp.ID_ = #{procInstId}
-            </if>
-
-            <!--任务标题-->
-            <if test="title != null and title != ''">
-                AND ahp.NAME_ LIKE CONCAT('%',#{title},'%')
-            </if>
-
-            <!--流程实例状态-->
-            <if test="procInstState != null and procInstState !=''">
-                AND trp.proc_inst_state = #{procInstState}
-            </if>
-
-            <!--流程名称-->
-            <if test="procDefName != null and procDefName != ''">
-                AND arp.key_ = #{procDefName}
-            </if>
-
-            <!--发起人-->
-            <if test="creator != null and creator !=''">
-                AND trp.CREATOR = #{creator}
-            </if>
-
-            <!--发起人部门-->
-            <if test="creatorDept != null and creatorDept != ''">
-                AND trp.CREATOR_DEPT = #{creatorDept}
-            </if>
-
-            <!--当前节点-->
-            <if test="taskName != null and taskName != ''">
-                AND aht.NAME_ LIKE CONCAT('%',#{taskName},'%')
-            </if>
-
-            <!--创建日期（从）-->
-            <if test="createTimeStart != null">
-                AND DATE(aht.START_TIME_) &gt;= #{createTimeStart}
-            </if>
-
-            <!--创建日期（到）-->
-            <if test="createTimeEnd != null">
-                AND DATE(aht.START_TIME_) &lt;= #{createTimeEnd}
-            </if>
-        </if>
-        ORDER BY endTime DESC
-    </select>
-
-    <!--我的待签收任务-->
-    <select id="queryClaimTask" resultMap="taskResultMap">
-        SELECT
-        <include refid="taskResult"/>
-        art.CREATE_TIME_ AS startTime,
-        art.CREATE_TIME_ AS endTime
-        FROM
-        act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-        LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-        LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
-        WHERE
-        trp.APP_KEY = #{appKey} AND trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId})
-        AND art.SUSPENSION_STATE_=1
-        <include refid="queryCondition"/>
-    </select>
-
-    <select id="queryProcessInstance" resultMap="processInstanceResultMap">
-        SELECT
-        ahp.ID_ AS processInstanceId,
-        ahp.NAME_ AS processInstanceName,
-        ahp.BUSINESS_KEY_ AS businessKey,
-        trp.PROC_INST_STATE AS processInstanceState,
-        trp.PROC_DEF_NAME AS processDefinitionName,
-        trp.APP_KEY AS appKey,
-        ahp.proc_def_id_ AS processDefinitionId,
-        trp.current_task_key AS currentTaskKey,
-        ahp.START_TIME_ AS startTime,
-        ahp.END_TIME_ AS endTime
-        FROM
-        act_hi_procinst AS ahp LEFT JOIN t_ru_procinst AS trp ON ahp.ID_ = trp.PROC_INST_ID
-        LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
-        WHERE
-        1=1
-        <if test="procDefKey!=null and procDefKey!=''">
-            and arp.key_=#{procDefKey}
-        </if>
-        <if test="appKey != null">
-            AND trp.APP_KEY = #{appKey}
-        </if>
-        <if test="creator != null and creator != ''">
-            AND trp.CREATOR = #{creator}
-        </if>
-        <if test="processInstanceId != null and processInstanceId != ''">
-            AND ahp.PROC_INST_ID_= #{processInstanceId}
-        </if>
-        <if test="processInstanceState != null">
-            AND trp.PROC_INST_STATE = #{processInstanceState}
-        </if>
-        <if test="processInstanceName != null and processInstanceName != ''">
-            AND ahp.NAME_ LIKE CONCAT('%',#{processInstanceName},'%')
-        </if>
-        <if test="processDefinitionName != null and processDefinitionName != ''">
-            AND arp.key_ = #{processDefinitionName}
-        </if>
-        <if test="startTimeFrom != null">
-            AND DATE(ahp.START_TIME_) &gt;= #{startTimeFrom}
-        </if>
-        <if test="startTimeSTo != null">
-            AND DATE(ahp.START_TIME_) &lt;= #{startTimeSTo}
-        </if>
-        <if test="endTimeFrom != null">
-            AND DATE(ahp.END_TIME_) &gt;= #{endTimeFrom}
-        </if>
-        <if test="endTimeTo != null">
-            AND DATE(ahp.END_TIME_) &lt;= #{endTimeTo}
-        </if>
-        ORDER BY startTime DESC
-    </select>
-
-    <!--代办任务数量-->
-    <select id="activeTaskCount" parameterType="com.hengtian.common.param.TaskQueryParam" resultType="Long">
-        SELECT
-        COUNT(DISTINCT art.ID_)
-        FROM
-        act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-        LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-        LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
-        LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
-
-        WHERE
-        trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
-        <if test="roleId != null">
-            OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
-        </if>
-        )
-        AND art.SUSPENSION_STATE_=1
-        <if test="procDefKey!=null and procDefKey!=''">
-            and arp.key_=#{procDefKey}
-        </if>
-        <include refid="queryCondition"/>
     </select>
 </mapper>
