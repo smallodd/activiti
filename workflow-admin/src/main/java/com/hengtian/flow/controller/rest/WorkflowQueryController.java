@@ -160,7 +160,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         if(StringUtils.isNotBlank(taskQueryParam.getTaskState())){
-            if(!(TaskStatusEnum.UNFINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState()) && !(TaskStatusEnum.UNFINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())){
+            if(!(TaskStatusEnum.UNFINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState()) && !(TaskStatusEnum.UNFINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())&&!(TaskStatusEnum.UNFINISHED_ASKED.status+"").equals(taskQueryParam.getTaskState())){
                 logger.info("审批人状态不正确，重置为空");
                 taskQueryParam.setTaskState("");
             }
