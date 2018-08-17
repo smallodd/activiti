@@ -206,7 +206,6 @@
                 LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
                 LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
                 LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
-                LEFT JOIN t_ask_task tat on tat.current_task_id=art.ID_
                 LEFT JOIN (select * from t_ask_task tkk where tkk.is_ask_end=0 ) tat
                 ON tat.current_task_id = art.ID_
             WHERE
