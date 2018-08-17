@@ -23,7 +23,9 @@ import com.hengtian.common.utils.BeanUtils;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.CreateCmd;
+import com.hengtian.common.workflow.cmd.DestoryExecutionCmd;
 import com.hengtian.common.workflow.cmd.JumpCmd;
+import com.hengtian.common.workflow.cmd.TaskJumpCmd;
 import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
@@ -174,7 +176,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     if(count>0){
                         log.info("{}有存在未设置审批人的节点",processParam.getProcessDefinitionKey());
                         result.setCode(Constant.TASK_NOT_SET_APPROVER);
-                        result.setMsg("节点有存在未设置审批人");
+                        result.setMsg("启动流程失败：存在未设置审批人的节点");
                         result.setSuccess(false);
                         return result;
                     }
@@ -208,7 +210,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
                     if(tUserTask == null){
                         log.info("设置审批人异常");
-                        throw new WorkFlowException("设置审批人异常：未设置审批人");
+                        throw new WorkFlowException("启动流程失败：未设置审批人");
                     }
                     //将流程创建人暂存到expr字段
                     tUserTask.setExpr(creator);
@@ -366,7 +368,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             String assignee = null;
             //生成扩展任务信息
             if(needSetNext && assigneeTempMap != null && assigneeTempMap.size() > 0){
-                log.info("手动设置审批人，前段传来参数：{}",assigneeTempMap);
+                log.info("手动设置审批人，前端传来参数：{}",JSONObject.toJSONString(assigneeTempMap));
                 //需手动设置审批人，不从流程配置表中设置
                 Set<String> keySet = assigneeTempMap.keySet();
                 for(String key : keySet){
@@ -381,7 +383,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTask.setProcInstId(task.getProcessInstanceId());
                     tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
                     tRuTask.setTaskDefName(task.getName());
-                    tRuTask.setAssigneeType(tUserTask.getAssignType());
+                    //tRuTask.setAssigneeType(tUserTask.getAssignType());
+                    //指派的任务，assigneeType由角色改为人员
+                    tRuTask.setAssigneeType(AssignTypeEnum.PERSON.code);
                     tRuTask.setOwner(task.getOwner());
                     tRuTask.setTaskType(tUserTask.getTaskType());
                     ruTaskList.add(tRuTask);
@@ -499,6 +503,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         if(CollectionUtils.isNotEmpty(ruTaskList)){
+            log.info("审批插入t_ru_task数据：{}", JSONObject.toJSONString(ruTaskList));
             return tRuTaskService.insertBatch(ruTaskList);
         }
         log.info("设置审批人结束");
@@ -515,6 +520,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Object approveTask(Task task, TaskParam taskParam){
+        //现阶段只开放影响分支的跳转
+        taskParam.setJumpType(1);
         log.info("审批接口进入，传入参数taskParam{}", JSONObject.toJSONString(taskParam));
         Result result = new Result();
         if(StringUtils.isBlank(taskParam.getAssignee())){
@@ -575,7 +582,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //设置下步审批人
         Map<String, Map<String,AssigneeTemp>> assigneeMap = Maps.newHashMap();
         if(CommonEnum.OTHER.value.equals(tUserTask.getNeedSetNext()) && taskParam.getPass() == TaskStatusEnum.COMPLETE_AGREE.status){
-            result = setNextAssigneeTemp(task, taskParam.getAssigneeNext(), task.getProcessInstanceId(), taskParam.getAssignee(), tUserTask.getTaskDefKey(), processDefinition.getVersion(), assigneeMap);
+            result = setNextAssigneeTemp(task, processDefinition.getKey(), taskParam.getAssigneeNext(), task.getProcessInstanceId(), taskParam.getAssignee(), tUserTask.getTaskDefKey(), processDefinition.getVersion(), assigneeMap);
             if(!result.isSuccess()){
                 log.info("设置下一审批人失败，{}",JSONObject.toJSONString(result));
                 return result;
@@ -749,7 +756,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
         }
 
-        repairNextTaskNode(task,execution);
+        //修复异常节点
+        if(1 == taskParam.getJumpType()){
+            //跳转影响并行分支
+            repairExceptionTaskNode(task);
+        }else {
+            //跳转不影响并行分支
+            repairNextTaskNode(task,execution);
+        }
 
         List<Task> resultList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
         if(CollectionUtils.isEmpty(resultList)){
@@ -805,10 +819,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             w.eq("proc_inst_id", task.getProcessInstanceId());
             ruProcinstService.update(ruProcinst, w);
         }
-
+        EntityWrapper wrapp=new EntityWrapper();
+        wrapp.eq("proc_inst_id",task.getProcessInstanceId());
+        RuProcinst ruProcinst=ruProcinstService.selectOne(wrapp);
         result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(resultList)));
         result.setSuccess(true);
         result.setCode(CodeConts.SUCCESS);
+        if(ruProcinst==null){
+            result.setEnd(false);
+        }else {
+            result.setEnd("1".equals(ruProcinst.getProcInstState()));
+        }
         result.setMsg("任务已办理成功");
         return result;
     }
@@ -836,7 +857,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public void repairNextTaskNode(Task t,Execution execution) {
         EntityWrapper ew = new EntityWrapper();
         ew.where("status={0}", -2).andNew("proc_inst_id={0}", t.getProcessInstanceId());
-        TRuTask tRuTask = tRuTaskService.selectOne(ew);
+        List<TRuTask> tRuTasks = tRuTaskService.selectList(ew);
         String notDelete = "";
         List<String> talist= getNextTaskDefinitionKeys(t,false);
 
@@ -875,8 +896,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         //处理删除由于跳转/拿回产生冗余的数据
         if (CollectionUtils.isNotEmpty(exlist)) {
 
-            if (tRuTask != null) {
-                HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tRuTask.getTaskId()).singleResult();
+            if (tRuTasks != null&&tRuTasks.size()>0) {
+                HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tRuTasks.get(0).getTaskId()).singleResult();
                 List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().executionId(taskInstance.getExecutionId()).orderByTaskCreateTime().asc().list();
                 notDelete +=","+ list.get(0).getTaskDefinitionKey();
 
@@ -895,7 +916,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     String newDate = (task == null ? "" : sdf.format(task.getCreateTime()));
                     if (notDelete.contains(tas.getTaskDefinitionKey()) ){
                         continue;
-                    }else if(tRuTask != null && olde.equals(newDate)) {
+                    }else if(tRuTasks != null&&tRuTasks.size()>0 && olde.equals(newDate)) {
                         TaskEntity entity = (TaskEntity) taskService.createTaskQuery().taskId(tas.getId()).singleResult();
 
                         entity.setExecutionId(null);
@@ -903,12 +924,94 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         taskService.deleteTask(entity.getId(), true);
 
                         EntityWrapper ewe = new EntityWrapper();
-                        ewe.where("task_id={0}", tRuTask.getTaskId()).andNew("status={0}", -2);
+                        ewe.where("task_id={0}", tRuTasks.get(0).getTaskId()).andNew("status={0}", -2);
                         tRuTaskService.delete(ewe);
                     }
                 }
             }
         }
+    }
+
+
+    /**
+     * 处理由于跳转产生的异常节点任务，影响分支
+     * @author houjinrong@chtwm.com
+     * date 2018/5/3 16:49
+     */
+    public void repairExceptionTaskNode(Task task) {
+        //获取下一步节点KEY集合
+        List<String> nextTaskDefKeyList = getNextTaskDefinitionKeys(task,false);
+        List<Task> nextTaskList = Lists.newArrayList();
+
+        //获取与当前节点下步节点的所有上步节点
+        if(CollectionUtils.isNotEmpty(nextTaskDefKeyList)){
+            List<String> beforeTaskDefKeyList = Lists.newArrayList();
+            for(String taskDefKey : nextTaskDefKeyList){
+                beforeTaskDefKeyList.addAll(findBeforeTask(taskDefKey,task.getProcessInstanceId(),task.getProcessDefinitionId(),true));
+            }
+            List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
+            boolean isCreate = true;
+            if(CollectionUtils.isNotEmpty(beforeTaskDefKeyList)){
+
+                if(CollectionUtils.isNotEmpty(taskList)){
+                    for(Task t : taskList){
+                        if(beforeTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                            isCreate = false;
+                        }
+                        if(isCreate && nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                            nextTaskList.add(t);
+                        }
+                    }
+                }
+            }
+            if(isCreate && CollectionUtils.isEmpty(nextTaskList)) {
+                for(String taskDefKey : nextTaskDefKeyList){
+                    long count = historyService.createHistoricActivityInstanceQuery().processInstanceId(task.getProcessInstanceId()).activityId(taskDefKey).finished().count();
+                    if (count >= 1) {
+                        managementService.executeCommand(new CreateCmd(task.getExecutionId(), taskDefKey));
+                    }
+                }
+            }else {
+                boolean b1  = false;
+                boolean b2 = false;
+
+                for(Task t : taskList){
+                    //判断下一步审批任务中包含正在审批的任务
+                    if(!b1 && nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                        b1 = true;
+                    }
+                    //判断上一步审批任务中包含正在处理的任务
+                    if(!b2 && beforeTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                        b2 = true;
+                    }
+                    if(b1 && b2){
+                        break;
+                    }
+                }
+                //当前任务如存在上个节点的信息，并且也存在下个节点的信息 则删除下个节点列表中在当前任务存在的
+                if(b1 && b2){
+                    List<ExecutionEntity> executionEntityList=new ArrayList<>();
+                    for(Task t : taskList){
+                        if(nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                            TaskEntity entity = (TaskEntity)t;
+                            ExecutionEntity enti= (ExecutionEntity) runtimeService.createExecutionQuery().executionId(t.getExecutionId()).singleResult();
+                            executionEntityList.add(enti);
+
+                            entity.setExecutionId(null);
+                            taskService.saveTask(entity);
+                            taskService.deleteTask(entity.getId(), true);
+                            historyService.deleteHistoricTaskInstance(entity.getId());
+
+
+                        }
+                    }
+                    if(executionEntityList.size()>0) {
+                        managementService.executeCommand(new DestoryExecutionCmd(executionEntityList));
+                    }
+                }
+            }
+        }
+
     }
 
     /**
@@ -1003,8 +1106,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     }
 
     /**
-     * todo 初始化任务属性值
-     * 跳转 管理员权限不受限制，可以任意跳转到已完成任务节点
+     * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
+     * (跳转旧方法，改跳转方法不影响分支，暂时废弃以待他用)
      *
      * @param userId           操作人ID
      * @param taskId           任务ID
@@ -1015,12 +1118,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result taskJump(String userId, String taskId, String targetTaskDefKey) {
+    public Result taskJumpOld(String userId, String taskId, String targetTaskDefKey) {
         log.info("跳转任务开始，入参：userId:{},taskId:{},targetTaskDefKey:{}",userId,taskId,targetTaskDefKey);
+
         //根据要跳转的任务ID获取其任务
         HistoricTaskInstance hisTask = historyService
                 .createHistoricTaskInstanceQuery().taskId(taskId)
                 .singleResult();
+        TaskEntity taskEntity= (TaskEntity) taskService.createTaskQuery().taskId(taskId).singleResult();
         Integer appkey= (Integer) runtimeService.getVariable(hisTask.getExecutionId(),"appKey");
         //进而获取流程实例
         ProcessInstance instance = runtimeService
@@ -1033,6 +1138,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         ActivityImpl hisActivity = definition.findActivity(targetTaskDefKey);
         //实现跳转
         ExecutionEntity e = managementService.executeCommand(new JumpCmd(hisTask.getExecutionId(), hisActivity.getId()));
+
+
+//        taskEntity.setExecutionId(null);
+//        taskService.saveTask(taskEntity);
+        taskService.deleteTask(taskEntity.getId(), false);
+
 
         TRuTask tRuTask=new TRuTask();
         EntityWrapper en=new EntityWrapper();
@@ -1084,6 +1195,120 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
         }
        Task task= taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(targetTaskDefKey).singleResult();
+        log.info("跳转成功");
+        Result result=new Result(true,Constant.SUCCESS,"跳转成功");
+        if(task!=null) {
+            result.setObj(setButtons(TaskNodeResult.toTaskNodeResult(task)));
+        }
+        return result;
+    }
+
+    /**
+     * 【任务跳转】 管理员权限不受限制，可以任意跳转到已完成任务节点
+     * （跳转到指定节点，删除指定节点后所有节点任务。从指定节点开始重新流转，不影响于指定节点同级的节点任务重复审批）
+     * @param userId           操作人ID
+     * @param taskId           任务ID
+     * @param targetTaskDefKey 跳转到的任务节点KEY
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/9 19:45
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result taskJump(String userId, String taskId, String targetTaskDefKey) {
+        log.info("跳转任务开始，入参：userId:{},taskId:{},targetTaskDefKey:{}",userId,taskId,targetTaskDefKey);
+        //根据要跳转的任务ID获取其任务
+        HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+        if(hisTask == null){
+            return new Result("任务ID【"+taskId+"】没有对应的任务");
+        }
+
+        //创建目标节点任务
+        //取得流程定义
+        ProcessDefinitionEntity definition = (ProcessDefinitionEntity) repositoryService.getProcessDefinition(hisTask.getProcessDefinitionId());
+        //获取历史任务的Activity
+        ActivityImpl hisActivity = definition.findActivity(targetTaskDefKey);
+        //实现跳转
+        ExecutionEntity e = managementService.executeCommand(new TaskJumpCmd(hisTask.getProcessInstanceId(), hisTask.getExecutionId(), hisActivity.getId()));
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).orderByTaskCreateTime().desc().list();
+        Set<String> deleteTaskSet = Sets.newHashSet();
+
+        if(CollectionUtils.isNotEmpty(taskList)){
+            List<String> nextTaskDefKeys = findNextTaskDefKeys(taskList.get(0), true);
+            historyService.deleteHistoricTaskInstance(taskId);
+            for(Task t : taskList){
+                if(!t.getTaskDefinitionKey().equals(targetTaskDefKey) && nextTaskDefKeys.contains(t.getTaskDefinitionKey())) {
+                    TaskEntity entity = (TaskEntity) taskService.createTaskQuery().taskId(t.getId()).singleResult();
+                    entity.setExecutionId(null);
+                    taskService.saveTask(entity);
+                    taskService.deleteTask(entity.getId(), true);
+
+                    historyService.deleteHistoricTaskInstance(entity.getId());
+                    deleteTaskSet.add(t.getId());
+                }
+            }
+
+            List<Execution> exeList = runtimeService.createExecutionQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
+            List<ExecutionEntity> executionEntityList = Lists.newArrayList();
+            if(CollectionUtils.isNotEmpty(exeList)){
+                for(Execution execution : exeList){
+                    if(!execution.getId().equals(e.getId()) && StringUtils.isNotBlank(execution.getParentId()) && nextTaskDefKeys.contains(execution.getActivityId())){
+                        ExecutionEntity executionEntity = (ExecutionEntity)execution;
+                        executionEntityList.add(executionEntity);
+                    }
+                }
+                managementService.executeCommand(new DestoryExecutionCmd(executionEntityList));
+            }
+        }
+
+        //删除t_ru_task对应的数据记录
+        EntityWrapper wrapper = new EntityWrapper();
+        if(CollectionUtils.isNotEmpty(deleteTaskSet)){
+            wrapper.in("task_id",deleteTaskSet);
+            tRuTaskService.delete(wrapper);
+        }
+
+        Integer appKey = (Integer) runtimeService.getVariable(hisTask.getExecutionId(),"appKey");
+        wrapper = new EntityWrapper();
+        wrapper.where("app_key={0}",appKey).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
+        RuProcinst ruProcinst=ruProcinstService.selectOne(wrapper);
+        if(ruProcinst==null){
+            log.info("跳转失败，t_ru_procinst表中不存在流程实例id"+hisTask.getProcessInstanceId());
+            return new Result(true,Constant.FAIL,"跳转失败，t_ru_procinst表中不存在流程实例id"+hisTask.getProcessInstanceId());
+        }
+        RuProcinst ruPr=new RuProcinst();
+
+        if(StringUtils.isBlank(ruProcinst.getCurrentTaskKey())){
+            ruPr.setCurrentTaskKey(targetTaskDefKey);
+        }else{
+            if(ruProcinst.getCurrentTaskKey().contains(hisTask.getTaskDefinitionKey())){
+                ruPr.setCurrentTaskKey(ruProcinst.getCurrentTaskKey().replace(hisTask.getTaskDefinitionKey(),targetTaskDefKey));
+            }else{
+                ruPr.setCurrentTaskKey(ruProcinst.getCurrentTaskKey()+","+targetTaskDefKey);
+            }
+        }
+        wrapper = new EntityWrapper();
+        wrapper.where("app_key={0}",appKey).andNew("proc_inst_id={0}",hisTask.getProcessInstanceId());
+        ruProcinstService.update(ruPr,wrapper);
+        boolean customApprover = (boolean) runtimeService.getVariable(hisTask.getProcessInstanceId(), ConstantUtils.SET_ASSIGNEE_FLAG);
+
+        if (!customApprover) {
+            List<TaskEntity> tasks = e.getTasks();
+            //设置审批人
+            log.info("工作流平台设置审批人");
+            for (int i = 0; i < tasks.size(); i++) {
+                Task task = tasks.get(i);
+                if (task.getTaskDefinitionKey().equals(targetTaskDefKey)) {
+                    taskId += task.getId();
+                    EntityWrapper entityWrapper = new EntityWrapper();
+                    entityWrapper.where("proc_def_key={0}", definition.getKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", definition.getVersion());
+                    //查询当前任务任务节点信息
+                    TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+                    boolean flag = setAssignee(task, tUserTask);
+                }
+            }
+        }
+        Task task = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).taskDefinitionKey(targetTaskDefKey).singleResult();
         log.info("跳转成功");
         Result result=new Result(true,Constant.SUCCESS,"跳转成功");
         if(task!=null) {
@@ -1378,14 +1603,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/4/18 16:01
      */
     @Override
-    public Result taskRollback(String userId, String taskId) {
-        List<String> taskDefKeysForRollback = getTaskDefKeysForRollback(taskId);
-        if (CollectionUtils.isEmpty(taskDefKeysForRollback)) {
-            return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
+    public Result taskRollback(String userId, String taskId, String targetTaskDefKey) {
+        if(StringUtils.isNotBlank(targetTaskDefKey)){
+            return taskJump(userId, taskId, targetTaskDefKey);
+        }else{
+            List<String> taskDefKeysForRollback = getTaskDefKeysForRollback(taskId);
+            if (CollectionUtils.isEmpty(taskDefKeysForRollback)) {
+                return new Result(false, ResultEnum.TASK_ROLLBACK_FORBIDDEN.code, ResultEnum.TASK_ROLLBACK_FORBIDDEN.msg);
+            }
+            for (String taskDefKey : taskDefKeysForRollback) {
+                taskJump(userId, taskId, taskDefKey);
+            }
         }
-        for (String taskDefKey : taskDefKeysForRollback) {
-            taskJump(userId, taskId, taskDefKey);
-        }
+
         return new Result(true, ResultEnum.SUCCESS.code, ResultEnum.SUCCESS.msg);
     }
 
@@ -1553,17 +1783,43 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
             t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
+            if(t.getAsked()==2){
+                t.setAsked(1);
+              List<HistoricTaskInstance> li=  historyService.createHistoricTaskInstanceQuery().processInstanceId(t.getProcessInstanceId()).taskDefinitionKey(t.getAskTaskKey()).orderByTaskCreateTime().desc().list();
+              if(li!=null&&li.size()>0){
+                  t.setTaskId(li.get(0).getId());
+                  t.setTaskName(li.get(0).getName());
+              }
+            }
+            logger.info("任务ID【"+t.getTaskId()+"】的对应的上步审批人为【"+t.getAssigneeBefore()+"】");
             if(StringUtils.isNotBlank(t.getAssigneeBefore())) {
                 String[] assigneeBefore = t.getAssigneeBefore().split(",");
                 Set<String> assigneeNameSet = Sets.newHashSet();
                 for (String assign : assigneeBefore){
-                    RbacUser rbacUser = userService.getUserById(assign);
-                    assigneeNameSet.add(rbacUser.getName());
+                    if(StringUtils.isNotBlank(assign)){
+                        RbacUser rbacUser = userService.getUserById(assign);
+                        if(rbacUser != null){
+                            logger.info("【"+assign+"】：【"+rbacUser.getName()+"】");
+                            assigneeNameSet.add(rbacUser.getName());
+                        }else{
+                            logger.info("工号【"+assign+"】找不到对应的用户信息");
+                            assigneeNameSet.add(assign);
+                        }
+                    }
                 }
 
                 t.setAssigneeBeforeName(StringUtils.join(assigneeNameSet, ","));
+            }else{
+                //发生跳转，问询等打断流程的操作，上一步操作人从操作记录表中获取
+                TWorkDetail tWorkDetail = workDetailService.queryLastInfo(t.getProcessInstanceId());
+                if(tWorkDetail != null){
+                    RbacUser rbacUser = userService.getUserById(tWorkDetail.getOperator());
+                    if(rbacUser != null){
+                        t.setAssigneeBefore(tWorkDetail.getOperator());
+                        t.setAssigneeBeforeName(rbacUser.getName());
+                    }
+                }
             }
-
         }
         pageInfo.setRows(list);
         pageInfo.setTotal(page.getTotal());

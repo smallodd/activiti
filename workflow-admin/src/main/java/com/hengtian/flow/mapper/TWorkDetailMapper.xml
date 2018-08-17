@@ -9,4 +9,8 @@
             </if>
         </where>
     </select>
+
+    <select id="queryLastInfo" resultType="com.hengtian.flow.model.TWorkDetail">
+        SELECT * FROM t_work_detail WHERE proc_inst_id=#{processInstanceId} ORDER BY create_time DESC LIMIT 1
+    </select>
 </mapper>

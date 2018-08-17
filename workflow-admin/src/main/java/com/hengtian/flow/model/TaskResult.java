@@ -99,13 +99,25 @@ public class TaskResult {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date endTime;
     /**
-     * 是否是意见征询的任务
+     * 是否是意见征询的任务 0-待审批任务；1-意见征询任务
      */
     private int asked;
     /**
      * 意见征询主键
      */
     private String askId;
+    /**
+     * 被意见征询的节点
+     */
+    private String  askTaskKey;
+
+    public String getAskTaskKey() {
+        return askTaskKey;
+    }
+
+    public void setAskTaskKey(String askTaskKey) {
+        this.askTaskKey = askTaskKey;
+    }
 
     public String getAssigneeName() {
         return assigneeName;

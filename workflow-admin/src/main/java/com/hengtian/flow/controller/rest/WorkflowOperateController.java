@@ -480,6 +480,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             }
             TaskAdapter taskAdapter = new TaskAdapter();
             try {
+                List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskActionParam.getTaskId()).orderByTaskCreateTime().desc().list();
                 Result result = taskAdapter.taskAction(taskActionParam);
                 //存储操作记录
                 if(result.isSuccess()){
@@ -495,7 +496,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     }else{
                         tWorkDetail.setAprroveInfo(TaskActionEnum.getDesc(taskActionParam.getActionType()));
                     }
-                    List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskActionParam.getTaskId()).orderByTaskCreateTime().desc().list();
+
                     tWorkDetail.setOperateAction(TaskActionEnum.getDesc(taskActionParam.getActionType()));
                     tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
                     tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
