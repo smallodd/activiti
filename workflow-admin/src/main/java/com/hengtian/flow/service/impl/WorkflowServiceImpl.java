@@ -500,6 +500,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         if(CollectionUtils.isNotEmpty(ruTaskList)){
+            log.info("审批插入t_ru_task数据：{}", JSONObject.toJSONString(ruTaskList));
             return tRuTaskService.insertBatch(ruTaskList);
         }
         log.info("设置审批人结束");
