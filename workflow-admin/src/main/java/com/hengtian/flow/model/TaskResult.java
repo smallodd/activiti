@@ -106,6 +106,18 @@ public class TaskResult {
      * 意见征询主键
      */
     private String askId;
+    /**
+     * 被意见征询的节点
+     */
+    private String  askTaskKey;
+
+    public String getAskTaskKey() {
+        return askTaskKey;
+    }
+
+    public void setAskTaskKey(String askTaskKey) {
+        this.askTaskKey = askTaskKey;
+    }
 
     public String getAssigneeName() {
         return assigneeName;
