@@ -389,8 +389,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     /**
      * 流程定义列表
      * @param appKey 应用系统KEY
-     * @param processDefinitionKey 流程定义KEY
-     * @param processDefinitionName 流程定义名称
+     * @param nameOrKey 流程定义KEY/流程定义名称
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/8/15 17:39
