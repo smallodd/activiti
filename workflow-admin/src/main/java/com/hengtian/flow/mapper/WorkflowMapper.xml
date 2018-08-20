@@ -111,7 +111,7 @@
             <include refid="taskResult"/>
             art.CREATE_TIME_ AS startTime,
             art.CREATE_TIME_ AS endTime,
-           trp.CURRENT_TASK_STATUS AS taskState
+            trp.CURRENT_TASK_STATUS AS taskState
         FROM
             act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
             LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
@@ -270,7 +270,7 @@
             </if>
             <!--任务编号-->
             <if test="taskId != null and taskId != ''">
-                AND aht.ID_ = #{taskId}
+                AND art.ID_ = #{taskId}
             </if>
 
             <!--流程实例编号-->
@@ -305,17 +305,17 @@
 
             <!--当前节点-->
             <if test="taskName != null and taskName != ''">
-                AND aht.NAME_ LIKE CONCAT('%',#{taskName},'%')
+                AND art.NAME_ LIKE CONCAT('%',#{taskName},'%')
             </if>
 
             <!--创建日期（从）-->
             <if test="createTimeStart != null">
-                AND DATE(aht.START_TIME_) &gt;= #{createTimeStart}
+                AND DATE(art.START_TIME_) &gt;= #{createTimeStart}
             </if>
 
             <!--创建日期（到）-->
             <if test="createTimeEnd != null">
-                AND DATE(aht.START_TIME_) &lt;= #{createTimeEnd}
+                AND DATE(art.START_TIME_) &lt;= #{createTimeEnd}
             </if>
         </if>
         ORDER BY endTime DESC
