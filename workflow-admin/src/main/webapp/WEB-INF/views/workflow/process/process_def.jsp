@@ -33,6 +33,11 @@
         <a onclick="processDefDeployFun();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-upload icon-green'">流程部署</a>
     </shiro:hasPermission>
 </div>
+<div id="configSelect">
+    <input type="hidden" id="processDefinitionId"/>
+    <a id="btn1" href="javascript:configAssigneeFun_(1)" class="easyui-linkbutton" data-options="iconCls:'fi-widget'" style="margin: 10px;width: 120px;height: 50px;">标准设置</a>
+    <a id="btn2" href="javascript:configAssigneeFun_(2)" class="easyui-linkbutton" data-options="iconCls:'fi-wrench'" style="margin: 10px;width: 120px;height: 50px;">快速设置</a>
+</div>
 <script type="text/javascript">
     var processDefDataGrid;
     $(function() {
@@ -146,21 +151,46 @@
             }
         });
     }
+
     /**
-     * 设定人员
+     * 设定人员-选择
      */
-    function configAssigneeFun(id) {
-        if (id == undefined) {
+    function configAssigneeFun(processDefinitionId) {
+        if (processDefinitionId == undefined) {
             var rows = processDefDataGrid.datagrid('getSelections');
-            id = rows[0].id;
+            processDefinitionId = rows[0].id;
         } else {
             processDefDataGrid.datagrid('unselectAll').datagrid('uncheckAll');
         }
+        $("#processDefinitionId").val(processDefinitionId);
+
+        $.post("${ctx}/assignee/config/type?processDefinitionId=" + processDefinitionId, function(result){
+            if(JSON.stringify(result) > 0){
+                configAssigneeFun_(3);
+            }else{
+                $("#configSelect").dialog({
+                    title : '设定人员选择',
+                    width : 300,
+                    height : 120,
+                });
+            }
+        });
+    }
+
+    /**
+     * 设定人员
+     */
+    function configAssigneeFun_(type) {
+        if(1==type || 2==type){
+            $("#configSelect").dialog("close");
+        }
+
+        var processDefinitionId = $("#processDefinitionId").val();
         parent.$.modalDialog({
             title : '设定人员',
             width : 960,
             height : 450,
-            href :  '${ctx}/assignee/config/page/' + id,
+            href :  '${ctx}/assignee/config/page/' + processDefinitionId+"?type="+type,
             buttons : [ {
                 text : '确定',
                 handler : function() {
@@ -168,7 +198,7 @@
                     var f = parent.$.modalDialog.handler.find('#configAssigneeForm');
                     f.submit();
                 }
-            } ]
+            }]
         });
     }
 
