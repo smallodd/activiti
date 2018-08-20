@@ -310,12 +310,12 @@
 
             <!--创建日期（从）-->
             <if test="createTimeStart != null">
-                AND DATE(art.START_TIME_) &gt;= #{createTimeStart}
+                AND DATE(art.CREATE_TIME_) &gt;= #{createTimeStart}
             </if>
 
             <!--创建日期（到）-->
             <if test="createTimeEnd != null">
-                AND DATE(art.START_TIME_) &lt;= #{createTimeEnd}
+                AND DATE(art.CREATE_TIME_) &lt;= #{createTimeEnd}
             </if>
         </if>
         ORDER BY endTime DESC
