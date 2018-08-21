@@ -18,7 +18,6 @@ import com.hengtian.flow.service.WorkflowService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.Model;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -226,12 +225,6 @@ public class WorkflowActionController extends BaseController {
         wrapper.where("task_id={0}",taskId);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
 
-        //查看审批人是否有权限
-        TRuTask ruTask = workflowService.validateTaskAssignee(task, assignee, tRuTasks);
-        if(ruTask == null){
-            return renderError("该用户没有操作此任务的权限");
-        }
-
         if(CollectionUtils.isEmpty(tRuTasks)){
             return renderError(ResultEnum.TASK_ASSIGNEE_ILLEGAL.msg, ResultEnum.TASK_ASSIGNEE_ILLEGAL.code) ;
         }
@@ -244,7 +237,9 @@ public class WorkflowActionController extends BaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg,ResultEnum.PARAM_ERROR.code);
         }
 
-
+        if(StringUtils.isNotBlank(assignee) && assignee.contains(":")){
+            assignee = assignee.split(":")[1];
+        }
         taskParam.setAssignee(assignee);
 
         taskParam.setComment("【管理员代办】"+commentContent);
