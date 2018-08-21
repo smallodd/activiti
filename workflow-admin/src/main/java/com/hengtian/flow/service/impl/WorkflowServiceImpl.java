@@ -1483,6 +1483,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         askTask.setAskUserId(userId);
         askTask.setAskComment(commentResult);
         askTask.setAskedUserId(askedUserId);
+
+        List<HistoricTaskInstance> hisTaskList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(targetTaskDefKey).finished().orderByHistoricTaskInstanceEndTime().desc().list();
+        if(CollectionUtils.isNotEmpty(hisTaskList)){
+            askTask.setAskedTaskId(hisTaskList.get(0).getId());
+        }
         boolean success = tAskTaskService.insert(askTask);
         if (!success) {
             log.info("意见征询失败");

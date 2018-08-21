@@ -67,8 +67,8 @@
         ahp.BUSINESS_KEY_ AS businessKey,
         trp.PROC_DEF_NAME AS processDefinitionName,
         trp.PROC_INST_STATE AS processInstanceState,
-        art.CREATE_TIME_ AS startTime,
-        art.CREATE_TIME_ AS endTime,
+        art.START_TIME_ AS startTime,
+        art.END_TIME_ AS endTime,
         IF(tat.ask_user_id = #{assignee}, 1, 2) AS asked,
         tat.id AS askId,
         trp.CURRENT_TASK_STATUS AS taskState,
@@ -134,7 +134,7 @@
         </if>
         <!--任务编号-->
         <if test="taskId != null and taskId != ''">
-            AND aht.ID_ = #{taskId}
+            AND art.ID_ = #{taskId}
         </if>
         <!--流程实例编号-->
         <if test="procInstId != null and procInstId != ''">
@@ -162,15 +162,15 @@
         </if>
         <!--当前节点-->
         <if test="taskName != null and taskName != ''">
-            AND aht.NAME_ LIKE CONCAT('%',#{taskName},'%')
+            AND art.NAME_ LIKE CONCAT('%',#{taskName},'%')
         </if>
         <!--创建日期（从）-->
         <if test="createTimeStart != null">
-            AND DATE(aht.START_TIME_) &gt;= #{createTimeStart}
+            AND DATE(art.START_TIME_) &gt;= #{createTimeStart}
         </if>
         <!--创建日期（到）-->
         <if test="createTimeEnd != null">
-            AND DATE(aht.START_TIME_) &lt;= #{createTimeEnd}
+            AND DATE(art.START_TIME_) &lt;= #{createTimeEnd}
         </if>
     </sql>
 
@@ -328,15 +328,15 @@
         <if test="taskState == null || taskState==''">
             UNION
         </if>
+        <!--意见征询-->
         <if test="taskState != 0 ">
             SELECT DISTINCT
-              <include refid="taskAskResult"/>
+                <include refid="taskAskResult"/>
             FROM
-                act_ru_task AS art
+                (SELECT * FROM t_ask_task ttk WHERE ttk.is_ask_end=0) tat LEFT JOIN act_hi_taskinst AS art ON tat.asked_task_id = art.ID_
                 LEFT JOIN t_ru_task AS trt ON art.ID_ = trt.TASK_ID
                 LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_ = ahp.PROC_INST_ID_
                 LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_ = trp.PROC_INST_ID
-                LEFT JOIN (SELECT * FROM t_ask_task ttk WHERE ttk.is_ask_end=0) tat ON tat.current_task_id = art.ID_
             WHERE trp.APP_KEY = #{appKey}
                 AND (((tat.ask_user_id=#{assignee}) OR (tat.asked_user_id=#{assignee}))
                 <!--代理任务-->
