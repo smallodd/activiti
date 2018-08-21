@@ -478,13 +478,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             assigneeReal = StringUtils.join(assigneeSet.toArray(), ",");
                             tRuTask.setAssigneeReal(assigneeReal);
 
-                            JSONObject approveCountJson = new JSONObject();
+                            /*JSONObject approveCountJson = new JSONObject();
                             approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_TOTAL.value, assigneeSet.size());
                             approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NEED.value, assigneeSet.size());
                             approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NOW.value, 0);
                             approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_REFUSE.value, 0);
 
-                            taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value,approveCountJson.toJSONString());
+                            taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value,approveCountJson.toJSONString());*/
                         }else{
                             return false;
                         }
