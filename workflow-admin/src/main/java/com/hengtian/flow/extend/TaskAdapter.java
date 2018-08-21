@@ -31,7 +31,7 @@ public class TaskAdapter implements TaskManager {
             return WorkflowService.taskRemind(taskActionParam.getUserId(), taskActionParam.getTaskId());
         } else if (TaskActionEnum.ENQUIRE.value.equals(actionType)) {
             //意见征询
-            return WorkflowService.taskEnquire(taskActionParam.getUserId(), taskActionParam.getProcessInstanceId(), taskActionParam.getCurrentTaskDefKey(), taskActionParam.getTargetTaskDefKey(), taskActionParam.getCommentResult(),taskActionParam.getTargetUserId());
+            return WorkflowService.taskEnquire(taskActionParam.getUserId(), taskActionParam.getProcessInstanceId(), taskActionParam.getCurrentTaskDefKey(), taskActionParam.getTargetTaskDefKey(), taskActionParam.getCommentResult(),taskActionParam.getTargetUserId(), null);
         } else if (TaskActionEnum.CONFIRMENQUIRE.value.equals(actionType)) {
             //确认意见征询
             return WorkflowService.taskConfirmEnquire(taskActionParam.getUserId(), taskActionParam.getAskId(), taskActionParam.getCommentResult());

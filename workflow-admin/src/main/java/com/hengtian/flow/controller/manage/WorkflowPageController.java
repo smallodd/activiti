@@ -173,7 +173,6 @@ public class WorkflowPageController extends WorkflowBaseController{
 
         model.addAttribute("task", task);
         model.addAttribute("comments", comments);
-        model.addAttribute("assignees", getAssigneeUserByTaskId(taskId));
         return "workflow/task/task_complete";
     }
 

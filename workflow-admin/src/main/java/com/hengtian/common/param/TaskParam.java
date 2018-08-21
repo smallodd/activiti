@@ -44,8 +44,13 @@ public class TaskParam {
     /**
      * 下一节点审批人信息
      */
-    @ApiModelProperty(value = "下一节点审批人信息", example="下一节点审批人信息")
+    @ApiModelProperty(value = "下一节点审批人信息", example="H08899")
     private String assigneeNext;
+    /**
+     * 审批代理人
+     */
+    @ApiModelProperty(value = "审批代理人", example="H08899")
+    private String assigneeAgent;
     /**
      * jumpType: 1-影响分支；2-不影响分支
      */

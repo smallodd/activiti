@@ -172,7 +172,7 @@ public class WorkflowDataController extends WorkflowBaseController {
      * @author houjinrong@chtwm.com
      * date 2018/5/18 16:01
      */
-    @GetMapping("/task/transfer/tree/{taskId}")
+    @PostMapping("/task/transfer/tree/{taskId}")
     @ResponseBody
     public Object transferAssigneeTree(@PathVariable("taskId") String taskId) {
         return getAssigneeUserTreeByTaskId(taskId);

@@ -19,6 +19,7 @@ import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
+import com.hengtian.common.utils.BeanUtils;
 import com.hengtian.common.utils.ConstantUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.cmd.CreateCmd;
@@ -29,10 +30,7 @@ import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.dao.WorkflowDao;
 import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
-import com.hengtian.flow.vo.AskCommentDetailVo;
-import com.hengtian.flow.vo.AssigneeVo;
-import com.hengtian.flow.vo.TaskNodeVo;
-import com.hengtian.flow.vo.TaskVo;
+import com.hengtian.flow.vo.*;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
@@ -50,6 +48,7 @@ import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.repository.NativeProcessDefinitionQuery;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -61,6 +60,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sun.misc.BASE64Encoder;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -123,6 +123,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
     @Autowired
     private AssigneeTempService assigneeTempService;
+
+    @Autowired
+    private TaskAgentService taskAgentService;
 
 
     @Override
@@ -302,7 +305,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             for(Task t : list){
                 currentTaskKey = currentTaskKey == null?t.getTaskDefinitionKey():currentTaskKey+","+t.getTaskDefinitionKey();
             }
-            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName,processDefinition.getName(), currentTaskKey);
+            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName, processDefinition.getKey(), processDefinition.getName(), currentTaskKey);
             ruProcinstService.insert(ruProcinst);
 
 
@@ -605,6 +608,18 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
 
         boolean customApprover = (boolean) runtimeService.getVariable(task.getProcessInstanceId(), ConstantUtils.SET_ASSIGNEE_FLAG);
+
+        //如果是代理人问询，添加记录
+        if(StringUtils.isNotBlank(taskParam.getAssigneeAgent())){
+            TaskAgent taskAgent = new TaskAgent();
+            taskAgent.setAgentType(2);
+            taskAgent.setAssignee(taskParam.getAssignee());
+            taskAgent.setAssigneeAgent(taskParam.getAssigneeAgent());
+            taskAgent.setTaskId(task.getId());
+            taskAgent.setCreateTime(new Date());
+
+            taskAgentService.insert(taskAgent);
+        }
 
         if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
             //会签,表达式
@@ -1417,7 +1432,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId) {
+    public Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId,String assigneeAgent) {
         log.info("意见征询开始：入参：userId{},processInstanceId{},currentTaskDefKey{},targetTaskDefKey{},commentResult{},askedUserId{}",userId,processInstanceId,currentTaskDefKey,targetTaskDefKey,commentResult,askedUserId);
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
         if (task == null) {
@@ -1468,10 +1483,28 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         askTask.setAskUserId(userId);
         askTask.setAskComment(commentResult);
         askTask.setAskedUserId(askedUserId);
+
+        List<HistoricTaskInstance> hisTaskList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskDefinitionKey(targetTaskDefKey).finished().orderByHistoricTaskInstanceEndTime().desc().list();
+        if(CollectionUtils.isNotEmpty(hisTaskList)){
+            askTask.setAskedTaskId(hisTaskList.get(0).getId());
+        }
         boolean success = tAskTaskService.insert(askTask);
         if (!success) {
             log.info("意见征询失败");
             return new Result(false, Constant.FAIL,"意见征询失败");
+        }
+
+        //如果是代理人问询，添加记录
+        if(StringUtils.isNotBlank(assigneeAgent)){
+            TaskAgent taskAgent = new TaskAgent();
+            taskAgent.setId(null);
+            taskAgent.setAgentType(2);
+            taskAgent.setAssignee(userId);
+            taskAgent.setAssigneeAgent(assigneeAgent);
+            taskAgent.setTaskId(task.getId());
+            taskAgent.setCreateTime(new Date());
+
+            taskAgentService.insert(taskAgent);
         }
 
         EntityWrapper<RuProcinst> wrapper_ = new EntityWrapper<>();
@@ -2028,7 +2061,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             sb.append(" FROM act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON trt.TASK_ID=art.ID_ ");
         } else {
             orderBy = " ORDER BY art.CREATE_TIME_ DESC ";
-            re = "SELECT DISTINCT art.ID_ AS ID_, trt.assignee_real AS ASSIGNEE_,ahp.START_USER_ID_ AS OWNER_,trt.STATUS AS PRIORITY_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
+            re = "SELECT DISTINCT art.ID_ AS ID_, NULL,ahp.START_USER_ID_ AS OWNER_,trt.STATUS AS PRIORITY_,ahp.NAME_ AS CATEGORY_,ahp.BUSINESS_KEY_ AS DESCRIPTION_,art.* ";
             sb.append(" FROM act_ru_task AS art LEFT JOIN t_ru_task AS trt ON trt.TASK_ID=art.ID_ ");
         }
 
@@ -2469,5 +2502,55 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             assigneeVoList.add(assigneeVo);
         }
         return assigneeVoList;
+    }
+
+    /**
+     * 代理人不为空时，生成加密串，防止爬虫，恶意非法请求
+     * @param assignee 审批人
+     * @param assigneeAgent 被代理人
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/3 15:53
+     */
+    @Override
+    public String getAssigneeSecret(String assignee, String assigneeAgent){
+        BASE64Encoder encoder = new BASE64Encoder();
+        return encoder.encode((assignee+"("+assignee+assigneeAgent+")").getBytes());
+    }
+
+    /**
+     * 流程定义列表
+     * @param appKey 应用系统KEY
+     * @param nameOrKey 流程定义KEY/流程定义名称
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/15 17:39
+     */
+    @Override
+    public PageInfo queryProcessDefinitionList(Integer appKey, String nameOrKey, Integer page, Integer rows){
+        PageInfo pageInfo = new PageInfo(page, rows);
+        String select = "SELECT arp.* ";
+        String selectCount = "SELECT COUNT(*) ";
+        StringBuffer sb = new StringBuffer();
+        sb.append("FROM `act_re_procdef` AS arp, `t_app_model` AS tam WHERE tam.`app_key`=#{appKey} AND arp.`KEY_`=tam.`model_key` AND arp.`VERSION_` =(SELECT MAX(`VERSION_`) FROM `act_re_procdef` AS arp_ WHERE arp.`KEY_`=arp_.`KEY_`)");
+        NativeProcessDefinitionQuery query = repositoryService.createNativeProcessDefinitionQuery();
+        query.parameter("appKey", appKey);
+        if(StringUtils.isNotBlank(nameOrKey)){
+            query.parameter("nameOrKey", nameOrKey);
+            sb.append(" AND (arp.`KEY_` LIKE CONCAT('%',#{nameOrKey},'%') OR arp.`NAME_` LIKE CONCAT('%',#{nameOrKey},'%'))");
+        }
+        List<ProcessDefinition> processDefinitions = query.sql(select + sb.toString()).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        if(CollectionUtils.isNotEmpty(processDefinitions)){
+            List<ProcessDefinitionVo> processDefinitionVos = Lists.newArrayList();
+            for(ProcessDefinition processDefinition : processDefinitions){
+                ProcessDefinitionVo processDefinitionVo = new ProcessDefinitionVo();
+                BeanUtils.copy(processDefinition, processDefinitionVo);
+                processDefinitionVos.add(processDefinitionVo);
+            }
+            pageInfo.setRows(processDefinitionVos);
+        }
+
+        pageInfo.setTotal((int) query.sql(selectCount + sb.toString()).count());
+        return pageInfo;
     }
 }

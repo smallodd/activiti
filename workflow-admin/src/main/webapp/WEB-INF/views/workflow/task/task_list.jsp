@@ -163,7 +163,7 @@
         }
         parent.$.modalDialog({
             title: '办理',
-            width: 570,
+            width: 780,
             height: 450,
             href: '${ctx}/workflow/page/task/complete/' + id,
             buttons: [{
@@ -286,8 +286,8 @@
     function transferTaskFun(id) {
         parent.$.modalDialog({
             title: '选择受理人',
-            width: 500,
-            height: 450,
+            width: 750,
+            height: 480,
             modal: true,
             href: '${ctx}/workflow/page/task/transfer/' + id,
             buttons: [{
@@ -385,6 +385,7 @@
     function taskSearchFun() {
         taskDataGrid.datagrid('load', $.serializeObject($('#taskSearchForm')));
     }
+
 </script>
 </body>
 </html>

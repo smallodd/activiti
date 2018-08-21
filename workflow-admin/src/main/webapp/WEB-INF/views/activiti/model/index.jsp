@@ -72,26 +72,26 @@
                 field : 'ck',
                 checkbox : true
             }, {
-                width : '200',
+                width : '100',
                 title : '流程模型ID',
                 field : 'id'
 
             }, {
-                width : '200',
+                width : '250',
                 title : '流程模型名称',
                 field : 'name'
             }, {
-                width : '140',
+                width : '200',
                 title : '流程模型KEY',
                 field : 'key'
             }, {
-                width : '140',
-                title : '流程模型版本',
+                width : '60',
+                title : '模型版本',
                 field : 'version'
             },{
                 width : '140',
-                title : '创建时间',
-                field : 'createTime',
+                title : '最后修改时间',
+                field : 'lastUpdateTime',
                 formatter:function(value,row,index){
                     var unixTimestamp = new Date(value);
                     return unixTimestamp.toLocaleString();
@@ -104,7 +104,7 @@
             }, {
                 field : 'action',
                 title : '操作',
-                width : 360,
+                width : 300,
                 formatter : function(value, row, index) {
                     var str = '';
 
@@ -321,6 +321,7 @@ function modelDetail(id) {
         height : 500,
         content : contentStr,
         modal : true,
+        fit:true,
         buttons : [ {
             text : '关闭',
             handler : function() {

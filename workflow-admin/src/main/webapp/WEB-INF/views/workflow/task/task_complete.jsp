@@ -9,14 +9,17 @@
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
     <div data-options="region:'center',border:false" style="overflow: auto;padding: 3px;">
-        <div class="easyui-layout" style="width:550px;height:370px;">
-            <div data-options="region:'east',split:true" title="意见列表" style="width:180px;">
+        <div class="easyui-layout" style="width:750px;height:370px;">
+            <div data-options="region:'west',split:true,collapsible:false" title="意见列表" style="width:180px;">
                 <c:if test="${empty comments}">暂无意见 ！</c:if>
                 <c:forEach var="comment" items="${comments}">
                     <div class="easyui-panel" title="${comment.commentTime}" style="height:auto;padding:5px;background-color: #fafbfd;word-break:break-all" data-options="closable:true,collapsible:true">
                         <a class="easyui-linkbutton" style="height: 25px;background-color: #282828;color: white">${comment.commentUser}</a>${comment.commentContent}
                     </div>
                 </c:forEach>
+            </div>
+            <div data-options="region:'east',split:true,collapsible:false" title="审批人列表" style="width:180px;">
+                <ul id="assigneeTree" style="margin-top: 10px"></ul>
             </div>
             <div data-options="region:'center'" title="操作">
                 <form id="completeTaskForm" method="post">
@@ -27,35 +30,27 @@
                             <td><input class="easyui-textbox" data-options="multiline:true" name="jsonVariable" style="width:260px;height: 70px;"></td>
                         </tr>
                         <tr>
-                            <td>我的意见</td>
-                            <td>
-                                <input class="easyui-textbox" data-options="multiline:true" name="commentContent" style="width:260px;height: 80px;">
-                            </td>
-                        </tr>
-                        <tr>
                             <td>下步审批人</td>
                             <td>
                                 <input class="easyui-textbox" data-options="multiline:true" name="assigneeNext" style="width:260px;height: 70px;">
                             </td>
                         </tr>
                         <tr>
-                            <td>办理人</td>
+                            <td>我的意见</td>
                             <td>
-                                <select name="assignee" class="easyui-combobox selectConfigType" data-options="width:120,height:30,panelHeight:'auto'">
-                                    <c:forEach var="a" items="${assignees}">
-                                        <option value="${a}">${a}</option>
-                                    </c:forEach>
-                                </select>
+                                <input class="easyui-textbox" data-options="multiline:true" name="commentContent" style="width:260px;height: 120px;">
                             </td>
                         </tr>
                         <tr>
                             <td>是否同意</td>
                             <td>
                                 <input type="radio" name="commentResult" style="cursor:pointer;" value=1 checked="checked">同意</input>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 <input type="radio" name="commentResult" style="cursor:pointer;" value=2>不同意</input>
                             </td>
                         </tr>
                     </table>
+                    <input type="hidden" name="assignee" id="assignee"/>
                 </form>
             </div>
         </div>
@@ -63,6 +58,15 @@
 </div>
 <script type="text/javascript">
     $(function () {
+
+        var taskId = parent.$("#taskId").val();
+        if(taskId != undefined && taskId != ""){
+            $('#assigneeTree').tree({
+                url: '${ctx}/workflow/data/task/transfer/tree/'+taskId,
+                singleSelect: true
+            });
+        }
+
         $('#completeTaskForm').form({
             url: '${ctx}/workflow/action/task/complete',
             onSubmit: function () {
@@ -71,6 +75,23 @@
                 if (!isValid) {
                     progressClose();
                 }
+
+                debugger;
+                var assignee = $('#assigneeTree').tree('getSelected');
+                if(!assignee){
+                    progressClose();
+                    $.messager.alert('提示', "请先选择任务办理人",'info');
+                    return false;
+                }else{
+                    var children = $('#assigneeTree').tree("getChildren",assignee.target);
+                    if(children != null && children.length > 0){
+                        progressClose();
+                        $.messager.alert('提示', "请先选择任务办理人",'info');
+                        return false;
+                    }
+                }
+                $("#assignee").val(assignee.id);
+
                 return isValid;
             },
             success: function (result) {

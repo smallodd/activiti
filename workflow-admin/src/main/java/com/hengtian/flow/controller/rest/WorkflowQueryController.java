@@ -168,7 +168,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
         pageInfo.setCondition(new BeanMap(taskQueryParam));
 
-        setAssigneeAndRole(pageInfo, taskQueryParam.getAssignee(), taskQueryParam.getAppKey());
+        setAssigneeAndRole(pageInfo, taskQueryParam);
         workflowService.openTaskList(pageInfo);
 
         return renderSuccess(pageInfo);
@@ -387,7 +387,33 @@ public class WorkflowQueryController extends WorkflowBaseController {
     }
 
     /**
-     * 流程实例详情
+     * 流程定义列表
+     * @param appKey 应用系统KEY
+     * @param nameOrKey 流程定义KEY/流程定义名称
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/15 17:39
+     */
+    @ResponseBody
+    @SysLog("任务详情")
+    @ApiOperation(httpMethod = "POST", value = "流程定义列表")
+    @RequestMapping(value = "/rest/process/def/list", method = RequestMethod.POST)
+    public Object queryProcessDefinitionList(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
+                               @ApiParam(value = "流程定义KEY", name = "nameOrKey") @RequestParam(required = false) String nameOrKey,
+                               @ApiParam(value = "页码", name = "page") @RequestParam Integer page,
+                               @ApiParam(value = "每页条数", name = "rows") @RequestParam Integer rows){
+        logger.info("appKey{}；nameOrKey{}；page{}；rows{}", appKey, nameOrKey, page, rows);
+        //参数统一处理
+        page = page == null?1:page;
+        rows = rows == null?10:rows;
+
+        PageInfo pageInfo = workflowService.queryProcessDefinitionList(appKey, nameOrKey, page, rows);
+
+        return renderSuccess(pageInfo);
+    }
+
+    /**
+     * 流程定义详情
      *
      * @param appKey 应用系统key
      * @param processDefinitionKey 流程定义主键
@@ -398,7 +424,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "流程实例详情")
     @RequestMapping(value = "/rest/process/def/detail", method = RequestMethod.POST)
     public Object processDefDetail(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
-                                   @ApiParam(value = "流程实例ID", name = "processDefinitionKey") @RequestParam String processDefinitionKey) {
+                                   @ApiParam(value = "流程定义key", name = "processDefinitionKey") @RequestParam String processDefinitionKey) {
         logger.info("appKey{} processDefinitionKey{}", appKey, processDefinitionKey);
         if(appKey == null){
             return renderError("参数错误：appKey为空");

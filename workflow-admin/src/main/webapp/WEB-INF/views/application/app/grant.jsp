@@ -45,7 +45,6 @@
                 $.post('${ctx}/app/findModelKeyListByAppId', {
                     id: '${id}'
                 }, function (result) {
-                    debugger;
                     var maps;
                     if (result.success == true && result.obj != undefined) {
                         maps = result.obj;

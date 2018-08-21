@@ -11,9 +11,11 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
+import sun.misc.BASE64Encoder;
 
 import java.util.List;
 import java.util.Map;
@@ -140,7 +142,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId);
+    Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId,String assigneeAgent);
 
     /**
      * 意见征询确认
@@ -343,4 +345,24 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/6/26 10:12
      */
     List<AssigneeVo> getTaskAssignee(Task task, Integer appKey);
+
+    /**
+     * 代理人不为空时，生成加密串，防止爬虫，恶意非法请求
+     * @param assignee 审批人
+     * @param assigneeAgent 被代理人
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/3 15:53
+     */
+    String getAssigneeSecret(String assignee, String assigneeAgent);
+
+    /**
+     * 流程定义列表
+     * @param appKey 应用系统KEY
+     * @param nameOrKey 流程定义KEY/流程定义名称
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/15 17:39
+     */
+    PageInfo queryProcessDefinitionList(Integer appKey, String nameOrKey, Integer page, Integer rows);
 }
