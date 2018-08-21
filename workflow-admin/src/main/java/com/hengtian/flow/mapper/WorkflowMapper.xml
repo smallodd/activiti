@@ -291,9 +291,9 @@
                     NULL AS assigneeDelegate
                 </if>
             FROM
-                act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-                LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
-                LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
+                act_ru_task AS art LEFT JOIN t_ru_task AS trt ON art.ID_ = trt.TASK_ID
+                LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_ = ahp.PROC_INST_ID_
+                LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_ = trp.PROC_INST_ID
                 LEFT JOIN (SELECT * FROM t_ask_task tkk WHERE tkk.is_ask_end=0 ) tat ON tat.current_task_id = art.ID_
             WHERE
                 trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
@@ -333,12 +333,12 @@
             SELECT DISTINCT
                 <include refid="taskAskResult"/>
             FROM
-                (SELECT * FROM t_ask_task ttk WHERE ttk.is_ask_end=0) tat LEFT JOIN act_hi_taskinst AS art ON tat.asked_task_id = art.ID_
+                (SELECT * FROM t_ask_task ttk WHERE ttk.is_ask_end=0) tat LEFT JOIN act_hi_taskinst AS art ON tat.asked_task_id = art.ID_ OR tat.current_task_id=art.ID_
                 LEFT JOIN t_ru_task AS trt ON art.ID_ = trt.TASK_ID
                 LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_ = ahp.PROC_INST_ID_
                 LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_ = trp.PROC_INST_ID
             WHERE trp.APP_KEY = #{appKey}
-                AND (((tat.ask_user_id=#{assignee}) OR (tat.asked_user_id=#{assignee}))
+                AND (((tat.ask_user_id = #{assignee} AND tat.current_task_id=art.ID_) OR (tat.asked_user_id = #{assignee} AND tat.asked_task_id = art.ID_))
                 <!--代理任务-->
                 <if test="taskAgent != null and taskAgent != ''">
                     OR
