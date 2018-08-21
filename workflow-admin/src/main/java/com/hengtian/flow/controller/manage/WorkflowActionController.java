@@ -237,7 +237,9 @@ public class WorkflowActionController extends BaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg,ResultEnum.PARAM_ERROR.code);
         }
 
-
+        if(StringUtils.isNotBlank(assignee) && assignee.contains(":")){
+            assignee = assignee.split(":")[1];
+        }
         taskParam.setAssignee(assignee);
 
         taskParam.setComment("【管理员代办】"+commentContent);

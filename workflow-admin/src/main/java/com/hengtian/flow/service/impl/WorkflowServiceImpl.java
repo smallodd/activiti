@@ -654,6 +654,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_Y"):(assignee+","+taskParam.getAssignee()+"_Y"));
                 taskService.complete(task.getId(), map);
                 if(AssignTypeEnum.PERSON.code.equals(ruTask.getAssigneeType())){
+                    //人员审批
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setStatus(TaskStatusEnum.SKIP.status);
                     EntityWrapper wrapper_ = new EntityWrapper();
@@ -666,10 +667,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTaskService.update(tRuTask, wrapper_);
 
                     result = new Result(true,Constant.SUCCESS, "通过成功");
-                    tWorkDetail.setOperateAction("审批同意");
-                    tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务，审批意见是【" + taskParam.getComment() + "】");
-                    workDetailService.insert(tWorkDetail);
                 }
+
+                tWorkDetail.setOperateAction("审批同意");
+                tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务，审批意见是【" + taskParam.getComment() + "】");
+                workDetailService.insert(tWorkDetail);
             }else{
                 if(approveCountTotal - approveCountNow + approveCountAgree < approveCountNeed){
                     //------------任务完成-未通过------------
