@@ -1,5 +1,7 @@
 package com.hengtian.flow.vo;
 
+import com.hengtian.flow.model.TaskResult;
+import com.hengtian.flow.model.TaskResultInfo;
 import lombok.Data;
 
 import java.util.List;
@@ -61,4 +63,9 @@ public class TaskNodeVo {
      * 是否是最后一个节点：0-否’1-是
      */
     private Integer isLast;
+
+    /**
+     * 当前任务
+     */
+    private List<TaskResultInfo> currentTask;
 }

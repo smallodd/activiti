@@ -21,6 +21,7 @@ import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerato
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.ProcessInstanceResult;
 import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.model.TaskResultInfo;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
@@ -859,6 +860,20 @@ public class WorkflowQueryController extends WorkflowBaseController {
             taskNodeVo.setAssigneeStr(StringUtils.join(assigneeSet, ","));
         }
         taskNodeVo.setIsFirst(workflowService.isFirstNode(hisTask)?1:0);
+        //获取当前任务
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
+        if(CollectionUtils.isNotEmpty(taskList)){
+            List<TaskResultInfo> taskResultInfoList = Lists.newArrayList();
+            for(Task t : taskList){
+                TaskResultInfo taskResultInfo = new TaskResultInfo();
+                taskResultInfo.setTaskId(t.getId());
+                taskResultInfo.setTaskName(t.getName());
+
+                taskResultInfoList.add(taskResultInfo);
+            }
+
+            taskNodeVo.setCurrentTask(taskResultInfoList);
+        }
         return renderSuccess(taskNodeVo);
     }
 }
