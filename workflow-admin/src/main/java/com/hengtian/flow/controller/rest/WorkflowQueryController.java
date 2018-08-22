@@ -834,7 +834,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("获取最后审批人")
     @ApiOperation(httpMethod = "POST", value = "获取最后审批人")
     @RequestMapping(value = "/rest/task/node", method = RequestMethod.POST)
-    public Object getTaskNodeInfo(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId){
+    public Object getTaskNodeInfo(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
+                                  @ApiParam(value = "系统应用KEY", name = "appKey") @RequestParam(required = false) Integer appKey){
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
         if(hisTask == null){
             return renderError("【"+taskId+"】任务不存在");
@@ -848,7 +849,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         taskNodeVo.setTaskDefinitionName(hisTask.getName());
         taskNodeVo.setProcessDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
         taskNodeVo.setProcessDefinitionName(historicProcessInstance.getProcessDefinitionName());
-        List<AssigneeVo> taskAssignee = workflowService.getTaskAssignee(hisTask, null);
+        List<AssigneeVo> taskAssignee = workflowService.getTaskAssignee(hisTask, appKey);
         taskNodeVo.setAssignee(taskAssignee);
         if(CollectionUtils.isNotEmpty(taskAssignee)){
             Set<String> assigneeSet = Sets.newHashSet();
