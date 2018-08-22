@@ -363,4 +363,11 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/8/15 17:39
      */
     PageInfo queryProcessDefinitionList(Integer appKey, String nameOrKey, Integer page, Integer rows);
+
+    /**
+     * 判断是否第一个节点
+     * @param task
+     * @return
+     */
+    boolean isFirstNode(TaskInfo task);
 }

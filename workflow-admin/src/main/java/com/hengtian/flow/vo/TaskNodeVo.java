@@ -51,4 +51,14 @@ public class TaskNodeVo {
      * 流程实例创建人
      */
     private String processCreator;
+
+    /**
+     * 是否是第一个节点：0-否’1-是
+     */
+    private Integer isFirst;
+
+    /**
+     * 是否是最后一个节点：0-否’1-是
+     */
+    private Integer isLast;
 }

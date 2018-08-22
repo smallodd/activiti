@@ -2563,4 +2563,18 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         pageInfo.setTotal((int) query.sql(selectCount + sb.toString()).count());
         return pageInfo;
     }
+
+    /**
+     * 判断是否第一个节点
+     * @param task
+     * @return
+     */
+    @Override
+    public boolean isFirstNode(TaskInfo task){
+        if(CollectionUtils.isNotEmpty(findBeforeTaskDefKeys(task, false))){
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -858,6 +858,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             }
             taskNodeVo.setAssigneeStr(StringUtils.join(assigneeSet, ","));
         }
+        taskNodeVo.setIsFirst(workflowService.isFirstNode(hisTask)?1:0);
         return renderSuccess(taskNodeVo);
     }
 }
