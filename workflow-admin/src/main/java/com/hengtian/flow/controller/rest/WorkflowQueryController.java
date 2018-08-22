@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
 import com.hengtian.common.operlog.SysLog;
@@ -13,6 +14,7 @@ import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
+import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.BeanUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
@@ -20,6 +22,7 @@ import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.ProcessInstanceResult;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
+import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.service.PrivilegeService;
@@ -55,6 +58,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 所有列表查询都放这里
@@ -817,5 +821,42 @@ public class WorkflowQueryController extends WorkflowBaseController {
         Map map=workflowService.getVariables(processInstanceId);
         map.putAll(jsonObject);
         return renderSuccess(map);
+    }
+
+    /**
+     * 任务节点详情
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/22 9:42
+     */
+    @ResponseBody
+    @SysLog("获取最后审批人")
+    @ApiOperation(httpMethod = "POST", value = "获取最后审批人")
+    @RequestMapping(value = "/rest/task/node", method = RequestMethod.POST)
+    public Object getTaskNodeInfo(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId){
+        HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+        if(hisTask == null){
+            return renderError("【"+taskId+"】任务不存在");
+        }
+
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(hisTask.getProcessInstanceId()).singleResult();
+        TaskNodeVo taskNodeVo = new TaskNodeVo();
+        taskNodeVo.setProcessCreator(historicProcessInstance.getStartUserId());
+        taskNodeVo.setTaskId(taskId);
+        taskNodeVo.setTaskDefinitionKey(hisTask.getTaskDefinitionKey());
+        taskNodeVo.setTaskDefinitionName(hisTask.getName());
+        taskNodeVo.setProcessDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
+        taskNodeVo.setProcessDefinitionName(historicProcessInstance.getProcessDefinitionName());
+        List<AssigneeVo> taskAssignee = workflowService.getTaskAssignee(hisTask, null);
+        taskNodeVo.setAssignee(taskAssignee);
+        if(CollectionUtils.isNotEmpty(taskAssignee)){
+            Set<String> assigneeSet = Sets.newHashSet();
+            for(AssigneeVo assigneeVo : taskAssignee){
+                assigneeSet.add(assigneeVo.getUserCode());
+            }
+            taskNodeVo.setAssigneeStr(StringUtils.join(assigneeSet, ","));
+        }
+        return renderSuccess(taskNodeVo);
     }
 }

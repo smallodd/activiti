@@ -17,10 +17,16 @@ public class TaskNodeVo {
      * 流程定义key
      */
     private String taskId;
+
     /**
      * 流程定义key
      */
     private String processDefinitionKey;
+
+    /**
+     * 流程定义名称
+     */
+    private String processDefinitionName;
 
     /**
      * 任务节点key
@@ -40,4 +46,9 @@ public class TaskNodeVo {
      * 审批人 多个逗号隔开
      */
     private String assigneeStr;
+
+    /**
+     * 流程实例创建人
+     */
+    private String processCreator;
 }

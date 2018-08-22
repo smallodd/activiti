@@ -11,11 +11,9 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
-import sun.misc.BASE64Encoder;
 
 import java.util.List;
 import java.util.Map;
@@ -344,7 +342,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/6/26 10:12
      */
-    List<AssigneeVo> getTaskAssignee(Task task, Integer appKey);
+    List<AssigneeVo> getTaskAssignee(TaskInfo task, Integer appKey);
 
     /**
      * 代理人不为空时，生成加密串，防止爬虫，恶意非法请求

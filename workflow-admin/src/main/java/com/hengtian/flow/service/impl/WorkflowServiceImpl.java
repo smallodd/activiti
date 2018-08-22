@@ -2450,9 +2450,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/6/26 10:12
      */
     @Override
-    public List<AssigneeVo> getTaskAssignee(Task task, Integer appKey){
+    public List<AssigneeVo> getTaskAssignee(TaskInfo task, Integer appKey){
         if(appKey == null){
-            appKey = runtimeService.getVariable(task.getExecutionId(), "appKey", Integer.class);
+            HistoricVariableInstance historicVariableInstance = historyService.createHistoricVariableInstanceQuery().executionId(task.getExecutionId()).variableName("appKey").singleResult();
+            appKey = (Integer)historicVariableInstance.getValue();
         }
 
         String assignee = task.getAssignee();
@@ -2466,6 +2467,21 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         List<AssigneeVo> assigneeVoList = Lists.newArrayList();
+
+        //已完成历史任务
+        if(task instanceof HistoricTaskInstance){
+            if(((HistoricTaskInstance) task).getEndTime() != null){
+                for(String assignee_ : assigneeSet){
+                    AssigneeVo assigneeVo = new AssigneeVo();
+                    assigneeVo.setUserCode(assignee_);
+                    assigneeVo.setUserName(getUserName(assignee_));
+                    assigneeVo.setIsComplete(1);
+                    assigneeVoList.add(assigneeVo);
+                }
+                return assigneeVoList;
+            }
+        }
+
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.eq("proc_inst_id", task.getProcessInstanceId());
         wrapper.eq("task_def_key", task.getTaskDefinitionKey());
