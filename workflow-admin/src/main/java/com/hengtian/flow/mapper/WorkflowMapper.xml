@@ -413,6 +413,9 @@
             <if test="processDefinitionName != null and processDefinitionName != ''">
                 AND arp.key_ = #{processDefinitionName}
             </if>
+            <if test="processBusinessKey != null and processBusinessKey != ''">
+                AND ahp.BUSINESS_KEY_ = #{processBusinessKey}
+            </if>
             <if test="startTimeFrom != null">
                 AND DATE(ahp.START_TIME_) &gt;= #{startTimeFrom}
             </if>

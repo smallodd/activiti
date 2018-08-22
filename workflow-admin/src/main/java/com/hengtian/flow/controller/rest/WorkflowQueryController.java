@@ -14,7 +14,6 @@ import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.param.TaskRemindQueryParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
-import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.BeanUtils;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
@@ -832,8 +831,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
      * date 2018/8/22 9:42
      */
     @ResponseBody
-    @SysLog("获取最后审批人")
-    @ApiOperation(httpMethod = "POST", value = "获取最后审批人")
+    @SysLog("任务节点详情")
+    @ApiOperation(httpMethod = "POST", value = "任务节点详情")
     @RequestMapping(value = "/rest/task/node", method = RequestMethod.POST)
     public Object getTaskNodeInfo(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
                                   @ApiParam(value = "系统应用KEY", name = "appKey") @RequestParam(required = false) Integer appKey){
@@ -852,6 +851,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         taskNodeVo.setProcessDefinitionName(historicProcessInstance.getProcessDefinitionName());
         List<AssigneeVo> taskAssignee = workflowService.getTaskAssignee(hisTask, appKey);
         taskNodeVo.setAssignee(taskAssignee);
+
         if(CollectionUtils.isNotEmpty(taskAssignee)){
             Set<String> assigneeSet = Sets.newHashSet();
             for(AssigneeVo assigneeVo : taskAssignee){
@@ -868,7 +868,12 @@ public class WorkflowQueryController extends WorkflowBaseController {
                 TaskResultInfo taskResultInfo = new TaskResultInfo();
                 taskResultInfo.setTaskId(t.getId());
                 taskResultInfo.setTaskName(t.getName());
-
+                List<AssigneeVo> taskAssignees = workflowService.getTaskAssignee(t, appKey);
+                Set<String> assigneeSet = Sets.newHashSet();
+                for(AssigneeVo assigneeVo : taskAssignees){
+                    assigneeSet.add(assigneeVo.getUserCode());
+                }
+                taskResultInfo.setAssignee(assigneeSet);
                 taskResultInfoList.add(taskResultInfo);
             }
 

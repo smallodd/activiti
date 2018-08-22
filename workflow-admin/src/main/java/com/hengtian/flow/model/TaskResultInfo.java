@@ -2,6 +2,8 @@ package com.hengtian.flow.model;
 
 import lombok.Data;
 
+import java.util.Set;
+
 /**
  * 任务信息-返回值
  */
@@ -19,4 +21,9 @@ public class TaskResultInfo {
      * 任务节点名称
      */
     private String taskName;
+
+    /**
+     * 审批人工号
+     */
+    private Set<String> assignee;
 }
