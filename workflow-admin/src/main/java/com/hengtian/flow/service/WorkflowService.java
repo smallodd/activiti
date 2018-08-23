@@ -2,6 +2,7 @@ package com.hengtian.flow.service;
 
 import com.baomidou.mybatisplus.service.IService;
 import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
@@ -192,24 +193,22 @@ public interface WorkflowService extends IService<TaskResult> {
     /**
      * 挂起流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result processSuspend(String userId, String processInstanceId);
+    Result processSuspend(TaskActionParam taskActionParam);
 
     /**
      * 激活流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
-    Result processActivate(String userId, String processInstanceId);
+    Result processActivate(TaskActionParam taskActionParam);
 
     /**
      * 意见征询意见查询接口

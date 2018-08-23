@@ -14,6 +14,7 @@ import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.*;
 import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Constant;
@@ -1702,23 +1703,27 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 挂起流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result processSuspend(String userId, String processInstanceId) {
-        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        runtimeService.suspendProcessInstanceById(processInstanceId);
+    public Result processSuspend(TaskActionParam taskActionParam) {
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).active().singleResult();
+        if(processInstance == null){
+            return new Result("流程实例不存在或流程已结束或已暂停");
+        }
+        runtimeService.suspendProcessInstanceById(taskActionParam.getProcessInstanceId());
         TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setOperator(userId);
-        tWorkDetail.setProcessInstanceId(processInstanceId);
+        tWorkDetail.setOperator(taskActionParam.getUserId());
+        tWorkDetail.setOperateAction(TaskActionEnum.SUSPEND.desc);
+        tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
         tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setDetail("工号【" + userId + "】挂起了该流程");
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
+        tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】挂起了流程【"+taskActionParam.getProcessInstanceId()+"】");
+        tWorkDetail.setTaskId("");
         workDetailService.insert(tWorkDetail);
         return new Result(true,Constant.SUCCESS, "挂起流程成功");
     }
@@ -1726,23 +1731,27 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 激活流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result processActivate(String userId, String processInstanceId) {
-        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        runtimeService.activateProcessInstanceById(processInstanceId);
+    public Result processActivate(TaskActionParam taskActionParam) {
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).suspended().singleResult();
+        if(processInstance == null){
+            return new Result("流程实例不存在或流程已结束或已激活");
+        }
+        runtimeService.activateProcessInstanceById(taskActionParam.getProcessInstanceId());
         TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setOperator(userId);
-        tWorkDetail.setProcessInstanceId(processInstanceId);
+        tWorkDetail.setOperator(taskActionParam.getUserId());
+        tWorkDetail.setOperateAction(TaskActionEnum.ACTIVATE.desc);
+        tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
         tWorkDetail.setCreateTime(new Date());
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
-        tWorkDetail.setDetail("工号【" + userId + "】激活了该流程");
+        tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】激活了流程【"+taskActionParam.getProcessInstanceId()+"】");
+        tWorkDetail.setTaskId("");
         workDetailService.insert(tWorkDetail);
         return new Result(true,Constant.SUCCESS, "激活流程成功");
     }
