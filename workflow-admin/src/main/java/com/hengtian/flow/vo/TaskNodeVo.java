@@ -21,6 +21,11 @@ public class TaskNodeVo {
     private String taskId;
 
     /**
+     * 流程实例ID
+     */
+    private String processInstanceId;
+
+    /**
      * 流程定义key
      */
     private String processDefinitionKey;
