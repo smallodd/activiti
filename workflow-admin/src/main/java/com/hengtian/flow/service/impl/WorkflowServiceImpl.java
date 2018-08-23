@@ -1661,7 +1661,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
             for(Task t : taskList){
                 if(nextTaskDefKeys.contains(t.getTaskDefinitionKey())){
-                    Result result = taskJump(userId, taskId, hisTask.getTaskDefinitionKey());
+                    Result result = taskJump(userId, t.getId(), hisTask.getTaskDefinitionKey());
                     if(result.isSuccess()){
                         result.setMsg("任务【"+taskId+"】撤回成功");
                     }
