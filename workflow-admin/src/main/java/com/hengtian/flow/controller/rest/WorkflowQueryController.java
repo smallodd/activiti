@@ -845,6 +845,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         TaskNodeVo taskNodeVo = new TaskNodeVo();
         taskNodeVo.setProcessCreator(historicProcessInstance.getStartUserId());
         taskNodeVo.setTaskId(taskId);
+        taskNodeVo.setProcessInstanceId(historicProcessInstance.getId());
         taskNodeVo.setTaskDefinitionKey(hisTask.getTaskDefinitionKey());
         taskNodeVo.setTaskDefinitionName(hisTask.getName());
         taskNodeVo.setProcessDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
