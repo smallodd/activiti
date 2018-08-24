@@ -118,7 +118,7 @@
                         str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-configUser" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="configAssigneeFun(\'{0}\');" >设定人员</a>', row.id);
                     </shiro:hasPermission>
                     <shiro:hasPermission name="/task/start">
-                        str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-start" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="startProcessInstance(\'{0}\');" >模拟开启</a>', row.key);
+                        str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-start" data-options="plain:true,iconCls:\'fi-play icon-green\'" onclick="startProcessInstance(\'{0}\');" >模拟开启</a>', row.key);
                     </shiro:hasPermission>
                     return str;
                 }
