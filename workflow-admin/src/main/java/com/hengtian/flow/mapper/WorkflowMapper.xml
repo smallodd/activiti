@@ -405,8 +405,9 @@
         FROM
             act_hi_procinst AS ahp LEFT JOIN t_ru_procinst AS trp ON ahp.ID_ = trp.PROC_INST_ID
             LEFT JOIN  act_re_procdef arp on ahp.PROC_DEF_ID_=arp.ID_
+            LEFT JOIN act_ru_execution AS ae ON ahp.ID_=ae.`ID_` AND ahp.ID_=ae.PROC_INST_ID_
         WHERE
-            1=1
+            ae.SUSPENSION_STATE_ = 1
             <if test="procDefKey!=null and procDefKey!=''">
                 and arp.key_=#{procDefKey}
             </if>
