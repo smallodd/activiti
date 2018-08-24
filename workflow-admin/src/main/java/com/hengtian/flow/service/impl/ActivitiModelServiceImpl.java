@@ -5,10 +5,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.service.ActivitiModelService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.NativeModelQuery;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,18 +44,35 @@ public class ActivitiModelServiceImpl implements ActivitiModelService {
      * @param pageInfo
      */
     @Override
-    public void selectActivitiModelDataGrid(PageInfo pageInfo,String name){
-        if(name != null){
-            name = "%"+name+"%";
-            List<Model> modelList = repositoryService.createModelQuery().modelNameLike(name).orderByCreateTime().desc().listPage(pageInfo.getFrom(), pageInfo.getSize());
+    public void selectActivitiModelDataGrid(PageInfo pageInfo,String name, String appKey){
+        if(StringUtils.isNotBlank(appKey)){
+            NativeModelQuery nativeModelQuery = repositoryService.createNativeModelQuery();
+            nativeModelQuery.parameter("appKey", appKey);
+            StringBuffer sb = new StringBuffer();
+            sb.append(" FROM act_re_model AS arm LEFT JOIN t_app_model AS tam ON arm.KEY_=tam.model_key WHERE tam.app_key=#{appKey} ");
+
+            if(StringUtils.isNotBlank(name)){
+                sb.append("arm.NAME_ LIKE #{name}");
+                nativeModelQuery.parameter("name", name);
+            }
+
+            long count = nativeModelQuery.sql("SELECT COUNT(*)" + sb.toString()).count();
+            List<Model> modelList = nativeModelQuery.sql("SELECT arm.*" + sb.toString() + "ORDER BY arm.CREATE_TIME_ DESC").listPage(pageInfo.getFrom(), pageInfo.getSize());
             pageInfo.setRows(modelList);
-            long count= repositoryService.createModelQuery().modelNameLike(name).count();
             pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
         }else{
-            List<Model> modelList = repositoryService.createModelQuery().orderByCreateTime().desc().listPage(pageInfo.getFrom(), pageInfo.getSize());
-            pageInfo.setRows(modelList);
-            long count= repositoryService.createModelQuery().count();
-            pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+            if(name != null){
+                name = "%"+name+"%";
+                List<Model> modelList = repositoryService.createModelQuery().modelNameLike(name).orderByCreateTime().desc().listPage(pageInfo.getFrom(), pageInfo.getSize());
+                pageInfo.setRows(modelList);
+                long count= repositoryService.createModelQuery().modelNameLike(name).count();
+                pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+            }else{
+                List<Model> modelList = repositoryService.createModelQuery().orderByCreateTime().desc().listPage(pageInfo.getFrom(), pageInfo.getSize());
+                pageInfo.setRows(modelList);
+                long count= repositoryService.createModelQuery().count();
+                pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+            }
         }
     }
 
