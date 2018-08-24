@@ -33,6 +33,21 @@
         <result column="endTime" property="endTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <resultMap id="ruProcessInstanceMap" type="com.hengtian.flow.model.RuProcinst">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="app_key" property="appKey" jdbcType="VARCHAR"/>
+        <result column="proc_inst_id" property="procInstId" jdbcType="VARCHAR"/>
+        <result column="business_key" property="businessKey" jdbcType="VARCHAR"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="creator_name" property="creatorName" jdbcType="VARCHAR"/>
+        <result column="creator_dept" property="creatorDept" jdbcType="VARCHAR"/>
+        <result column="creator_dept_name" property="creatorDeptName" jdbcType="VARCHAR"/>
+        <result column="proc_def_key" property="procDefKey" jdbcType="VARCHAR"/>
+        <result column="proc_def_name" property="procDefName" jdbcType="VARCHAR"/>
+        <result column="proc_inst_state" property="procInstState" jdbcType="INTEGER"/>
+        <result column="current_task_key" property="currentTaskKey" jdbcType="VARCHAR"/>
+    </resultMap>
+
     <sql id="taskResult">
         DISTINCT art.ID_ AS taskId,
         art.NAME_ AS taskName,
@@ -451,5 +466,12 @@
                 and arp.key_=#{procDefKey}
             </if>
             <include refid="queryCondition"/>
+    </select>
+
+    <select id="queryProcessInstanceByBusinessKey" resultMap="ruProcessInstanceMap">
+      SELECT DISTINCT
+        trp.*
+      FROM `t_ru_procinst` AS trp LEFT JOIN `act_ru_execution` AS are ON trp.`proc_inst_id`=are.`ID_` AND trp.`proc_inst_id`=are.`PROC_INST_ID_`
+	  WHERE trp.`business_key`=#{businessKey} AND trp.`app_key`=#{appKey} AND are.`SUSPENSION_STATE_`=#{suspensionState}
     </select>
 </mapper>

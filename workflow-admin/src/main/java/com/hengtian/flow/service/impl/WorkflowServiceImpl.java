@@ -306,7 +306,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             for(Task t : list){
                 currentTaskKey = currentTaskKey == null?t.getTaskDefinitionKey():currentTaskKey+","+t.getTaskDefinitionKey();
             }
-            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName, processDefinition.getKey(), processDefinition.getName(), currentTaskKey);
+            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName, processDefinition.getKey(), processDefinition.getName(), currentTaskKey, processParam.getBusinessKey());
             ruProcinstService.insert(ruProcinst);
 
 
@@ -2585,5 +2585,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         return true;
+    }
+
+    /**
+     * 通过业务主键查询流程实例
+     * @param appKey 系统应用KEy
+     * @param businessKey 业务主键
+     * @param suspensionState 挂起状态：1-激活；2-挂起
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/24 11:36
+     */
+    @Override
+    public RuProcinst queryProcessInstanceByBusinessKey(Integer appKey, String businessKey, Integer suspensionState){
+        return workflowDao.queryProcessInstanceByBusinessKey(appKey, businessKey, suspensionState);
     }
 }

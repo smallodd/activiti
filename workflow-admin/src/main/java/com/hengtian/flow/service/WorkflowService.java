@@ -7,6 +7,7 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
@@ -369,4 +370,15 @@ public interface WorkflowService extends IService<TaskResult> {
      * @return
      */
     boolean isFirstNode(TaskInfo task);
+
+    /**
+     * 通过业务主键查询流程实例
+     * @param appKey 系统应用KEy
+     * @param businessKey 业务主键
+     * @param suspensionState 挂起状态：1-激活；2-挂起
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/24 11:36
+     */
+    RuProcinst queryProcessInstanceByBusinessKey(Integer appKey, String businessKey, Integer suspensionState);
 }

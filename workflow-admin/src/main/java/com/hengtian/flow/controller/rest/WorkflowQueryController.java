@@ -19,6 +19,7 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.workflow.activiti.CustomDefaultProcessDiagramGenerator;
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.ProcessInstanceResult;
+import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResultInfo;
 import com.hengtian.flow.service.*;
@@ -113,6 +114,29 @@ public class WorkflowQueryController extends WorkflowBaseController {
         workflowService.processInstanceList(pageInfo);
 
         return renderSuccess(pageInfo);
+    }
+
+    /**
+     * 通过业务主键查询流程实例
+     *
+     * @param appKey 系统应用KEY
+     * @param businessKey 业务主键
+     * @param suspensionState 流程状态：1-激活；2-挂起
+     * @return
+     * @author houjinrong@chtwm.com
+     */
+    @ResponseBody
+    @SysLog("通过业务主键查询流程实例")
+    @ApiOperation(httpMethod = "POST", value = "通过业务主键查询流程实例")
+    @RequestMapping(value = "/rest/process/instance/{businessKey}", method = RequestMethod.POST)
+    public Object queryProcessInstanceByBusinessKey(@ApiParam(value = "系统应用KEY", name = "appKey", required = true) @RequestParam Integer appKey,
+                                                    @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam @PathVariable String businessKey,
+                                                    @ApiParam(value = "流程状态", name = "suspensionState", required = true) @RequestParam Integer suspensionState) {
+        logger.info("----------------通过业务主键查询流程实例,入参 appKey：{}；businessKey：{}----------------", appKey, businessKey);
+
+        RuProcinst ruProcinst = workflowService.queryProcessInstanceByBusinessKey(appKey, businessKey, suspensionState);
+        logger.info("----------------通过业务主键查询流程实例，出参：{}----------------", appKey, ruProcinst);
+        return renderSuccess(ruProcinst);
     }
 
     /**
