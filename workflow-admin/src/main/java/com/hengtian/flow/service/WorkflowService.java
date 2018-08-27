@@ -199,7 +199,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result processSuspend(TaskActionParam taskActionParam);
+    Result processSuspend(TaskActionParam taskActionParam, boolean needLog);
 
     /**
      * 激活流程
@@ -209,7 +209,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
-    Result processActivate(TaskActionParam taskActionParam);
+    Result processActivate(TaskActionParam taskActionParam, boolean needLog);
 
     /**
      * 意见征询意见查询接口

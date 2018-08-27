@@ -1710,21 +1710,23 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result processSuspend(TaskActionParam taskActionParam) {
+    public Result processSuspend(TaskActionParam taskActionParam, boolean needLog) {
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).active().singleResult();
         if(processInstance == null){
             return new Result("流程实例不存在或流程已结束或已暂停");
         }
         runtimeService.suspendProcessInstanceById(taskActionParam.getProcessInstanceId());
-        TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setOperator(taskActionParam.getUserId());
-        tWorkDetail.setOperateAction(TaskActionEnum.SUSPEND.desc);
-        tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
-        tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
-        tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】挂起了流程【"+taskActionParam.getProcessInstanceId()+"】");
-        tWorkDetail.setTaskId("");
-        workDetailService.insert(tWorkDetail);
+        if(needLog){
+            TWorkDetail tWorkDetail = new TWorkDetail();
+            tWorkDetail.setOperator(taskActionParam.getUserId());
+            tWorkDetail.setOperateAction(TaskActionEnum.SUSPEND.desc);
+            tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
+            tWorkDetail.setCreateTime(new Date());
+            tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
+            tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】挂起了流程【"+taskActionParam.getProcessInstanceId()+"】");
+            tWorkDetail.setTaskId("");
+            workDetailService.insert(tWorkDetail);
+        }
         return new Result(true,Constant.SUCCESS, "挂起流程成功");
     }
 
@@ -1738,21 +1740,23 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result processActivate(TaskActionParam taskActionParam) {
+    public Result processActivate(TaskActionParam taskActionParam, boolean needLog) {
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).suspended().singleResult();
         if(processInstance == null){
             return new Result("流程实例不存在或流程已结束或已激活");
         }
         runtimeService.activateProcessInstanceById(taskActionParam.getProcessInstanceId());
-        TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setOperator(taskActionParam.getUserId());
-        tWorkDetail.setOperateAction(TaskActionEnum.ACTIVATE.desc);
-        tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
-        tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
-        tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】激活了流程【"+taskActionParam.getProcessInstanceId()+"】");
-        tWorkDetail.setTaskId("");
-        workDetailService.insert(tWorkDetail);
+        if(needLog) {
+            TWorkDetail tWorkDetail = new TWorkDetail();
+            tWorkDetail.setOperator(taskActionParam.getUserId());
+            tWorkDetail.setOperateAction(TaskActionEnum.ACTIVATE.desc);
+            tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
+            tWorkDetail.setCreateTime(new Date());
+            tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
+            tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】激活了流程【" + taskActionParam.getProcessInstanceId() + "】");
+            tWorkDetail.setTaskId("");
+            workDetailService.insert(tWorkDetail);
+        }
         return new Result(true,Constant.SUCCESS, "激活流程成功");
     }
 

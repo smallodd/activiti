@@ -411,12 +411,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "挂起流程接口")
     public Object processSuspend(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
-                                 @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
+                                 @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId,
+                                 @ApiParam(name = "needLog", required = true, value = "是否需要日志记录") @RequestParam boolean needLog) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
-        return workflowService.processSuspend(taskActionParam);
+        return workflowService.processSuspend(taskActionParam, needLog);
     }
 
     /**
@@ -431,12 +432,13 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "激活流程接口")
     public Object processActivate(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
-                                  @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
+                                  @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId,
+                                  @ApiParam(name = "needLog", required = true, value = "是否需要日志记录") @RequestParam boolean needLog) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
-        return workflowService.processActivate(taskActionParam);
+        return workflowService.processActivate(taskActionParam, needLog);
     }
 
     /**
