@@ -3,7 +3,9 @@ package com.hengtian.flow.dao;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.plugins.pagination.Pagination;
 import com.hengtian.flow.model.ProcessInstanceResult;
+import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TaskResult;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -68,4 +70,15 @@ public interface WorkflowDao extends BaseMapper<TaskResult> {
      * date 2018/4/23 16:01
      */
     Long activeTaskCount(Map<String,Object> paraMap);
+
+    /**
+     * 通过业务主键查询流程实例
+     * @param appKey 系统应用KEy
+     * @param businessKey 业务主键
+     * @param suspensionState 挂起状态：1-激活；2-挂起
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/24 11:36
+     */
+    RuProcinst queryProcessInstanceByBusinessKey(@Param("appKey") Integer appKey,@Param("businessKey") String businessKey,@Param("suspensionState") Integer suspensionState);
 }

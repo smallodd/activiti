@@ -395,6 +395,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         taskActionParam.setActionType(TaskActionEnum.REVOKE.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
+        taskActionParam.setTaskId("-");
         return taskAction(taskActionParam);
     }
 
@@ -406,16 +407,16 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @return
      */
     @SysLog(value = "挂起流程")
-    @RequestMapping(value = "suspendProcess", method = RequestMethod.POST)
+    @RequestMapping(value = "/process/suspend", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "挂起流程接口")
-    public Object suspendProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
+    public Object processSuspend(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
                                  @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
-        return taskAction(taskActionParam);
+        return workflowService.processSuspend(taskActionParam);
     }
 
     /**
@@ -426,16 +427,16 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @return
      */
     @SysLog(value = "激活流程")
-    @RequestMapping(value = "activateProcess", method = RequestMethod.POST)
+    @RequestMapping(value = "/process/activate", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "激活流程接口")
-    public Object activateProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
+    public Object processActivate(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
                                   @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
-        return taskAction(taskActionParam);
+        return workflowService.processActivate(taskActionParam);
     }
 
     /**
@@ -487,7 +488,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).singleResult();
                     TWorkDetail tWorkDetail = new TWorkDetail();
                     tWorkDetail.setCreateTime(new Date());
-                    tWorkDetail.setDetail("工号为【" + taskActionParam.getUserId() + "】的员工进行了【" + TaskActionEnum.getDesc(taskActionParam.getActionType()) + "】操作");
+                    tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】进行了【" + TaskActionEnum.getDesc(taskActionParam.getActionType()) + "】操作");
                     tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
                     tWorkDetail.setOperator(taskActionParam.getUserId());
                     tWorkDetail.setTaskId(taskActionParam.getTaskId());

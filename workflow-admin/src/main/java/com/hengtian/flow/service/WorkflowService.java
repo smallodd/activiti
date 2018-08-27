@@ -2,20 +2,20 @@ package com.hengtian.flow.service;
 
 import com.baomidou.mybatisplus.service.IService;
 import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
-import sun.misc.BASE64Encoder;
 
 import java.util.List;
 import java.util.Map;
@@ -194,24 +194,22 @@ public interface WorkflowService extends IService<TaskResult> {
     /**
      * 挂起流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result processSuspend(String userId, String processInstanceId);
+    Result processSuspend(TaskActionParam taskActionParam);
 
     /**
      * 激活流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
-    Result processActivate(String userId, String processInstanceId);
+    Result processActivate(TaskActionParam taskActionParam);
 
     /**
      * 意见征询意见查询接口
@@ -344,7 +342,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/6/26 10:12
      */
-    List<AssigneeVo> getTaskAssignee(Task task, Integer appKey);
+    List<AssigneeVo> getTaskAssignee(TaskInfo task, Integer appKey);
 
     /**
      * 代理人不为空时，生成加密串，防止爬虫，恶意非法请求
@@ -365,4 +363,22 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/8/15 17:39
      */
     PageInfo queryProcessDefinitionList(Integer appKey, String nameOrKey, Integer page, Integer rows);
+
+    /**
+     * 判断是否第一个节点
+     * @param task
+     * @return
+     */
+    boolean isFirstNode(TaskInfo task);
+
+    /**
+     * 通过业务主键查询流程实例
+     * @param appKey 系统应用KEy
+     * @param businessKey 业务主键
+     * @param suspensionState 挂起状态：1-激活；2-挂起
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/24 11:36
+     */
+    RuProcinst queryProcessInstanceByBusinessKey(Integer appKey, String businessKey, Integer suspensionState);
 }

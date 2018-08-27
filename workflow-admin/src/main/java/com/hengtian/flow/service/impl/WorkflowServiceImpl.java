@@ -14,6 +14,7 @@ import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.*;
 import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Constant;
@@ -305,7 +306,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             for(Task t : list){
                 currentTaskKey = currentTaskKey == null?t.getTaskDefinitionKey():currentTaskKey+","+t.getTaskDefinitionKey();
             }
-            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName, processDefinition.getKey(), processDefinition.getName(), currentTaskKey);
+            RuProcinst ruProcinst = new RuProcinst(processParam.getAppKey(), processInstance.getProcessInstanceId(), creator, userName, creatorDeptCode, creatorDeptName, processDefinition.getKey(), processDefinition.getName(), currentTaskKey, processParam.getBusinessKey());
             ruProcinstService.insert(ruProcinst);
 
 
@@ -1661,7 +1662,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
             for(Task t : taskList){
                 if(nextTaskDefKeys.contains(t.getTaskDefinitionKey())){
-                    Result result = taskJump(userId, taskId, hisTask.getTaskDefinitionKey());
+                    Result result = taskJump(userId, t.getId(), hisTask.getTaskDefinitionKey());
                     if(result.isSuccess()){
                         result.setMsg("任务【"+taskId+"】撤回成功");
                     }
@@ -1702,23 +1703,27 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 挂起流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result processSuspend(String userId, String processInstanceId) {
-        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        runtimeService.suspendProcessInstanceById(processInstanceId);
+    public Result processSuspend(TaskActionParam taskActionParam) {
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).active().singleResult();
+        if(processInstance == null){
+            return new Result("流程实例不存在或流程已结束或已暂停");
+        }
+        runtimeService.suspendProcessInstanceById(taskActionParam.getProcessInstanceId());
         TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setOperator(userId);
-        tWorkDetail.setProcessInstanceId(processInstanceId);
+        tWorkDetail.setOperator(taskActionParam.getUserId());
+        tWorkDetail.setOperateAction(TaskActionEnum.SUSPEND.desc);
+        tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
         tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setDetail("工号【" + userId + "】挂起了该流程");
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
+        tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】挂起了流程【"+taskActionParam.getProcessInstanceId()+"】");
+        tWorkDetail.setTaskId("");
         workDetailService.insert(tWorkDetail);
         return new Result(true,Constant.SUCCESS, "挂起流程成功");
     }
@@ -1726,23 +1731,27 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 激活流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result processActivate(String userId, String processInstanceId) {
-        ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        runtimeService.activateProcessInstanceById(processInstanceId);
+    public Result processActivate(TaskActionParam taskActionParam) {
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).suspended().singleResult();
+        if(processInstance == null){
+            return new Result("流程实例不存在或流程已结束或已激活");
+        }
+        runtimeService.activateProcessInstanceById(taskActionParam.getProcessInstanceId());
         TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setOperator(userId);
-        tWorkDetail.setProcessInstanceId(processInstanceId);
+        tWorkDetail.setOperator(taskActionParam.getUserId());
+        tWorkDetail.setOperateAction(TaskActionEnum.ACTIVATE.desc);
+        tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
         tWorkDetail.setCreateTime(new Date());
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
-        tWorkDetail.setDetail("工号【" + userId + "】激活了该流程");
+        tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】激活了流程【"+taskActionParam.getProcessInstanceId()+"】");
+        tWorkDetail.setTaskId("");
         workDetailService.insert(tWorkDetail);
         return new Result(true,Constant.SUCCESS, "激活流程成功");
     }
@@ -2450,9 +2459,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      * date 2018/6/26 10:12
      */
     @Override
-    public List<AssigneeVo> getTaskAssignee(Task task, Integer appKey){
+    public List<AssigneeVo> getTaskAssignee(TaskInfo task, Integer appKey){
         if(appKey == null){
-            appKey = runtimeService.getVariable(task.getExecutionId(), "appKey", Integer.class);
+            HistoricVariableInstance historicVariableInstance = historyService.createHistoricVariableInstanceQuery().executionId(task.getExecutionId()).variableName("appKey").singleResult();
+            appKey = (Integer)historicVariableInstance.getValue();
         }
 
         String assignee = task.getAssignee();
@@ -2466,6 +2476,21 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         List<AssigneeVo> assigneeVoList = Lists.newArrayList();
+
+        //已完成历史任务
+        if(task instanceof HistoricTaskInstance){
+            if(((HistoricTaskInstance) task).getEndTime() != null){
+                for(String assignee_ : assigneeSet){
+                    AssigneeVo assigneeVo = new AssigneeVo();
+                    assigneeVo.setUserCode(assignee_);
+                    assigneeVo.setUserName(getUserName(assignee_));
+                    assigneeVo.setIsComplete(1);
+                    assigneeVoList.add(assigneeVo);
+                }
+                return assigneeVoList;
+            }
+        }
+
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.eq("proc_inst_id", task.getProcessInstanceId());
         wrapper.eq("task_def_key", task.getTaskDefinitionKey());
@@ -2546,5 +2571,33 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         pageInfo.setTotal((int) query.sql(selectCount + sb.toString()).count());
         return pageInfo;
+    }
+
+    /**
+     * 判断是否第一个节点
+     * @param task
+     * @return
+     */
+    @Override
+    public boolean isFirstNode(TaskInfo task){
+        if(CollectionUtils.isNotEmpty(findBeforeTaskDefKeys(task, false))){
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 通过业务主键查询流程实例
+     * @param appKey 系统应用KEy
+     * @param businessKey 业务主键
+     * @param suspensionState 挂起状态：1-激活；2-挂起
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/24 11:36
+     */
+    @Override
+    public RuProcinst queryProcessInstanceByBusinessKey(Integer appKey, String businessKey, Integer suspensionState){
+        return workflowDao.queryProcessInstanceByBusinessKey(appKey, businessKey, suspensionState);
     }
 }

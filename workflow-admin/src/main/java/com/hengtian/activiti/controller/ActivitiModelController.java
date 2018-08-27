@@ -117,12 +117,12 @@ public class ActivitiModelController extends BaseController {
     @SysLog(value = "查询流程模型")
     @PostMapping("/modelDataGrid")
     @ResponseBody
-    public PageInfo dataGrid(Integer page, Integer rows, String sort, String order, String name) {
+    public PageInfo dataGrid(Integer page, Integer rows, String sort, String order, String name, String appKey) {
         name = StringUtils.isBlank(name) ? null : name.trim();
         PageInfo pageInfo = new PageInfo(page, rows);
         pageInfo.setOrder(order);
         pageInfo.setSort(sort);
-        activitiModelService.selectActivitiModelDataGrid(pageInfo, name);
+        activitiModelService.selectActivitiModelDataGrid(pageInfo, name, appKey);
         return pageInfo;
     }
 
