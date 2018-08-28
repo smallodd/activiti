@@ -323,8 +323,13 @@ public class WorkflowBaseController extends BaseRestController {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 TaskAgentQueryParam taskAgent = new TaskAgentQueryParam();
                 taskAgent.setAssigneeAgent(jsonObject.getString("assigneeAgent"));
-                taskAgent.setAgentStartDate(jsonObject.getString("agentStartDate"));
-                taskAgent.setAgentEndDate(jsonObject.getString("agentEndDate"));
+                if(jsonObject.containsKey("agentStartDate")){
+                    taskAgent.setAgentStartDate(jsonObject.getString("agentStartDate"));
+                }
+                if(jsonObject.containsKey("agentEndDate")){
+                    taskAgent.setAgentEndDate(jsonObject.getString("agentEndDate"));
+                }
+
                 taskAgent.setProcessDefinitionKey(jsonObject.getString("processDefinitionKey"));
 
                 roles = privilegeService.getAllRoleByUserId(appKey, taskAgent.getAssigneeAgent());
