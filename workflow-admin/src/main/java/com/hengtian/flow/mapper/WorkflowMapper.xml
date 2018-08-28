@@ -324,7 +324,7 @@
                             OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${item.agentRoleId}))
                         </if>
                         )
-                        AND trp.proc_def_key IN (#{item.processDefinitionKey})
+                        AND trp.proc_def_key IN (${item.processDefinitionKey})
                         <if test="item.agentStartDate != null">
                             AND DATE(art.CREATE_TIME_) <![CDATA[ >= ]]> DATE(#{item.agentStartDate})
                         </if>
