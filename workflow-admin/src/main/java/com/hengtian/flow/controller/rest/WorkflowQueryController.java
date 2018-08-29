@@ -187,6 +187,18 @@ public class WorkflowQueryController extends WorkflowBaseController {
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
+
+        //检验代理人信息
+        if(StringUtils.isNotBlank(taskQueryParam.getAssigneeAgent())){
+            if(StringUtils.isNotBlank(taskQueryParam.getAssigneeAgentSecret())){
+                if(!workflowService.getAssigneeSecret(taskQueryParam.getAssignee(), taskQueryParam.getAssigneeAgent()).equals(taskQueryParam.getAssigneeAgentSecret())){
+                    return renderError("代理人信息不合法，没有权限查询待办任务列表。");
+                }
+            }else{
+                return renderError("代理人信息不合法，没有权限查询待办任务列表。");
+            }
+        }
+
         if(StringUtils.isNotBlank(taskQueryParam.getTaskState())){
             if(!(TaskStatusEnum.UNFINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState()) && !(TaskStatusEnum.UNFINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())){
                 logger.info("审批人状态不正确，重置为空");

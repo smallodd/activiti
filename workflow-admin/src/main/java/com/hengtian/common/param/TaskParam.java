@@ -52,6 +52,10 @@ public class TaskParam {
     @ApiModelProperty(value = "审批代理人", example="H08899")
     private String assigneeAgent;
     /**
+     * 代理人加密信息
+     */
+    private String assigneeAgentSecret;
+    /**
      * jumpType: 1-影响分支；2-不影响分支
      */
     @ApiModelProperty(value = "下一节点审批人信息", example="下一节点审批人信息")

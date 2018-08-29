@@ -13,6 +13,7 @@ import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.enums.ProcessStatusEnum;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
+import com.hengtian.common.param.TaskAgentQueryParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
@@ -980,13 +981,12 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     /**
      * 获取上一步审批人
      *
-     * @param taskId 任务ID
+     * @param hisTask 任务
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/5/29 10:37
      */
-    protected String getBeforeAssignee(String taskId) {
-        HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+    protected String getBeforeAssignee(HistoricTaskInstance hisTask) {
         if (hisTask == null) {
             return null;
         }
@@ -1003,6 +1003,23 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
 
         return StringUtils.join(set.toArray(),",");
+    }
+
+    /**
+     * 获取上一步审批人
+     *
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/29 10:37
+     */
+    protected String getBeforeAssignee(String taskId) {
+        HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+        if (hisTask == null) {
+            return null;
+        }
+
+        return getBeforeAssignee(hisTask);
     }
 
     /**
@@ -1099,8 +1116,8 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @author houjinrong@chtwm.com
      * date 2018/6/1 11:50
      */
-    protected TRuTask validTaskAssignee(TaskInfo task, String userId, List<TRuTask> tRuTasks) {
-        if (CollectionUtils.isEmpty(tRuTasks)) {
+    protected TRuTask validTaskAssignee(TaskInfo task, Set<String> assigneeSet, List<TRuTask> tRuTasks) {
+        if (CollectionUtils.isEmpty(tRuTasks) || CollectionUtils.isEmpty(assigneeSet)) {
             return null;
         }
 
@@ -1110,14 +1127,22 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         for (TRuTask rt : tRuTasks) {
             if(StringUtils.isNotBlank(rt.getAssigneeReal())){
                 assigneeList = Arrays.asList(rt.getAssigneeReal().split(","));
-                if(assigneeList.contains(userId)){
+                Iterator<String> iterator = assigneeSet.iterator();
+                while (iterator.hasNext()){
+                    if(!assigneeList.contains(iterator.next())){
+                        iterator.remove();
+                    }
+                }
+                if(CollectionUtils.isNotEmpty(assigneeSet)){
                     return rt;
                 }
             }else{
                 if(AssignTypeEnum.ROLE.code.equals(assigneeType)){
                     //角色，不需要签收
                     if(CollectionUtils.isEmpty(roleIds)){
-                        roleIds = getAllRoleByUserId(task.getProcessInstanceId(), userId);
+                        for(String assignee : assigneeSet){
+                            roleIds.addAll(getAllRoleByUserId(task.getProcessInstanceId(), assignee));
+                        }
                     }
 
                     if (CollectionUtils.isEmpty(roleIds)) {
@@ -1548,5 +1573,18 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     protected String getProcessCreator(String processInstanceId){
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         return historicProcessInstance.getStartUserId();
+    }
+
+    protected String getAssigneeDelegate(List<AssigneeVo> assigneeVoList, List<String> assignees){
+        if(CollectionUtils.isEmpty(assigneeVoList) || CollectionUtils.isEmpty(assignees)){
+            return null;
+        }
+        List<String> assigneeDelegates = Lists.newArrayList();
+        for(AssigneeVo assigneeVo : assigneeVoList){
+            if(assignees.contains(assigneeVo.getUserCode())){
+                assigneeDelegates.add(assigneeVo.getUserName());
+            }
+        }
+        return StringUtils.join(assigneeDelegates, ",");
     }
 }

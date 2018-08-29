@@ -182,6 +182,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             if (task == null) {
                 return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
             }
+
             //查询是否当前审批人是否在当前结点有意见征询信息
             EntityWrapper entityWrapper = new EntityWrapper();
             entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getAssignee()).andNew("proc_inst_id={0}",task.getProcessInstanceId());

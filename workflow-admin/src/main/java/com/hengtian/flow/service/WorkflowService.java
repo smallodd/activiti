@@ -19,6 +19,7 @@ import org.activiti.engine.task.TaskInfo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface WorkflowService extends IService<TaskResult> {
     /**
@@ -50,13 +51,13 @@ public interface WorkflowService extends IService<TaskResult> {
     /**
      * 校验审批人是否有权限审批
      * @param task 任务对象
-     * @param assignee 审批人工号
+     * @param assigneeSet 审批人工号
      * @param tRuTasks 节点审批信息
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/6/4 17:44
      */
-    TRuTask validateTaskAssignee(Task task, String assignee, List<TRuTask> tRuTasks);
+    TRuTask validateTaskAssignee(Task task, Set<String> assigneeSet, List<TRuTask> tRuTasks);
 
     /**
      * 任务认领 部门，角色，组审批时，需具体人员认领任务

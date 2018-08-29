@@ -316,8 +316,8 @@ public class WorkflowBaseController extends BaseRestController {
             condition.put("roleId", roleIds);
         }
 
-        if(StringUtils.isNotBlank(taskQueryParam.getTaskAgent())){
-            JSONArray jsonArray = JSONArray.fromObject(taskQueryParam.getTaskAgent());
+        if(StringUtils.isNotBlank(taskQueryParam.getAssigneeAgent())){
+            JSONArray jsonArray = JSONArray.fromObject(taskQueryParam.getAssigneeAgent());
             List<TaskAgentQueryParam> taskAgentList = Lists.newArrayList();
             for(int i = 0;i<jsonArray.size();i++){
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
