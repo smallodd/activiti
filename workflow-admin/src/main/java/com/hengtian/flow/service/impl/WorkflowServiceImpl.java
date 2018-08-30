@@ -49,6 +49,7 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.*;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -2584,8 +2585,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public String getAssigneeSecret(String assignee, String assigneeAgent){
-        BASE64Encoder encoder = new BASE64Encoder();
-        return encoder.encode((assignee+"("+assigneeAgent+")").getBytes());
+        String md5Hex = DigestUtils.md5Hex(assignee + "(" + assigneeAgent + ")");
+        logger.info("MD5加密字符串为：{}", md5Hex);
+        return md5Hex;
     }
 
     /**
