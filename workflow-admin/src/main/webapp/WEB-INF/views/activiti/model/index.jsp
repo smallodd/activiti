@@ -129,7 +129,7 @@
             }, {
                 field : 'action',
                 title : '操作',
-                width : 250,
+                width : "auto",
                 formatter : function(value, row, index) {
                     var str = '';
 
