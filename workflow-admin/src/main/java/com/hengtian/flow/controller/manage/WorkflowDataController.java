@@ -194,4 +194,16 @@ public class WorkflowDataController extends WorkflowBaseController {
         }
         return workflowService.getTaskAssignee(task, null);
     }
+
+    /**
+     * 流程定义列表
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/9/3 11:29
+     */
+    @PostMapping("/process/def/list")
+    @ResponseBody
+    public Object processDefList(Integer appKey, String nameOrKey,Integer page, Integer rows){
+        return workflowService.queryProcessDefinitionList(appKey, nameOrKey, page, rows);
+    }
 }

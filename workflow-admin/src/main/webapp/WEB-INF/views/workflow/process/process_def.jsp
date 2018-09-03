@@ -13,7 +13,7 @@
             <table>
                 <tr>
                     <th>流程定义KEY:</th>
-                    <td><input name="key" placeholder="搜索条件"/></td>
+                    <td><input name="nameOrKey" placeholder="搜索条件"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="processDefSearchFun();">查询</a>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="processDefCleanFun();">清空</a>
@@ -22,8 +22,10 @@
             </table>
         </form>
     </div>
-
-    <div data-options="region:'center',border:true,title:''">
+    <div data-options="region:'west',border:true,split:false,title:'应用系统'"  style="width:150px;">
+        <ul id="appTree" style="width:160px;margin: 10px 10px 10px 10px"></ul>
+    </div>
+    <div data-options="region:'center',border:true,title:'流程定义列表'">
         <table id="processDefDataGrid" data-options="fit:true,border:false"></table>
     </div>
 </div>
@@ -40,9 +42,32 @@
 </div>
 <script type="text/javascript">
     var processDefDataGrid;
+    var appTree;
     $(function() {
+        appTree = $('#appTree').tree({
+            url : '${ctx}/app/dataGrid',
+            //parentField : '',
+            lines : true,
+            loadFilter:function(data){
+                //过滤操作
+                $.each(data, function(index, node){
+                    node.iconCls = "fi-paperclip";
+                })
+                return data;
+            },
+            formatter: function (node){
+                return node.name;
+            },
+            onClick : function(node) {
+                processDefDataGrid.datagrid('load', {
+                    appKey: node.key
+                });
+            }
+        });
+
         processDefDataGrid = $('#processDefDataGrid').datagrid({
-            url : '${ctx}/tUserTask/dataGrid',
+            //url : '${ctx}/tUserTask/dataGrid',
+            url : '${ctx}/workflow/data/process/def/list',
             striped : true,
             rownumbers : true,
             pagination : true,
@@ -70,11 +95,11 @@
                 title : '流程定义KEY',
                 field : 'key'
             }, {
-                width : '50',
+                width : '30',
                 title : '版本',
                 field : 'version'
             }, {
-                width : '140',
+                width : '200',
                 title : '资源名称',
                 field : 'resourceName',
                 formatter : function(value, row, index){
@@ -101,7 +126,7 @@
             }, {
                 field : 'action',
                 title : '操作',
-                width : 250,
+                width : 'auto',
                 formatter : function(value, row, index) {
                     var str = '';
                     if(row.suspended==='1'){

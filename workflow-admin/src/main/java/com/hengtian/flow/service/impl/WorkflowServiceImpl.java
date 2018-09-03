@@ -44,6 +44,7 @@ import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.NativeProcessDefinitionQuery;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
@@ -2601,12 +2602,18 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public PageInfo queryProcessDefinitionList(Integer appKey, String nameOrKey, Integer page, Integer rows){
         PageInfo pageInfo = new PageInfo(page, rows);
+        NativeProcessDefinitionQuery query = repositoryService.createNativeProcessDefinitionQuery();
         String select = "SELECT arp.* ";
         String selectCount = "SELECT COUNT(*) ";
         StringBuffer sb = new StringBuffer();
-        sb.append("FROM `act_re_procdef` AS arp, `t_app_model` AS tam WHERE tam.`app_key`=#{appKey} AND arp.`KEY_`=tam.`model_key` AND arp.`VERSION_` =(SELECT MAX(`VERSION_`) FROM `act_re_procdef` AS arp_ WHERE arp.`KEY_`=arp_.`KEY_`)");
-        NativeProcessDefinitionQuery query = repositoryService.createNativeProcessDefinitionQuery();
-        query.parameter("appKey", appKey);
+
+        if(appKey != null){
+            sb.append("FROM `act_re_procdef` AS arp, `t_app_model` AS tam WHERE tam.`app_key`=#{appKey} AND arp.`KEY_`=tam.`model_key` AND arp.`VERSION_` =(SELECT MAX(`VERSION_`) FROM `act_re_procdef` AS arp_ WHERE arp.`KEY_`=arp_.`KEY_`)");
+            query.parameter("appKey", appKey);
+        }else{
+            sb.append("FROM `act_re_procdef` AS arp WHERE arp.`VERSION_` =(SELECT MAX(`VERSION_`) FROM `act_re_procdef` AS arp_ WHERE arp.`KEY_`=arp_.`KEY_`)");
+        }
+
         if(StringUtils.isNotBlank(nameOrKey)){
             query.parameter("nameOrKey", nameOrKey);
             sb.append(" AND (arp.`KEY_` LIKE CONCAT('%',#{nameOrKey},'%') OR arp.`NAME_` LIKE CONCAT('%',#{nameOrKey},'%'))");
@@ -2618,6 +2625,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 ProcessDefinitionVo processDefinitionVo = new ProcessDefinitionVo();
                 BeanUtils.copy(processDefinition, processDefinitionVo);
                 processDefinitionVos.add(processDefinitionVo);
+
+                processDefinitionVo.setVersion(processDefinition.getVersion());
+                Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(processDefinition.getDeploymentId()).singleResult();
+                processDefinitionVo.setDeploymentId(processDefinition.getDeploymentId());
+                processDefinitionVo.setDeployTime(deployment.getDeploymentTime());
+                //挂起状态(1.未挂起 2.已挂起)
+                processDefinitionVo.setSuspended(processDefinition.isSuspended()==true?"2":"1");
             }
             pageInfo.setRows(processDefinitionVos);
         }
