@@ -62,7 +62,7 @@
                 title : '流程定义名称',
                 field : 'name',
                 formatter : function(value, row, index){
-                    var str = $.formatString('<a target="_blank" href="javascript:processDetail(\'{0}\')">{1}</a>', row.id, row.name==null?"/":row.name);
+                    var str = $.formatString('<a target="_blank" href="javascript:processDetail(\'{0}\')">{1}</a>', row.id, row.name==null?"+++++":row.name);
                     return str;
                 }
             }, {
