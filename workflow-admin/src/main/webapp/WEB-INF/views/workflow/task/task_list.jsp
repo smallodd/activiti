@@ -104,7 +104,7 @@
             }, {
                 field: 'action',
                 title: '操作',
-                width: 350,
+                width: "auto",
                 formatter: function (value, row, index) {
                     var str = '';
                     <shiro:hasPermission name="/task/claim">
