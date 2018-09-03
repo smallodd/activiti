@@ -85,7 +85,7 @@
                 title: '当前任务节点名称',
                 field: 'taskName'
             }, {
-                width: '80',
+                width: '90',
                 title: '当前审批人',
                 field: 'taskAssign',
                 formatter: function (value, row, index) {
@@ -97,7 +97,7 @@
                 field: 'taskCreateTime',
                 sortable: true
             }, {
-                width: '140',
+                width: '60',
                 title: '业务主键',
                 field: 'businessKey',
 
