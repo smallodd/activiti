@@ -2619,8 +2619,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             sb.append(" AND (arp.`KEY_` LIKE CONCAT('%',#{nameOrKey},'%') OR arp.`NAME_` LIKE CONCAT('%',#{nameOrKey},'%'))");
         }
         List<ProcessDefinition> processDefinitions = query.sql(select + sb.toString()).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        List<ProcessDefinitionVo> processDefinitionVos = Lists.newArrayList();
         if(CollectionUtils.isNotEmpty(processDefinitions)){
-            List<ProcessDefinitionVo> processDefinitionVos = Lists.newArrayList();
             for(ProcessDefinition processDefinition : processDefinitions){
                 ProcessDefinitionVo processDefinitionVo = new ProcessDefinitionVo();
                 BeanUtils.copy(processDefinition, processDefinitionVo);
@@ -2633,9 +2633,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 //挂起状态(1.未挂起 2.已挂起)
                 processDefinitionVo.setSuspended(processDefinition.isSuspended()==true?"2":"1");
             }
-            pageInfo.setRows(processDefinitionVos);
         }
-
+        pageInfo.setRows(processDefinitionVos);
         pageInfo.setTotal((int) query.sql(selectCount + sb.toString()).count());
         return pageInfo;
     }

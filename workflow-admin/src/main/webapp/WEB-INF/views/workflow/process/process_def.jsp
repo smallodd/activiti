@@ -22,11 +22,11 @@
             </table>
         </form>
     </div>
-    <div data-options="region:'west',border:true,split:false,title:'应用系统'"  style="width:150px;">
-        <ul id="appTree" style="width:160px;margin: 10px 10px 10px 10px"></ul>
-    </div>
     <div data-options="region:'center',border:true,title:'流程定义列表'">
         <table id="processDefDataGrid" data-options="fit:true,border:false"></table>
+    </div>
+    <div data-options="region:'west',border:true,split:false,title:'应用系统'"  style="width:150px;">
+        <ul id="appTree" style="width:160px;margin: 10px 10px 10px 10px"></ul>
     </div>
 </div>
 <div id="processDetailWindow"></div>
@@ -66,7 +66,6 @@
         });
 
         processDefDataGrid = $('#processDefDataGrid').datagrid({
-            //url : '${ctx}/tUserTask/dataGrid',
             url : '${ctx}/workflow/data/process/def/list',
             striped : true,
             rownumbers : true,
@@ -76,7 +75,7 @@
             sortName : 'id',
             sortOrder : 'asc',
             pageSize : 20,
-            pageList : [ 10, 20, 30, 40, 50, 100, 200, 300, 400, 500,1000],
+            pageList : [ 10, 20, 30, 40, 50, 100, 200],
             columns : [[{
                 width : '200',
                 title : '流程定义ID',
