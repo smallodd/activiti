@@ -307,8 +307,8 @@
     function jumpTaskFun(id) {
         parent.$.modalDialog({
             title: '选择任务节点',
-            width: 300,
-            height: 200,
+            width: 350,
+            height: 260,
             modal: true,
             href: '${ctx}/workflow/page/task/jump?taskId=' + id,
             buttons: [{

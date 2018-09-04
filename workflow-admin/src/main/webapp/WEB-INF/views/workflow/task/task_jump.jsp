@@ -8,33 +8,26 @@
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
-    <div data-options="region:'center',border:false" style="overflow:auto;padding-top:30px;text-align:center">
+    <div data-options="region:'center',border:false" style="overflow:auto;padding-top:10px;text-align:center">
         <form id="taskJumpForm" method="post">
             <input type="hidden" name="taskId" id="taskId" value="${taskId}"/>
             <input type="hidden" name="processInstanceId" id="processInstanceId" value="${processInstanceId}"/>
             <input type="hidden" name="actionType" id="actionType" value="jump"/>
-            <table>
-                <tr height="30px">
-                    <td>审批人</td>
-                    <td>
-                        <select name="userId" id="userId" class="easyui-combobox" data-options="width:230,height:29,panelHeight:'auto'">
-                            <c:forEach items="${assignee}" var="a">
-                                <option value="${a}">${a}</option>
-                            </c:forEach>
-                        </select>
-                    </td>
-                </tr>
-                <tr height="30px">
-                    <td>节点</td>
-                    <td>
-                        <select name="targetTaskDefKey" id="targetTaskDefKey" class="easyui-combobox" data-options="width:230,height:29,panelHeight:'auto'">
-                            <c:forEach items="${tasks}" var="task">
-                                <option value="${task.taskDefinitionKey}">${task.taskName}</option>
-                            </c:forEach>
-                        </select>
-                    </td>
-                </tr>
-            </table>
+
+            <div class="easyui-panel" title="审批人" style="width: 300px;padding:10px;">
+                <select name="userId" id="userId" class="easyui-combobox" data-options="width:270,height:29,panelHeight:'auto'">
+                    <c:forEach items="${assignee}" var="a">
+                        <option value="${a}">${a}</option>
+                    </c:forEach>
+                </select>
+            </div>
+            <div class="easyui-panel" title="节点" style="width: 300px;padding:10px;">
+                <select name="targetTaskDefKey" id="targetTaskDefKey" class="easyui-combobox" data-options="width:270,height:29,panelHeight:'auto'">
+                    <c:forEach items="${tasks}" var="task">
+                        <option value="${task.taskDefinitionKey}">${task.taskName}</option>
+                    </c:forEach>
+                </select>
+            </div>
         </form>
     </div>
 </div>
