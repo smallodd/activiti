@@ -8,23 +8,21 @@
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
-    <div data-options="region:'center',border:false" style="overflow:auto;padding-top:30px;text-align:center">
+    <div data-options="region:'center',border:false" style="overflow:auto;padding-top:10px;text-align:center">
         <form id="taskJumpForm" method="post">
             <input type="hidden" name="currentTaskDefKey" id="currentTaskDefKey" value="${currentTaskDefKey}"/>
             <input type="hidden" name="processInstanceId" id="processInstanceId" value="${processInstanceId}"/>
 
-            <div>
-                <label>意见征询节点</label>
-                <select name="targetTaskDefKey" id="targetTaskDefKey" class="easyui-combobox" data-options="width:350,height:29,panelHeight:'auto'">
+            <div class="easyui-panel" title="意见征询节点" style="width: 450px;padding:10px;">
+                <select name="targetTaskDefKey" id="targetTaskDefKey" class="easyui-combobox" data-options="width:425,height:29,panelHeight:'auto'">
                     <c:forEach items="${tasks}" var="task">
                         <option value="${task.taskDefinitionKey}">${task.taskName}</option>
                     </c:forEach>
                 </select>
 
             </div>
-            <div>
-                <label>意见征询内容</label>
-                <td><textarea style="margin-top: 20px;width: 350px; height: 200px;white-space: normal" placeholder="意见征询内容" name="commentResult"></textarea></td>
+            <div class="easyui-panel" title="意见征询内容" style="width: 450px;padding:10px;">
+                <td><textarea style="width: 425px; height: 170px;white-space: normal" placeholder="意见征询内容" name="commentResult"></textarea></td>
             </div>
         </form>
     </div>
