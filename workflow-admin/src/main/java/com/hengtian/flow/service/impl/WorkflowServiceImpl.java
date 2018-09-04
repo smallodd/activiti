@@ -2514,8 +2514,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public List<AssigneeVo> getTaskAssignee(TaskInfo task, Integer appKey){
         if(appKey == null){
-            HistoricVariableInstance historicVariableInstance = historyService.createHistoricVariableInstanceQuery().executionId(task.getExecutionId()).variableName("appKey").singleResult();
-            appKey = (Integer)historicVariableInstance.getValue();
+            appKey = getAppKey(task.getProcessInstanceId());
         }
 
         String assignee = task.getAssignee();
@@ -2549,30 +2548,45 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         wrapper.eq("task_def_key", task.getTaskDefinitionKey());
 
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+        Map<String, AssigneeVo> assigneeVoMap = Maps.newHashMap();
         for(TRuTask rt : tRuTasks){
-            AssigneeVo assigneeVo = new AssigneeVo();
             if(StringUtils.isNotBlank(rt.getAssigneeReal())){
                 String[] array = rt.getAssigneeReal().split(",");
-                for(String userId : array){
-                    assigneeVo.setUserCode(userId);
-                    assigneeVo.setUserName(getUserName(userId));
+                for(String userCode : array){
+                    if(assigneeVoMap.containsKey(userCode)){
+                        continue;
+                    }
+                    AssigneeVo assigneeVo = new AssigneeVo();
+                    assigneeVo.setUserCode(userCode);
+                    assigneeVo.setUserName(getUserName(userCode));
+                    if(assigneeSet.contains(assigneeVo.getUserCode())) {
+                        assigneeVo.setIsComplete(1);
+                    }else {
+                        assigneeVo.setIsComplete(0);
+                    }
+
+                    assigneeVoMap.put(userCode, assigneeVo);
                 }
             }else if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
                 List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(rt.getAssignee()));
                 for(RbacUser u : users){
+                    if(assigneeVoMap.containsKey(u.getCode())){
+                        continue;
+                    }
+                    AssigneeVo assigneeVo = new AssigneeVo();
                     assigneeVo.setUserCode(u.getCode());
                     assigneeVo.setUserName(u.getName());
+                    if(assigneeSet.contains(assigneeVo.getUserCode())) {
+                        assigneeVo.setIsComplete(1);
+                    }else {
+                        assigneeVo.setIsComplete(0);
+                    }
+
+                    assigneeVoMap.put(u.getCode(), assigneeVo);
                 }
             }
-
-            if(assigneeSet.contains(assigneeVo.getUserCode())) {
-                assigneeVo.setIsComplete(1);
-            }else {
-                assigneeVo.setIsComplete(0);
-            }
-
-            assigneeVoList.add(assigneeVo);
         }
+        assigneeVoList.addAll(assigneeVoMap.values());
         return assigneeVoList;
     }
 
