@@ -22,7 +22,7 @@
 
             </div>
             <div class="easyui-panel" title="意见征询内容" style="width: 450px;padding:10px;">
-                <td><textarea style="width: 425px; height: 170px;white-space: normal" placeholder="意见征询内容" name="commentResult"></textarea></td>
+                <td><textarea style="width: 425px; height: 170px;white-space: normal;overflow-y:auto" placeholder="意见征询内容" name="commentResult"></textarea></td>
             </div>
         </form>
     </div>
