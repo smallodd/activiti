@@ -12,8 +12,8 @@
         <form id="processDefSearchForm">
             <table>
                 <tr>
-                    <th>流程定义KEY:</th>
-                    <td><input name="nameOrKey" placeholder="搜索条件"/></td>
+                    <th>流程定义KEY/名称:</th>
+                    <td><input name="nameOrKey" placeholder="流程定义KEY/名称"/></td>
                     <td>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="processDefSearchFun();">查询</a>
                         <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="processDefCleanFun();">清空</a>
