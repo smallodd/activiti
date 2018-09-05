@@ -25,6 +25,7 @@
                 <form id="completeTaskForm" method="post">
                     <input type="hidden" name="taskId" id="taskId" value="${task.id}">
                     <input type="hidden" name="assignee" id="assignee"/>
+                    <input type="hidden" name="assigneeNext" id="assigneeNext"/>
                     <div id="tt" class="easyui-tabs" style="width:100%;height:99%">
                         <div title="审批结果/意见" style="padding:10px;display:none;">
                             <div class="easyui-panel" title="审批意见" style="width: 100%;padding:1px;">
@@ -42,36 +43,11 @@
                             </div>
                         </div>
                         <div title="下步审批人" data-options="closable:true" style="padding:10px;display:none;">
-                            <div class="easyui-panel" title="下步审批人" style="width: 100%;padding:1px;">
+                            <%--<div class="easyui-panel" title="下步审批人" style="width: 100%;padding:1px;">
                                 <textarea data-options="multiline:true" name="assigneeNext" style="width:100%;height: 88%;overflow-y:auto;resize:none" placeholder="下步审批人"></textarea>
-                            </div>
+                            </div>--%>
+                            <ul id="assigneeNextTree" class="easyui-tree" style="padding-top: 5px"></ul>
                         </div>
-                            <%--<table class="grid">
-                                <tr>
-                                    <td width="100px">自定义参数<br/>例子：{"a":"b"}</td>
-                                    <td><input class="easyui-textbox" data-options="multiline:true" name="jsonVariable" style="width:260px;height: 70px;"></td>
-                                </tr>
-                                <tr>
-                                    <td>下步审批人</td>
-                                    <td>
-                                        <input class="easyui-textbox" data-options="multiline:true" name="assigneeNext" style="width:260px;height: 70px;">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>我的意见</td>
-                                    <td>
-                                        <input class="easyui-textbox" data-options="multiline:true" name="commentContent" style="width:260px;height: 120px;">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>是否同意</td>
-                                    <td>
-                                        <input type="radio" name="commentResult" style="cursor:pointer;" value=1 checked="checked">同意</input>
-                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <input type="radio" name="commentResult" style="cursor:pointer;" value=2>不同意</input>
-                                    </td>
-                                </tr>
-                            </table>--%>
                     </div>
                 </form>
             </div>
@@ -80,7 +56,6 @@
 </div>
 <script type="text/javascript">
     $(function () {
-
         var taskId = parent.$("#taskId").val();
         if(taskId != undefined && taskId != ""){
             $('#assigneeTree').tree({
@@ -113,6 +88,9 @@
                 }
                 $("#assignee").val(assignee.id);
 
+                //设置下一节点审批人
+                selectAssigneeNext();
+
                 return isValid;
             },
             success: function (result) {
@@ -127,7 +105,58 @@
                 }
             }
         });
+        loadAssigneeNext();
     });
+
+    var loadAssigneeNextFlag = false;
+    function loadAssigneeNext(){
+        var taskId = $("#taskId").val();
+        if(!loadAssigneeNextFlag){
+            if(taskId != undefined && taskId != ""){
+                $('#assigneeNextTree').tree({
+                    url : "${ctx}/workflow/data/task/assignee/next?taskId="+taskId,
+                    animate : true,
+                    checkbox : true,
+                    lines : true
+                });
+            }
+        }
+    }
+
+    /**
+     * 设置下一节点审批人
+     */
+    function selectAssigneeNext(){
+        var roots = $('#assigneeNextTree').tree('getRoots');
+        roots = JSON.parse(JSON.stringify(roots))
+        if(roots != null && roots != undefined){
+            for(var m=0;m<roots.length;m++){
+                var child = roots[m].children;
+                for(var n=0;n<child.length;n++){
+                    if(child[n].checkState == "checked"){
+                        var id = child[n].id;
+                        var text = child[n].text;
+                        child[n] = {};
+                        child[n].userCode = id;
+                        child[n].userName = text;
+                    }else{
+                        child.splice(n,1);
+                        n--;
+                    }
+                }
+                if(child == undefined || child == null || child.length == 0){
+                    roots.splice(m, 1);
+                    m--;
+                }else{
+                    var id = roots[m].id;
+                    roots[m] = {};
+                    roots[m].taskDefinitionKey = id;
+                    roots[m].assignee = child;
+                }
+            }
+        }
+        $("#assigneeNext").val(JSON.stringify(roots));
+    }
 </script>
 </body>
 </html>

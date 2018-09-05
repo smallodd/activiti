@@ -3,17 +3,30 @@ package com.hengtian.flow.controller.manage;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.hengtian.common.enums.AssignTypeEnum;
+import com.hengtian.common.enums.CommonEnum;
+import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskListEnum;
+import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.ActivitiService;
 import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.vo.AssigneeVo;
+import com.hengtian.flow.vo.TaskNodeVo;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.CollectionUtils;
@@ -47,6 +60,10 @@ public class WorkflowDataController extends WorkflowBaseController {
     private TRuTaskService tRuTaskService;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private TUserTaskService tUserTaskService;
+    @Autowired
+    private RepositoryService repositoryService;
 
     /**
      * 流程定义列表-分页
@@ -205,5 +222,63 @@ public class WorkflowDataController extends WorkflowBaseController {
     @ResponseBody
     public Object processDefList(Integer appKey, String nameOrKey,Integer page, Integer rows){
         return workflowService.queryProcessDefinitionList(appKey, nameOrKey, page, rows);
+    }
+
+    /**
+     * 运行中的任务获取下步节点审批人
+     * @param taskId 任务ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 9:40
+     */
+    @ResponseBody
+    @SysLog("任务详情")
+    @ApiOperation(httpMethod = "POST", value = "下步节点审批人")
+    @RequestMapping(value = "/task/assignee/next", method = RequestMethod.POST)
+    public Object getNextAssignee(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId){
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if(task == null){
+            return renderError("taskId无效或任务已完成");
+        }
+
+        JSONArray result = new JSONArray();
+
+        //查询流程定义信息
+        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(task.getProcessDefinitionId());
+
+        //判断是否需要设置下一个节点审批人
+        EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+        wrapper.eq("task_def_key", task.getTaskDefinitionKey());
+        wrapper.eq("version_", processDefinition.getVersion());
+        TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
+        if(CommonEnum.DEFAULT.value.equals(tUserTask.getNeedSetNext())){
+            return result;
+        }
+
+        List<TaskNodeVo> nextAssigneeList = workflowService.getNextAssigneeWhenRoleApprove(task);
+        if(CollectionUtils.isNotEmpty(nextAssigneeList)){
+            List<AssigneeVo> assigneeList = Lists.newArrayList();
+            for(TaskNodeVo taskNodeVo : nextAssigneeList){
+                JSONObject json = new JSONObject();
+                json.element("id", taskNodeVo.getTaskDefinitionKey());
+                json.element("text", taskNodeVo.getTaskDefinitionName());
+                json.put("state", "closed");
+                assigneeList = taskNodeVo.getAssignee();
+                if(CollectionUtils.isNotEmpty(assigneeList)){
+                    JSONArray children = new JSONArray();
+                    for(AssigneeVo assigneeVo : assigneeList){
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.element("id", assigneeVo.getUserCode());
+                        jsonObject.element("text", assigneeVo.getUserName());
+
+                        children.add(jsonObject);
+                    }
+                    json.element("children", children);
+                }
+
+                result.add(json);
+            }
+        }
+        return result;
     }
 }
