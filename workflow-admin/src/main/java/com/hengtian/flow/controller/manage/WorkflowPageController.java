@@ -158,7 +158,7 @@ public class WorkflowPageController extends WorkflowBaseController{
         String processInstanceId = task.getProcessInstanceId();
 
         List<CommentVo> comments = new ArrayList<CommentVo>();
-        List<Comment> commentList= taskService.getProcessInstanceComments(processInstanceId);
+        List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
 
         for(Comment comment : commentList){
             CommentEntity c = (CommentEntity)comment;
