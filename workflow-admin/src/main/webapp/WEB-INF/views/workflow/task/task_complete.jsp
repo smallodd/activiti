@@ -26,6 +26,7 @@
                     <input type="hidden" name="taskId" id="taskId" value="${task.id}">
                     <input type="hidden" name="assignee" id="assignee"/>
                     <input type="hidden" name="assigneeNext" id="assigneeNext"/>
+                    <input type="hidden" name="needSetNext" id="needSetNext"/>
                     <div id="tt" class="easyui-tabs" style="width:100%;height:99%">
                         <div title="审批结果/意见" style="padding:10px;display:none;">
                             <div class="easyui-panel" title="审批意见" style="width: 100%;padding:1px;">
@@ -37,17 +38,19 @@
                                 <input type="radio" name="commentResult" style="cursor:pointer;" value=2>不同意</input>
                             </div>
                         </div>
-                        <div title="自定义参数" data-options="closable:true" style="overflow:auto;padding:10px;display:none;">
+                        <div title="自定义参数" style="overflow:auto;padding:10px;display:none;">
                             <div class="easyui-panel" title='自定义参数 例子：{"a":"b"}' style="width: 100%;padding:1px;">
                                 <textarea data-options="multiline:true" name="jsonVariable" style="width:100%;height: 88%;overflow-y:auto;resize:none" placeholder="自定义参数"></textarea>
                             </div>
                         </div>
-                        <div title="下步审批人" data-options="closable:true" style="padding:10px;display:none;">
-                            <%--<div class="easyui-panel" title="下步审批人" style="width: 100%;padding:1px;">
-                                <textarea data-options="multiline:true" name="assigneeNext" style="width:100%;height: 88%;overflow-y:auto;resize:none" placeholder="下步审批人"></textarea>
-                            </div>--%>
-                            <ul id="assigneeNextTree" class="easyui-tree" style="padding-top: 5px"></ul>
-                        </div>
+                        <c:if test="${needSetNext == 1}">
+                            <div title="下步审批人" data-options="closable:true" style="padding:10px;display:none;">
+                                    <%--<div class="easyui-panel" title="下步审批人" style="width: 100%;padding:1px;">
+                                        <textarea data-options="multiline:true" name="assigneeNext" style="width:100%;height: 88%;overflow-y:auto;resize:none" placeholder="下步审批人"></textarea>
+                                    </div>--%>
+                                <ul id="assigneeNextTree" class="easyui-tree" style="padding-top: 5px"></ul>
+                            </div>
+                        </c:if>
                     </div>
                 </form>
             </div>
@@ -110,6 +113,10 @@
 
     var loadAssigneeNextFlag = false;
     function loadAssigneeNext(){
+        var needSetNext = $("#needSetNext").val();
+        if(needSetNext == 0){
+            return;
+        }
         var taskId = $("#taskId").val();
         if(!loadAssigneeNextFlag){
             if(taskId != undefined && taskId != ""){

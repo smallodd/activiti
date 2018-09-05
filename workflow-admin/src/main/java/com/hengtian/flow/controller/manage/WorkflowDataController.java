@@ -3,18 +3,14 @@ package com.hengtian.flow.controller.manage;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.hengtian.common.enums.AssignTypeEnum;
-import com.hengtian.common.enums.CommonEnum;
-import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskListEnum;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.ActivitiService;
 import com.hengtian.flow.service.TRuTaskService;
-import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
@@ -24,15 +20,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
-import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -60,10 +52,6 @@ public class WorkflowDataController extends WorkflowBaseController {
     private TRuTaskService tRuTaskService;
     @Autowired
     private TaskService taskService;
-    @Autowired
-    private TUserTaskService tUserTaskService;
-    @Autowired
-    private RepositoryService repositoryService;
 
     /**
      * 流程定义列表-分页
@@ -242,19 +230,6 @@ public class WorkflowDataController extends WorkflowBaseController {
         }
 
         JSONArray result = new JSONArray();
-
-        //查询流程定义信息
-        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(task.getProcessDefinitionId());
-
-        //判断是否需要设置下一个节点审批人
-        EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
-        wrapper.eq("task_def_key", task.getTaskDefinitionKey());
-        wrapper.eq("version_", processDefinition.getVersion());
-        TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
-        if(CommonEnum.DEFAULT.value.equals(tUserTask.getNeedSetNext())){
-            return result;
-        }
-
         List<TaskNodeVo> nextAssigneeList = workflowService.getNextAssigneeWhenRoleApprove(task);
         if(CollectionUtils.isNotEmpty(nextAssigneeList)){
             List<AssigneeVo> assigneeList = Lists.newArrayList();
