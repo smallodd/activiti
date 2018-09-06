@@ -102,7 +102,7 @@
                 title : '资源名称',
                 field : 'resourceName',
                 formatter : function(value, row, index){
-                    var str = $.formatString('<a target="_blank" href="${ctx}/activiti/getProcessResource?type=xml&pdid={0}">{1}</a>', row.id ,row.resourceName);
+                    var str = $.formatString('<a target="_blank" href="${ctx}/activiti/getProcessResource?resourceType=xml&pdid={0}">{1}</a>', row.id ,row.resourceName);
                     return str;
                 }
             }, {
@@ -142,7 +142,7 @@
                         str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-configUser" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="configAssigneeFun(\'{0}\');" >设定人员</a>', row.id);
                     </shiro:hasPermission>
                     <shiro:hasPermission name="/task/start">
-                        str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-start" data-options="plain:true,iconCls:\'fi-play icon-green\'" onclick="startProcessInstance(\'{0}\');" >模拟开启</a>', row.key);
+                        str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-start" data-options="plain:true,iconCls:\'fi-play icon-green\'" onclick="startProcessInstance(\'{0}\');" >模拟开启</a>', row.id);
                     </shiro:hasPermission>
                     return str;
                 }
@@ -160,19 +160,20 @@
     /**
      * 开启流程实例
      */
-    function startProcessInstance(processKey){
-        $.ajax({
-            type: 'POST',
-            dataType : 'json',
-            url: '${ctx}/workflow/action/process/start',
-            data: {"processKey":processKey},
-            success: function(json){
-                if(json.success) {
-                    parent.$.messager.alert('提示', json.msg, 'info');
-                }else{
-                    parent.$.messager.alert('提示', json.msg, 'error');
+    function startProcessInstance(processDefinitionId){
+        parent.$.modalDialog({
+            title : '开启流程',
+            width : 400,
+            height : 300,
+            href : '${ctx}/workflow/page/process/start/'+processDefinitionId,
+            buttons : [ {
+                text : '开启流程',
+                handler : function() {
+                    parent.$.modalDialog.openner_dataGrid = processDefDataGrid;//因为添加成功之后，需要刷新这个treeGrid，所以先预定义好
+                    var f = parent.$.modalDialog.handler.find('#processStartForm');
+                    f.submit();
                 }
-            }
+            } ]
         });
     }
 

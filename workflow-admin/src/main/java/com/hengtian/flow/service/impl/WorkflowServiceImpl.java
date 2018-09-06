@@ -40,6 +40,10 @@ import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
+import org.activiti.engine.impl.juel.Builder;
+import org.activiti.engine.impl.juel.IdentifierNode;
+import org.activiti.engine.impl.juel.Tree;
+import org.activiti.engine.impl.juel.TreeBuilder;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
@@ -62,6 +66,8 @@ import sun.misc.BASE64Encoder;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements WorkflowService {
@@ -2679,5 +2685,34 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public RuProcinst queryProcessInstanceByBusinessKey(Integer appKey, String businessKey, Integer suspensionState){
         return workflowDao.queryProcessInstanceByBusinessKey(appKey, businessKey, suspensionState);
+    }
+
+    /**
+     * 获取juel表达式中变量名称
+     * @param expressionStr ${ a==1}${b==2   }${c>3}${d<4}${e!=9}
+     * @return Set ["a","b","c","d","e"]
+     * @author houjinrong@chtwm.com
+     * date 2018/9/6 11:49
+     */
+    @Override
+    public Set<String> getExpressionName(String expressionStr){
+        //expressionStr 例子：${ a==1}${b==2   }${c>3}${d<4}${e!=9}
+        Set<String> set = Sets.newHashSet();
+        //(?<=\{)(.+?)(?=\}) 匹配{}中内容
+        //(?=\$\{)(.+?)(?<=\}) 匹配${}中内容
+        Pattern pattern = Pattern.compile("(?=\\$\\{)(.+?)(?<=\\})");
+
+        TreeBuilder builder = new Builder();
+        Matcher matcher = pattern.matcher(expressionStr);
+        while(matcher.find()){
+            String g = matcher.group().trim();
+
+            Tree tree =builder.build(g);
+            Iterable<IdentifierNode> node = tree.getIdentifierNodes();
+            for(IdentifierNode iden :node){
+                set.add(iden.getName());
+            }
+        }
+        return set;
     }
 }

@@ -382,4 +382,13 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/8/24 11:36
      */
     RuProcinst queryProcessInstanceByBusinessKey(Integer appKey, String businessKey, Integer suspensionState);
+
+    /**
+     * 获取juel表达式中变量名称
+     * @param expressionStr ${ a==1}${b==2   }${c>3}${d<4}${e!=9}
+     * @return Set ["a","b","c","d","e"]
+     * @author houjinrong@chtwm.com
+     * date 2018/9/6 11:49
+     */
+    Set<String> getExpressionName(String expressionStr);
 }
