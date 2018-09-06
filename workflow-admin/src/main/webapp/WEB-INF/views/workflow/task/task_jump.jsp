@@ -8,7 +8,7 @@
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
-    <div data-options="region:'center',border:false" style="overflow:auto;padding-top:10px;text-align:center">
+    <div data-options="region:'center',border:false" style="overflow:hidden;padding-top:15px;padding-left:17px;text-align:center">
         <form id="taskJumpForm" method="post">
             <input type="hidden" name="taskId" id="taskId" value="${taskId}"/>
             <input type="hidden" name="processInstanceId" id="processInstanceId" value="${processInstanceId}"/>
