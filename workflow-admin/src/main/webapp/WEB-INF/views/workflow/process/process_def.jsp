@@ -102,7 +102,7 @@
                 title : '资源名称',
                 field : 'resourceName',
                 formatter : function(value, row, index){
-                    var str = $.formatString('<a target="_blank" href="${ctx}/activiti/getProcessResource?resourceType=xml&pdid={0}">{1}</a>', row.id ,row.resourceName);
+                    var str = $.formatString('<a target="_blank" href="${ctx}/activiti/getProcessResource?resourceType=xml&processDefinitionId={0}">{1}</a>', row.id ,row.resourceName);
                     return str;
                 }
             }, {

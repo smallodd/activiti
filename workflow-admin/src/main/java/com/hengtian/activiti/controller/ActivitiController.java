@@ -564,8 +564,8 @@ public class ActivitiController extends BaseController{
      */
     @RequestMapping("/getProcessResource")
     public void getProcessResource(
-    		@RequestParam("type") String resourceType,
-    		@RequestParam("pdid") String processDefinitionId,
+    		@RequestParam("resourceType") String resourceType,
+    		@RequestParam("processDefinitionId") String processDefinitionId,
     		HttpServletResponse response){
     	try {
 			InputStream in = activitiService.getProcessResource(resourceType, processDefinitionId);
