@@ -91,7 +91,6 @@
                     //设置下一节点审批人
                     selectAssigneeNext();
                     setVariables();
-                    return false;
                     return isValid;
                 },
                 success: function (result) {
@@ -193,7 +192,6 @@
                 }
             })
             $("#jsonVariable").val(JSON.stringify(varObj));
-            console.info(JSON.stringify(varObj));
         }
     </script>
 </body>
