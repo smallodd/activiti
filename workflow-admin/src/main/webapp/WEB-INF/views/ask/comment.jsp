@@ -8,7 +8,7 @@
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false">
-    <div data-options="region:'center',border:false" style="overflow:auto;padding-top:10px;text-align:center">
+    <div data-options="region:'center',border:false" style="overflow:hidden;padding:15px;text-align:center">
         <form id="taskJumpForm" method="post">
             <input type="hidden" name="currentTaskDefKey" id="currentTaskDefKey" value="${currentTaskDefKey}"/>
             <input type="hidden" name="processInstanceId" id="processInstanceId" value="${processInstanceId}"/>
