@@ -245,8 +245,8 @@ function modelEdit(modelId) {
   function  modelCopy(id){
       parent.$.modalDialog({
           title : '创建流程模型',
-          width : 500,
-          height : 300,
+          width : 400,
+          height : 280,
           href : '${ctx}/activiti/model/copyPage/'+id,
           buttons : [ {
               text : '确定',
