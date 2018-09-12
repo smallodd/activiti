@@ -18,6 +18,7 @@ import com.hengtian.flow.service.WorkflowService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -66,23 +67,23 @@ public class WorkflowActionController extends BaseController {
     @SysLog(value="任务开启模拟")
     @PostMapping("/process/start")
     @ResponseBody
-    public Object startProcessInstance(String processKey){
-        if(StringUtils.isBlank(processKey)){
-            return new Result("流程定义KEY不能为空");
+    public Object startProcessInstance(String processDefinitionId, String jsonVariables){
+        if(StringUtils.isBlank(processDefinitionId)){
+            return new Result("流程定义ID不能为空");
         }
 
-        Model model = repositoryService.createModelQuery().modelKey(processKey).singleResult();
-        if(model == null){
-            return new Result("模型key【"+processKey+"】对应的模型不存在");
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
+        if(processDefinition == null){
+            return new Result("流程定义【"+processDefinition+"】对应的流程不存在");
         }
 
         ProcessParam processParam = new ProcessParam();
         processParam.setBusinessKey(UUID.randomUUID().toString());
         processParam.setCustomApprover(false);
         processParam.setCreatorId("admin");
-        processParam.setProcessDefinitionKey(processKey);
+        processParam.setProcessDefinitionKey(processDefinition.getKey());
         EntityWrapper entityWrapper=new EntityWrapper();
-        entityWrapper.where("model_key={0}",processKey);
+        entityWrapper.where("model_key={0}",processDefinition.getKey());
         List<AppModel> list = appModelService.selectList(entityWrapper);
         if(list == null || list.size() == 0){
             return renderError("启动流程失败：模型未关联到应用系统中");
@@ -91,8 +92,8 @@ public class WorkflowActionController extends BaseController {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String dateNowStr = sdf.format(new Date());
-        processParam.setTitle(model.getName() + "-" + dateNowStr);
-
+        processParam.setTitle(processDefinition.getName() + "-" + dateNowStr);
+        processParam.setJsonVariables(jsonVariables);
         try {
             return workflowService.startProcessInstance(processParam);
         } catch (Exception e) {

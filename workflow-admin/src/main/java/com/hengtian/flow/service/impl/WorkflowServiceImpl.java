@@ -7,16 +7,11 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.common.common.CodeConts;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.enums.*;
-import com.hengtian.common.param.ProcessParam;
-import com.hengtian.common.param.TaskActionParam;
-import com.hengtian.common.param.TaskParam;
-import com.hengtian.common.param.TaskQueryParam;
+import com.hengtian.common.param.*;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
@@ -45,15 +40,21 @@ import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.history.NativeHistoricTaskInstanceQuery;
+import org.activiti.engine.impl.juel.Builder;
+import org.activiti.engine.impl.juel.IdentifierNode;
+import org.activiti.engine.impl.juel.Tree;
+import org.activiti.engine.impl.juel.TreeBuilder;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.NativeProcessDefinitionQuery;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.*;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -65,6 +66,8 @@ import sun.misc.BASE64Encoder;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements WorkflowService {
@@ -538,9 +541,24 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         EntityWrapper<TRuTask> entityWrapper = new EntityWrapper();
         entityWrapper.where("task_id={0}", task.getId());
         List<TRuTask> tRuTasks = tRuTaskService.selectList(entityWrapper);
-        TRuTask ruTask = validateTaskAssignee(task, taskParam.getAssignee(), tRuTasks);
+
+        //审批人信息集合
+        Set<String> assigneeSet = Sets.newLinkedHashSet();
+        assigneeSet.add(taskParam.getAssignee());
+        //检验代理人信息
+        if(StringUtils.isNotBlank(taskParam.getAssigneeAgent())){
+            if(StringUtils.isNotBlank(taskParam.getAssigneeAgentSecret())){
+                if(!getAssigneeSecret(taskParam.getAssignee(), taskParam.getAssigneeAgent()).equals(taskParam.getAssigneeAgentSecret())){
+                    return new Result("【"+taskParam.getAssignee()+"】没有权限代理【"+taskParam.getAssigneeAgent()+"】审批任务【"+task.getId()+"】");
+                }
+            }else{
+                return new Result("【"+taskParam.getAssignee()+"】没有权限代理【"+taskParam.getAssigneeAgent()+"】审批任务【"+task.getId()+"】");
+            }
+            assigneeSet.addAll(Arrays.asList(taskParam.getAssigneeAgent().split(",")));
+        }
+        TRuTask ruTask = validateTaskAssignee(task, assigneeSet, tRuTasks);
         if(ruTask == null){
-            log.info("{}没有操作任务{}的权限",taskParam.getAssignee(),task.getId());
+            log.info("{}没有操作任务{}的权限",assigneeSet,task.getId());
             result.setMsg("该用户没有操作此任务的权限");
             result.setCode(Constant.TASK_NOT_BELONG_USER);
             return result;
@@ -610,16 +628,21 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         boolean customApprover = (boolean) runtimeService.getVariable(task.getProcessInstanceId(), ConstantUtils.SET_ASSIGNEE_FLAG);
 
-        //如果是代理人问询，添加记录
-        if(StringUtils.isNotBlank(taskParam.getAssigneeAgent())){
-            TaskAgent taskAgent = new TaskAgent();
-            taskAgent.setAgentType(2);
-            taskAgent.setAssignee(taskParam.getAssignee());
-            taskAgent.setAssigneeAgent(taskParam.getAssigneeAgent());
-            taskAgent.setTaskId(task.getId());
-            taskAgent.setCreateTime(new Date());
+        //如果是代理人审批，添加记录
+        if(StringUtils.isNotBlank(taskParam.getAssigneeAgent()) && !assigneeSet.contains(taskParam.getAssignee())){
+            List<TaskAgent> taskAgentList = Lists.newArrayList();
+            for(String assigneeAgent : assigneeSet){
+                TaskAgent taskAgent = new TaskAgent();
+                taskAgent.setId(null);
+                taskAgent.setAgentType(2);
+                taskAgent.setAssignee(assigneeAgent);
+                taskAgent.setAssigneeAgent(taskParam.getAssignee());
+                taskAgent.setTaskId(task.getId());
+                taskAgent.setCreateTime(new Date());
 
-            taskAgentService.insert(taskAgent);
+                taskAgentList.add(taskAgent);
+            }
+            taskAgentService.insertBatch(taskAgentList);
         }
 
         if (TaskTypeEnum.COUNTERSIGN.value.equals(tUserTask.getTaskType()) || AssignTypeEnum.EXPR.code.equals(tUserTask.getAssignType())) {
@@ -644,7 +667,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 approveCountRefuse ++;
             }
 
-            approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NOW.value,++approveCountNow);
+            if(assigneeSet.size() + approveCountNow - approveCountRefuse < approveCountNeed){
+                approveCountNow = assigneeSet.size() + approveCountNow;
+            }else{
+                assigneeSet = ImmutableSet.copyOf(Iterables.limit(assigneeSet, approveCountNeed + approveCountRefuse - approveCountNow));
+                approveCountNow = approveCountNeed + approveCountRefuse;
+            }
+
+            approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_NOW.value,approveCountNow);
             approveCountJson.put(TaskVariableEnum.APPROVE_COUNT_REFUSE.value,approveCountRefuse);
             taskService.setVariableLocal(task.getId(), task.getTaskDefinitionKey()+":"+ TaskVariableEnum.APPROVE_COUNT.value,approveCountJson.toJSONString());
 
@@ -652,7 +682,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             if(approveCountAgree >= approveCountNeed){
                 //------------任务完成-通过------------
                 String assignee = task.getAssignee();
-                taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_Y"):(assignee+","+taskParam.getAssignee()+"_Y"));
+                String assignee_ = null;
+                for(String a : assigneeSet){
+                    assignee_ = (assignee_==null?"":",")+a+"_Y";
+                }
+                taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(assignee_):(assignee+","+assignee_));
                 taskService.complete(task.getId(), map);
                 if(AssignTypeEnum.PERSON.code.equals(ruTask.getAssigneeType())){
                     //人员审批
@@ -677,7 +711,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 if(approveCountTotal - approveCountNow + approveCountAgree < approveCountNeed){
                     //------------任务完成-未通过------------
                     String assignee = task.getAssignee();
-                    taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_N"):(assignee+","+taskParam.getAssignee()+"_N"));
+                    String assignee_ = null;
+                    for(String a : assigneeSet){
+                        assignee_ = (assignee_==null?"":",")+a+"_N";
+                    }
+                    taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(assignee_):(assignee+","+assignee_));
                     deleteProcessInstance(task.getProcessInstanceId(), "refused");
                     if(AssignTypeEnum.PERSON.code.equals(ruTask.getAssigneeType())){
                         TRuTask tRuTask = new TRuTask();
@@ -698,7 +736,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }else{
                     //------------任务继续------------
                     String assignee = task.getAssignee();
-                    taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(taskParam.getAssignee()+"_Y"):(assignee+","+taskParam.getAssignee()+"_Y"));
+                    String assignee_ = null;
+                    for(String a : assigneeSet){
+                        assignee_ = (assignee_==null?"":",")+a+"_Y";
+                    }
+                    taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(assignee_):(assignee+","+assignee_));
 
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
                     tWorkDetail.setOperateAction("审批");
@@ -840,15 +882,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     /**
      * 校验审批人是否有权限审批
      * @param task 任务对象
-     * @param assignee 审批人工号
+     * @param assigneeSet 审批人工号集合
      * @param tRuTasks 节点审批信息
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/6/4 17:44
      */
     @Override
-    public TRuTask validateTaskAssignee(Task task, String assignee, List<TRuTask> tRuTasks){
-        return validTaskAssignee(task, assignee, tRuTasks);
+    public TRuTask validateTaskAssignee(Task task, Set<String> assigneeSet, List<TRuTask> tRuTasks){
+        return validTaskAssignee(task, assigneeSet, tRuTasks);
     }
 
     /**
@@ -1710,21 +1752,23 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result processSuspend(TaskActionParam taskActionParam) {
+    public Result processSuspend(TaskActionParam taskActionParam, boolean needLog) {
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).active().singleResult();
         if(processInstance == null){
             return new Result("流程实例不存在或流程已结束或已暂停");
         }
         runtimeService.suspendProcessInstanceById(taskActionParam.getProcessInstanceId());
-        TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setOperator(taskActionParam.getUserId());
-        tWorkDetail.setOperateAction(TaskActionEnum.SUSPEND.desc);
-        tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
-        tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
-        tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】挂起了流程【"+taskActionParam.getProcessInstanceId()+"】");
-        tWorkDetail.setTaskId("");
-        workDetailService.insert(tWorkDetail);
+        if(needLog){
+            TWorkDetail tWorkDetail = new TWorkDetail();
+            tWorkDetail.setOperator(taskActionParam.getUserId());
+            tWorkDetail.setOperateAction(TaskActionEnum.SUSPEND.desc);
+            tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
+            tWorkDetail.setCreateTime(new Date());
+            tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
+            tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】挂起了流程【"+taskActionParam.getProcessInstanceId()+"】");
+            tWorkDetail.setTaskId("");
+            workDetailService.insert(tWorkDetail);
+        }
         return new Result(true,Constant.SUCCESS, "挂起流程成功");
     }
 
@@ -1738,21 +1782,23 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result processActivate(TaskActionParam taskActionParam) {
+    public Result processActivate(TaskActionParam taskActionParam, boolean needLog) {
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).suspended().singleResult();
         if(processInstance == null){
             return new Result("流程实例不存在或流程已结束或已激活");
         }
         runtimeService.activateProcessInstanceById(taskActionParam.getProcessInstanceId());
-        TWorkDetail tWorkDetail = new TWorkDetail();
-        tWorkDetail.setOperator(taskActionParam.getUserId());
-        tWorkDetail.setOperateAction(TaskActionEnum.ACTIVATE.desc);
-        tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
-        tWorkDetail.setCreateTime(new Date());
-        tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
-        tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】激活了流程【"+taskActionParam.getProcessInstanceId()+"】");
-        tWorkDetail.setTaskId("");
-        workDetailService.insert(tWorkDetail);
+        if(needLog) {
+            TWorkDetail tWorkDetail = new TWorkDetail();
+            tWorkDetail.setOperator(taskActionParam.getUserId());
+            tWorkDetail.setOperateAction(TaskActionEnum.ACTIVATE.desc);
+            tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
+            tWorkDetail.setCreateTime(new Date());
+            tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
+            tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】激活了流程【" + taskActionParam.getProcessInstanceId() + "】");
+            tWorkDetail.setTaskId("");
+            workDetailService.insert(tWorkDetail);
+        }
         return new Result(true,Constant.SUCCESS, "激活流程成功");
     }
 
@@ -1797,8 +1843,20 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public void openTaskList(PageInfo pageInfo) {
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
+        List<TaskAgentQueryParam> taskAgentList = (List<TaskAgentQueryParam>) pageInfo.getCondition().get("taskAgentList");
+        List<String> assignees = Lists.newArrayList();
+        if(CollectionUtils.isNotEmpty(taskAgentList)){
+            for(TaskAgentQueryParam taskAgentQueryParam : taskAgentList){
+                assignees.add(taskAgentQueryParam.getAssigneeAgent());
+            }
+        }
         for(TaskResult t : list){
-            t.setAssigneeBefore(getBeforeAssignee(t.getTaskId()));
+            HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(t.getTaskId()).singleResult();
+            t.setAssigneeBefore(getBeforeAssignee(hisTask));
+            //设置委托人
+            if(StringUtils.isBlank(t.getAssigneeDelegate())){
+                t.setAssigneeDelegate(getAssigneeDelegate(getTaskAssignee(hisTask, (Integer)pageInfo.getCondition().get("appKey")), assignees));
+            }
             logger.info("任务ID【"+t.getTaskId()+"】的对应的上步审批人为【"+t.getAssigneeBefore()+"】");
             if(StringUtils.isNotBlank(t.getAssigneeBefore())) {
                 String[] assigneeBefore = t.getAssigneeBefore().split(",");
@@ -2260,9 +2318,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         wrapper.eq("task_id", taskId);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
 
-        if(validateTaskAssignee(task, userId,tRuTasks) == null){
+        //权限校验
+        /*if(validateTaskAssignee(task, userId,tRuTasks) == null){
             return new Result("用户【"+userId+"】无权查看任务【"+taskId+"】");
-        }
+        }*/
         TaskNodeResult taskNodeResult=setButtons(TaskNodeResult.toTaskNodeResult(task));
         EntityWrapper entityWrapper=new EntityWrapper();
         entityWrapper.where("current_task_id={0}",taskId).andNew("is_ask_end={0}",0);
@@ -2461,8 +2520,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public List<AssigneeVo> getTaskAssignee(TaskInfo task, Integer appKey){
         if(appKey == null){
-            HistoricVariableInstance historicVariableInstance = historyService.createHistoricVariableInstanceQuery().executionId(task.getExecutionId()).variableName("appKey").singleResult();
-            appKey = (Integer)historicVariableInstance.getValue();
+            appKey = getAppKey(task.getProcessInstanceId());
         }
 
         String assignee = task.getAssignee();
@@ -2496,30 +2554,45 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         wrapper.eq("task_def_key", task.getTaskDefinitionKey());
 
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+        Map<String, AssigneeVo> assigneeVoMap = Maps.newHashMap();
         for(TRuTask rt : tRuTasks){
-            AssigneeVo assigneeVo = new AssigneeVo();
             if(StringUtils.isNotBlank(rt.getAssigneeReal())){
                 String[] array = rt.getAssigneeReal().split(",");
-                for(String userId : array){
-                    assigneeVo.setUserCode(userId);
-                    assigneeVo.setUserName(getUserName(userId));
+                for(String userCode : array){
+                    if(assigneeVoMap.containsKey(userCode)){
+                        continue;
+                    }
+                    AssigneeVo assigneeVo = new AssigneeVo();
+                    assigneeVo.setUserCode(userCode);
+                    assigneeVo.setUserName(getUserName(userCode));
+                    if(assigneeSet.contains(assigneeVo.getUserCode())) {
+                        assigneeVo.setIsComplete(1);
+                    }else {
+                        assigneeVo.setIsComplete(0);
+                    }
+
+                    assigneeVoMap.put(userCode, assigneeVo);
                 }
             }else if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
                 List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(rt.getAssignee()));
                 for(RbacUser u : users){
+                    if(assigneeVoMap.containsKey(u.getCode())){
+                        continue;
+                    }
+                    AssigneeVo assigneeVo = new AssigneeVo();
                     assigneeVo.setUserCode(u.getCode());
                     assigneeVo.setUserName(u.getName());
+                    if(assigneeSet.contains(assigneeVo.getUserCode())) {
+                        assigneeVo.setIsComplete(1);
+                    }else {
+                        assigneeVo.setIsComplete(0);
+                    }
+
+                    assigneeVoMap.put(u.getCode(), assigneeVo);
                 }
             }
-
-            if(assigneeSet.contains(assigneeVo.getUserCode())) {
-                assigneeVo.setIsComplete(1);
-            }else {
-                assigneeVo.setIsComplete(0);
-            }
-
-            assigneeVoList.add(assigneeVo);
         }
+        assigneeVoList.addAll(assigneeVoMap.values());
         return assigneeVoList;
     }
 
@@ -2533,8 +2606,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public String getAssigneeSecret(String assignee, String assigneeAgent){
-        BASE64Encoder encoder = new BASE64Encoder();
-        return encoder.encode((assignee+"("+assignee+assigneeAgent+")").getBytes());
+        String md5Hex = DigestUtils.md5Hex(assignee + "(" + assigneeAgent + ")");
+        logger.info("MD5加密字符串为：{}", md5Hex);
+        return md5Hex;
     }
 
     /**
@@ -2548,27 +2622,39 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public PageInfo queryProcessDefinitionList(Integer appKey, String nameOrKey, Integer page, Integer rows){
         PageInfo pageInfo = new PageInfo(page, rows);
+        NativeProcessDefinitionQuery query = repositoryService.createNativeProcessDefinitionQuery();
         String select = "SELECT arp.* ";
         String selectCount = "SELECT COUNT(*) ";
         StringBuffer sb = new StringBuffer();
-        sb.append("FROM `act_re_procdef` AS arp, `t_app_model` AS tam WHERE tam.`app_key`=#{appKey} AND arp.`KEY_`=tam.`model_key` AND arp.`VERSION_` =(SELECT MAX(`VERSION_`) FROM `act_re_procdef` AS arp_ WHERE arp.`KEY_`=arp_.`KEY_`)");
-        NativeProcessDefinitionQuery query = repositoryService.createNativeProcessDefinitionQuery();
-        query.parameter("appKey", appKey);
+
+        if(appKey != null){
+            sb.append("FROM `act_re_procdef` AS arp, `t_app_model` AS tam WHERE tam.`app_key`=#{appKey} AND arp.`KEY_`=tam.`model_key` AND arp.`VERSION_` =(SELECT MAX(`VERSION_`) FROM `act_re_procdef` AS arp_ WHERE arp.`KEY_`=arp_.`KEY_`)");
+            query.parameter("appKey", appKey);
+        }else{
+            sb.append("FROM `act_re_procdef` AS arp WHERE arp.`VERSION_` =(SELECT MAX(`VERSION_`) FROM `act_re_procdef` AS arp_ WHERE arp.`KEY_`=arp_.`KEY_`)");
+        }
+
         if(StringUtils.isNotBlank(nameOrKey)){
             query.parameter("nameOrKey", nameOrKey);
             sb.append(" AND (arp.`KEY_` LIKE CONCAT('%',#{nameOrKey},'%') OR arp.`NAME_` LIKE CONCAT('%',#{nameOrKey},'%'))");
         }
         List<ProcessDefinition> processDefinitions = query.sql(select + sb.toString()).listPage(pageInfo.getFrom(), pageInfo.getSize());
+        List<ProcessDefinitionVo> processDefinitionVos = Lists.newArrayList();
         if(CollectionUtils.isNotEmpty(processDefinitions)){
-            List<ProcessDefinitionVo> processDefinitionVos = Lists.newArrayList();
             for(ProcessDefinition processDefinition : processDefinitions){
                 ProcessDefinitionVo processDefinitionVo = new ProcessDefinitionVo();
                 BeanUtils.copy(processDefinition, processDefinitionVo);
                 processDefinitionVos.add(processDefinitionVo);
-            }
-            pageInfo.setRows(processDefinitionVos);
-        }
 
+                processDefinitionVo.setVersion(processDefinition.getVersion());
+                Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(processDefinition.getDeploymentId()).singleResult();
+                processDefinitionVo.setDeploymentId(processDefinition.getDeploymentId());
+                processDefinitionVo.setDeployTime(deployment.getDeploymentTime());
+                //挂起状态(1.未挂起 2.已挂起)
+                processDefinitionVo.setSuspended(processDefinition.isSuspended()==true?"2":"1");
+            }
+        }
+        pageInfo.setRows(processDefinitionVos);
         pageInfo.setTotal((int) query.sql(selectCount + sb.toString()).count());
         return pageInfo;
     }
@@ -2599,5 +2685,34 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public RuProcinst queryProcessInstanceByBusinessKey(Integer appKey, String businessKey, Integer suspensionState){
         return workflowDao.queryProcessInstanceByBusinessKey(appKey, businessKey, suspensionState);
+    }
+
+    /**
+     * 获取juel表达式中变量名称
+     * @param expressionStr ${ a==1}${b==2   }${c>3}${d<4}${e!=9}
+     * @return Set ["a","b","c","d","e"]
+     * @author houjinrong@chtwm.com
+     * date 2018/9/6 11:49
+     */
+    @Override
+    public Set<String> getExpressionName(String expressionStr){
+        //expressionStr 例子：${ a==1}${b==2   }${c>3}${d<4}${e!=9}
+        Set<String> set = Sets.newHashSet();
+        //(?<=\{)(.+?)(?=\}) 匹配{}中内容
+        //(?=\$\{)(.+?)(?<=\}) 匹配${}中内容
+        Pattern pattern = Pattern.compile("(?=\\$\\{)(.+?)(?<=\\})");
+
+        TreeBuilder builder = new Builder();
+        Matcher matcher = pattern.matcher(expressionStr);
+        while(matcher.find()){
+            String g = matcher.group().trim();
+
+            Tree tree =builder.build(g);
+            Iterable<IdentifierNode> node = tree.getIdentifierNodes();
+            for(IdentifierNode iden :node){
+                set.add(iden.getName());
+            }
+        }
+        return set;
     }
 }

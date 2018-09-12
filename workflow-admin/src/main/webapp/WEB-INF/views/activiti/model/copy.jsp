@@ -8,20 +8,15 @@
 </head>
 <body>
 <div class="easyui-layout" data-options="fit:true,border:false" >
-    <div data-options="region:'center',border:false" style="overflow:hidden;padding:3px;">
+    <div data-options="region:'center',border:false" style="overflow:hidden;padding:18px;">
         <form id="modelAddForm" method="post">
             <input name="id" type="hidden" value="${id}">
-            <table class="grid">
-                <tr>
-                    <td>模型名称</td>
-                    <td><input name="name" type="text" class="easyui-textbox" style="width:240px;height:29px;" data-options="required:true"></td>
-                </tr>
-                <tr>
-                    <td>模型KEY</td>
-                    <td><input name="key" type="text" class="easyui-textbox" style="width:240px;height:29px;"></td>
-                </tr>
-
-            </table>
+            <div class="easyui-panel" title="模型名称" style="width: 350px;padding:10px;">
+                <input name="name" type="text" class="easyui-textbox" style="width:98%;height:30px;" data-options="required:true">
+            </div>
+            <div class="easyui-panel" title="模型KEY" style="width: 350px;padding:10px;">
+                <input name="key" type="text" class="easyui-textbox" style="width:98%;height:30px;">
+            </div>
         </form>
     </div>
 </div>

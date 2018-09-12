@@ -184,9 +184,22 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "未办任务列表")
     @RequestMapping(value = "/rest/task/open", method = RequestMethod.POST)
     public Object openTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
+        logger.info("查询待办任务列表开始，入参{}", taskQueryParam);
         if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
+
+        //检验代理人信息
+        if(StringUtils.isNotBlank(taskQueryParam.getAssigneeAgent())){
+            if(StringUtils.isNotBlank(taskQueryParam.getAssigneeAgentSecret())){
+                if(!workflowService.getAssigneeSecret(taskQueryParam.getAssignee(), taskQueryParam.getAssigneeAgent()).equals(taskQueryParam.getAssigneeAgentSecret())){
+                    return renderError("代理人信息不合法，没有权限查询待办任务列表。");
+                }
+            }else{
+                return renderError("代理人信息不合法，没有权限查询待办任务列表。");
+            }
+        }
+
         if(StringUtils.isNotBlank(taskQueryParam.getTaskState())){
             if(!(TaskStatusEnum.UNFINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState()) && !(TaskStatusEnum.UNFINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())){
                 logger.info("审批人状态不正确，重置为空");

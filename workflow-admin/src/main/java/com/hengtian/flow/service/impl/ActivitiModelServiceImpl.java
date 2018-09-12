@@ -9,6 +9,7 @@ import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.service.ActivitiModelService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ModelQuery;
 import org.activiti.engine.repository.NativeModelQuery;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.collections.CollectionUtils;
@@ -61,18 +62,14 @@ public class ActivitiModelServiceImpl implements ActivitiModelService {
             pageInfo.setRows(modelList);
             pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
         }else{
-            if(name != null){
-                name = "%"+name+"%";
-                List<Model> modelList = repositoryService.createModelQuery().modelNameLike(name).orderByCreateTime().desc().listPage(pageInfo.getFrom(), pageInfo.getSize());
-                pageInfo.setRows(modelList);
-                long count= repositoryService.createModelQuery().modelNameLike(name).count();
-                pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
-            }else{
-                List<Model> modelList = repositoryService.createModelQuery().orderByCreateTime().desc().listPage(pageInfo.getFrom(), pageInfo.getSize());
-                pageInfo.setRows(modelList);
-                long count= repositoryService.createModelQuery().count();
-                pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
+            ModelQuery modelQuery = repositoryService.createModelQuery();
+            if(StringUtils.isNotBlank(name)){
+                modelQuery = modelQuery.modelNameLike("%"+name+"%");
             }
+            List<Model> modelList = modelQuery.orderByCreateTime().desc().listPage(pageInfo.getFrom(), pageInfo.getSize());
+            long count= modelQuery.count();
+            pageInfo.setRows(modelList);
+            pageInfo.setTotal(Integer.parseInt(String.valueOf(count)));
         }
     }
 

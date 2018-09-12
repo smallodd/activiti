@@ -7,16 +7,19 @@ import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TRuTask;
-import com.hengtian.flow.service.RuProcinstService;
-import com.hengtian.flow.service.TRuTaskService;
-import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.CommentVo;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.UserService;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,8 +31,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 /**
@@ -51,6 +56,12 @@ public class WorkflowPageController extends WorkflowBaseController{
     private TaskService taskService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private TUserTaskService tUserTaskService;
+    @Autowired
+    private RepositoryService repositoryService;
+    @Autowired
+    private ActivitiService activitiService;
 
     /**
      * 流程定义管理
@@ -158,8 +169,9 @@ public class WorkflowPageController extends WorkflowBaseController{
         String processInstanceId = task.getProcessInstanceId();
 
         List<CommentVo> comments = new ArrayList<CommentVo>();
-        List<Comment> commentList= taskService.getProcessInstanceComments(processInstanceId);
+        List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
 
+        //审批意见
         for(Comment comment : commentList){
             CommentEntity c = (CommentEntity)comment;
             CommentVo vo = new CommentVo();
@@ -171,6 +183,17 @@ public class WorkflowPageController extends WorkflowBaseController{
             comments.add(vo);
         }
 
+
+        //查询流程定义信息
+        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(task.getProcessDefinitionId());
+
+        //判断是否需要设置下一个节点审批人
+        EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+        wrapper.eq("task_def_key", task.getTaskDefinitionKey());
+        wrapper.eq("version_", processDefinition.getVersion());
+        TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
+
+        model.addAttribute("needSetNext", tUserTask.getNeedSetNext());
         model.addAttribute("task", task);
         model.addAttribute("comments", comments);
         return "workflow/task/task_complete";
@@ -216,5 +239,24 @@ public class WorkflowPageController extends WorkflowBaseController{
     public String taskAssignee(Model model,@PathVariable("taskId") String taskId){
         model.addAttribute("taskId",taskId);
         return  "/workflow/task/task_assignee";
+    }
+
+    /**
+     * 开启流程任务
+     * @author houjinrong@chtwm.com
+     * date 2018/9/6 9:48
+     */
+    @GetMapping("/process/start/{processDefinitionId}")
+    public String processStart(Model model,@PathVariable("processDefinitionId") String processDefinitionId){
+        InputStream processResource = activitiService.getProcessResource("xml", processDefinitionId);
+        String resource = new Scanner(processResource).useDelimiter("\\Z").next();
+        Document parse = Jsoup.parse(resource);
+        String varName = parse.text();
+        if(StringUtils.isNotBlank(varName)){
+            Set<String> expressionNameSet = workflowService.getExpressionName(varName);
+            model.addAttribute("expressionNameSet",expressionNameSet);
+        }
+        model.addAttribute("processDefinitionId", processDefinitionId);
+        return  "/workflow/process/process_start";
     }
 }

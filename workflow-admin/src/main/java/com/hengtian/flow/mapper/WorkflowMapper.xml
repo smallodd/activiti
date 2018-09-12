@@ -14,6 +14,7 @@
         <result column="creatorDeptCode" property="creatorDeptCode" jdbcType="VARCHAR"/>
         <result column="processInstanceId" property="processInstanceId" jdbcType="VARCHAR"/>
         <result column="processInstanceTitle" property="processInstanceTitle" jdbcType="VARCHAR"/>
+        <result column="processDefinitionKey" property="processDefinitionKey" jdbcType="VARCHAR"/>
         <result column="processDefinitionName" property="processDefinitionName" jdbcType="VARCHAR"/>
         <result column="processInstanceState" property="processInstanceState" jdbcType="VARCHAR"/>
         <result column="startTime" property="startTime" jdbcType="TIMESTAMP"/>
@@ -62,6 +63,7 @@
         ahp.NAME_ AS processInstanceTitle,
         ahp.PROC_DEF_ID_ AS processDefinitionId,
         ahp.BUSINESS_KEY_ AS businessKey,
+        trp.PROC_DEF_KEY AS processDefinitionKey,
         trp.PROC_DEF_NAME AS processDefinitionName,
         trp.PROC_INST_STATE AS processInstanceState,
     </sql>
@@ -80,11 +82,12 @@
         ahp.NAME_ AS processInstanceTitle,
         ahp.PROC_DEF_ID_ AS processDefinitionId,
         ahp.BUSINESS_KEY_ AS businessKey,
+        trp.PROC_DEF_KEY AS processDefinitionKey,
         trp.PROC_DEF_NAME AS processDefinitionName,
         trp.PROC_INST_STATE AS processInstanceState,
         art.START_TIME_ AS startTime,
         art.END_TIME_ AS endTime,
-        /*IF(tat.ask_user_id = #{assignee}, 1, 2) AS asked,*/
+        <!--IF(tat.ask_user_id = #{assignee}, 1, 2) AS asked,-->
         1 AS asked,
         tat.id AS askId,
         trp.CURRENT_TASK_STATUS AS taskState,
@@ -293,7 +296,7 @@
                 NULL AS askId,
                 trp.CURRENT_TASK_STATUS AS taskState,
                 NULL AS askTaskKey,
-                <if test="taskAgent != null and taskAgent != ''">
+                <if test="assigneeAgent != null and assigneeAgent != ''">
                     (CASE WHEN
                     (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
                     <if test="roleId != null">
@@ -303,7 +306,7 @@
                     ELSE NULL END
                     ) AS assigneeDelegate
                 </if>
-                <if test="taskAgent == null or taskAgent == ''">
+                <if test="assigneeAgent == null or assigneeAgent == ''">
                     NULL AS assigneeDelegate
                 </if>
             FROM
@@ -312,19 +315,18 @@
                 LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_ = trp.PROC_INST_ID
                 LEFT JOIN (SELECT * FROM t_ask_task tkk WHERE tkk.is_ask_end=0 ) tat ON tat.current_task_id = art.ID_
             WHERE
-                trp.APP_KEY = #{appKey} AND (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
-                <if test="roleId != null">
-                    OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
+                trp.APP_KEY = #{appKey} AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
+                <if test="roleId != null">OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
                 </if>)
-                <if test="taskAgent != null and taskAgent != ''">
-                    OR
-                    <foreach collection="taskAgentList" item="item" index="index" separator="OR">
+                <if test="assigneeAgent != null and assigneeAgent != ''">OR
+                    <foreach
+                            collection="taskAgentList" item="item" index="index" separator="OR">
                         ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{item.assigneeAgent},'%')
                         <if test="roleId != null">
                             OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${item.agentRoleId}))
                         </if>
                         )
-                        AND trp.proc_def_key IN (#{item.processDefinitionKey})
+                        AND trp.proc_def_key IN (${item.processDefinitionKey})
                         <if test="item.agentStartDate != null">
                             AND DATE(art.CREATE_TIME_) <![CDATA[ >= ]]> DATE(#{item.agentStartDate})
                         </if>
@@ -332,7 +334,7 @@
                             AND DATE(art.CREATE_TIME_) <![CDATA[ <= ]]> DATE(#{item.agentEndDate})
                         </if>)
                     </foreach>
-                </if>
+                </if>)
                 AND art.SUSPENSION_STATE_=1
                 <if test="procDefKey!=null and procDefKey!=''">
                     AND trp.proc_def_key=#{procDefKey}
@@ -356,7 +358,7 @@
             WHERE trp.APP_KEY = #{appKey}
                 AND (((tat.ask_user_id = #{assignee} AND tat.current_task_id=art.ID_) OR (tat.asked_user_id = #{assignee} AND tat.asked_task_id = art.ID_))
                 <!--代理任务-->
-                <if test="taskAgent != null and taskAgent != ''">
+                <if test="assigneeAgent != null and assigneeAgent != ''">
                     OR
                     <foreach collection="taskAgentList" item="item" index="index" separator="OR">
                         (tat.asked_user_id=#{item.assigneeAgent}

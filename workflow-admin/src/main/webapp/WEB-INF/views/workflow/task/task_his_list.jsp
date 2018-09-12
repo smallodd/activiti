@@ -59,7 +59,7 @@
                 title: '主键',
                 field: 'id'
             }, {
-                width: '100',
+                width: '50',
                 title: '状态',
                 field: 'taskState',
                 sortable: true,
@@ -76,15 +76,15 @@
                     }
                 }
             }, {
-                width: '100',
+                width: '80',
                 title: '申请人',
                 field: 'processOwner'
             }, {
-                width: '350',
+                width: '300',
                 title: '标题',
                 field: 'businessName'
             }, {
-                width: '140',
+                width: '200',
                 title: '任务节点名称',
                 field: 'taskName'
             }, {
@@ -92,12 +92,12 @@
                 title: '审批人',
                 field: 'taskAssign'
             }, {
-                width: '140',
+                width: '130',
                 title: '创建时间',
                 field: 'taskCreateTime',
                 sortable: true
             }, {
-                width: '140',
+                width: '80px',
                 title: '业务主键',
                 field: 'businessKey',
 

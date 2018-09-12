@@ -19,6 +19,7 @@ import org.activiti.engine.task.TaskInfo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface WorkflowService extends IService<TaskResult> {
     /**
@@ -50,13 +51,13 @@ public interface WorkflowService extends IService<TaskResult> {
     /**
      * 校验审批人是否有权限审批
      * @param task 任务对象
-     * @param assignee 审批人工号
+     * @param assigneeSet 审批人工号
      * @param tRuTasks 节点审批信息
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/6/4 17:44
      */
-    TRuTask validateTaskAssignee(Task task, String assignee, List<TRuTask> tRuTasks);
+    TRuTask validateTaskAssignee(Task task, Set<String> assigneeSet, List<TRuTask> tRuTasks);
 
     /**
      * 任务认领 部门，角色，组审批时，需具体人员认领任务
@@ -199,7 +200,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result processSuspend(TaskActionParam taskActionParam);
+    Result processSuspend(TaskActionParam taskActionParam, boolean needLog);
 
     /**
      * 激活流程
@@ -209,7 +210,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
-    Result processActivate(TaskActionParam taskActionParam);
+    Result processActivate(TaskActionParam taskActionParam, boolean needLog);
 
     /**
      * 意见征询意见查询接口
@@ -381,4 +382,13 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/8/24 11:36
      */
     RuProcinst queryProcessInstanceByBusinessKey(Integer appKey, String businessKey, Integer suspensionState);
+
+    /**
+     * 获取juel表达式中变量名称
+     * @param expressionStr ${ a==1}${b==2   }${c>3}${d<4}${e!=9}
+     * @return Set ["a","b","c","d","e"]
+     * @author houjinrong@chtwm.com
+     * date 2018/9/6 11:49
+     */
+    Set<String> getExpressionName(String expressionStr);
 }

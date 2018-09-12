@@ -110,10 +110,15 @@ public class TaskQueryParam {
      * 代理信息
      */
     @ApiModelProperty(value = "代理信息", hidden = true)
-    List<TaskAgentQueryParam> taskAgentList;
+    private List<TaskAgentQueryParam> taskAgentList;
     /**
      * 代理信息
      */
     @ApiModelProperty(value = "代理信息", hidden = true)
-    String taskAgent;
+    private String assigneeAgent;
+
+    /**
+     * 代理人加密信息
+     */
+    private String assigneeAgentSecret;
 }

@@ -2,10 +2,8 @@ package com.hengtian.flow.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 import com.hengtian.application.model.App;
 import com.hengtian.application.service.AppService;
 import com.hengtian.common.enums.TaskStatus;
@@ -390,11 +388,13 @@ public class ActivitiServiceImpl implements ActivitiService {
 
 	@Override
 	public InputStream getProcessResource(String resourceType, String processDefinitionId) {
-        ProcessDefinition pd = repositoryService
-        		.createProcessDefinitionQuery()
-        		.processDefinitionId(processDefinitionId)
-                .singleResult();
+        ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
         String resourceName = "";
+
+		/*ProcessDefinition processDefinition=repositoryService.getProcessDefinition(processDefinitionId);
+		org.activiti.engine.repository.Model model=repositoryService.createModelQuery().deploymentId(processDefinition.getDeploymentId()).deployed().singleResult();
+		ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(model.getId()));
+		BpmnModel bpmnModel = new BpmnJsonConverter().convertToBpmnModel(modelNode);*/
         if (resourceType.equals("image")) {
         	BpmnModel bpmnModel=repositoryService.getBpmnModel(processDefinitionId);
 			ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
