@@ -32,9 +32,9 @@
 					<table id="delegateTaskGrid" class="easyui-datagrid"
 						   data-options="fit:false,border:true,pagination : true,
 							fitColumns:true,singleSelect : true,
-							columns : [[{width : '250',title : '所属部门',field : 'departmentName'},
-							{width : '150', title : '姓名',field : 'userName',sortable : true},
-							{width : '150',title : '工号',field : 'loginName',sortable : true}]],url:'${ctx}/sysUser/selectDataGrid',toolbar:'#tb'"></table>
+							columns : [[{width : '250',title : '所属部门',field : 'deptName'},
+							{width : '150', title : '姓名',field : 'code',sortable : true},
+							{width : '150',title : '工号',field : 'name',sortable : true}]],url:'${ctx}/emp/user',toolbar:'#tb'"></table>
 
 				</div>
 			</div>
@@ -109,7 +109,7 @@
                     return false;
                 }
 
-                $("#transferUserId").val(rows[0].id);
+                $("#transferUserId").val(rows[0].code);
                 var assignee = $('#assigneeTree').tree('getSelected');
                 if(!assignee){
                     progressClose();
