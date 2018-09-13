@@ -1122,11 +1122,15 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
 
         Integer assigneeType = tRuTasks.get(0).getAssigneeType();
-        List<String> assigneeList;
+        List<String> assigneeList = Lists.newArrayList();
         List<Long> roleIds = Lists.newArrayList();
         for (TRuTask rt : tRuTasks) {
+            if(StringUtils.isNotBlank(rt.getAssigneeReal())) {
+                assigneeList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
+            }
+        }
+        for (TRuTask rt : tRuTasks) {
             if(StringUtils.isNotBlank(rt.getAssigneeReal())){
-                assigneeList = Arrays.asList(rt.getAssigneeReal().split(","));
                 Iterator<String> iterator = assigneeSet.iterator();
                 while (iterator.hasNext()){
                     if(!assigneeList.contains(iterator.next())){
