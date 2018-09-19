@@ -18,8 +18,10 @@
 					<form id="userSearchForm">
 						<table>
 							<tr>
-								<th>姓名/工号:</th>
-								<td><input name="userName" placeholder="姓名/工号" style="width:120px;"/></td>
+								<th>工号</th>
+								<td><input name="code" placeholder="工号" style="width: 120px;"/></td>
+								<th>姓名:</th>
+								<td><input name="name" placeholder="姓名" style="width: 120px;"/></td>
 								<td>
 									<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="userSearchFun();">查询</a>
 									<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="userCleanFun();">清空</a>
@@ -32,7 +34,7 @@
 					<table id="delegateTaskGrid" class="easyui-datagrid"
 						   data-options="fit:false,border:true,pagination : true,
 							fitColumns:true,singleSelect : true,
-							columns : [[{width : '250',title : '所属部门',field : 'deptName'},
+							columns : [[{width : '250',title : '所属部门',field : 'deptName',formatter:formatCellTooltip},
 							{width : '150', title : '姓名',field : 'code',sortable : true},
 							{width : '150',title : '工号',field : 'name',sortable : true}]],url:'${ctx}/emp/user',toolbar:'#tb'"></table>
 
@@ -156,6 +158,12 @@
     function userCleanFun() {
         $('#userSearchForm input').val('');
         $("#delegateTaskGrid").datagrid('load', {});
+    }
+
+    //格式化单元格提示信息
+    function formatCellTooltip(value){
+        value = value==null?'':value;
+        return "<span title='" + value + "'>" + value + "</span>";
     }
 </script>
 </body>

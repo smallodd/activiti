@@ -1570,6 +1570,28 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     }
 
     /**
+     * 设置代理人工号和名称
+     * @param taskResult
+     * @param assigneeVoList
+     * @param assignees
+     */
+    protected void setAssigneeDelegate(TaskResult taskResult, List<AssigneeVo> assigneeVoList, List<String> assignees){
+        if(CollectionUtils.isEmpty(assigneeVoList) || CollectionUtils.isEmpty(assignees)){
+            return;
+        }
+        List<String> assigneeDelegates = Lists.newArrayList();
+        List<String> assigneeNameDelegates = Lists.newArrayList();
+        for(AssigneeVo assigneeVo : assigneeVoList){
+            if(assignees.contains(assigneeVo.getUserCode())){
+                assigneeDelegates.add(assigneeVo.getUserCode());
+                assigneeNameDelegates.add(assigneeVo.getUserName());
+            }
+        }
+        taskResult.setAssigneeDelegate(StringUtils.join(assigneeDelegates, ","));
+        taskResult.setAssigneeNameDelegate(StringUtils.join(assigneeNameDelegates, ","));
+    }
+
+    /**
      * processInsrtanceId 流程实例ID
      * @author houjinrong@chtwm.com
      * date 2018/7/5 10:46
@@ -1577,18 +1599,5 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     protected String getProcessCreator(String processInstanceId){
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         return historicProcessInstance.getStartUserId();
-    }
-
-    protected String getAssigneeDelegate(List<AssigneeVo> assigneeVoList, List<String> assignees){
-        if(CollectionUtils.isEmpty(assigneeVoList) || CollectionUtils.isEmpty(assignees)){
-            return null;
-        }
-        List<String> assigneeDelegates = Lists.newArrayList();
-        for(AssigneeVo assigneeVo : assigneeVoList){
-            if(assignees.contains(assigneeVo.getUserCode())){
-                assigneeDelegates.add(assigneeVo.getUserName());
-            }
-        }
-        return StringUtils.join(assigneeDelegates, ",");
     }
 }

@@ -1855,7 +1855,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             t.setAssigneeBefore(getBeforeAssignee(hisTask));
             //设置委托人
             if(StringUtils.isBlank(t.getAssigneeDelegate())){
-                t.setAssigneeDelegate(getAssigneeDelegate(getTaskAssignee(hisTask, (Integer)pageInfo.getCondition().get("appKey")), assignees));
+                setAssigneeDelegate(t, getTaskAssignee(hisTask, (Integer)pageInfo.getCondition().get("appKey")), assignees);
             }
             logger.info("任务ID【"+t.getTaskId()+"】的对应的上步审批人为【"+t.getAssigneeBefore()+"】");
             if(StringUtils.isNotBlank(t.getAssigneeBefore())) {

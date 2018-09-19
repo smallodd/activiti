@@ -766,9 +766,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError("taskId无效或任务已完成");
         }
 
-        if(!validateTaskAssignee(task, userId)){
+        /*if(!validateTaskAssignee(task, userId)){
             return renderError("【"+userId+"】没有权限");
-        }
+        }*/
 
         return renderSuccess(workflowService.getNextAssigneeWhenRoleApprove(task));
     }

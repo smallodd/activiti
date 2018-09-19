@@ -12,6 +12,7 @@ import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.CommentVo;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.persistence.entity.CommentEntity;
@@ -42,6 +43,7 @@ import java.util.Set;
  * @author houjinrong@chtwm.com
  * date 2018/5/9 17:42
  */
+@Slf4j
 @Controller
 @RequestMapping("/workflow/page")
 public class WorkflowPageController extends WorkflowBaseController{
@@ -248,13 +250,17 @@ public class WorkflowPageController extends WorkflowBaseController{
      */
     @GetMapping("/process/start/{processDefinitionId}")
     public String processStart(Model model,@PathVariable("processDefinitionId") String processDefinitionId){
-        InputStream processResource = activitiService.getProcessResource("xml", processDefinitionId);
-        String resource = new Scanner(processResource).useDelimiter("\\Z").next();
-        Document parse = Jsoup.parse(resource);
-        String varName = parse.text();
-        if(StringUtils.isNotBlank(varName)){
-            Set<String> expressionNameSet = workflowService.getExpressionName(varName);
-            model.addAttribute("expressionNameSet",expressionNameSet);
+        try {
+            InputStream processResource = activitiService.getProcessResource("xml", processDefinitionId);
+            String resource = new Scanner(processResource).useDelimiter("\\Z").next();
+            Document parse = Jsoup.parse(resource);
+            String varName = parse.text();
+            if(StringUtils.isNotBlank(varName)){
+                Set<String> expressionNameSet = workflowService.getExpressionName(varName);
+                model.addAttribute("expressionNameSet",expressionNameSet);
+            }
+        } catch (Exception e) {
+            log.error("开启流程时获取属性异常", e);
         }
         model.addAttribute("processDefinitionId", processDefinitionId);
         return  "/workflow/process/process_start";
