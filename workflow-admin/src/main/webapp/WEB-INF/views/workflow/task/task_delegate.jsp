@@ -34,7 +34,7 @@
 					<table id="delegateTaskGrid" class="easyui-datagrid"
 						   data-options="fit:false,border:true,pagination : true,
 							fitColumns:true,singleSelect : true,
-							columns : [[{width : '250',title : '所属部门',field : 'deptName'},
+							columns : [[{width : '250',title : '所属部门',field : 'deptName',formatter:formatCellTooltip},
 							{width : '150', title : '姓名',field : 'code',sortable : true},
 							{width : '150',title : '工号',field : 'name',sortable : true}]],url:'${ctx}/emp/user',toolbar:'#tb'"></table>
 
@@ -158,6 +158,12 @@
     function userCleanFun() {
         $('#userSearchForm input').val('');
         $("#delegateTaskGrid").datagrid('load', {});
+    }
+
+    //格式化单元格提示信息
+    function formatCellTooltip(value){
+        value = value==null?'':value;
+        return "<span title='" + value + "'>" + value + "</span>";
     }
 </script>
 </body>
