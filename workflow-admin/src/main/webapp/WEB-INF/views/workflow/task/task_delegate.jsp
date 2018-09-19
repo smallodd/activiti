@@ -18,8 +18,10 @@
 					<form id="userSearchForm">
 						<table>
 							<tr>
-								<th>姓名/工号:</th>
-								<td><input name="userName" placeholder="姓名/工号" style="width:120px;"/></td>
+								<th>工号</th>
+								<td><input name="code" placeholder="工号" style="width: 120px;"/></td>
+								<th>姓名:</th>
+								<td><input name="name" placeholder="姓名" style="width: 120px;"/></td>
 								<td>
 									<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="userSearchFun();">查询</a>
 									<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="userCleanFun();">清空</a>
