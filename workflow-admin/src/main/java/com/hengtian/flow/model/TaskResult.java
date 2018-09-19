@@ -47,9 +47,13 @@ public class TaskResult {
 
     private String assigneeNextName;
     /**
-     * 委托人
+     * 委托人工号
      */
     private String assigneeDelegate;
+    /**
+     * 委托人名称
+     */
+    private String assigneeNameDelegate;
     /**
      * 流程创建人编号
      */
