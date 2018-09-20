@@ -85,8 +85,8 @@
         trp.PROC_DEF_KEY AS processDefinitionKey,
         trp.PROC_DEF_NAME AS processDefinitionName,
         trp.PROC_INST_STATE AS processInstanceState,
-        art.START_TIME_ AS startTime,
-        art.END_TIME_ AS endTime,
+        tat.create_time AS startTime,
+        tat.update_time AS endTime,
         <!--IF(tat.ask_user_id = #{assignee}, 1, 2) AS asked,-->
         1 AS asked,
         tat.id AS askId,
@@ -374,7 +374,7 @@
                 )
                 <include refid="queryAskCondition"/>
         </if>
-        ORDER BY endTime DESC
+        ORDER BY startTime DESC
     </select>
 
     <!--我的待签收任务-->
