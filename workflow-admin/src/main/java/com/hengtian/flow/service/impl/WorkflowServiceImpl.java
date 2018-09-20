@@ -1655,7 +1655,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public Result taskRollback(String userId, String taskId, String targetTaskDefKey) {
         if(StringUtils.isNotBlank(targetTaskDefKey)){
-            return taskJump(userId, taskId, targetTaskDefKey);
+            Result result = taskJump(userId, taskId, targetTaskDefKey);
+            if("跳转成功".equals(result.getMsg())){
+                result.setMsg("退回成功");
+            }
+            return result;
         }else{
             List<String> taskDefKeysForRollback = getTaskDefKeysForRollback(taskId);
             if (CollectionUtils.isEmpty(taskDefKeysForRollback)) {
