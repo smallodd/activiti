@@ -280,7 +280,7 @@
             LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
             LEFT JOIN t_task_agent AS tta ON art.ID_=tta.task_id
         WHERE
-            trp.APP_KEY = #{appKey} AND (art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%') OR art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{tta.assignee_agent},#{taskState}),'%'))
+            trp.APP_KEY = #{appKey} AND (art.ASSIGNEE_ LIKE CONCAT('%',CONCAT(#{assignee},#{taskState}),'%') OR tta.assignee_agent=#{assignee})
             <include refid="queryCloseCondition"/>
         ORDER BY endTime DESC
     </select>
