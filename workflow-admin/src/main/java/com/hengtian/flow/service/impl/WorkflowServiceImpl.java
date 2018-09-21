@@ -684,7 +684,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 String assignee = task.getAssignee();
                 String assignee_ = null;
                 for(String a : assigneeSet){
-                    assignee_ = (assignee_==null?"":",")+a+"_Y";
+                    assignee_ += (assignee_==null?"":",")+a+"_Y";
                 }
                 taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(assignee_):(assignee+","+assignee_));
                 taskService.complete(task.getId(), map);
@@ -713,7 +713,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     String assignee = task.getAssignee();
                     String assignee_ = null;
                     for(String a : assigneeSet){
-                        assignee_ = (assignee_==null?"":",")+a+"_N";
+                        assignee_ += (assignee_==null?"":",")+a+"_N";
                     }
                     taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(assignee_):(assignee+","+assignee_));
                     deleteProcessInstance(task.getProcessInstanceId(), "refused");
@@ -738,7 +738,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     String assignee = task.getAssignee();
                     String assignee_ = null;
                     for(String a : assigneeSet){
-                        assignee_ = (assignee_==null?"":",")+a+"_Y";
+                        assignee_ += (assignee_==null?"":",")+a+"_Y";
                     }
                     taskService.setAssignee(task.getId(),StringUtils.isBlank(assignee)?(assignee_):(assignee+","+assignee_));
 
@@ -758,7 +758,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 //设置原生工作流表哪些审批了
                 String assignee_ = null;
                 for(String a : assigneeSet){
-                    assignee_ = (assignee_==null?"":",")+a+"_Y";
+                    assignee_ += (assignee_==null?"":",")+a+"_Y";
                 }
                 taskService.setAssignee(task.getId(), assignee_);
                 taskService.complete(task.getId(), map);
@@ -777,7 +777,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 //拒绝任务
                 String assignee_ = null;
                 for(String a : assigneeSet){
-                    assignee_ = (assignee_==null?"":",")+a+"_N";
+                    assignee_ += (assignee_==null?"":",")+a+"_N";
                 }
                 taskService.setAssignee(task.getId(), assignee_);
                 deleteProcessInstance(task.getProcessInstanceId(), TaskStatusEnum.COMPLETE_REFUSE.desc);
