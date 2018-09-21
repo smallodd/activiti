@@ -319,8 +319,7 @@
                 <if test="roleId != null">OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
                 </if>)
                 <if test="assigneeAgent != null and assigneeAgent != ''">OR
-                    <foreach
-                            collection="taskAgentList" item="item" index="index" separator="OR">
+                    <foreach collection="taskAgentList" item="item" index="index" separator="OR">
                         ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{item.assigneeAgent},'%')
                         <if test="roleId != null">
                             OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${item.agentRoleId}))

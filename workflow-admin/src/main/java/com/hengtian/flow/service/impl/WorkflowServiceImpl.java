@@ -756,7 +756,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             //候选人,普通审批
             if (taskParam.getPass() == TaskStatusEnum.COMPLETE_AGREE.status) {
                 //设置原生工作流表哪些审批了
-                taskService.setAssignee(task.getId(), taskParam.getAssignee() + "_Y");
+                String assignee_ = null;
+                for(String a : assigneeSet){
+                    assignee_ = (assignee_==null?"":",")+a+"_Y";
+                }
+                taskService.setAssignee(task.getId(), assignee_);
                 taskService.complete(task.getId(), map);
 
                 ruTask.setStatus(TaskStatusEnum.AGREE.status);
@@ -771,7 +775,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 workDetailService.insert(tWorkDetail);
             } else if (taskParam.getPass() == TaskStatusEnum.COMPLETE_REFUSE.status) {
                 //拒绝任务
-                taskService.setAssignee(task.getId(), taskParam.getAssignee() + "_N");
+                String assignee_ = null;
+                for(String a : assigneeSet){
+                    assignee_ = (assignee_==null?"":",")+a+"_N";
+                }
+                taskService.setAssignee(task.getId(), assignee_);
                 deleteProcessInstance(task.getProcessInstanceId(), TaskStatusEnum.COMPLETE_REFUSE.desc);
 
                 TRuTask tRuTask = new TRuTask();
