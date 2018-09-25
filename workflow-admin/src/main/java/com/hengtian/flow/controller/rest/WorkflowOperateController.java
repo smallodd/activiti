@@ -478,10 +478,10 @@ public class WorkflowOperateController extends WorkflowBaseController {
         Result validate = taskActionParam.validate();
         if (validate.isSuccess()) {
             //校验操作人权限
-            Result re = validateTask(taskActionParam);
+            /*Result re = validateTask(taskActionParam);
             if(!re.isSuccess()){
                 return re;
-            }
+            }*/
             TaskAdapter taskAdapter = new TaskAdapter();
             try {
                 List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskActionParam.getTaskId()).orderByTaskCreateTime().desc().list();
