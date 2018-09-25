@@ -1038,8 +1038,8 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
         Integer appKey = getAppKey(hisTask.getProcessInstanceId());
         //下一审批人指的是当前处于审批中的任务的审批人，而不是下一个节点的审批人，会出现下一个节点还没有审批
-       // List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
-        List<Task> list=taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
+        // List<String> nextTaskDefKeys = findNextTaskDefKeys(hisTask, false);
+        List<Task> list = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
