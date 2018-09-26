@@ -1714,6 +1714,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             if(CollectionUtils.isEmpty(taskList)){
                 return new Result(false, ResultEnum.TASK_ROLLBACK_NOT_EXIST.code, ResultEnum.TASK_ROLLBACK_NOT_EXIST.msg);
             }
+            //校验流程图中下面节点中是否存在审批中的节点，不存在，说明此任务不可撤回
+            for(Task task :taskList){
+                if(!nextTaskDefKeys.contains(task.getTaskDefinitionKey())){
+                    return  new Result("任务不可撤回");
+                }
+            }
             for(Task t : taskList){
                 if(nextTaskDefKeys.contains(t.getTaskDefinitionKey())){
                     Result result = taskJump(userId, t.getId(), hisTask.getTaskDefinitionKey());
