@@ -1697,9 +1697,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(hisTask == null){
             return new Result(false, ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        if(!hisTask.getAssignee().contains(userId)){
+        /*if(!hisTask.getAssignee().contains(userId)){
             return new Result(false,ResultEnum.TASK_ASSIGNEE_ILLEGAL.code,ResultEnum.TASK_ASSIGNEE_ILLEGAL.msg);
-        }
+        }*/
 
         if(hisTask.getEndTime() == null){
             //当前任务未完成
