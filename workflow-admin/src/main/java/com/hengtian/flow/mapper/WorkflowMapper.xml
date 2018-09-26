@@ -361,7 +361,7 @@
                     OR
                     <foreach collection="taskAgentList" item="item" index="index" separator="OR">
                         (tat.asked_user_id=#{item.assigneeAgent}
-                        AND trp.proc_def_key IN (#{item.processDefinitionKey})
+                        AND trp.proc_def_key IN (${item.processDefinitionKey})
                         <if test="item.agentStartDate != null">
                             AND DATE(tat.create_time) <![CDATA[ >= ]]> DATE(#{item.agentStartDate})
                         </if>
