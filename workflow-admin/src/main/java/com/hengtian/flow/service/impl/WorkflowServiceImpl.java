@@ -1602,9 +1602,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     public Result taskConfirmEnquire(String userId, String askId, String answerComment) {
         log.info("确认意见征询开始，入参：userId{},askId{},answerComment{}",userId,askId,answerComment);
         EntityWrapper<TAskTask> wrapper = new EntityWrapper<>();
-        wrapper.where("`asked_user_id`={0}", userId)
-                .where("id={0}", askId)
-                .where("is_ask_end={0}", 0);
+        //wrapper.where("`asked_user_id`={0}", userId)
+        wrapper.where("id={0}", askId).where("is_ask_end={0}", 0);
         TAskTask tAskTask = tAskTaskService.selectOne(wrapper);
         if (tAskTask == null) {
             log.error("意见征询不存在或状态为已确认 askId:{}", askId);
