@@ -1004,25 +1004,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).list();
             boolean isCreate = true;
-            if(CollectionUtils.isNotEmpty(beforeTaskDefKeyList)){
-
-                if(CollectionUtils.isNotEmpty(taskList)){
-                    for(Task t : taskList){
-                        if(beforeTaskDefKeyList.contains(t.getTaskDefinitionKey())){
-                            isCreate = false;
-                        }
-                        if(isCreate && nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
-                            nextTaskList.add(t);
-                        }
+            if(CollectionUtils.isNotEmpty(beforeTaskDefKeyList) && CollectionUtils.isNotEmpty(taskList)){
+                for(Task t : taskList){
+                    if(beforeTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                        isCreate = false;
+                    }
+                    if(isCreate && nextTaskDefKeyList.contains(t.getTaskDefinitionKey())){
+                        nextTaskList.add(t);
                     }
                 }
             }
             if(isCreate && CollectionUtils.isEmpty(nextTaskList)) {
                 for(String taskDefKey : nextTaskDefKeyList){
-                    long count = historyService.createHistoricActivityInstanceQuery().processInstanceId(task.getProcessInstanceId()).activityId(taskDefKey).finished().count();
-                    if (count >= 1) {
-                        managementService.executeCommand(new CreateCmd(task.getExecutionId(), taskDefKey));
-                    }
+                    managementService.executeCommand(new CreateCmd(task.getExecutionId(), taskDefKey));
                 }
             }else {
                 boolean b1  = false;
