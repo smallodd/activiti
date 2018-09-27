@@ -1016,10 +1016,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
             if(isCreate && CollectionUtils.isEmpty(nextTaskList)) {
                 for(String taskDefKey : nextTaskDefKeyList){
-                    long count = historyService.createHistoricActivityInstanceQuery().processInstanceId(task.getProcessInstanceId()).activityId(taskDefKey).finished().count();
-                    if (count >= 1) {
-                        managementService.executeCommand(new CreateCmd(task.getExecutionId(), taskDefKey));
-                    }
+                    managementService.executeCommand(new CreateCmd(task.getExecutionId(), taskDefKey));
                 }
             }else {
                 boolean b1  = false;
