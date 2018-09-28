@@ -273,10 +273,9 @@
             art.START_TIME_ AS startTime,
             art.END_TIME_ AS endTime,
             (CASE WHEN art.ASSIGNEE_ LIKE '%_Y%' THEN 1 ELSE 2 END) AS taskState,
-            (CASE WHEN tta.assignee IS NULL THEN trt.OWNER ELSE tta.assignee_agent END) AS assigneeDelegate
+            (CASE WHEN tta.assignee IS NULL THEN #{assignee} ELSE tta.assignee_agent END) AS assigneeDelegate
         FROM
-            act_hi_taskinst AS art LEFT JOIN t_ru_task AS trt ON art.ID_ =trt.TASK_ID
-            LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
+            act_hi_taskinst AS art LEFT JOIN act_hi_procinst AS ahp ON art.PROC_INST_ID_=ahp.PROC_INST_ID_
             LEFT JOIN t_ru_procinst AS trp ON art.PROC_INST_ID_=trp.PROC_INST_ID
             LEFT JOIN t_task_agent AS tta ON art.ID_=tta.task_id
         WHERE
