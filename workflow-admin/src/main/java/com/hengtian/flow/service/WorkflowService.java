@@ -2,10 +2,12 @@ package com.hengtian.flow.service;
 
 import com.baomidou.mybatisplus.service.IService;
 import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskActionParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
+import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
@@ -17,6 +19,7 @@ import org.activiti.engine.task.TaskInfo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface WorkflowService extends IService<TaskResult> {
     /**
@@ -48,13 +51,13 @@ public interface WorkflowService extends IService<TaskResult> {
     /**
      * 校验审批人是否有权限审批
      * @param task 任务对象
-     * @param assignee 审批人工号
+     * @param assigneeSet 审批人工号
      * @param tRuTasks 节点审批信息
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/6/4 17:44
      */
-    TRuTask validateTaskAssignee(Task task, String assignee, List<TRuTask> tRuTasks);
+    TRuTask validateTaskAssignee(Task task, Set<String> assigneeSet, List<TRuTask> tRuTasks);
 
     /**
      * 任务认领 部门，角色，组审批时，需具体人员认领任务
@@ -79,6 +82,19 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/4/23 14:55
      */
     Result taskUnclaim(String userId, String taskId, String workId);
+
+    /**
+     * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
+     * (跳转旧方法，改跳转方法不影响分支，暂时废弃以待他用)
+     *
+     * @param userId           操作人ID
+     * @param taskId           任务ID
+     * @param targetTaskDefKey 跳转到的任务节点KEY
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/4/18 16:00
+     */
+    Result taskJumpOld(String userId, String taskId, String targetTaskDefKey);
 
     /**
      * 跳转 管理严权限不受限制，可以任意跳转到已完成任务节点
@@ -127,7 +143,7 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId);
+    Result taskEnquire(String userId, String processInstanceId, String currentTaskDefKey, String targetTaskDefKey, String commentResult,String askedUserId,String assigneeAgent);
 
     /**
      * 意见征询确认
@@ -147,11 +163,12 @@ public interface WorkflowService extends IService<TaskResult> {
      *
      * @param userId 操作人ID
      * @param taskId 任务ID
+     * @param targetTaskDefKey 退回到的节点key
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result taskRollback(String userId, String taskId);
+    Result taskRollback(String userId, String taskId, String targetTaskDefKey);
 
     /**
      * 撤回
@@ -178,24 +195,22 @@ public interface WorkflowService extends IService<TaskResult> {
     /**
      * 挂起流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:01
      */
-    Result processSuspend(String userId, String processInstanceId);
+    Result processSuspend(TaskActionParam taskActionParam, boolean needLog);
 
     /**
      * 激活流程
      *
-     * @param userId            操作人ID
-     * @param processInstanceId 流程实例ID
+     * @param taskActionParam
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/4/18 16:03
      */
-    Result processActivate(String userId, String processInstanceId);
+    Result processActivate(TaskActionParam taskActionParam, boolean needLog);
 
     /**
      * 意见征询意见查询接口
@@ -328,5 +343,52 @@ public interface WorkflowService extends IService<TaskResult> {
      * @author houjinrong@chtwm.com
      * date 2018/6/26 10:12
      */
-    List<AssigneeVo> getTaskAssignee(Task task, Integer appKey);
+    List<AssigneeVo> getTaskAssignee(TaskInfo task, Integer appKey);
+
+    /**
+     * 代理人不为空时，生成加密串，防止爬虫，恶意非法请求
+     * @param assignee 审批人
+     * @param assigneeAgent 被代理人
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/3 15:53
+     */
+    String getAssigneeSecret(String assignee, String assigneeAgent);
+
+    /**
+     * 流程定义列表
+     * @param appKey 应用系统KEY
+     * @param nameOrKey 流程定义KEY/流程定义名称
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/15 17:39
+     */
+    PageInfo queryProcessDefinitionList(Integer appKey, String nameOrKey, Integer page, Integer rows);
+
+    /**
+     * 判断是否第一个节点
+     * @param task
+     * @return
+     */
+    boolean isFirstNode(TaskInfo task);
+
+    /**
+     * 通过业务主键查询流程实例
+     * @param appKey 系统应用KEy
+     * @param businessKey 业务主键
+     * @param suspensionState 挂起状态：1-激活；2-挂起
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/8/24 11:36
+     */
+    RuProcinst queryProcessInstanceByBusinessKey(Integer appKey, String businessKey, Integer suspensionState);
+
+    /**
+     * 获取juel表达式中变量名称
+     * @param expressionStr ${ a==1}${b==2   }${c>3}${d<4}${e!=9}
+     * @return Set ["a","b","c","d","e"]
+     * @author houjinrong@chtwm.com
+     * date 2018/9/6 11:49
+     */
+    Set<String> getExpressionName(String expressionStr);
 }

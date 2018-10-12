@@ -15,7 +15,10 @@ import com.hengtian.common.result.Result;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.repository.Model;
+import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -49,6 +52,8 @@ public class WorkflowActionController extends BaseController {
     private TRuTaskService tRuTaskService;
     @Autowired
     private AppModelService appModelService;
+    @Autowired
+    private RepositoryService repositoryService;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -62,14 +67,23 @@ public class WorkflowActionController extends BaseController {
     @SysLog(value="任务开启模拟")
     @PostMapping("/process/start")
     @ResponseBody
-    public Object startProcessInstance(String processKey){
+    public Object startProcessInstance(String processDefinitionId, String jsonVariables){
+        if(StringUtils.isBlank(processDefinitionId)){
+            return new Result("流程定义ID不能为空");
+        }
+
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
+        if(processDefinition == null){
+            return new Result("流程定义【"+processDefinition+"】对应的流程不存在");
+        }
+
         ProcessParam processParam = new ProcessParam();
         processParam.setBusinessKey(UUID.randomUUID().toString());
         processParam.setCustomApprover(false);
         processParam.setCreatorId("admin");
-        processParam.setProcessDefinitionKey(processKey);
+        processParam.setProcessDefinitionKey(processDefinition.getKey());
         EntityWrapper entityWrapper=new EntityWrapper();
-        entityWrapper.where("model_key={0}",processKey);
+        entityWrapper.where("model_key={0}",processDefinition.getKey());
         List<AppModel> list = appModelService.selectList(entityWrapper);
         if(list == null || list.size() == 0){
             return renderError("启动流程失败：模型未关联到应用系统中");
@@ -78,14 +92,14 @@ public class WorkflowActionController extends BaseController {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String dateNowStr = sdf.format(new Date());
-        processParam.setTitle("模拟测试任务title"+dateNowStr);
-
+        processParam.setTitle(processDefinition.getName() + "-" + dateNowStr);
+        processParam.setJsonVariables(jsonVariables);
         try {
             return workflowService.startProcessInstance(processParam);
         } catch (Exception e) {
-            Result result = new Result();
-
             logger.error("启动流程失败", e);
+
+            Result result = new Result();
             result.setMsg(e.getMessage());
             result.setCode(Constant.FAIL);
             result.setSuccess(false);
@@ -212,12 +226,6 @@ public class WorkflowActionController extends BaseController {
         wrapper.where("task_id={0}",taskId);
         List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
 
-        //查看审批人是否有权限
-        TRuTask ruTask = workflowService.validateTaskAssignee(task, assignee, tRuTasks);
-        if(ruTask == null){
-            return renderError("该用户没有操作此任务的权限");
-        }
-
         if(CollectionUtils.isEmpty(tRuTasks)){
             return renderError(ResultEnum.TASK_ASSIGNEE_ILLEGAL.msg, ResultEnum.TASK_ASSIGNEE_ILLEGAL.code) ;
         }
@@ -230,7 +238,9 @@ public class WorkflowActionController extends BaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg,ResultEnum.PARAM_ERROR.code);
         }
 
-
+        if(StringUtils.isNotBlank(assignee) && assignee.contains(":")){
+            assignee = assignee.split(":")[1];
+        }
         taskParam.setAssignee(assignee);
 
         taskParam.setComment("【管理员代办】"+commentContent);

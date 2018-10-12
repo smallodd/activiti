@@ -15,7 +15,7 @@ public interface ActivitiModelService  {
      * 查询流程模型
      * @param pageInfo
      */
-    void selectActivitiModelDataGrid(PageInfo pageInfo, String name);
+    void selectActivitiModelDataGrid(PageInfo pageInfo, String name, String appKey);
 
     /**
      * 导出模型

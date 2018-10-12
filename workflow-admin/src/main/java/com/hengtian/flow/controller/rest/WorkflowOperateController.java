@@ -182,6 +182,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             if (task == null) {
                 return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
             }
+
             //查询是否当前审批人是否在当前结点有意见征询信息
             EntityWrapper entityWrapper = new EntityWrapper();
             entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getAssignee()).andNew("proc_inst_id={0}",task.getProcessInstanceId());
@@ -190,8 +191,9 @@ public class WorkflowOperateController extends WorkflowBaseController {
             if (tAskTask != null) {
                 return renderError("您的意见征询信息还未得到响应，不能审批通过", Constant.ASK_TASK_EXIT);
             }
+
             //查询当前任务节点审批人是不是当前人
-            Object result=workflowService.approveTask(task, taskParam);
+            Object result = workflowService.approveTask(task, taskParam);
             logger.info("任务审批方法执行结束出参：{}",JSONObject.toJSONString(result));
             return result;
         } catch (Exception e) {
@@ -394,6 +396,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         taskActionParam.setActionType(TaskActionEnum.REVOKE.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
+        taskActionParam.setTaskId("-");
         return taskAction(taskActionParam);
     }
 
@@ -405,16 +408,17 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @return
      */
     @SysLog(value = "挂起流程")
-    @RequestMapping(value = "suspendProcess", method = RequestMethod.POST)
+    @RequestMapping(value = "/process/suspend", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "挂起流程接口")
-    public Object suspendProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
-                                 @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
+    public Object processSuspend(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
+                                 @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId,
+                                 @ApiParam(name = "needLog", required = true, value = "是否需要日志记录") @RequestParam boolean needLog) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
-        return taskAction(taskActionParam);
+        return workflowService.processSuspend(taskActionParam, needLog);
     }
 
     /**
@@ -425,16 +429,17 @@ public class WorkflowOperateController extends WorkflowBaseController {
      * @return
      */
     @SysLog(value = "激活流程")
-    @RequestMapping(value = "activateProcess", method = RequestMethod.POST)
+    @RequestMapping(value = "/process/activate", method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "激活流程接口")
-    public Object activateProcess(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
-                                  @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
+    public Object processActivate(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
+                                  @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId,
+                                  @ApiParam(name = "needLog", required = true, value = "是否需要日志记录") @RequestParam boolean needLog) {
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
         taskActionParam.setUserId(userId);
         taskActionParam.setProcessInstanceId(processInstanceId);
-        return taskAction(taskActionParam);
+        return workflowService.processActivate(taskActionParam, needLog);
     }
 
     /**
@@ -473,19 +478,20 @@ public class WorkflowOperateController extends WorkflowBaseController {
         Result validate = taskActionParam.validate();
         if (validate.isSuccess()) {
             //校验操作人权限
-            Result re = validateTask(taskActionParam);
+            /*Result re = validateTask(taskActionParam);
             if(!re.isSuccess()){
                 return re;
-            }
+            }*/
             TaskAdapter taskAdapter = new TaskAdapter();
             try {
+                List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskActionParam.getTaskId()).orderByTaskCreateTime().desc().list();
                 Result result = taskAdapter.taskAction(taskActionParam);
                 //存储操作记录
                 if(result.isSuccess()){
                     ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).singleResult();
                     TWorkDetail tWorkDetail = new TWorkDetail();
                     tWorkDetail.setCreateTime(new Date());
-                    tWorkDetail.setDetail("工号为【" + taskActionParam.getUserId() + "】的员工进行了【" + TaskActionEnum.getDesc(taskActionParam.getActionType()) + "】操作");
+                    tWorkDetail.setDetail("工号【" + taskActionParam.getUserId() + "】进行了【" + TaskActionEnum.getDesc(taskActionParam.getActionType()) + "】操作");
                     tWorkDetail.setProcessInstanceId(taskActionParam.getProcessInstanceId());
                     tWorkDetail.setOperator(taskActionParam.getUserId());
                     tWorkDetail.setTaskId(taskActionParam.getTaskId());
@@ -494,7 +500,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                     }else{
                         tWorkDetail.setAprroveInfo(TaskActionEnum.getDesc(taskActionParam.getActionType()));
                     }
-                    List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskActionParam.getTaskId()).orderByTaskCreateTime().desc().list();
+
                     tWorkDetail.setOperateAction(TaskActionEnum.getDesc(taskActionParam.getActionType()));
                     tWorkDetail.setOperTaskKey(historicTaskInstances.get(0).getName());
                     tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
@@ -590,36 +596,42 @@ public class WorkflowOperateController extends WorkflowBaseController {
      */
     @PostMapping(value = "askTask")
     @ResponseBody
-    public Object askTask(@RequestParam String processInstanceId, @RequestParam String currentTaskDefKey, @RequestParam String commentResult, @RequestParam String targetTaskDefKey,@RequestParam String askedUserId,@RequestParam(required = false) String userId) {
+    public Object askTask(@RequestParam String processInstanceId,
+                          @RequestParam String currentTaskDefKey,
+                          @RequestParam String commentResult,
+                          @RequestParam String targetTaskDefKey,
+                          @RequestParam String askedUserId,
+                          @RequestParam(required = false) String userId,
+                          @RequestParam(required = false) String assigneeAgent) {
         logger.info("意见征询接口开始执行，方法【askTask】，入参processInstanceId{},currentTaskDefKey{},commentResult{},targetTaskDefKey{},askedUserId{},userId{}",processInstanceId,currentTaskDefKey,commentResult,targetTaskDefKey,askedUserId,userId);
         try {
-            if(com.hengtian.common.utils.StringUtils.isBlank(userId)&&getShiroUser()==null){
+            if(StringUtils.isBlank(userId)&&getShiroUser()==null){
                 return renderError("请传意见征询人员工号");
             }
-            if(com.hengtian.common.utils.StringUtils.isBlank(processInstanceId)){
+            if(StringUtils.isBlank(processInstanceId)){
                 return renderError("流程实例id不能为空");
             }
-            if(com.hengtian.common.utils.StringUtils.isBlank(currentTaskDefKey)){
+            if(StringUtils.isBlank(currentTaskDefKey)){
                 return renderError("当前节点信息不能为空");
             }
-            if(com.hengtian.common.utils.StringUtils.isBlank(commentResult)){
+            if(StringUtils.isBlank(commentResult)){
                 return renderError("意见征询信息不能为空");
             }
-            if(com.hengtian.common.utils.StringUtils.isBlank(targetTaskDefKey)){
+            if(StringUtils.isBlank(targetTaskDefKey)){
                 return renderError("被意见征询节点key不能为空");
             }
-            if(com.hengtian.common.utils.StringUtils.isBlank(askedUserId)){
+            if(StringUtils.isBlank(askedUserId)){
                 return renderError("被意见征询人员");
             }
-            if(com.hengtian.common.utils.StringUtils.isBlank(userId)){
-                userId=getUserId();
+            if(StringUtils.isBlank(userId)){
+                userId = getUserId();
             }
-            Task task=taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
-          boolean flag=  validateTaskAssignee(task,userId);
-          if(!flag){
-              return new  Result(false,Constant.FAIL, "当前用户没有操作此任务的权限");
-          }
-            return workflowService.taskEnquire(userId, processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult,askedUserId);
+            /*Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(currentTaskDefKey).singleResult();
+            boolean flag = validateTaskAssignee(task,userId);
+            if(!flag){
+                return new Result(false,Constant.FAIL, "当前用户没有操作此任务的权限");
+            }*/
+            return workflowService.taskEnquire(userId, processInstanceId, currentTaskDefKey, targetTaskDefKey, commentResult,askedUserId,assigneeAgent);
         } catch (Exception e) {
             logger.error("", e);
             return new Result(false,Constant.FAIL, "操作失败");

@@ -7,8 +7,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * 工作流流程定义VO
- * @author liu.junyang
- * 
+ * @return
+ * @author houjinrong@chtwm.com
+ * date 2018/9/3 11:41
  */
 public class ProcessDefinitionVo implements Serializable{
 	

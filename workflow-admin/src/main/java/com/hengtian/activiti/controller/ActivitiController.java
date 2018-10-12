@@ -2,8 +2,6 @@ package com.hengtian.activiti.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hengtian.application.service.AppModelService;
@@ -35,7 +33,6 @@ import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysDepartmentService;
 import com.hengtian.system.service.SysUserService;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
@@ -45,10 +42,8 @@ import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
-import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -569,33 +564,10 @@ public class ActivitiController extends BaseController{
      */
     @RequestMapping("/getProcessResource")
     public void getProcessResource(
-    		@RequestParam("type") String resourceType,
-    		@RequestParam("pdid") String processDefinitionId, 
-    		HttpServletResponse response,HttpServletRequest request){
+    		@RequestParam("resourceType") String resourceType,
+    		@RequestParam("processDefinitionId") String processDefinitionId,
+    		HttpServletResponse response){
     	try {
-     		if(resourceType.equals("image")){
-    			ProcessDefinition processDefinition=repositoryService.getProcessDefinition(processDefinitionId);
-    			org.activiti.engine.repository.Model model=repositoryService.createModelQuery().deploymentId(processDefinition.getDeploymentId()).deployed().singleResult();
-				ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(model.getId()));
-				BpmnModel bpmnModel = new BpmnJsonConverter().convertToBpmnModel(modelNode);
-				//中文显示的是口口口，设置字体就好了
-				//生成流图片  5.18.0
-				processEngineConfiguration = processEngine.getProcessEngineConfiguration();
-				Context.setProcessEngineConfiguration((ProcessEngineConfigurationImpl) processEngineConfiguration);
-				ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
-				InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "PNG",
-						processEngineConfiguration.getLabelFontName(),
-						processEngineConfiguration.getActivityFontName(),
-						"宋体",
-						processEngineConfiguration.getProcessEngineConfiguration().getClassLoader(), 1.1);
-
-				byte[] b = new byte[1024];
-				int len;
-				while ((len = imageStream.read(b, 0, 1024)) != -1) {
-					response.getOutputStream().write(b, 0, len);
-				}
-				return;
-			}
 			InputStream in = activitiService.getProcessResource(resourceType, processDefinitionId);
 			byte[] b = new byte[1024];
 			int len = -1;

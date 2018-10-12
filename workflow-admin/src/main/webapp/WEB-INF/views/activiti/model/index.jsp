@@ -21,12 +21,15 @@
                 </tr>
             </table>
         </form>
-     </div>
-
-    <div data-options="region:'center',border:false" id="dd">
+    </div>
+    <div data-options="region:'center',border:true,title:'模型列表'" >
         <table id="modelDataGrid" data-options="fit:true,border:false"></table>
     </div>
+    <div data-options="region:'west',border:true,split:false,title:'应用系统'"  style="width:150px;">
+        <ul id="appTree" style="width:160px;margin: 10px 10px 10px 10px"></ul>
+    </div>
 </div>
+
 <div id="modelToolbar" style="display: none;">
     <shiro:hasPermission name="/activiti/model/create">
         <a onclick="modelCreate();" href="javascript:void(0);" class="easyui-linkbutton" data-options="plain:true,iconCls:'fi-plus icon-green'">添加</a>
@@ -52,7 +55,29 @@
 </div>
 <script type="text/javascript">
     var modelDataGrid;
+    var appTree;
     $(function() {
+        appTree = $('#appTree').tree({
+            url : '${ctx}/app/dataGrid',
+            //parentField : '',
+            lines : true,
+            loadFilter:function(data){
+                //过滤操作
+                $.each(data, function(index, node){
+                    node.iconCls = "fi-paperclip";
+                })
+                return data;
+            },
+            formatter: function (node){
+                return node.name;
+            },
+            onClick : function(node) {
+                modelDataGrid.datagrid('load', {
+                    appKey: node.key
+                });
+            }
+        });
+
         modelDataGrid = $('#modelDataGrid').datagrid({
             url : '${ctx}/activiti/model/modelDataGrid',
             striped : true,
@@ -65,33 +90,33 @@
             checkOnSelect: true,
             selectOnCheck: true,
             pageSize : 20,
-            pageList : [ 10, 20, 30, 40, 50, 100, 200, 300, 400, 500],
+            pageList : [10, 20, 30, 40, 50, 100, 200],
             columns : [ [ {
                 width : '30',
                 title : "",
                 field : 'ck',
                 checkbox : true
             }, {
-                width : '200',
+                width : '100',
                 title : '流程模型ID',
                 field : 'id'
 
             }, {
-                width : '200',
+                width : '250',
                 title : '流程模型名称',
                 field : 'name'
             }, {
-                width : '140',
+                width : '200',
                 title : '流程模型KEY',
                 field : 'key'
             }, {
-                width : '140',
-                title : '流程模型版本',
+                width : '60',
+                title : '模型版本',
                 field : 'version'
             },{
                 width : '140',
-                title : '创建时间',
-                field : 'createTime',
+                title : '最后修改时间',
+                field : 'lastUpdateTime',
                 formatter:function(value,row,index){
                     var unixTimestamp = new Date(value);
                     return unixTimestamp.toLocaleString();
@@ -104,7 +129,7 @@
             }, {
                 field : 'action',
                 title : '操作',
-                width : 360,
+                width : "auto",
                 formatter : function(value, row, index) {
                     var str = '';
 
@@ -116,20 +141,22 @@
                         str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-sleep" data-options="plain:true,iconCls:\'fi-upload icon-blue\'" onclick="processDeploy(\'{0}\');" >部署</a>', row.id);
                     </shiro:hasPermission>
 
-                    <shiro:hasPermission name="/activiti/model/detail">
-                        str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-active" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="modelDetail(\'{0}\');" >详情</a>', row.id);
-                    </shiro:hasPermission>
                     <shiro:hasPermission name="/activiti/model/copy">
-                    str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-copy" data-options="plain:true,iconCls:\'fi-page-copy icon-blue\'" onclick="modelCopy(\'{0}\');" >复制</a>', row.id);
+                        str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-copy" data-options="plain:true,iconCls:\'fi-page-copy icon-blue\'" onclick="modelCopy(\'{0}\');" >复制</a>', row.id);
                     </shiro:hasPermission>
+
                     <shiro:hasPermission name="/activiti/model/resetKey">
-                    if(row.deploymentId==null||row.deploymentId==""){
-                        str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-reset" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="modelResetKey(\'{0}\');" >重置key</a>', row.id);
-                    }
+                        if(row.deploymentId==null||row.deploymentId==""){
+                            str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-reset" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="modelResetKey(\'{0}\');" >重置key</a>', row.id);
+                        }
                     </shiro:hasPermission>
 
                     <shiro:hasPermission name="/activiti/model/delete">
                         str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-delete" data-options="plain:true,iconCls:\'fi-paperclip icon-blue\'" onclick="deleteModel(\'{0}\');" >删除</a>', row.id);
+                    </shiro:hasPermission>
+
+                    <shiro:hasPermission name="/activiti/model/detail">
+                        str += $.formatString('<a href="javascript:void(0)" class="model-easyui-linkbutton-active" data-options="plain:true,iconCls:\'fi-magnifying-glass icon-blue\'" onclick="modelDetail(\'{0}\');" >详情</a>', row.id);
                     </shiro:hasPermission>
                     return str;
                 }
@@ -218,8 +245,8 @@ function modelEdit(modelId) {
   function  modelCopy(id){
       parent.$.modalDialog({
           title : '创建流程模型',
-          width : 500,
-          height : 300,
+          width : 400,
+          height : 280,
           href : '${ctx}/activiti/model/copyPage/'+id,
           buttons : [ {
               text : '确定',
@@ -321,6 +348,7 @@ function modelDetail(id) {
         height : 500,
         content : contentStr,
         modal : true,
+        fit:true,
         buttons : [ {
             text : '关闭',
             handler : function() {

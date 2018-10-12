@@ -6,6 +6,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hengtian.common.base.BaseRestController;
 import com.hengtian.common.enums.AssignTypeEnum;
+import com.hengtian.common.param.TaskAgentQueryParam;
+import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.flow.model.RuProcinst;
@@ -208,6 +210,13 @@ public class WorkflowBaseController extends BaseRestController {
             return null;
         }
 
+        //获取已审批人
+        List<String> assigneeList = Lists.newArrayList();
+        if(StringUtils.isNotBlank(task.getAssignee())){
+            String assignee = task.getAssignee().replaceAll("_N","").replaceAll("_Y","");
+            assigneeList = Arrays.asList(assignee.split(","));
+        }
+
         JSONArray json = new JSONArray();
         EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.where("task_id={0}", taskId);
@@ -217,11 +226,16 @@ public class WorkflowBaseController extends BaseRestController {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("id", t.getAssignee());
             jsonObject.put("text", t.getAssigneeName());
+
             if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType()) || AssignTypeEnum.EXPR.code.equals(t.getAssigneeType())){
+                jsonObject.put("state", "closed");
                 JSONArray jsonArray = new JSONArray();
                 if(StringUtils.isNotBlank(t.getAssigneeReal())){
                     String[] array = t.getAssigneeReal().split(",");
                     for(String a : array){
+                        if(assigneeList.contains(a)){
+                            continue;
+                        }
                         JSONObject child = new JSONObject();
                         child.put("id", t.getAssignee()+":"+a);
                         RbacUser user = userService.getUserById(a);
@@ -238,6 +252,9 @@ public class WorkflowBaseController extends BaseRestController {
                         List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
                         if(CollectionUtils.isNotEmpty(users)){
                             for(RbacUser u : users){
+                                if(assigneeList.contains(u.getCode())){
+                                    continue;
+                                }
                                 JSONObject child = new JSONObject();
                                 child.put("id", t.getAssignee()+":"+u.getCode());
                                 child.put("text", u.getName());
@@ -255,6 +272,9 @@ public class WorkflowBaseController extends BaseRestController {
                     json.add(jsonObject);
                 }
             } else {
+                if(assigneeList.contains(t.getAssignee())){
+                    continue;
+                }
                 json.add(jsonObject);
             }
         }
@@ -263,24 +283,75 @@ public class WorkflowBaseController extends BaseRestController {
     }
 
     public TaskNodeResult setButtons(TaskNodeResult taskNodeResult){
-
-            String id=taskNodeResult.getProcessInstanceId();
+        String id=taskNodeResult.getProcessInstanceId();
         ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(id).singleResult();
 
-
-                List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
+        List<TButton> tButtons = tTaskButtonService.selectTaskButtons( processInstance.getProcessDefinitionKey(),taskNodeResult.getTaskDefinedKey());
         TaskFormData taskFormData=formService.getTaskFormData(taskNodeResult.getTaskId());
         if(taskFormData!=null){
             taskNodeResult.setFormKey(taskFormData.getFormKey());
         }
-                taskNodeResult.setButtonKeys(tButtons);
-
+        taskNodeResult.setButtonKeys(tButtons);
 
         return  taskNodeResult;
     }
 
     /**
-     * 查询代理人
+     * 查询审批人角色和代理人角色
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/5/21 18:04
+     */
+    public void setAssigneeAndRole(PageInfo pageInfo, TaskQueryParam taskQueryParam){
+        Integer appKey = taskQueryParam.getAppKey();
+        String assignee = taskQueryParam.getAssignee();
+        List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, assignee);
+        pageInfo.getCondition().put("assignee", assignee);
+        String roleIds = null;
+        Map<String, Object> condition = Maps.newHashMap(pageInfo.getCondition());
+        if(CollectionUtils.isNotEmpty(roles)){
+            for(RbacRole role : roles){
+                roleIds = roleIds == null?role.getId()+"":roleIds+","+role.getId();
+            }
+            condition.put("roleId", roleIds);
+        }
+
+        if(StringUtils.isNotBlank(taskQueryParam.getAssigneeAgent())){
+            JSONArray jsonArray = JSONArray.fromObject(taskQueryParam.getAssigneeAgent());
+            List<TaskAgentQueryParam> taskAgentList = Lists.newArrayList();
+            for(int i = 0;i<jsonArray.size();i++){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                TaskAgentQueryParam taskAgent = new TaskAgentQueryParam();
+                taskAgent.setAssigneeAgent(jsonObject.getString("assigneeAgent"));
+                if(jsonObject.containsKey("agentStartDate")){
+                    taskAgent.setAgentStartDate(jsonObject.getString("agentStartDate"));
+                }
+                if(jsonObject.containsKey("agentEndDate")){
+                    taskAgent.setAgentEndDate(jsonObject.getString("agentEndDate"));
+                }
+
+                taskAgent.setProcessDefinitionKey(jsonObject.getString("processDefinitionKey"));
+
+                roles = privilegeService.getAllRoleByUserId(appKey, taskAgent.getAssigneeAgent());
+                if(CollectionUtils.isNotEmpty(roles)){
+                    roleIds = null;
+                    for(RbacRole role : roles){
+                        roleIds = roleIds == null?role.getId()+"":roleIds+","+role.getId();
+                    }
+                    taskAgent.setAgentRoleId(roleIds);
+                }
+
+                taskAgentList.add(taskAgent);
+            }
+
+            condition.put("taskAgentList", taskAgentList);
+        }
+
+        pageInfo.setCondition(condition);
+    }
+
+    /**
+     * 查询审批人角色
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/5/21 18:04

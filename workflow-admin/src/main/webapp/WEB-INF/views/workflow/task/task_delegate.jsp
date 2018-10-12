@@ -4,37 +4,44 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>用户管理</title>
+	<title>转办-选择受理人</title>
 </head>
 <body>
-<div data-options="region:'north',border:false" style="height: 30px; overflow: hidden;background-color: #fff;" id="tb">
-	<form id="userSearchForm">
-		<table>
-			<tr>
-				<th>姓名/工号:</th>
-				<td><input name="userName" placeholder="姓名/工号" style="width:120px;"/></td>
-				<td>
-					<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="userSearchFun();">查询</a>
-					<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="userCleanFun();">清空</a>
-				</td>
-				<td>
-					<select id="assigneeTree" name="assignee">
-						<option value="">加载</option>
-					</select>
-					<%--<input class="easyui-combotree" data-options="url:'${ctx}/workflow/data/task/transfer/tree/325014',method:'get',required:true" style="width:160px;">--%>
-				</td>
-			</tr>
-		</table>
-	</form>
-</div>
-<div class="easyui-layout" data-options="fit:true,border:false" style="overflow: auto;padding: 8px;">
-    <table id="delegateTaskGrid" class="easyui-datagrid" 
-		    data-options="fit:true,border:false,pagination : true,
-		    fitColumns:true,singleSelect : true,
-		    columns : [[{width : '150',title : '所属部门',field : 'departmentName'},
-            {width : '150', title : '姓名',field : 'userName',sortable : true},
-            {width : '200',title : '工号',field : 'loginName',sortable : true}]],url:'${ctx}/sysUser/selectDataGrid',toolbar:'#tb'"></table>
-            
+<div class="easyui-layout" data-options="fit:true,border:false">
+	<div data-options="region:'center',border:false" style="overflow: auto;padding: 3px;">
+		<div class="easyui-layout" style="width:730px;height:400px;">
+			<div data-options="region:'east',split:true,collapsible:false" title="办理人列表" style="width:200px;">
+				<ul id="assigneeTree" style="margin-top: 10px"></ul>
+			</div>
+			<div data-options="region:'center'" title="选择操作">
+				<div data-options="region:'north',border:false" style="height: 30px; overflow: hidden;background-color: #fff;" id="tb">
+					<form id="userSearchForm">
+						<table>
+							<tr>
+								<th>工号</th>
+								<td><input name="code" placeholder="工号" style="width: 120px;"/></td>
+								<th>姓名:</th>
+								<td><input name="name" placeholder="姓名" style="width: 120px;"/></td>
+								<td>
+									<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-magnifying-glass',plain:true" onclick="userSearchFun();">查询</a>
+									<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'fi-x-circle',plain:true" onclick="userCleanFun();">清空</a>
+								</td>
+							</tr>
+						</table>
+					</form>
+				</div>
+				<div class="easyui-layout" data-options="fit:true,border:false" style="overflow: auto;padding: 8px;">
+					<table id="delegateTaskGrid" class="easyui-datagrid"
+						   data-options="fit:false,border:true,pagination : true,
+							fitColumns:true,singleSelect : true,
+							columns : [[{width : '250',title : '所属部门',field : 'deptName',formatter:formatCellTooltip},
+							{width : '150', title : '姓名',field : 'code',sortable : true},
+							{width : '150',title : '工号',field : 'name',sortable : true}]],url:'${ctx}/emp/user',toolbar:'#tb'"></table>
+
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 <form id="taskDelegateForm" method="post">
@@ -51,30 +58,9 @@
 <script>
 	var taskId = parent.$("#taskId_").val();
 	if(taskId != undefined && taskId != ""){
-        $("#assigneeTree").combotree({
+        $('#assigneeTree').tree({
             url: '${ctx}/workflow/data/task/transfer/tree/'+taskId,
-            method: 'GET',
-            editable: false,
-            width:150,
-            onSelect : function(node) {
-                //返回树对象
-                var tree = $(this).tree;
-                //选中的节点是否为叶子节点,如果不是叶子节点,清除选中
-                var isLeaf = tree('isLeaf', node.target);
-                if (!isLeaf) {
-                    //清除选中
-                    $('#assigneeTree').combotree('clear');
-                }
-
-                //var parent = $('#assigneeTree').combotree('tree').tree('getParent', node.target);
-            }
-        })
-
-        $("#btn").linkbutton({
-            onClick: function () {
-                console.info($("#assigneeTree").combotree("getText"));
-                console.info($("#assigneeTree").combotree("getValue"));
-            }
+			singleSelect: true
         });
     }
 
@@ -117,7 +103,6 @@
         $('#taskTransferForm').form({
             url : '${ctx}/workflow/action/task/transfer',
             onSubmit : function() {
-                debugger;
                 progressLoad();
                 var rows = $("#delegateTaskGrid").datagrid("getSelections");
                 if(rows == ""){
@@ -125,8 +110,23 @@
                     $.messager.alert('提示', "请先选择转办人",'info');
                     return false;
                 }
-                $("#transferUserId").val(rows[0].id);
-                $("#userId_").val($("#assigneeTree").combotree("getValue"));
+
+                $("#transferUserId").val(rows[0].code);
+                var assignee = $('#assigneeTree').tree('getSelected');
+                if(!assignee){
+                    progressClose();
+                    $.messager.alert('提示', "请先选择任务办理人",'info');
+                    return false;
+				}else{
+                    var children = $('#assigneeTree').tree("getChildren",assignee.target);
+                    if(children != null && children.length > 0){
+                        progressClose();
+                        $.messager.alert('提示', "请先选择任务办理人",'info');
+                        return false;
+					}
+				}
+
+                $("#userId_").val(assignee.id);
                 return true;
             },
 
@@ -158,6 +158,12 @@
     function userCleanFun() {
         $('#userSearchForm input').val('');
         $("#delegateTaskGrid").datagrid('load', {});
+    }
+
+    //格式化单元格提示信息
+    function formatCellTooltip(value){
+        value = value==null?'':value;
+        return "<span title='" + value + "'>" + value + "</span>";
     }
 </script>
 </body>

@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.baomidou.mybatisplus.enums.IdType;
+import lombok.Data;
 
 /**
  * 应用流程实例对应关系
  * @author houjinrong@chtwm.com
  * date 2018/4/20 10:47
  */
+@Data
 @TableName("t_ru_procinst")
 public class RuProcinst {
 
@@ -28,6 +30,11 @@ public class RuProcinst {
      */
     @TableField(value = "proc_inst_id")
     private String procInstId;
+    /**
+     * 业务主键
+     */
+    @TableField(value = "business_key")
+    private String businessKey;
     /**
      * 流程创建人
      */
@@ -48,6 +55,11 @@ public class RuProcinst {
      */
     @TableField(value = "creator_dept_name")
     private String creatorDeptName;
+    /**
+     * 流程定义KEY
+     */
+    @TableField(value = "proc_def_key")
+    private String procDefKey;
     /**
      * 流程名称
      */
@@ -71,102 +83,16 @@ public class RuProcinst {
 
     public RuProcinst(){}
 
-    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorName, String creatorDept, String creatorDeptName, String procDefName, String currentTaskKey) {
+    public RuProcinst(Integer appKey, String procInstId, String creator, String creatorName, String creatorDept, String creatorDeptName,String procDefKey, String procDefName, String currentTaskKey, String businessKey) {
         this.appKey = appKey;
         this.procInstId = procInstId;
         this.creator = creator;
         this.creatorName = creatorName;
         this.creatorDeptName = creatorDeptName;
         this.creatorDept = creatorDept;
+        this.procDefKey = procDefKey;
         this.procDefName = procDefName;
         this.currentTaskKey = currentTaskKey;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Integer getAppKey() {
-        return appKey;
-    }
-
-    public void setAppKey(Integer appKey) {
-        this.appKey = appKey;
-    }
-
-    public String getProcInstId() {
-        return procInstId;
-    }
-
-    public void setProcInstId(String procInstId) {
-        this.procInstId = procInstId;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public String getCreatorDept() {
-        return creatorDept;
-    }
-
-    public void setCreatorDept(String creatorDept) {
-        this.creatorDept = creatorDept;
-    }
-
-    public String getProcDefName() {
-        return procDefName;
-    }
-
-    public void setProcDefName(String procDefName) {
-        this.procDefName = procDefName;
-    }
-
-    public String getProcInstState() {
-        return procInstState;
-    }
-
-    public void setProcInstState(String procInstState) {
-        this.procInstState = procInstState;
-    }
-
-    public String getCurrentTaskKey() {
-        return currentTaskKey;
-    }
-
-    public void setCurrentTaskKey(String currentTaskKey) {
-        this.currentTaskKey = currentTaskKey;
-    }
-
-    public String getCreatorDeptName() {
-        return creatorDeptName;
-    }
-
-    public void setCreatorDeptName(String creatorDeptName) {
-        this.creatorDeptName = creatorDeptName;
-    }
-
-    public String getCreatorName() {
-        return creatorName;
-    }
-
-    public void setCreatorName(String creatorName) {
-        this.creatorName = creatorName;
-    }
-
-    public Integer getCurrentTaskStatus() {
-        return currentTaskStatus;
-    }
-
-    public void setCurrentTaskStatus(Integer currentTaskStatus) {
-        this.currentTaskStatus = currentTaskStatus;
+        this.businessKey = businessKey;
     }
 }

@@ -1,11 +1,11 @@
 package com.hengtian.common.param;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 
 /**
  * 流程实例查询条件
@@ -13,6 +13,7 @@ import java.util.Date;
  * @author houjinrong@chtwm.com
  * date 2018/5/18 9:18
  */
+@Data
 public class ProcessInstanceQueryParam {
 
     /**
@@ -55,6 +56,12 @@ public class ProcessInstanceQueryParam {
     private String processDefinitionName;
 
     /**
+     * 业务主键
+     */
+    @ApiModelProperty(value = "业务主键", example="业务主键")
+    private String processBusinessKey;
+
+    /**
      * 发起日期（从）
      */
     @ApiModelProperty(value = "发起日期（从）", example="2018-05-15")
@@ -94,110 +101,6 @@ public class ProcessInstanceQueryParam {
     @ApiModelProperty(value = "每页条数", required = true, example="10")
     @NotNull(message = "每页条数不能为空！")
     private Integer rows;
-
-    public String getProcDefKey() {
-        return procDefKey;
-    }
-
-    public void setProcDefKey(String procDefKey) {
-        this.procDefKey = procDefKey;
-    }
-
-    public String getAppKey() {
-        return appKey;
-    }
-
-    public void setAppKey(String appKey) {
-        this.appKey = appKey;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Integer getProcessInstanceId() {
-        return processInstanceId;
-    }
-
-    public void setProcessInstanceId(Integer processInstanceId) {
-        this.processInstanceId = processInstanceId;
-    }
-
-    public String getProcessInstanceState() {
-        return processInstanceState;
-    }
-
-    public void setProcessInstanceState(String processInstanceState) {
-        this.processInstanceState = processInstanceState;
-    }
-
-    public String getProcessInstanceName() {
-        return processInstanceName;
-    }
-
-    public void setProcessInstanceName(String processInstanceName) {
-        this.processInstanceName = processInstanceName;
-    }
-
-    public String getProcessDefinitionName() {
-        return processDefinitionName;
-    }
-
-    public void setProcessDefinitionName(String processDefinitionName) {
-        this.processDefinitionName = processDefinitionName;
-    }
-
-    public String getStartTimeFrom() {
-        return startTimeFrom;
-    }
-
-    public void setStartTimeFrom(String startTimeFrom) {
-        this.startTimeFrom = startTimeFrom;
-    }
-
-    public String getStartTimeSTo() {
-        return startTimeSTo;
-    }
-
-    public void setStartTimeSTo(String startTimeSTo) {
-        this.startTimeSTo = startTimeSTo;
-    }
-
-    public String getEndTimeFrom() {
-        return endTimeFrom;
-    }
-
-    public void setEndTimeFrom(String endTimeFrom) {
-        this.endTimeFrom = endTimeFrom;
-    }
-
-    public String getEndTimeTo() {
-        return endTimeTo;
-    }
-
-    public void setEndTimeTo(String endTimeTo) {
-        this.endTimeTo = endTimeTo;
-    }
-
-    public Integer getPage() {
-        return page;
-    }
-
-    public void setPage(Integer page) {
-        this.page = page;
-    }
-
-    public Integer getRows() {
-        return rows;
-    }
-
-    public void setRows(Integer rows) {
-        this.rows = rows;
-    }
 
     @Override
     public String toString() {

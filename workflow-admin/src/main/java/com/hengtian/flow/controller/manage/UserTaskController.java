@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.common.base.BaseController;
@@ -25,6 +26,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户任务表  前端控制器
@@ -49,33 +51,56 @@ public class UserTaskController extends BaseController{
 	/**
 	 * 设定人员页面
 	 * @param model
-	 * @param id 流程定义ID
+	 * @param processDefinitionId 流程定义ID
+	 * @param type 设置方式：1-标准设置；2-快速设置（从历史中匹配）
 	 * @return
 	 * @author houjinrong@chtwm.com
 	 * date 2018/5/7 15:47
 	 */
-	@GetMapping("/config/page/{id}")
-	public String configPage(Model model, @PathVariable("id") String id) {
-		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(id).singleResult();
+	@GetMapping("/config/page/{processDefinitionId}")
+	public String configPage(Model model, @PathVariable("processDefinitionId") String processDefinitionId, int type) {
+		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).latestVersion().singleResult();
 		EntityWrapper<TUserTask> wrapper = new EntityWrapper();
 		wrapper.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
 
 		List<TUserTask> uTasks = tUserTaskService.selectList(wrapper);
-		BpmnModel bpmnModel = repositoryService.getBpmnModel(id);
+		BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
 		List<UserTask> userTasks = bpmnModel.getMainProcess().findFlowElementsOfType(UserTask.class);
 
-		if(uTasks == null || uTasks.size() == 0){
+		if(CollectionUtils.isEmpty(uTasks)){
+			Map<String, TUserTask> userTaskMap = Maps.newHashMap();
+			if(2 == type){
+				//获取历史最高版本的配置
+				if(pd.getVersion() >1){
+					wrapper = new EntityWrapper();
+					wrapper.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion()-1);
+					uTasks = tUserTaskService.selectList(wrapper);
+				}
+
+				if(CollectionUtils.isNotEmpty(uTasks)){
+					for(TUserTask ut : uTasks){
+						userTaskMap.put(ut.getTaskDefKey(), ut);
+					}
+				}
+			}
+
 			List<TUserTask> tUserTaskList = Lists.newArrayList();
 			for(UserTask ut : userTasks){
-				TUserTask tUserTask = new TUserTask();
-				tUserTask.setProcDefKey(pd.getKey());
-				tUserTask.setProcDefName(pd.getName());
-				tUserTask.setTaskDefKey(ut.getId());
-				tUserTask.setTaskName(ut.getName()==null?"":ut.getName());
-				tUserTask.setVersion(pd.getVersion());
-				tUserTask.setTaskType(TaskTypeEnum.ASSIGNEE.getValue());
-				tUserTask.setAssignType(AssignTypeEnum.PERSON.getCode());
-				tUserTaskList.add(tUserTask);
+				if(userTaskMap.containsKey(ut.getId())){
+					userTaskMap.get(ut.getId()).setVersion(pd.getVersion());
+					userTaskMap.get(ut.getId()).setId(null);
+					tUserTaskList.add(userTaskMap.get(ut.getId()));
+				}else{
+					TUserTask tUserTask = new TUserTask();
+					tUserTask.setProcDefKey(pd.getKey());
+					tUserTask.setProcDefName(pd.getName());
+					tUserTask.setTaskDefKey(ut.getId());
+					tUserTask.setTaskName(ut.getName()==null?"":ut.getName());
+					tUserTask.setVersion(pd.getVersion());
+					tUserTask.setTaskType(TaskTypeEnum.ASSIGNEE.getValue());
+					tUserTask.setAssignType(AssignTypeEnum.PERSON.getCode());
+					tUserTaskList.add(tUserTask);
+				}
 			}
 
 			if(CollectionUtils.isNotEmpty(tUserTaskList)){
@@ -168,5 +193,20 @@ public class UserTaskController extends BaseController{
 			logger.error("任务节点配置失败", e);
 			return renderError("任务节点配置");
 		}
+	}
+
+	/**
+	 * 任务节点配置（包括审批人，权限按钮）
+	 * @param processDefinitionId
+	 * @return
+	 */
+	@PostMapping("/config/type")
+	@ResponseBody
+	public Object configType(String processDefinitionId) {
+		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).latestVersion().singleResult();
+		EntityWrapper<TUserTask> wrapper = new EntityWrapper();
+		wrapper.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
+		int i = tUserTaskService.selectCount(wrapper);
+		return i;
 	}
 }

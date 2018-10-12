@@ -85,7 +85,7 @@
                 title: '当前任务节点名称',
                 field: 'taskName'
             }, {
-                width: '80',
+                width: '90',
                 title: '当前审批人',
                 field: 'taskAssign',
                 formatter: function (value, row, index) {
@@ -97,14 +97,14 @@
                 field: 'taskCreateTime',
                 sortable: true
             }, {
-                width: '140',
+                width: '60',
                 title: '业务主键',
                 field: 'businessKey',
 
             }, {
                 field: 'action',
                 title: '操作',
-                width: 350,
+                width: "auto",
                 formatter: function (value, row, index) {
                     var str = '';
                     <shiro:hasPermission name="/task/claim">
@@ -163,7 +163,7 @@
         }
         parent.$.modalDialog({
             title: '办理',
-            width: 570,
+            width: 780,
             height: 450,
             href: '${ctx}/workflow/page/task/complete/' + id,
             buttons: [{
@@ -286,8 +286,8 @@
     function transferTaskFun(id) {
         parent.$.modalDialog({
             title: '选择受理人',
-            width: 500,
-            height: 450,
+            width: 750,
+            height: 480,
             modal: true,
             href: '${ctx}/workflow/page/task/transfer/' + id,
             buttons: [{
@@ -307,8 +307,8 @@
     function jumpTaskFun(id) {
         parent.$.modalDialog({
             title: '选择任务节点',
-            width: 300,
-            height: 200,
+            width: 350,
+            height: 260,
             modal: true,
             href: '${ctx}/workflow/page/task/jump?taskId=' + id,
             buttons: [{
@@ -385,6 +385,7 @@
     function taskSearchFun() {
         taskDataGrid.datagrid('load', $.serializeObject($('#taskSearchForm')));
     }
+
 </script>
 </body>
 </html>
