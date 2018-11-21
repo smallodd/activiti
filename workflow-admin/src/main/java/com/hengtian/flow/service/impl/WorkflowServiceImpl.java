@@ -30,7 +30,6 @@ import com.hengtian.flow.vo.*;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
-import com.rbac.service.UserService;
 import com.user.entity.emp.Emp;
 import com.user.entity.emp.EmpVO;
 import com.user.service.emp.EmpService;
@@ -113,7 +112,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     TWorkDetailService workDetailService;
 
     @Autowired
-    private UserService userService;
+    private EmpService empService;
 
     @Autowired
     private PrivilegeService privilegeService;
@@ -121,8 +120,6 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     private WorkflowDao workflowDao;
 
-    @Autowired
-    private EmpService empService;
 
     @Autowired
     private AssigneeTempService assigneeTempService;
@@ -231,7 +228,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
                 result.setMsg("申请成功");
-                result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(taskList)));
+
                 //存储操作记录
                 TWorkDetail tWorkDetail = new TWorkDetail();
                 tWorkDetail.setCreateTime(new Date());
@@ -267,7 +264,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
                 result.setMsg("申请成功");
-                result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(taskList)));
+
 
                 TWorkDetail tWorkDetail = new TWorkDetail();
                 tWorkDetail.setCreateTime(new Date());
@@ -291,7 +288,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             String creatorDeptName = "";
             String creatorDeptCode = "";
             String userName = "";
-            RbacUser user = userService.getUserById(creator);
+            Emp user = empService.selectByCode(creator);
             if(user != null){
                 userName = user.getName();
             }
@@ -560,6 +557,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.info("{}没有操作任务{}的权限",assigneeSet,task.getId());
             result.setMsg("该用户没有操作此任务的权限");
             result.setCode(Constant.TASK_NOT_BELONG_USER);
+            result.setSuccess(false);
             return result;
         }
 
@@ -1384,7 +1382,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
 
-        RbacUser user = userService.getUserById(targetUserId);
+        Emp user = empService.selectByCode(targetUserId);
         if(user == null){
             log.info("被转办人不存在");
             return new Result(false,Constant.FAIL, "被转办人不存在");
@@ -1873,7 +1871,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 Set<String> assigneeNameSet = Sets.newHashSet();
                 for (String assign : assigneeBefore){
                     if(StringUtils.isNotBlank(assign)){
-                        RbacUser rbacUser = userService.getUserById(assign);
+                        Emp rbacUser = empService.selectByCode(assign);
                         if(rbacUser != null){
                             logger.info("【"+assign+"】：【"+rbacUser.getName()+"】");
                             assigneeNameSet.add(rbacUser.getName());
@@ -1889,7 +1887,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 //发生跳转，问询等打断流程的操作，上一步操作人从操作记录表中获取
                 TWorkDetail tWorkDetail = workDetailService.queryLastInfo(t.getProcessInstanceId());
                 if(tWorkDetail != null){
-                    RbacUser rbacUser = userService.getUserById(tWorkDetail.getOperator());
+                    Emp rbacUser = empService.selectByCode(tWorkDetail.getOperator());
                     if(rbacUser != null){
                         t.setAssigneeBefore(tWorkDetail.getOperator());
                         t.setAssigneeBeforeName(rbacUser.getName());
@@ -1918,12 +1916,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             if(StringUtils.isNotBlank(t.getAssigneeNext())) {
                 String[] getAssigneeNexts = t.getAssigneeNext().split(",");
                 for (String assign:getAssigneeNexts){
-                    RbacUser rbacUser = userService.getUserById(assign);
+                    Emp rbacUser = empService.selectByCode(assign);
                     assigneeNameSet.add(rbacUser.getName());
                 }
                 t.setAssigneeNextName(StringUtils.join(assigneeNameSet, ","));
             }
-            RbacUser rbacUser=userService.getUserById(t.getAssignee());
+            Emp rbacUser=empService.selectByCode(t.getAssignee());
             if(rbacUser!=null){
                 t.setAssigneeName(rbacUser.getName());
             }
@@ -2513,7 +2511,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(userId == null){
             return userId;
         }
-        RbacUser user = userService.getUserById(userId);
+        Emp user = empService.selectByCode(userId);
         if(user == null){
             return userId;
         }
