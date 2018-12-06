@@ -2,22 +2,38 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:task="http://www.springframework.org/schema/task" xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd
-       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd"
+       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
        default-autowire="byName">
     <task:annotation-driven/>
 
     <!-- 自动扫描的包名 -->
-
+    <bean id="redisProperties" class="com.richgo.config.RedisProperties" />
+    <bean class="com.richgo.redis.RedisClusterUtil" >
+        <constructor-arg ref="redisProperties"/>
+    </bean>
+    <bean id="domainMapProperties" class="com.rbac.conf.DomainMapProperties">
+        <property name="domainMap">
+            <util:map>
+                <!--<entry key="chtwm" value="chtwm.com" />-->
+                <!--<entry key="chtfund" value="chtfund.com.cn" />-->
+                <!--<entry key="hkam2018" value="hkam2018.com" />-->
+            </util:map>
+        </property>
+    </bean>
+    <bean class="com.rbac.util.CommonUtil" >
+        <constructor-arg ref="domainMapProperties" />
+    </bean>
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
                 <value>classpath:config.properties</value>
                 <value>classpath:dubbo.properties</value>
+                <value>classpath:redisClusterConfig.properties</value>
             </list>
         </property>
     </bean>

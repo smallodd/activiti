@@ -3,11 +3,15 @@ package com.hengtian.system.controller;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
+
+
 import com.hengtian.common.utils.*;
 import com.hengtian.system.model.SysRole;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysUserService;
 import com.hengtian.system.vo.SysUserVo;
+
+import com.richgo.redis.RedisClusterUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,8 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
