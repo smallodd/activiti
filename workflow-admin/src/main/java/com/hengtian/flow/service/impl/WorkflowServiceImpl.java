@@ -28,9 +28,10 @@ import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.*;
 import com.rbac.entity.RbacRole;
+
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
-import com.rbac.service.UserService;
+
 import com.user.entity.emp.Emp;
 import com.user.entity.emp.EmpVO;
 import com.user.service.emp.EmpService;
@@ -112,8 +113,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     TWorkDetailService workDetailService;
 
-    @Autowired
-    private UserService userService;
+
 
     @Autowired
     private PrivilegeService privilegeService;
@@ -291,7 +291,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             String creatorDeptName = "";
             String creatorDeptCode = "";
             String userName = "";
-            RbacUser user = userService.getUserById(creator);
+            Emp user=empService.selectByCode(creator);
+
             if(user != null){
                 userName = user.getName();
             }
@@ -1383,8 +1384,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.info("任务不存在");
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
+        Emp user=empService.selectByCode(targetUserId);
 
-        RbacUser user = userService.getUserById(targetUserId);
         if(user == null){
             log.info("被转办人不存在");
             return new Result(false,Constant.FAIL, "被转办人不存在");
@@ -1873,7 +1874,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 Set<String> assigneeNameSet = Sets.newHashSet();
                 for (String assign : assigneeBefore){
                     if(StringUtils.isNotBlank(assign)){
-                        RbacUser rbacUser = userService.getUserById(assign);
+                        Emp rbacUser = empService.selectByCode(assign);
                         if(rbacUser != null){
                             logger.info("【"+assign+"】：【"+rbacUser.getName()+"】");
                             assigneeNameSet.add(rbacUser.getName());
@@ -1889,7 +1890,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 //发生跳转，问询等打断流程的操作，上一步操作人从操作记录表中获取
                 TWorkDetail tWorkDetail = workDetailService.queryLastInfo(t.getProcessInstanceId());
                 if(tWorkDetail != null){
-                    RbacUser rbacUser = userService.getUserById(tWorkDetail.getOperator());
+                    Emp rbacUser = empService.selectByCode(tWorkDetail.getOperator());
+
                     if(rbacUser != null){
                         t.setAssigneeBefore(tWorkDetail.getOperator());
                         t.setAssigneeBeforeName(rbacUser.getName());
@@ -1918,12 +1920,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             if(StringUtils.isNotBlank(t.getAssigneeNext())) {
                 String[] getAssigneeNexts = t.getAssigneeNext().split(",");
                 for (String assign:getAssigneeNexts){
-                    RbacUser rbacUser = userService.getUserById(assign);
+                    Emp rbacUser=empService.selectByCode(assign);
+
                     assigneeNameSet.add(rbacUser.getName());
                 }
                 t.setAssigneeNextName(StringUtils.join(assigneeNameSet, ","));
             }
-            RbacUser rbacUser=userService.getUserById(t.getAssignee());
+            Emp rbacUser=empService.selectByCode(t.getAssignee());
+
             if(rbacUser!=null){
                 t.setAssigneeName(rbacUser.getName());
             }
@@ -2513,11 +2517,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(userId == null){
             return userId;
         }
-        RbacUser user = userService.getUserById(userId);
-        if(user == null){
+        Emp emp = empService.selectByCode(userId);
+        if(emp == null){
             return userId;
         }
-        return user.getName();
+        return emp.getName();
     }
 
     /**

@@ -4,10 +4,11 @@ import com.google.common.collect.Maps;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import com.rbac.entity.RbacRole;
-import com.rbac.entity.RbacUser;
+
 import com.rbac.service.PrivilegeService;
-import com.rbac.service.UserService;
+
 import com.user.entity.org.Org;
+import com.user.service.emp.EmpService;
 import com.user.service.org.OrgService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class EmpController {
     @Autowired
     private PrivilegeService privilegeService;
     @Autowired
-    private UserService userService;
+    private EmpService empService;
 
     /**
      * 获取用户列表-分页
@@ -55,12 +56,18 @@ public class EmpController {
     public Object queryUser(String code, String name, Integer page, Integer rows){
         code = StringUtils.isBlank(code)?null:code.trim();
         name = StringUtils.isBlank(name)?null:name.trim();
-        com.github.pagehelper.PageInfo<RbacUser> userPageInfo = userService.getUserPageInfo(page, rows, code, null, name, null);
+        Map<String,Object> map = empService.selectByDeptCodeOrCodeOrName(code,name,null,null,page,rows);
         PageInfo pageInfo = new PageInfo();
         Map<String,Object> condition = Maps.newHashMap();
         condition.put("code",code);
         condition.put("name",name);
-        transferPageInfo(userPageInfo, pageInfo, condition);
+
+        pageInfo.setTotal(Integer.valueOf(map.get("total").toString()));
+        pageInfo.setCondition(condition);
+        pageInfo.setRows((List) map.get("list"));
+        pageInfo.setNowpage(page);
+        pageInfo.setPagesize(rows);
+        //transferPageInfo(userPageInfo, pageInfo, condition);
 
         return pageInfo;
     }

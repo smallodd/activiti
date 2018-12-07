@@ -17,6 +17,6 @@
 
 	<dubbo:reference id="privilegeService" interface="com.rbac.service.PrivilegeService" version="1.0.0" timeout="20000" retries="0" />
 	<dubbo:reference id="empService" interface="com.user.service.emp.EmpService" version="1.0.0" timeout="20000" retries="0" />
-	<dubbo:reference id="userService" interface="com.rbac.service.UserService" version="1.0.0" timeout="20000" retries="0" />
+
 	<dubbo:reference id="orgService" interface="com.user.service.org.OrgService" version="1.0.0" timeout="20000" retries="0" />
 </beans>
