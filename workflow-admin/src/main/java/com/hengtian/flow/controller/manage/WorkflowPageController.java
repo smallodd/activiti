@@ -11,7 +11,9 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.CommentVo;
 import com.rbac.entity.RbacUser;
-import com.rbac.service.UserService;
+
+import com.user.entity.emp.Emp;
+import com.user.service.emp.EmpService;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
@@ -57,7 +59,7 @@ public class WorkflowPageController extends WorkflowBaseController{
     @Autowired
     private TaskService taskService;
     @Autowired
-    private UserService userService;
+    private EmpService empService;
     @Autowired
     private TUserTaskService tUserTaskService;
     @Autowired
@@ -177,7 +179,7 @@ public class WorkflowPageController extends WorkflowBaseController{
         for(Comment comment : commentList){
             CommentEntity c = (CommentEntity)comment;
             CommentVo vo = new CommentVo();
-            RbacUser user = userService.getUserById(comment.getUserId());
+            Emp user = empService.selectByCode(comment.getUserId());
             vo.setCommentUser(user==null?c.getUserId():user.getName());
             vo.setCommentTime(DateUtils.formatDateToString(comment.getTime()));
             vo.setCommentContent(c.getMessage());
