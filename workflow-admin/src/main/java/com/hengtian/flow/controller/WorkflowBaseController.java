@@ -19,6 +19,8 @@ import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
 import com.rbac.service.UserService;
+import com.user.entity.emp.Emp;
+import com.user.service.emp.EmpService;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -67,10 +69,9 @@ public class WorkflowBaseController extends BaseRestController {
     private ProcessEngine processEngine;
     @Autowired
     FormService formService;
+
     @Autowired
-    WorkflowService workflowService;
-    @Autowired
-    UserService userService;
+    EmpService empService;
 
     /**
      * 获取需要高亮的线 (适配5.18以上版本；由于mysql5.6.4之后版本时间支持到毫秒，固旧方法比较开始时间的方法不在适合当前系统)
@@ -238,7 +239,8 @@ public class WorkflowBaseController extends BaseRestController {
                         }
                         JSONObject child = new JSONObject();
                         child.put("id", t.getAssignee()+":"+a);
-                        RbacUser user = userService.getUserById(a);
+
+                        Emp user =empService.selectByCode(a);
                         child.put("text", user == null?a:user.getName());
                         if(!jsonObject.containsKey("children")){
                             jsonArray.add(child);
