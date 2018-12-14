@@ -4,10 +4,9 @@ import com.google.common.collect.Maps;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import com.rbac.entity.RbacRole;
-import com.rbac.entity.RbacUser;
+
 import com.rbac.service.PrivilegeService;
 
-import com.user.entity.emp.Emp;
 import com.user.entity.org.Org;
 import com.user.service.emp.EmpService;
 import com.user.service.org.OrgService;
@@ -57,18 +56,18 @@ public class EmpController {
     public Object queryUser(String code, String name, Integer page, Integer rows){
         code = StringUtils.isBlank(code)?null:code.trim();
         name = StringUtils.isBlank(name)?null:name.trim();
-       Map<String,Object> map = empService.searchEmpInfoByCodeOrName(code,name,page,rows);
-        List<Emp> list= (List<Emp>) map.get("list");
+        Map<String,Object> map = empService.selectByDeptCodeOrCodeOrName(code,name,null,null,page,rows);
         PageInfo pageInfo = new PageInfo();
         Map<String,Object> condition = Maps.newHashMap();
         condition.put("code",code);
         condition.put("name",name);
-        com.github.pagehelper.PageInfo<Emp> userPageInfo=new com.github.pagehelper.PageInfo<>();
-        userPageInfo.setList(list);
-        userPageInfo.setPageSize(rows);
-        userPageInfo.setTotal((Long) map.get("total"));
-        userPageInfo.setPageNum(page);
-        transferPageInfo(userPageInfo, pageInfo, condition);
+
+        pageInfo.setTotal(Integer.valueOf(map.get("total").toString()));
+        pageInfo.setCondition(condition);
+        pageInfo.setRows((List) map.get("list"));
+        pageInfo.setNowpage(page);
+        pageInfo.setPagesize(rows);
+        //transferPageInfo(userPageInfo, pageInfo, condition);
 
         return pageInfo;
     }

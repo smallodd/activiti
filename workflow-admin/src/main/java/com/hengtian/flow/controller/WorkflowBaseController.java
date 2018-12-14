@@ -69,8 +69,7 @@ public class WorkflowBaseController extends BaseRestController {
     private ProcessEngine processEngine;
     @Autowired
     FormService formService;
-    @Autowired
-    WorkflowService workflowService;
+
     @Autowired
     EmpService empService;
 

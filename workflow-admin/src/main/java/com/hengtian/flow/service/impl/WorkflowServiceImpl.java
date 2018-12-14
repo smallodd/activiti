@@ -28,8 +28,10 @@ import com.hengtian.flow.model.*;
 import com.hengtian.flow.service.*;
 import com.hengtian.flow.vo.*;
 import com.rbac.entity.RbacRole;
+
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
+
 import com.user.entity.emp.Emp;
 import com.user.entity.emp.EmpVO;
 import com.user.service.emp.EmpService;
@@ -111,8 +113,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     TWorkDetailService workDetailService;
 
-    @Autowired
-    private EmpService empService;
+
 
     @Autowired
     private PrivilegeService privilegeService;
@@ -120,6 +121,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     private WorkflowDao workflowDao;
 
+    @Autowired
+    private EmpService empService;
 
     @Autowired
     private AssigneeTempService assigneeTempService;
@@ -288,7 +291,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             String creatorDeptName = "";
             String creatorDeptCode = "";
             String userName = "";
-            Emp user = empService.selectByCode(creator);
+            Emp user=empService.selectByCode(creator);
+
             if(user != null){
                 userName = user.getName();
             }
@@ -1888,6 +1892,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 TWorkDetail tWorkDetail = workDetailService.queryLastInfo(t.getProcessInstanceId());
                 if(tWorkDetail != null){
                     Emp rbacUser = empService.selectByCode(tWorkDetail.getOperator());
+
                     if(rbacUser != null){
                         t.setAssigneeBefore(tWorkDetail.getOperator());
                         t.setAssigneeBeforeName(rbacUser.getName());
@@ -2511,11 +2516,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         if(userId == null){
             return userId;
         }
-        Emp user = empService.selectByCode(userId);
-        if(user == null){
+        Emp emp = empService.selectByCode(userId);
+        if(emp == null){
             return userId;
         }
-        return user.getName();
+        return emp.getName();
     }
 
     /**

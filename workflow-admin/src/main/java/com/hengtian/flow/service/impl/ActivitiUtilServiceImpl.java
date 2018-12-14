@@ -96,8 +96,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private PrivilegeService privilegeService;
     @Autowired
     private TUserTaskService tUserTaskService;
-    @Autowired
-    private FormService formService;
+
     @Autowired
     private AssigneeTempService assigneeTempService;
     @Autowired
