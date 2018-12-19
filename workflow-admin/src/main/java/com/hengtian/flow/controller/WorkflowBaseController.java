@@ -18,7 +18,7 @@ import com.hengtian.flow.service.*;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
-import com.rbac.service.UserService;
+
 import com.user.entity.emp.Emp;
 import com.user.service.emp.EmpService;
 import lombok.extern.slf4j.Slf4j;
@@ -239,8 +239,7 @@ public class WorkflowBaseController extends BaseRestController {
                         }
                         JSONObject child = new JSONObject();
                         child.put("id", t.getAssignee()+":"+a);
-
-                        Emp user =empService.selectByCode(a);
+                        Emp user = empService.selectByCode(a);
                         child.put("text", user == null?a:user.getName());
                         if(!jsonObject.containsKey("children")){
                             jsonArray.add(child);

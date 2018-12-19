@@ -59,27 +59,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.rbac</groupId>
-            <artifactId> rbac-server-api </artifactId>
-            <version>2.0.2-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>com.github.pagehelper</artifactId>
-                    <groupId>pagehelper</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>org.mybatis</artifactId>
-                    <groupId>mybatis-spring</groupId>
 
-                </exclusion>
-                <exclusion>
-                    <groupId>org.mybatis</groupId>
-                    <artifactId>mybatis</artifactId>
-                </exclusion>
-
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -100,6 +80,52 @@
             <artifactId>dom4j</artifactId>
             <version>1.6.1</version>
         </dependency>
+        <!--rbac项目包-->
+        <dependency>
+            <groupId>com.common</groupId>
+            <artifactId>common-util</artifactId>
+            <version>1.2.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.richgo</groupId>
+            <artifactId>richgo-redis-api</artifactId>
+            <version>2.2.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.chtwm</groupId>
+            <artifactId>rbac-common</artifactId>
+            <version>2.2.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.chtwm</groupId>
+            <artifactId> rbac-service-api </artifactId>
+            <version>2.2.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!--rbac项目包结束-->
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
