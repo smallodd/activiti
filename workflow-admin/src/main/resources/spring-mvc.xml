@@ -45,7 +45,14 @@
            </props>
        </property>     
     </bean>
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**" />
+            <bean id="authInterceptor" class="com.hengtian.common.interceptor.AuthInterceptor">
 
+            </bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
    <!-- 启动对@AspectJ注解的支持 -->
    <aop:aspectj-autoproxy proxy-target-class="true"/>
    <!-- 日志注解 -->

@@ -12,6 +12,10 @@
        default-autowire="byName">
     <task:annotation-driven/>
 
+    <context:annotation-config/>
+    <context:component-scan base-package="com.hengtian"/>
+
+    
     <!-- 自动扫描的包名 -->
     <bean id="redisProperties" class="com.richgo.config.RedisProperties" />
     <bean class="com.richgo.redis.RedisClusterUtil" >
@@ -21,22 +25,13 @@
         <property name="domainMap">
             <util:map>
                 <!--<entry key="chtwm" value="chtwm.com" />-->
-                <!--<entry key="chtfund" value="chtfund.com.cn" />-->
-                <!--<entry key="hkam2018" value="hkam2018.com" />-->
             </util:map>
         </property>
     </bean>
     <bean class="com.rbac.util.CommonUtil" >
         <constructor-arg ref="domainMapProperties" />
     </bean>
-    <mvc:interceptors>
-        <mvc:interceptor>
-            <mvc:mapping path="/**" />
-            <bean id="authInterceptor" class="com.hengtian.common.interceptor.AuthInterceptor">
 
-            </bean>
-        </mvc:interceptor>
-    </mvc:interceptors>
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
@@ -47,8 +42,6 @@
         </property>
     </bean>
 
-    <context:annotation-config/>
-    <context:component-scan base-package="com.hengtian"/>
 
     <import resource="classpath*:activiti-context.xml"/>
     <import resource="classpath*:spring-mybatis.xml"/>
