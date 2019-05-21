@@ -701,7 +701,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             result.setMsg("参数错误！");
             return result;
         }
-        List<HistoricTaskInstance> list=   historyService.createHistoricTaskInstanceQuery().processInstanceBusinessKey(businessKey).processVariableValueEquals("appKey", appKey).orderByTaskCreateTime().desc().list();
+        List<HistoricTaskInstance> list=   historyService.createHistoricTaskInstanceQuery().processInstanceBusinessKey(businessKey).processVariableValueEquals("appKey", appKey).orderByHistoricTaskInstanceEndTime().asc().list();
 
         if(list!=null&&list.size()>0){
             HistoricTaskInstance historicTaskInstance=list.get(0);
