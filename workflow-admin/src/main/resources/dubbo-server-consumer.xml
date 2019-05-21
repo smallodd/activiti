@@ -15,7 +15,7 @@
 	<!-- 使用zookeeper注册中心暴露服务地址 即zookeeper的所在服务器ip地址和端口号 -->
 	<dubbo:registry protocol="zookeeper" address="${dubbo.registry.address}" check="false" />
 
-	<dubbo:reference id="privilegeService" interface="com.rbac.service.PrivilegeService" version="1.0.0" timeout="20000" retries="0" />
+	<dubbo:reference id="privilegeService" interface="com.rbac.service.PrivilegeService" version="1.0.0" timeout="20000" retries="0"  loadbalance="rbac"/>
 	<dubbo:reference id="empService" interface="com.user.service.emp.EmpService" version="1.0.0" timeout="20000" retries="0" />
 
 	<dubbo:reference id="orgService" interface="com.user.service.org.OrgService" version="1.0.0" timeout="20000" retries="0" />

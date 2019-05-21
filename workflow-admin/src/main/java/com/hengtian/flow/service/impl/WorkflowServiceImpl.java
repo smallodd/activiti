@@ -231,7 +231,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
                 result.setMsg("申请成功");
-                result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(taskList)));
+
                 //存储操作记录
                 TWorkDetail tWorkDetail = new TWorkDetail();
                 tWorkDetail.setCreateTime(new Date());
@@ -267,7 +267,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
                 result.setMsg("申请成功");
-                result.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(taskList)));
+
 
                 TWorkDetail tWorkDetail = new TWorkDetail();
                 tWorkDetail.setCreateTime(new Date());
@@ -561,6 +561,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.info("{}没有操作任务{}的权限",assigneeSet,task.getId());
             result.setMsg("该用户没有操作此任务的权限");
             result.setCode(Constant.TASK_NOT_BELONG_USER);
+            result.setSuccess(false);
             return result;
         }
 
@@ -1384,8 +1385,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             log.info("任务不存在");
             return new Result(ResultEnum.TASK_NOT_EXIST.code, ResultEnum.TASK_NOT_EXIST.msg);
         }
-        Emp user=empService.selectByCode(targetUserId);
 
+        Emp user = empService.selectByCode(targetUserId);
         if(user == null){
             log.info("被转办人不存在");
             return new Result(false,Constant.FAIL, "被转办人不存在");
@@ -1920,14 +1921,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             if(StringUtils.isNotBlank(t.getAssigneeNext())) {
                 String[] getAssigneeNexts = t.getAssigneeNext().split(",");
                 for (String assign:getAssigneeNexts){
-                    Emp rbacUser=empService.selectByCode(assign);
-
+                    Emp rbacUser = empService.selectByCode(assign);
                     assigneeNameSet.add(rbacUser.getName());
                 }
                 t.setAssigneeNextName(StringUtils.join(assigneeNameSet, ","));
             }
             Emp rbacUser=empService.selectByCode(t.getAssignee());
-
             if(rbacUser!=null){
                 t.setAssigneeName(rbacUser.getName());
             }

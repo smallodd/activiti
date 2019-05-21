@@ -28,7 +28,7 @@ import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
-import com.rbac.service.UserService;
+
 import com.user.entity.emp.Emp;
 import com.user.service.emp.EmpService;
 import org.activiti.bpmn.model.*;
@@ -1202,8 +1202,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 if(StringUtils.isNotBlank(tr.getAssigneeReal())){
                     String assigneeReal = tr.getAssigneeReal();
                     for(String assignee : assigneeReal.split(",")){
-                        Emp rbacUser= empService.selectByCode(assignee);
-                       // RbacUser rbacUser = userService.getUserById(assignee);
+                        Emp rbacUser = empService.selectByCode(assignee);
                         if(rbacUser!=null) {
                             AssigneeVo assigneeVo = new AssigneeVo();
                             assigneeVo.setUserCode(rbacUser.getCode());
@@ -1276,7 +1275,6 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 for(String assign:assigns){
                     assigneeVo=new AssigneeVo();
                     Emp rbacUser=empService.selectByCode(assign);
-
                     if(rbacUser!=null) {
                         assigneeVo.setUserCode(rbacUser.getCode());
                         assigneeVo.setUserName(rbacUser.getName());
