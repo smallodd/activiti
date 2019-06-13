@@ -2,11 +2,16 @@ package com.hengtian.config;
 
 import com.hengtian.common.shiro.UserRealm;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
+import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 import java.util.LinkedHashMap;
 
@@ -25,17 +30,16 @@ public class ShiroConfiguration {
     }
 
     @Bean(name="securityManager")
-    public DefaultWebSecurityManager securityManager(){
+    public DefaultWebSecurityManager securityManager(@Qualifier("authRealm") UserRealm authRealm){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        securityManager.setRealm(new UserRealm());
+        securityManager.setRealm(authRealm);
         return securityManager;
     }
 
     @Bean(name="shiroFilter")
-    public ShiroFilterFactoryBean shiroFilter(){
+    public ShiroFilterFactoryBean shiroFilter(@Qualifier("securityManager") SecurityManager securityManager){
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         //安全管理器
-        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         shiroFilterFactoryBean.setSecurityManager(securityManager);
         //默认的登陆访问url
         shiroFilterFactoryBean.setLoginUrl("/login");
@@ -75,5 +79,18 @@ public class ShiroConfiguration {
     @Bean(name="lifecycleBeanPostProcessor")
     public LifecycleBeanPostProcessor lifecycleBeanPostProcessor(){
         return new LifecycleBeanPostProcessor();
+    }
+
+    @Bean
+    @DependsOn("lifecycleBeanPostProcessor")
+    public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator(){
+        return new DefaultAdvisorAutoProxyCreator();
+    }
+
+    @Bean
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(@Qualifier("securityManager") SecurityManager securityManager){
+        AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
+        advisor.setSecurityManager(securityManager);
+        return advisor;
     }
 }

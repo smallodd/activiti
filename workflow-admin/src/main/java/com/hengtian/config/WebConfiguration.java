@@ -15,6 +15,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
@@ -115,5 +116,13 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Bean
     public HandlerInterceptor AuthInterceptor() {
         return new AuthInterceptor();
+    }
+
+    /**
+     * 注册拦截器
+     */
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(AuthInterceptor()).addPathPatterns("/**");
     }
 }
