@@ -4,7 +4,6 @@ import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.utils.CaptchaUtil;
 import com.hengtian.common.utils.DigestUtils;
-
 import com.hengtian.common.utils.StringUtils;
 import com.richgo.redis.RedisClusterUtil;
 import org.apache.shiro.SecurityUtils;
@@ -45,7 +44,7 @@ public class MainController extends BaseController {
      * GET 登录
      * @return {String}
      */
-    @GetMapping("/login")
+    @RequestMapping("/login")
     public String login() {
         if (SecurityUtils.getSubject().isAuthenticated()) {
             return "index";
