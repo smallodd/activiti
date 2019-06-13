@@ -1,5 +1,6 @@
 package com.hengtian.flow.service.impl;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
@@ -92,14 +93,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private RuProcinstService ruProcinstService;
     @Autowired
     private TRuTaskService tRuTaskService;
-    @Autowired
+    @Reference(version = "1.0.0")
     private PrivilegeService privilegeService;
     @Autowired
     private TUserTaskService tUserTaskService;
 
     @Autowired
     private AssigneeTempService assigneeTempService;
-    @Autowired
+    @Reference(version = "1.0.0")
     EmpService empService;
 
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list) {

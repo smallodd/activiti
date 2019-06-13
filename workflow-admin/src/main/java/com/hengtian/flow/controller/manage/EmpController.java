@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller.manage;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Maps;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
@@ -33,11 +34,11 @@ public class EmpController {
 
     Logger logger = Logger.getLogger(getClass());
 
-    @Autowired
+    @Reference(version = "1.0.0")
     private OrgService orgService;
-    @Autowired
+    @Reference(version = "1.0.0")
     private PrivilegeService privilegeService;
-    @Autowired
+    @Reference(version = "1.0.0")
     private EmpService empService;
 
     /**

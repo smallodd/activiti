@@ -1,5 +1,6 @@
 package com.hengtian.flow.service.impl;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -113,15 +114,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     TWorkDetailService workDetailService;
 
-
-
-    @Autowired
+    @Reference(version = "1.0.0")
     private PrivilegeService privilegeService;
 
     @Autowired
     private WorkflowDao workflowDao;
 
-    @Autowired
+    @Reference(version = "1.0.0")
     private EmpService empService;
 
     @Autowired

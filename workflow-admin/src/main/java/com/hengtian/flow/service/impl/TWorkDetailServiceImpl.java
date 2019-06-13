@@ -1,5 +1,6 @@
 package com.hengtian.flow.service.impl;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
@@ -23,7 +24,7 @@ import java.util.List;
 public class TWorkDetailServiceImpl extends ServiceImpl<TWorkDetailDao, TWorkDetail> implements TWorkDetailService {
     @Autowired
     private TWorkDetailDao tWorkDetailDao;
-    @Autowired
+    @Reference(version = "1.0.0")
     EmpService empService;
 
     /**

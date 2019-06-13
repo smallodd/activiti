@@ -15,7 +15,6 @@ package com.hengtian.activiti.controller.diagram;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.activiti.engine.RuntimeService;
-import org.activiti.rest.diagram.services.BaseProcessDefinitionDiagramLayoutResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

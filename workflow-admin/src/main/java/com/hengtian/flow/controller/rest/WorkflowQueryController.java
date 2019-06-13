@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller.rest;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
@@ -89,7 +90,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     private TaskService taskService;
     @Autowired
     private TWorkDetailService tWorkDetailService;
-    @Autowired
+    @Reference(version = "1.0.0")
     private PrivilegeService privilegeService;
     @Autowired
     private RuntimeService runtimeService;

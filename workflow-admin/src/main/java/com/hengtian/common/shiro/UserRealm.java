@@ -21,6 +21,7 @@ import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysRoleService;
 import com.hengtian.system.service.SysUserService;
 import com.hengtian.system.vo.SysUserVo;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -32,6 +33,7 @@ import com.hengtian.system.vo.SysUserVo;
  * 		shiro 自动去比较查询出密码和用户输入密码是否一致----
  * 		进行登陆控制 )
  */
+@Component
 public class UserRealm extends AuthorizingRealm{
 	protected Log logger = LogFactory.getLog(UserRealm.class);
 

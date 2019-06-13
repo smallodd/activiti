@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -61,7 +62,7 @@ public class WorkflowBaseController extends BaseRestController {
     TTaskButtonService tTaskButtonService;
     @Autowired
     private TUserTaskService tUserTaskService;
-    @Autowired
+    @Reference(version = "1.0.0")
     private PrivilegeService privilegeService;
     @Autowired
     private RuProcinstService ruProcinstService;
@@ -70,7 +71,7 @@ public class WorkflowBaseController extends BaseRestController {
     @Autowired
     FormService formService;
 
-    @Autowired
+    @Reference(version = "1.0.0")
     EmpService empService;
 
     /**

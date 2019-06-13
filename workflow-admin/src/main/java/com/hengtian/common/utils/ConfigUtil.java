@@ -1,12 +1,15 @@
 package com.hengtian.common.utils;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Created by ma on 2017/11/3.
@@ -46,7 +49,7 @@ public class ConfigUtil {
         }
 
         // 获取文件路径
-        String path = getClassPath() + "config.properties";
+        String path = getClassPath() + "application.properties";
         // String
         // path="D:/workspace-gxdp/gxdp-parent/gxdp-web/src/main/resources/config.properties";
 

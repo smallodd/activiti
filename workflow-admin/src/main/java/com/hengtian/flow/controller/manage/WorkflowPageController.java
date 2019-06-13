@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller.manage;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.DateUtils;
@@ -57,7 +58,7 @@ public class WorkflowPageController extends WorkflowBaseController{
     private RuProcinstService ruProcinstService;
     @Autowired
     private TaskService taskService;
-    @Autowired
+    @Reference(version = "1.0.0")
     private EmpService empService;
     @Autowired
     private TUserTaskService tUserTaskService;
