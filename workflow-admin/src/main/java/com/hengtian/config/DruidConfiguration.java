@@ -79,8 +79,15 @@ public class DruidConfiguration {
 
     private String connectionProperties;
 
-    @Bean     //声明其为Bean实例
-    @Primary  //在同样的DataSource中，首先使用被标注的DataSource
+    /**
+     * 功能描述:
+     * @param
+     * @return: javax.sql.DataSource
+     * @Author: hour
+     * @Date: 2019/6/13 11:03
+     */
+    @Bean
+    @Primary
     public DataSource dataSource(){
         DruidDataSource datasource = new DruidDataSource();
 
