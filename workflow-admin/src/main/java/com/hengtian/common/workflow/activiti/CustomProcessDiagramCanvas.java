@@ -13,12 +13,11 @@
 
 package com.hengtian.common.workflow.activiti;
 
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.AssociationDirection;
 import org.activiti.bpmn.model.GraphicInfo;
 import org.activiti.image.exception.ActivitiImageException;
 import org.activiti.image.util.ReflectUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -52,9 +51,9 @@ import java.util.List;
  * @see com.hengtian.common.workflow.activiti.CustomProcessDiagramGenerator
  * @author Joram Barrez
  */
+@Slf4j
 public class CustomProcessDiagramCanvas {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(CustomProcessDiagramCanvas.class);
     public enum SHAPE_TYPE {Rectangle, Rhombus, Ellipse}
 
     // Predefined sized
@@ -230,7 +229,7 @@ public class CustomProcessDiagramCanvas {
             SIGNAL_THROW_IMAGE = ImageIO.read(ReflectUtil.getResource("org/activiti/icons/signal-throw.png", customClassLoader));
             SIGNAL_CATCH_IMAGE = ImageIO.read(ReflectUtil.getResource("org/activiti/icons/signal.png", customClassLoader));
         } catch (IOException e) {
-            LOGGER.warn("Could not load image for process diagram creation: {}", e.getMessage());
+            log.warn("Could not load image for process diagram creation: {}", e.getMessage());
         }
     }
 

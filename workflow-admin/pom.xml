@@ -35,6 +35,10 @@
             <version>1.2.12</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.12.1</version>
@@ -123,6 +127,12 @@
             <groupId>org.activiti</groupId>
             <artifactId>activiti-explorer</artifactId>
             <version>${activiti.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.activiti</groupId>
+                    <artifactId>activiti-diagram-rest</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.activiti</groupId>
@@ -135,11 +145,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
+  <!--      <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-diagram-rest</artifactId>
             <version>${activiti.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-crystalball</artifactId>
@@ -212,16 +222,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.zookeeper</groupId>
-            <artifactId>zookeeper</artifactId>
-            <version>3.4.9</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.sgroschupf</groupId>
-            <artifactId>zkclient</artifactId>
-            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>dom4j</groupId>
@@ -503,11 +503,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
         <dependency>

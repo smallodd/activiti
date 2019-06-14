@@ -154,7 +154,6 @@ var ERDF = {
 	init: function(callback) {
 		
 		// init logging.
-		//ERDF.log = Log4js.getLogger("oryx");
 		//ERDF.log.setLevel(Log4js.Level.ALL);
 		//ERDF.log.addAppender(new ConsoleAppender(ERDF.log, false));
 
@@ -2115,7 +2114,7 @@ ORYX = Object.extend(ORYX, {
 	availablePlugins: [],
 
 	/**
-	 * The ORYX.Log logger.
+	 * The ORYX.Log log.
 	 */
 	Log: {
 	

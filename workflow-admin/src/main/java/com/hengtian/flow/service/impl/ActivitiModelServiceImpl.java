@@ -7,35 +7,27 @@ import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.service.ActivitiModelService;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ModelQuery;
 import org.activiti.engine.repository.NativeModelQuery;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
  * 流程模型服务接口
  * @author houjinrong
  */
+@Slf4j
 @Service
 public class ActivitiModelServiceImpl implements ActivitiModelService {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     RepositoryService repositoryService;
@@ -88,7 +80,7 @@ public class ActivitiModelServiceImpl implements ActivitiModelService {
             for(String modelId : modelIds){
                 model = repositoryService.getModel(modelId);
                 if(model == null){
-                    logger.info("模型ID【"+modelId+"】没有对应的模型存在");
+                    log.info("模型ID【"+modelId+"】没有对应的模型存在");
                 }
                 byte[] modelEditorSource = repositoryService.getModelEditorSource(modelId);
                 byte[] modelEditorSourceExtra = repositoryService.getModelEditorSourceExtra(modelId);

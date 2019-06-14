@@ -1,19 +1,32 @@
 package com.hengtian.common.utils;
 
-import org.apache.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
-import javax.mail.*;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.SendFailedException;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Created by ma on 2017/11/13.
  */
+
+@Slf4j
 public class EmailUtil {
     private final static String default_charset = "UTF-8";
 
@@ -21,7 +34,6 @@ public class EmailUtil {
         Default, TLS, SSL
     }
 
-    static final Logger logger = Logger.getLogger(EmailUtil.class);
 
     private String mail_host = ConfigUtil.getValue("email.send.host");
     private int mail_port = Integer.valueOf(ConfigUtil.getValue("email.send.port"));
@@ -135,7 +147,7 @@ public class EmailUtil {
                           String senderName, List recipients, String sub, String msg, Collection attachments)
             throws SendFailedException {
 
-        logger.debug("mail subject: "+sub
+        log.debug("mail subject: "+sub
                 +" mail_port: "+this.mail_port
                 +" encryptionType: "+this.encryptionType
                 +" auth: "+this.auth
@@ -214,7 +226,7 @@ public class EmailUtil {
             }
 
         } catch (Exception e) {
-            logger.error("send mail error", e);
+            log.error("send mail error", e);
             throw new SendFailedException(e.toString());
         } finally{
             if(transport!=null){

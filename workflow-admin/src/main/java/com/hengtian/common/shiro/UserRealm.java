@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class UserRealm extends AuthorizingRealm{
-	protected Log logger = LogFactory.getLog(UserRealm.class);
+	protected Log log = LogFactory.getLog(UserRealm.class);
 
     @Autowired private SysUserService userService;
     @Autowired private SysRoleService roleService;

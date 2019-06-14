@@ -14,27 +14,45 @@ import com.hengtian.common.enums.AssignTypeEnum;
 import com.hengtian.common.enums.ProcessStatusEnum;
 import com.hengtian.common.enums.ResultEnum;
 import com.hengtian.common.enums.TaskStatusEnum;
-import com.hengtian.common.param.TaskAgentQueryParam;
 import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
 import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.dao.WorkflowDao;
-import com.hengtian.flow.model.*;
-import com.hengtian.flow.service.*;
+import com.hengtian.flow.model.AssigneeTemp;
+import com.hengtian.flow.model.ProcessInstanceResult;
+import com.hengtian.flow.model.RuProcinst;
+import com.hengtian.flow.model.TButton;
+import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.model.TaskResult;
+import com.hengtian.flow.service.AssigneeTempService;
+import com.hengtian.flow.service.RuProcinstService;
+import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TTaskButtonService;
+import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
 import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
-
 import com.user.entity.emp.Emp;
 import com.user.service.emp.EmpService;
-import org.activiti.bpmn.model.*;
+import lombok.extern.slf4j.Slf4j;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.ExclusiveGateway;
+import org.activiti.bpmn.model.FlowNode;
+import org.activiti.bpmn.model.ParallelGateway;
 import org.activiti.bpmn.model.Process;
-import org.activiti.engine.*;
+import org.activiti.bpmn.model.SequenceFlow;
+import org.activiti.bpmn.model.UserTask;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
@@ -60,11 +78,15 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -73,9 +95,10 @@ import java.util.function.Predicate;
  * @author houjinrong@chtwm.com
  * date 2018/4/28 16:35
  */
+
+@Slf4j
 public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult> {
 
-    Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private HistoryService historyService;
@@ -411,7 +434,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 }
             }
         } catch (Exception e) {
-            logger.error("获取下一个节点失败", e);
+            log.error("获取下一个节点失败", e);
             return nextTaskDefinitionKeys;
         }
 
@@ -442,7 +465,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         for (ActivityImpl activityImpl : activitiList) {
             id = activityImpl.getId();
             if (activitiId.equals(id)) {
-                logger.debug("当前任务：" + activityImpl.getProperty("name"));
+                log.debug("当前任务：" + activityImpl.getProperty("name"));
                 taskDefinitionList = nextTaskDefinition(activityImpl, activityImpl.getId());
             }
         }
@@ -489,7 +512,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     taskDefinition = ((UserTaskActivityBehavior) ((ActivityImpl) ac).getActivityBehavior()).getTaskDefinition();
                     taskDefinitionList.add(taskDefinition);
                 } else {
-                    logger.debug(ac.getProperty("type").toString());
+                    log.debug(ac.getProperty("type").toString());
                 }
             }
         }
@@ -539,7 +562,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     taskDefinition = ((UserTaskActivityBehavior) ((ActivityImpl) ac).getActivityBehavior()).getTaskDefinition();
                     taskDefinitionList.add(taskDefinition);
                 } else {
-                    logger.debug(ac.getProperty("type").toString());
+                    log.debug(ac.getProperty("type").toString());
                 }
             }
         }
@@ -634,7 +657,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 beforeTaskDefKeys.addAll(beforeTask.keySet());
             }
         } catch (Exception e) {
-            logger.error("获取前置节点失败", e);
+            log.error("获取前置节点失败", e);
             return beforeTaskDefKeys;
         }
 
@@ -769,7 +792,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 nextTaskDefKeys.addAll(nextTask.keySet());
             }
         } catch (Exception e) {
-            logger.error("获取前置节点失败", e);
+            log.error("获取前置节点失败", e);
             return nextTaskDefKeys;
         }
 
@@ -863,7 +886,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             try {
                 return (Boolean) e.getValue(context);
             } catch (PropertyNotFoundException ex) {
-                logger.error("未传入与表达式" + conditionExpression + "对应的参数值", ex);
+                log.error("未传入与表达式" + conditionExpression + "对应的参数值", ex);
                 return false;
             }
         }
@@ -1304,7 +1327,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * @return
      */
     protected Result setNextAssigneeTemp(Task task, String processDefinitionKey, String assigneeNext, String processInstanceId,String currentAssignee, String taskDefKeyBefore, int version, Map<String, Map<String,AssigneeTemp>> assigneeMap){
-        logger.info("setNextAssigneeTemp开始,入参：taskId"+task.getId()+"assigneeNext:"+assigneeNext+"assigneeMap："+assigneeMap+"currentAssignee:"+currentAssignee);
+        log.info("setNextAssigneeTemp开始,入参：taskId"+task.getId()+"assigneeNext:"+assigneeNext+"assigneeMap："+assigneeMap+"currentAssignee:"+currentAssignee);
         Result result = new Result();
 
         EntityWrapper<AssigneeTemp> _wrapper = new EntityWrapper<>();
@@ -1314,7 +1337,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         List<AssigneeTemp> assigneeTemps = assigneeTempService.selectList(_wrapper);
         if(CollectionUtils.isEmpty(assigneeTemps)){
             if(StringUtils.isBlank(assigneeNext)){
-                logger.info("当前节点需设置下步节点审批人， 未发现审批人信息。");
+                log.info("当前节点需设置下步节点审批人， 未发现审批人信息。");
                 result.setCode(CodeConts.FAILURE);
                 result.setSuccess(false);
                 result.setMsg("当前节点需设置下步节点审批人， 未发现审批人信息。");
@@ -1327,7 +1350,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     assigneeTempService.insertBatch(assigneeTemps);
                 }
             } catch (JSONException e) {
-                logger.error("下步审批人参数格式不正确，不是正确的JSON格式", e);
+                log.error("下步审批人参数格式不正确，不是正确的JSON格式", e);
                 throw new WorkFlowException("下步审批人参数格式不正确，不是正确的JSON格式");
             }
         }
@@ -1375,7 +1398,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             taskDefinitionKey = jsonObject.getString("taskDefinitionKey");
             if(!nextTaskDefKeys.contains(taskDefinitionKey)){
-                logger.info("任务节点KEY不匹配");
+                log.info("任务节点KEY不匹配");
                 return null;
             }
 
@@ -1387,11 +1410,11 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
             //key为任务节点key
             if(userTask == null){
-                logger.info("任务节点key不存在");
+                log.info("任务节点key不存在");
                 return null;
             }
 
-            logger.info("节点配置信息：{}", JSONObject.toJSONString(userTask));
+            log.info("节点配置信息：{}", JSONObject.toJSONString(userTask));
 
             //角色ID，多个逗号隔开
             candidateIds = userTask.getCandidateIds();
@@ -1422,10 +1445,10 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     //获取用户所有所属角色
                     List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, userCode);
                     if(CollectionUtils.isEmpty(roles)){
-                        logger.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
+                        log.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
                         return null;
                     }
-                    logger.info("审批人信息{}，审批人角色{}",candidateIds,JSONObject.toJSONString(roles));
+                    log.info("审批人信息{}，审批人角色{}",candidateIds,JSONObject.toJSONString(roles));
                     if(CollectionUtils.isNotEmpty(roles)){
                         for(RbacRole r : roles){
                             if(candidateIds.indexOf(r.getId()+"") > -1){
@@ -1435,12 +1458,12 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                             }
                         }
                     }else{
-                        logger.info("未找到【"+userCode+"】的角色");
+                        log.info("未找到【"+userCode+"】的角色");
                         return null;
                     }
 
                     if(roleCode == null){
-                        logger.info("用户【"+userCode+"】没有权限");
+                        log.info("用户【"+userCode+"】没有权限");
                         return null;
                     }
 
@@ -1487,7 +1510,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
             //key为任务节点key
             if(userTask == null){
-                logger.info("任务节点key不存在");
+                log.info("任务节点key不存在");
                 return null;
             }
             //角色ID，多个逗号隔开
@@ -1507,7 +1530,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     //获取用户所有所属角色
                     List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, userCode);
                     if(CollectionUtils.isEmpty(roles)){
-                        logger.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
+                        log.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
                         return null;
                     }
                     for(RbacRole r : roles){
@@ -1518,7 +1541,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                         }
                     }
                     if(roleCode == null){
-                        logger.info("用户【"+userCode+"】没有权限");
+                        log.info("用户【"+userCode+"】没有权限");
                         return null;
                     }
                 }

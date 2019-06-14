@@ -18,6 +18,7 @@ import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.ActivitiModelService;
 import com.hengtian.flow.service.TUserTaskService;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONObject;
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
@@ -41,8 +42,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -77,11 +76,11 @@ import java.util.List;
  * @author houjinrong@chtwm.com
  * date 2018/6/12 9:56
  */
+@Slf4j
 @Controller
 @RequestMapping("/activiti/model")
 public class ActivitiModelController extends BaseController {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
 
     private final String model_version = "1.0";
 
@@ -186,7 +185,7 @@ public class ActivitiModelController extends BaseController {
                 Model model = repositoryService.createModelQuery().modelKey(key).singleResult();
                 if (model != null) {
                     String msg = "创建模型时KEY重复";
-                    logger.info(msg);
+                    log.info(msg);
                     result.setSuccess(false);
                     result.setMsg(msg);
                     return result;
@@ -217,13 +216,13 @@ public class ActivitiModelController extends BaseController {
             repositoryService.addModelEditorSource(modelData.getId(), editorNode.toString().getBytes("utf-8"));
             //response.sendRedirect(request.getContextPath() + "/modeler.html?modelId=" + modelData.getId());
 
-            logger.info("创建模型成功");
+            log.info("创建模型成功");
             result.setObj(modelData.getId());
             result.setSuccess(true);
             result.setMsg("创建模型成功");
         } catch (Exception e) {
             String msg = "创建模型失败";
-            logger.error(msg, e);
+            log.error(msg, e);
             result.setSuccess(false);
             result.setMsg(msg);
         }
@@ -265,7 +264,7 @@ public class ActivitiModelController extends BaseController {
             Model model = repositoryService.createModelQuery().modelKey(key).singleResult();
             if (model != null) {
                 String msg = "复制模型时KEY重复";
-                logger.info(msg);
+                log.info(msg);
                 return renderError(msg);
             }
         } else {
@@ -295,10 +294,10 @@ public class ActivitiModelController extends BaseController {
             repositoryService.addModelEditorSource(model.getId(), modelNode.toString().getBytes("utf-8"));
             repositoryService.addModelEditorSourceExtra(model.getId(), repositoryService.getModelEditorSourceExtra(modelData.getId()));
 
-            logger.info("复制成功");
+            log.info("复制成功");
             return renderSuccess("复制成功！");
         } catch (Exception e) {
-            logger.error("复制失败", e);
+            log.error("复制失败", e);
             return renderError("复制失败！");
         }
     }
@@ -318,7 +317,7 @@ public class ActivitiModelController extends BaseController {
             Model model = repositoryService.createModelQuery().modelKey(key).singleResult();
             if (model != null) {
                 String msg = "重置key时失败，key已存在";
-                logger.info(msg);
+                log.info(msg);
                 return renderError(msg);
             }
         } else {
@@ -342,10 +341,10 @@ public class ActivitiModelController extends BaseController {
             repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
 
 
-            logger.info("重置key成功");
+            log.info("重置key成功");
             return renderSuccess("重置key成功！");
         } catch (Exception e) {
-            logger.error("重置key失败", e);
+            log.error("重置key失败", e);
             return renderError("重置key失败！");
         }
     }
@@ -396,10 +395,10 @@ public class ActivitiModelController extends BaseController {
             /*Deployment deployment = repositoryService.createDeployment().name(modelData.getName())
                     .addBpmnModel(modelData.getName(), bpmnModel).deploy();*/
 
-            logger.info("部署成功");
+            log.info("部署成功");
             return renderSuccess("流程部署成功！");
         } catch (Exception e) {
-            logger.error("部署失败", e);
+            log.error("部署失败", e);
             return renderError("流程部署失败！");
         }
     }
@@ -544,7 +543,7 @@ public class ActivitiModelController extends BaseController {
     @SysLog(value = "备份模型")
     @RequestMapping(value = "/export")
     public void exportModel(HttpServletRequest request, HttpServletResponse response, String[] modelIds) {
-        logger.info("模型ID：", StringUtils.join(modelIds, ","));
+        log.info("模型ID：", StringUtils.join(modelIds, ","));
         if(modelIds == null || modelIds.length == 0){
             return;
         }
@@ -568,7 +567,7 @@ public class ActivitiModelController extends BaseController {
             IOUtils.copy(in, response.getOutputStream());
             response.flushBuffer();
         } catch (Exception e) {
-            logger.error("备份模型失败", e);
+            log.error("备份模型失败", e);
         }
     }
 
@@ -604,7 +603,7 @@ public class ActivitiModelController extends BaseController {
             }
             br.close();
         }catch(Exception e){
-            logger.error("读取文件失败", e);
+            log.error("读取文件失败", e);
             e.printStackTrace();
         }
 
@@ -613,7 +612,7 @@ public class ActivitiModelController extends BaseController {
         }
 
         try {
-            logger.info(result.toString());
+            log.info(result.toString());
             //JSONArray jsonArray = JSONArray.parseArray(new String(result.toString().getBytes(), "utf-8"));
             JSONArray jsonArray = JSONArray.parseArray(result.toString());
             com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
@@ -623,7 +622,7 @@ public class ActivitiModelController extends BaseController {
                 modelKey = jsonObject.getString("key");
                 Model model = repositoryService.createModelQuery().modelKey(modelKey).singleResult();
                 if(model != null){
-                    logger.info("模型KEY为【"+modelKey+"】的模型已存在");
+                    log.info("模型KEY为【"+modelKey+"】的模型已存在");
                     continue;
                 }
 
@@ -634,10 +633,10 @@ public class ActivitiModelController extends BaseController {
                 repositoryService.addModelEditorSourceExtra(modelId, Base64.decodeBase64(new String(jsonObject.getString("modelEditorSourceExtra").getBytes("utf-8"))));
             }
         } catch (UnsupportedEncodingException e) {
-            logger.error("导入模型异常：数据转换失败", e);
+            log.error("导入模型异常：数据转换失败", e);
             return renderError("导入模型异常：数据转换失败");
         } catch (Exception e) {
-            logger.error("导入模型失败", e);
+            log.error("导入模型失败", e);
             return renderError("导入模型失败");
         }
         return resultSuccess("导入模型成功");

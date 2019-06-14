@@ -32,6 +32,7 @@ import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysDepartmentService;
 import com.hengtian.system.service.SysUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
@@ -47,7 +48,6 @@ import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -61,10 +61,10 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.zip.ZipInputStream;
 
+@Slf4j
 @Controller
 @RequestMapping("/activiti")
 public class ActivitiController extends BaseController{
-	Logger logger = Logger.getLogger(ActivitiController.class);
 
 	@Autowired
 	private ActivitiService activitiService;
@@ -474,7 +474,7 @@ public class ActivitiController extends BaseController{
 				return renderError("任务不存在！");
 			}
 		} catch (Exception e) {
-			logger.info("获取任务审批人失败！",e);
+			log.info("获取任务审批人失败！",e);
 			return renderError("获取任务审批人失败！");
 		}
 
@@ -521,7 +521,7 @@ public class ActivitiController extends BaseController{
 				return renderError("任务不存在！");
 			}
 		} catch (Exception e) {
-			logger.info("获取任务审批人失败！",e);
+			log.info("获取任务审批人失败！",e);
 			return renderError("获取任务审批人失败！");
 		}
 
@@ -554,7 +554,7 @@ public class ActivitiController extends BaseController{
 			activitiService.jumpTask(taskId, taskDefinitionKey);
 			return renderSuccess("任务跳转成功！");
 		} catch (Exception e) {
-    		logger.info("任务跳转失败！",e);
+    		log.info("任务跳转失败！",e);
 			return renderError("任务跳转失败！");
 		}
     }

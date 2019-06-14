@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hengtian.common.utils.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
@@ -11,12 +12,14 @@ import org.activiti.engine.repository.Model;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
@@ -29,9 +32,10 @@ import java.io.InputStream;
  * @author houjinrong@chtwm.com
  * date 2018/6/12 9:45
  */
+
+@Slf4j
 @RestController("myModelSaveRestResource")
 public class ModelSaveRestResource implements ModelDataJsonConstants {
-    protected static final Logger LOGGER = LoggerFactory.getLogger(ModelSaveRestResource.class);
 
     @Autowired
     private RepositoryService repositoryService;
@@ -79,7 +83,7 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
 
             this.repositoryService.addModelEditorSourceExtra(model.getId(), result);
         } catch (Exception e) {
-            LOGGER.error("Error saving model", e);
+            log.error("Error saving model", e);
             throw new ActivitiException("Error saving model", e);
         }
     }

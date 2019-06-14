@@ -7,8 +7,7 @@ import com.common.interceptor.comment.SensitiveWords;
 import com.common.interceptor.comment.SensitivewordManage;
 import com.common.util.ConfigUtil;
 import com.rbac.dubbo.RbacDomainContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -24,9 +23,9 @@ import java.lang.reflect.Method;
  * @Author: hour
  * @Date: 2019/6/12 16:09
  */
+@Slf4j
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
-	private static final Logger log = LoggerFactory.getLogger(AuthInterceptor.class);
 
 	private static final String contentType = "application/json;charset=utf-8";
 	/**

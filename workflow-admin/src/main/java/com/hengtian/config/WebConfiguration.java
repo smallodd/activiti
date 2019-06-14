@@ -45,10 +45,6 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
     }
 
-    @Bean
-    public ServletRegistrationBean dispatcherRegistration(DispatcherServlet dispatcherServlet) {
-        return new ServletRegistrationBean(dispatcherServlet,"*.jsp");
-    }
 
     /**
      * 配置结果页面 前缀和后缀

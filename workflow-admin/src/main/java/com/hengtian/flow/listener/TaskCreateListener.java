@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TaskCreateListener implements EventHandler {
 
-    private static Log logger = LogFactory.getLog(TaskCreateListener.class);
+    private static Log log = LogFactory.getLog(TaskCreateListener.class);
 
     @Override
     public void handle(ActivitiEvent event) {

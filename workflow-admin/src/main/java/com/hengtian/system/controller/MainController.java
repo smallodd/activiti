@@ -44,7 +44,7 @@ public class MainController extends BaseController {
      * GET 登录
      * @return {String}
      */
-    @RequestMapping("/login")
+    @GetMapping("/login")
     public String login() {
         if (SecurityUtils.getSubject().isAuthenticated()) {
             return "index";

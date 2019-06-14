@@ -3,18 +3,20 @@ package com.hengtian.flow.controller;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.param.AskTaskParam;
 import com.hengtian.common.result.Result;
-import com.hengtian.common.shiro.ShiroUser;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,10 +25,10 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author chenzhangyan  on 2018/4/18.
  */
+@Slf4j
 @RequestMapping("/ask")
 @Controller
 public class AskController extends BaseController {
-    private static final Logger log = LoggerFactory.getLogger(AskController.class);
     @Autowired
     private TAskTaskService tAskTaskService;
     @Autowired

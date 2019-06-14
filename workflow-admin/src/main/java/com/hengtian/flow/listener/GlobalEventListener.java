@@ -18,7 +18,7 @@ public class GlobalEventListener implements ActivitiEventListener {
     /**
      * 日志处理器
      */
-    public final static Log logger = LogFactory.getLog(GlobalEventListener.class);
+    public final static Log log = LogFactory.getLog(GlobalEventListener.class);
 
     //事件及事件的处理器
     //private Map<String,EventHandler> handlers=new HashMap<String, EventHandler>();
@@ -28,7 +28,7 @@ public class GlobalEventListener implements ActivitiEventListener {
     @Override
     public void onEvent(ActivitiEvent event) {
         String eventType = event.getType().name();
-        logger.debug("envent type is ========>" + eventType);
+        log.debug("envent type is ========>" + eventType);
         //根据事件的类型ID,找到对应的事件处理器
         String eventHandlerBeanId = handlers.get(eventType);
         if (eventHandlerBeanId != null) {

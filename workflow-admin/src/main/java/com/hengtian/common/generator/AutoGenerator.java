@@ -29,7 +29,7 @@ import com.hengtian.common.generator.config.po.TableInfo;
  */
 public class AutoGenerator extends AbstractGenerator {
 
-	private static final Log logger = LogFactory.getLog(AutoGenerator.class);
+	private static final Log log = LogFactory.getLog(AutoGenerator.class);
 
 	/**
 	 * velocity引擎
@@ -40,7 +40,7 @@ public class AutoGenerator extends AbstractGenerator {
 	 * 生成代码
 	 */
 	public void execute() {
-		logger.debug("==========================准备生成文件...==========================");
+		log.debug("==========================准备生成文件...==========================");
 		// 初始化配置
 		initConfig();
 		// 创建输出文件路径
@@ -61,14 +61,14 @@ public class AutoGenerator extends AbstractGenerator {
 					} else if (osName.contains("Windows")) {
 						Runtime.getRuntime().exec("cmd /c start " + config.getGlobalConfig().getOutputDir());
 					} else {
-						logger.debug("文件输出目录:" + config.getGlobalConfig().getOutputDir());
+						log.debug("文件输出目录:" + config.getGlobalConfig().getOutputDir());
 					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		logger.debug("==========================文件生成完成！！！==========================");
+		log.debug("==========================文件生成完成！！！==========================");
 	}
 
 	/**
@@ -153,7 +153,7 @@ public class AutoGenerator extends AbstractGenerator {
 			if (!dir.exists()) {
 				boolean result = dir.mkdirs();
 				if (result) {
-					logger.debug("创建目录： [" + entry.getValue() + "]");
+					log.debug("创建目录： [" + entry.getValue() + "]");
 				}
 			}
 		}
@@ -213,7 +213,7 @@ public class AutoGenerator extends AbstractGenerator {
 			
 			
 		} catch (IOException e) {
-			logger.error("无法创建文件，请检查配置信息！", e);
+			log.error("无法创建文件，请检查配置信息！", e);
 		}
 	}
 
@@ -234,7 +234,7 @@ public class AutoGenerator extends AbstractGenerator {
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, ConstVal.UTF8));
 		template.merge(context, writer);
 		writer.close();
-		logger.debug("模板:" + templatePath + ";  文件:" + outputFile);
+		log.debug("模板:" + templatePath + ";  文件:" + outputFile);
 	}
 
 	/**
