@@ -3,8 +3,6 @@ package com.hengtian.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hengtian.common.interceptor.AuthInterceptor;
 import com.hengtian.common.operlog.ExceptionHandler;
-import com.hengtian.common.operlog.SysOperLogAspect;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -12,10 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
-import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
@@ -50,12 +48,12 @@ public class WebConfiguration implements WebMvcConfigurer {
      * 配置结果页面 前缀和后缀
      */
     @Bean
-    public InternalResourceViewResolver internalresource() {
-        InternalResourceViewResolver internalresource = new InternalResourceViewResolver();
-        internalresource.setPrefix("/WEB-INF/views/");
-        internalresource.setSuffix(".jsp");
-        internalresource.setOrder(10);
-        return internalresource;
+    public InternalResourceViewResolver viewResolver() {
+        InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+        viewResolver.setPrefix("/WEB-INF/views/");
+        viewResolver.setSuffix(".jsp");
+        viewResolver.setOrder(10);
+        return viewResolver;
     }
 
     /**
@@ -115,5 +113,15 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(AuthInterceptor()).addPathPatterns("/**");
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("swagger-ui.html")
+                .addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/META-INF/WEB-INF/resource/");
     }
 }
