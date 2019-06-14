@@ -1,5 +1,6 @@
 package com.hengtian.config;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.hengtian.common.workflow.activiti.CustomProcessEngineConfigurationImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.FormService;
@@ -10,6 +11,7 @@ import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
@@ -36,12 +37,9 @@ import javax.sql.DataSource;
 public class ActivitiConfiguration {
 
     @Autowired
-    CustomProcessEngineConfigurationImpl processEngineConfiguration = new CustomProcessEngineConfigurationImpl();
-
+    private PlatformTransactionManager transactionManager;
     @Autowired
-    private DataSource dataSource;
-    @Autowired
-    private DataSourceTransactionManager transactionManager;
+    private DruidDataSource datasource;
 
     @Value("${activiti.database.schema.update}")
     private String databaseSchemaUpdate;
@@ -73,8 +71,24 @@ public class ActivitiConfiguration {
     @Value("${activiti.annotation.font.name}")
     private String annotationFontName;
 
+    @Value("${spring.datasource.driverClassName}")
+    private String jdbcDriver;
+    @Value("${spring.datasource.url}")
+    private String jdbcUrl;
+    @Value("${spring.datasource.username}")
+    private String jdbcUsername;
+    @Value("${spring.datasource.password}")
+    private String jdbcPassword;
+
     @Bean
-    public ProcessEngineFactoryBean processEngine(){
+    @Primary
+    public DataSource activitiDataSource(){
+        return datasource;
+    }
+
+    @Bean
+    @Primary
+    public ProcessEngineFactoryBean processEngine(@Qualifier("processEngineConfiguration") CustomProcessEngineConfigurationImpl processEngineConfiguration){
         ProcessEngineFactoryBean processEngine = new ProcessEngineFactoryBean();
         processEngine.setProcessEngineConfiguration(processEngineConfiguration);
         return processEngine;
@@ -82,7 +96,7 @@ public class ActivitiConfiguration {
 
     @Bean
     @Primary
-    public CustomProcessEngineConfigurationImpl processEngineConfiguration(){
+    public CustomProcessEngineConfigurationImpl processEngineConfiguration(@Qualifier("dataSource") DataSource dataSource){
         CustomProcessEngineConfigurationImpl processEngineConfiguration = new CustomProcessEngineConfigurationImpl();
         processEngineConfiguration.setDataSource(dataSource);
         processEngineConfiguration.setTransactionManager(transactionManager);
@@ -96,61 +110,63 @@ public class ActivitiConfiguration {
         processEngineConfiguration.setActivityFontName(activityFontName);
         processEngineConfiguration.setLabelFontName(labelFontName);
         processEngineConfiguration.setAnnotationFontName(annotationFontName);
+
+        processEngineConfiguration.setJdbcDriver(jdbcDriver);
+        processEngineConfiguration.setJdbcUrl(jdbcUrl);
+        processEngineConfiguration.setJdbcUsername(jdbcUsername);
+        processEngineConfiguration.setJdbcPassword(jdbcPassword);
+
         return processEngineConfiguration;
     }
 
-    @Bean
-    public PlatformTransactionManager transactionManager(@Qualifier("dataSource") DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean
-    public SpringProcessEngineConfiguration springProcessEngineConfiguration(@Qualifier("dataSource") DataSource dataSource) {
+    /*@Bean
+    @Primary*/
+    public SpringProcessEngineConfiguration processEngineConfiguration1(@Qualifier("dataSource") DataSource dataSource) {
         SpringProcessEngineConfiguration configuration = new SpringProcessEngineConfiguration();
         configuration.setDataSource(dataSource);
         configuration.setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);
         configuration.setJobExecutorActivate(true);
-        configuration.setTransactionManager(transactionManager(dataSource));
+        configuration.setTransactionManager(transactionManager);
         return configuration;
     }
 
     @Bean
-    public RepositoryService repositoryService() {
+    public RepositoryService repositoryService(@Qualifier("processEngineConfiguration") CustomProcessEngineConfigurationImpl processEngineConfiguration) {
         return processEngineConfiguration.getRepositoryService();
     }
 
     @Bean
-    public RuntimeService runtimeService() {
+    public RuntimeService runtimeService(@Qualifier("processEngineConfiguration") CustomProcessEngineConfigurationImpl processEngineConfiguration) {
         return processEngineConfiguration.getRuntimeService();
     }
 
     @Bean
-    public TaskService taskService() {
+    public TaskService taskService(@Qualifier("processEngineConfiguration") CustomProcessEngineConfigurationImpl processEngineConfiguration) {
         return processEngineConfiguration.getTaskService();
     }
 
     @Bean
-    public HistoryService historyService() {
+    public HistoryService historyService(@Qualifier("processEngineConfiguration") CustomProcessEngineConfigurationImpl processEngineConfiguration) {
         return processEngineConfiguration.getHistoryService();
     }
 
     @Bean
-    public ManagementService managementService() {
+    public ManagementService managementService(@Qualifier("processEngineConfiguration") CustomProcessEngineConfigurationImpl processEngineConfiguration) {
         return processEngineConfiguration.getManagementService();
     }
 
     @Bean
-    public IdentityService IdentityService() {
+    public IdentityService IdentityService(@Qualifier("processEngineConfiguration") CustomProcessEngineConfigurationImpl processEngineConfiguration) {
         return processEngineConfiguration.getIdentityService();
     }
 
     @Bean
-    public FormService formService() {
+    public FormService formService(@Qualifier("processEngineConfiguration") CustomProcessEngineConfigurationImpl processEngineConfiguration) {
         return processEngineConfiguration.getFormService();
     }
 
     @Bean
-    public FormService processEngineFactoryBean() {
-        return processEngineConfiguration.getFormService();
+    public StrongUuidGenerator uuidGenerator(@Qualifier("processEngineConfiguration") CustomProcessEngineConfigurationImpl processEngineConfiguration){
+        return new StrongUuidGenerator();
     }
 }

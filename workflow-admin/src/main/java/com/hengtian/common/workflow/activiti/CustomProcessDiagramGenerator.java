@@ -4,6 +4,7 @@ import org.activiti.bpmn.model.*;
 import org.activiti.bpmn.model.Event;
 import org.activiti.bpmn.model.Process;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -14,6 +15,7 @@ import java.util.List;
 /**
  * Created by ma on 2018/3/5.
  */
+@Component
 public class CustomProcessDiagramGenerator implements CustomDefaultProcessDiagramGenerator {
 
 

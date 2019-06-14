@@ -29,7 +29,7 @@ import java.io.InputStream;
  * @author houjinrong@chtwm.com
  * date 2018/6/12 9:45
  */
-@RestController
+@RestController("myModelSaveRestResource")
 public class ModelSaveRestResource implements ModelDataJsonConstants {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ModelSaveRestResource.class);
 

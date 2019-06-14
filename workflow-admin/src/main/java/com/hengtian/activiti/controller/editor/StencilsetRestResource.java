@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.InputStream;
 
-@RestController
+@RestController("myStencilsetRestResource")
 public class StencilsetRestResource {
     @RequestMapping(value = {"/service/editor/stencilset"}, method = {org.springframework.web.bind.annotation.RequestMethod.GET}, produces = {"application/json;charset=utf-8"})
     @ResponseBody

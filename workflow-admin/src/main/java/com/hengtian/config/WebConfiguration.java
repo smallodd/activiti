@@ -87,11 +87,6 @@ public class WebConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    public SysOperLogAspect sysOperLogAspect(){
-        return new SysOperLogAspect();
-    }
-
-    @Bean
     public ExceptionHandler exceptionHandler(){
         return new ExceptionHandler();
     }

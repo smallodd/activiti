@@ -5,7 +5,6 @@ import com.rbac.util.CommonUtil;
 import com.richgo.config.RedisProperties;
 import com.richgo.redis.RedisClusterUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.activiti.spring.boot.SecurityAutoConfiguration;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,11 +13,13 @@ import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * 启动器
@@ -29,12 +30,15 @@ import org.springframework.context.annotation.ImportResource;
  * @Version V1.0
  */
 @Slf4j
-@SpringBootApplication(exclude = { DataSourceAutoConfiguration.class, SecurityAutoConfiguration.class,
+@SpringBootApplication(exclude = { DataSourceAutoConfiguration.class,
+        SecurityAutoConfiguration.class,
         RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class,
         MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 @MapperScan("com.hengtian.*.dao")
-@ImportResource({"classpath:transaction.xml"})
+//@ImportResource({"classpath:transaction.xml"})
+@EnableTransactionManagement
 @Import({ DomainMapProperties.class, RedisProperties.class, RedisClusterUtil.class, CommonUtil.class})
+@ComponentScan(basePackages = {"com.hengtian","org.activiti"})
 @ServletComponentScan
 public class WorkflowAdminApplication extends SpringBootServletInitializer {
 

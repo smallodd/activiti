@@ -1,7 +1,6 @@
 package com.hengtian.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,11 +17,6 @@ public class CommonConfiguration {
     @Bean
     public ObjectMapper objectMapper(){
         return new ObjectMapper();
-    }
-
-    @Bean
-    public StrongUuidGenerator uuidGenerator(){
-        return new StrongUuidGenerator();
     }
 
 }

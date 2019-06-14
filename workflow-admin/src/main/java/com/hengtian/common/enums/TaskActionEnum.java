@@ -79,11 +79,6 @@ public enum TaskActionEnum {
         return json.toJSONString();
     }
 
-    public static void main(String[] args) {
-        System.out.println(getDesc("activate"));
-        System.out.println(TaskActionEnum.valuesToString());
-    }
-
     public static TaskActionEnum getCurrent(String value){
         return  EnumUtils.getEnum(TaskActionEnum.class, value);
     }

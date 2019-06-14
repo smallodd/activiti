@@ -736,14 +736,4 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
         return returnValue;
     }
 
-    public static void main(String[] args) {
-        List<String> list = getFilePathNameList("D:\\billingfile", 1, "storage_hour_billing_", "xml");
-        Iterator var2 = list.iterator();
-
-        while(var2.hasNext()) {
-            String string = (String)var2.next();
-            System.out.println(string);
-        }
-
-    }
 }
