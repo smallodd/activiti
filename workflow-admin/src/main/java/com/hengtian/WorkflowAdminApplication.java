@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         SecurityAutoConfiguration.class,
         RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class,
         MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
-@MapperScan("com.hengtian.*.dao")
+@MapperScan("com.hengtian.**.dao")
 //@ImportResource({"classpath:transaction.xml"})
 @EnableTransactionManagement
 @Import({ DomainMapProperties.class, RedisProperties.class, RedisClusterUtil.class, CommonUtil.class})

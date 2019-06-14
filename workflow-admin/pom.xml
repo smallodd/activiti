@@ -145,11 +145,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-  <!--      <dependency>
-            <groupId>org.activiti</groupId>
-            <artifactId>activiti-diagram-rest</artifactId>
-            <version>${activiti.version}</version>
-        </dependency>-->
         <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-crystalball</artifactId>
@@ -176,7 +171,6 @@
             <groupId>org.activiti</groupId>
             <artifactId>activiti-bpmn-converter</artifactId>
             <version>${activiti.version}</version>
-
         </dependency>
         <!-- Activiti 在线设计 -->
         <dependency>
@@ -276,18 +270,14 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
+            <version>9.0.14</version>
+            <scope>provided</scope>
         </dependency>
         <!--servlet依赖jar-->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
-       <!-- &lt;!&ndash;jsp依赖jar&ndash;&gt;
-        <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>javax.servlet.jsp-api</artifactId>
-            <version>2.3.1</version>
-        </dependency>-->
 
         <!--Jstl标签依赖的jar包start-->
         <dependency>
@@ -401,7 +391,7 @@
             <version>1.2.10</version>
         </dependency>
 
-        <!--batik-->
+        <!--&lt;!&ndash;batik&ndash;&gt;
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-xml</artifactId>
@@ -476,18 +466,12 @@
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-transcoder</artifactId>
             <version>${batik.version}</version>
-            <!--<exclusions>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-util</artifactId>
             <version>${batik.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin</artifactId>
@@ -508,11 +492,10 @@
             <artifactId>hibernate-validator</artifactId>
             <version>5.1.3.Final</version>
         </dependency>
-
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>8.0</version>
+            <version>7.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -533,15 +516,6 @@
             <version>${jackson.version}</version>
         </dependency>
         <!-- jackson end -->
-
-
-        <dependency>
-            <groupId>xmlunit</groupId>
-            <artifactId>xmlunit</artifactId>
-            <version>1.0</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <!-- 使用aliyun镜像 -->

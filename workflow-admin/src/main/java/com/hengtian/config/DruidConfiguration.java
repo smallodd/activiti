@@ -49,9 +49,4 @@ public class DruidConfiguration {
     public PlatformTransactionManager transactionManager(@Qualifier("dataSource") DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
-
-    //@Bean
-    public DataSourceTransactionManager transactionManager1(@Qualifier("dataSource") DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
-    }
 }

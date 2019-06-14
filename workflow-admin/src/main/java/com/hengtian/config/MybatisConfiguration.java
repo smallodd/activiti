@@ -1,7 +1,5 @@
 package com.hengtian.config;
 
-//import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
-//import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import com.baomidou.mybatisplus.plugins.PaginationInterceptor;
 import com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean;
 import org.apache.ibatis.plugin.Interceptor;

@@ -11,9 +11,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
@@ -29,7 +27,6 @@ import java.util.Properties;
  * @Author: hour
  * @Date: 2019/6/12 15:19
  */
-@EnableWebMvc
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {
 
@@ -115,9 +112,9 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(AuthInterceptor()).addPathPatterns("/**");
     }
 
-    @Override
+    /*@Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/resource/**")
                 .addResourceLocations("/classpath:/static/");
-    }
+    }*/
 }
