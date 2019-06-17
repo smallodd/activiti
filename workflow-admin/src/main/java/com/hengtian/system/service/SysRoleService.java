@@ -9,11 +9,9 @@ import com.hengtian.common.utils.PageInfo;
 import com.hengtian.system.model.SysRole;
 
 /**
- * <p>
  * 角色表 服务类
- * </p>
  *
- * @author junyang.liu
+ * @author houjinrong@chtwm.com
  * @since 2017-08-09
  */
 public interface SysRoleService extends IService<SysRole> {
