@@ -4,6 +4,5 @@
 
     <select id="selectTaskButtons" parameterType="com.hengtian.common.param.TaskParam" resultType="com.hengtian.flow.model.TButton">
          select tb.name, tb.button_key buttonKey from t_button tb left JOIN t_task_button tt ON tb.button_key=tt.button_key where tt.proc_def_key=#{procDefKey} and tt.task_def_key=#{taskDefKey}
-
     </select>
 </mapper>
