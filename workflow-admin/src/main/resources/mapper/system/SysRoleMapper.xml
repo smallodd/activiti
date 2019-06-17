@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hengtian.system.dao.SysRoleDao">
+
+    <select id="selectResourceIdListByRoleId" resultType="String" parameterType="String">
+        SELECT
+            e.resource_id AS resourceId
+        FROM
+            sys_role r
+        LEFT JOIN sys_role_resource e ON r.id = e.role_id
+        WHERE
+            r.id = #{id}
+    </select>
+
+    <select id="selectResourceListByRoleIdList" resultType="SysResource"
+            parameterType="String">
+        SELECT
+            DISTINCT s.id AS id,
+            s.resource_url AS resourceUrl,
+            s.resource_code AS resourceCode,
+            s.resource_name AS resourceName,
+            s.resource_type AS resourceType,
+            s.resource_icon AS resourceIcon,
+            s.open_mode AS openMode,
+            s.parent_id AS parentId,
+            s.sequence AS sequence,
+            s.create_time AS createTime
+        FROM
+            sys_role r
+        LEFT JOIN sys_role_resource e ON r.id = e.role_id
+        LEFT JOIN sys_resource s ON e.resource_id = s.id
+        WHERE
+            r.id in  
+            <foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+                #{item}
+            </foreach>
+        AND s.resource_type = '0'
+        ORDER BY s.sequence
+    </select>
+
+    <select id="selectResourceListByRoleId" resultType="java.util.HashMap" parameterType="String">
+        SELECT
+            e.id AS id,
+            s.resource_url AS url
+        FROM
+            sys_role r
+        LEFT JOIN sys_role_resource e ON r.id = e.role_id
+        LEFT JOIN sys_resource s ON e.resource_id = s.id
+        WHERE
+            r.id = #{id}
+    </select>
+
+    <select id="selectRoleList" resultType="SysRole">
+        select
+	        r.id as id,
+	        r.role_code as roleCode,
+	        r.create_time as createTime,
+	        r.description as description,
+	        r.role_name as roleName
+        from sys_role r
+        order by ${sort} ${order}
+    </select>
+
+</mapper>

@@ -40,8 +40,7 @@ public class MybatisConfiguration {
         // 设置mybatis的主配置文件
         try {
             ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            //bean.setMapperLocations(resolver.getResources("classpath*:com/hengtian/**/mapper/*.xml"));
-            bean.setMapperLocations(resolver.getResources("classpath:mapper/*.xml"));
+            bean.setMapperLocations(resolver.getResources("classpath:mapper/**/*.xml"));
         } catch (IOException e) {
             log.info("Mybatis配置出错", e);
         }
