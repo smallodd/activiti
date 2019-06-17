@@ -15,11 +15,13 @@ import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
-import com.hengtian.flow.service.*;
+import com.hengtian.flow.service.RuProcinstService;
+import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TTaskButtonService;
+import com.hengtian.flow.service.TUserTaskService;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
-
 import com.user.entity.emp.Emp;
 import com.user.service.emp.EmpService;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +43,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 基类

@@ -2,8 +2,6 @@ package com.hengtian.common.utils;
 
 import java.beans.PropertyEditorSupport;
 
-import org.springframework.web.util.HtmlUtils;
-
 public class StringEscapeEditor extends PropertyEditorSupport {
     public StringEscapeEditor() {}
 

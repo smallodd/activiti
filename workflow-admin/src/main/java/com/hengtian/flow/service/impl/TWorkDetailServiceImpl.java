@@ -2,10 +2,7 @@ package com.hengtian.flow.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import com.hengtian.common.param.WorkDetailParam;
-import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import com.hengtian.flow.dao.TWorkDetailDao;
 import com.hengtian.flow.model.TWorkDetail;

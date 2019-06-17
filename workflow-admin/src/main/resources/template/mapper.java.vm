@@ -1,7 +1,8 @@
 package ${package.Mapper};
-
-import ${package.Entity}.${entity};
-import ${superMapperClassPackage};
+${package.Entity}
+        .${entity};
+    ${superMapperClassPackage}
+        ;
 
 /**
  * <p>

@@ -1,7 +1,5 @@
 package com.hengtian.common.workflow.listener;
 
-import java.io.Serializable;
-import javax.xml.namespace.QName;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.Expression;
 import org.activiti.engine.delegate.JavaDelegate;
@@ -10,6 +8,9 @@ import org.apache.axis2.addressing.EndpointReference;
 import org.apache.axis2.client.Options;
 import org.apache.axis2.rpc.client.RPCServiceClient;
 import org.springframework.stereotype.Component;
+
+import javax.xml.namespace.QName;
+import java.io.Serializable;
 /**
  * webservice任务 客户端
  * @author liujunyang

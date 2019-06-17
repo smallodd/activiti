@@ -1,14 +1,13 @@
 package com.hengtian.common.workflow.listener;
 
-import java.io.Serializable;
-
+import com.hengtian.common.utils.ConstantUtils;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.ExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hengtian.common.utils.ConstantUtils;
+import java.io.Serializable;
 
 
 /**

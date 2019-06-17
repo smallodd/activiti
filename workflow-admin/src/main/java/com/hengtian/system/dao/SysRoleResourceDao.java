@@ -1,8 +1,8 @@
 package com.hengtian.system.dao;
 
-import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.hengtian.system.model.SysRoleResource;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>

@@ -15,11 +15,12 @@
  */
 package com.hengtian.common.generator.config;
 
+import com.baomidou.mybatisplus.exceptions.MybatisPlusException;
+import com.hengtian.common.generator.config.rules.DbType;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import com.baomidou.mybatisplus.exceptions.MybatisPlusException;
-import com.hengtian.common.generator.config.rules.DbType;
 
 
 /**

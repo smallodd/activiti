@@ -1,5 +1,18 @@
 package com.hengtian.common.generator;
 
+import com.baomidou.mybatisplus.toolkit.StringUtils;
+import com.hengtian.common.generator.config.ConstVal;
+import com.hengtian.common.generator.config.StrategyConfig;
+import com.hengtian.common.generator.config.TemplateConfig;
+import com.hengtian.common.generator.config.builder.ConfigBuilder;
+import com.hengtian.common.generator.config.po.TableInfo;
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.app.VelocityEngine;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,18 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.ibatis.logging.Log;
-import org.apache.ibatis.logging.LogFactory;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.app.VelocityEngine;
-import com.baomidou.mybatisplus.toolkit.StringUtils;
-import com.hengtian.common.generator.config.ConstVal;
-import com.hengtian.common.generator.config.StrategyConfig;
-import com.hengtian.common.generator.config.TemplateConfig;
-import com.hengtian.common.generator.config.builder.ConfigBuilder;
-import com.hengtian.common.generator.config.po.TableInfo;
 
 /**
  * 生成文件
