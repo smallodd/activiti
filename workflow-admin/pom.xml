@@ -545,6 +545,14 @@
                 </includes>
                 <filtering>false</filtering>
             </resource>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <!-- 重要编译时对mapper.xml的copy -->
+                    <include>**/*.xml</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
         </resources>
         <plugins>
             <plugin>
