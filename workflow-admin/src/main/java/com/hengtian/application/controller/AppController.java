@@ -20,6 +20,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 功能描述:系统应用
+ * @Author: houjinrong@chtwm.com
+ * @Date: 2019/6/17 16:30
+ */
 @Controller
 @RequestMapping("/app")
 public class AppController extends BaseController {
