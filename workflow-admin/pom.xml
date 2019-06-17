@@ -34,10 +34,10 @@
             <artifactId>pagehelper-spring-boot-starter</artifactId>
             <version>1.2.12</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
@@ -270,7 +270,6 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
-            <version>9.0.14</version>
             <scope>provided</scope>
         </dependency>
         <!--servlet依赖jar-->
@@ -391,7 +390,7 @@
             <version>1.2.10</version>
         </dependency>
 
-        <!--&lt;!&ndash;batik&ndash;&gt;
+        <!--batik-->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-xml</artifactId>
@@ -471,7 +470,7 @@
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-util</artifactId>
             <version>${batik.version}</version>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin</artifactId>
