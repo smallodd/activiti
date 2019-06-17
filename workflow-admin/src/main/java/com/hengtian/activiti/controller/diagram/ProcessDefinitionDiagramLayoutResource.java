@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-//@RestController("myProcessDefinitionDiagramLayoutResource")
-//@RequestMapping(value="/diagram-viewer/service")
+@RestController("myProcessDefinitionDiagramLayoutResource")
+@RequestMapping(value="/diagram-viewer/service")
 public class ProcessDefinitionDiagramLayoutResource extends BaseProcessDefinitionDiagramLayoutResource {
 
   @Autowired

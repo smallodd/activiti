@@ -14,7 +14,7 @@ public class StencilsetRestResource {
     @ResponseBody
     public String getStencilset() {
         System.out.println("StencilsetRestResource.getStencilset-----------");
-        InputStream stencilsetStream = getClass().getClassLoader().getResourceAsStream("/stencilset.json");
+        InputStream stencilsetStream = getClass().getClassLoader().getResourceAsStream("stencilset.json");
         try {
             return IOUtils.toString(stencilsetStream, "utf-8");
         } catch (Exception e) {

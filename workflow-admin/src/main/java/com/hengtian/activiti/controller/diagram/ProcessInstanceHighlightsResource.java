@@ -39,8 +39,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-//@RestController("myProcessInstanceHighlightsResource")
-//@RequestMapping("/diagram-viewer/service")
+@RestController("myProcessInstanceHighlightsResource")
+@RequestMapping("/diagram-viewer/service")
 public class ProcessInstanceHighlightsResource {
 
   @Autowired
