@@ -1,4 +1,4 @@
-package com.hengtian.config;
+package com.hengtian.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hengtian.common.interceptor.AuthInterceptor;

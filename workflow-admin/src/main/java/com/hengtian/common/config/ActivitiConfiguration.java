@@ -1,5 +1,4 @@
-package com.hengtian.config;
-
+package com.hengtian.common.config;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.hengtian.common.workflow.activiti.CustomProcessEngineConfigurationImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -7,13 +6,11 @@ import org.activiti.engine.FormService;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.ManagementService;
-import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
-import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -117,17 +114,6 @@ public class ActivitiConfiguration {
         processEngineConfiguration.setJdbcPassword(jdbcPassword);
 
         return processEngineConfiguration;
-    }
-
-    /*@Bean
-    @Primary*/
-    public SpringProcessEngineConfiguration processEngineConfiguration1(@Qualifier("dataSource") DataSource dataSource) {
-        SpringProcessEngineConfiguration configuration = new SpringProcessEngineConfiguration();
-        configuration.setDataSource(dataSource);
-        configuration.setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);
-        configuration.setJobExecutorActivate(true);
-        configuration.setTransactionManager(transactionManager);
-        return configuration;
     }
 
     @Bean

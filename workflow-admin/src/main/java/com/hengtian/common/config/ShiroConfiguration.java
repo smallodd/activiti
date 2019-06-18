@@ -1,4 +1,4 @@
-package com.hengtian.config;
+package com.hengtian.common.config;
 
 import com.hengtian.common.shiro.UserRealm;
 import lombok.extern.slf4j.Slf4j;

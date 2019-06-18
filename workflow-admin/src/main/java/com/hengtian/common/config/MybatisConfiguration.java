@@ -1,4 +1,4 @@
-package com.hengtian.config;
+package com.hengtian.common.config;
 
 import com.baomidou.mybatisplus.entity.GlobalConfiguration;
 import com.baomidou.mybatisplus.plugins.PaginationInterceptor;

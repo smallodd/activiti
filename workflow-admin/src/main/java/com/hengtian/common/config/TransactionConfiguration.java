@@ -77,7 +77,6 @@ public class TransactionConfiguration {
 		source.setNameMap(txMap);
 		// 实例化事务拦截器
         TransactionInterceptor txAdvice = new TransactionInterceptor(transactionManager, source);
-
         return txAdvice;
     }
 
