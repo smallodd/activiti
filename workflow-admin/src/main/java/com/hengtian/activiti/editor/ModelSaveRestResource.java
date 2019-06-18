@@ -58,7 +58,7 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
             jsonObject.getJSONObject("properties").put("process_id", model.getKey());
 
             //设置部署后 流程定义名称为空时赋值为模型名称
-            if(StringUtils.isBlank(jsonObject.getJSONObject("properties").getString("name"))){
+            if(StringUtils.isBlank(jsonObject.getJSONObject("properties").getString(MODEL_NAME))){
                 jsonObject.getJSONObject("properties").put(MODEL_NAME, name);
             }
 
