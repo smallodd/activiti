@@ -27,6 +27,7 @@
         <spring.boot.version>2.1.0.RELEASE</spring.boot.version>
         <slf4j.version>1.7.6</slf4j.version>
         <activiti.version>5.22.0</activiti.version>
+        <skywalking.version>6.0.0-GA</skywalking.version>
     </properties>
     <dependencies>
         <dependency>
@@ -518,6 +519,18 @@
             <version>${jackson.version}</version>
         </dependency>
         <!-- jackson end -->
+        <!-- skywalking 增加对 logback 的支持 -->
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>apm-toolkit-logback-1.x</artifactId>
+            <version>${skywalking.version}</version>
+        </dependency>
+        <!-- skywalking 增加对线程池中 logback 的支持 -->
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>apm-toolkit-trace</artifactId>
+            <version>${skywalking.version}</version>
+        </dependency>
     </dependencies>
 
     <!-- 使用aliyun镜像 -->
