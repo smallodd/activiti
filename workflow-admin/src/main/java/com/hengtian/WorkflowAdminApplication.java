@@ -19,13 +19,10 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
- * 启动器
+ * @Description 启动器
  * @ClassName WorkflowAdminApplication
- * @Description
  * @Author hour
  * @Date2019/6/11 10:44
  * @Version V1.0
@@ -36,8 +33,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class,
         MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 @MapperScan("com.hengtian.**.dao")
-@ImportResource({"classpath:transaction.xml"})
-@EnableTransactionManagement
+//@ImportResource({"classpath:transaction.xml"})
+//@EnableTransactionManagement
 @Import({ DomainMapProperties.class, RedisProperties.class, RedisClusterUtil.class, CommonUtil.class})
 @ComponentScan(basePackages = {"com.hengtian","org.activiti"})
 @ServletComponentScan
