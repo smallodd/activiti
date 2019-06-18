@@ -190,7 +190,8 @@
         $("#processDefinitionId").val(processDefinitionId);
 
         $.post("${ctx}/assignee/config/type?processDefinitionId=" + processDefinitionId, function(result){
-            if(JSON.stringify(result) > 0){
+            debugger;
+            if(result && parseInt(result) > 0){
                 configAssigneeFun_(3);
             }else{
                 $("#configSelect").dialog({
