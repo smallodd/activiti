@@ -19,7 +19,7 @@ import java.util.Map;
 
 @Slf4j
 @Order(1)
-@WebFilter(filterName = "JSONPFilter", urlPatterns = "/service/*")
+@WebFilter(filterName = "JSONPFilter", urlPatterns = "/*")
 public class JsonpCallbackFilter implements Filter {
 
 
