@@ -1,4 +1,4 @@
-package com.hengtian.activiti.controller.editor;
+package com.hengtian.activiti.editor;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,43 +45,45 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
 
     @RequestMapping(value = {"/service/model/{modelId}/save"})
     @ResponseStatus(HttpStatus.OK)
-    public void saveModel(@PathVariable String modelId, @RequestBody MultiValueMap<String, String> values, HttpServletRequest request) {
+    public void saveModel(@PathVariable String modelId,
+                          String name, String description, String json_xml, String svg_xml) {
         try {
             Model model = this.repositoryService.getModel(modelId);
             System.out.println("ModelSaveRestResource.saveModel----------");
             ObjectNode modelJson = (ObjectNode) this.objectMapper.readTree(model.getMetaInfo());
 
-            modelJson.put("name", values.getFirst("name"));
-            modelJson.put("description", values.getFirst("description"));
+            modelJson.put(MODEL_NAME, name);
+            modelJson.put(MODEL_DESCRIPTION, description);
             model.setMetaInfo(modelJson.toString());
-            model.setName(values.getFirst("name"));
-            String str = (values.getFirst("json_xml"));
-            JSONObject jsonObject = JSONObject.parseObject(str);
+            model.setName(name);
+
+            JSONObject jsonObject = JSONObject.parseObject(json_xml);
             jsonObject.getJSONObject("properties").put("process_id", model.getKey());
 
             //设置部署后 流程定义名称为空时赋值为模型名称
             if(StringUtils.isBlank(jsonObject.getJSONObject("properties").getString("name"))){
-                jsonObject.getJSONObject("properties").put("name", values.getFirst("name"));
+                jsonObject.getJSONObject("properties").put(MODEL_NAME, name);
             }
 
             //每次修改模型，版本升级
             model.setVersion(model.getVersion() + 1);
-            this.repositoryService.saveModel(model);
+            repositoryService.saveModel(model);
 
-            this.repositoryService.addModelEditorSource(model.getId(), (jsonObject.toJSONString()).getBytes("utf-8"));
+            repositoryService.addModelEditorSource(model.getId(), (jsonObject.toJSONString()).getBytes("utf-8"));
 
-            InputStream svgStream = new ByteArrayInputStream((values.getFirst("svg_xml")).getBytes("utf-8"));
+            InputStream svgStream = new ByteArrayInputStream(svg_xml.getBytes("utf-8"));
             TranscoderInput input = new TranscoderInput(svgStream);
 
             PNGTranscoder transcoder = new PNGTranscoder();
-
+            // Setup output
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             TranscoderOutput output = new TranscoderOutput(outStream);
 
+            // Do the transformation
             transcoder.transcode(input, output);
-            byte[] result = outStream.toByteArray();
-
-            this.repositoryService.addModelEditorSourceExtra(model.getId(), result);
+            final byte[] result = outStream.toByteArray();
+            repositoryService.addModelEditorSourceExtra(model.getId(), result);
+            outStream.close();
         } catch (Exception e) {
             log.error("Error saving model", e);
             throw new ActivitiException("Error saving model", e);

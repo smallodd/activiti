@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package com.hengtian.activiti.controller.diagram;
+package com.hengtian.activiti.diagram;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

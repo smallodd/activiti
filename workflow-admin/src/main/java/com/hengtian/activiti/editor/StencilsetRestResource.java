@@ -1,4 +1,4 @@
-package com.hengtian.activiti.controller.editor;
+package com.hengtian.activiti.editor;
 
 import org.activiti.engine.ActivitiException;
 import org.apache.commons.io.IOUtils;
