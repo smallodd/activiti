@@ -1,6 +1,5 @@
 package com.hengtian.flow.vo;
 
-import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.model.TaskResultInfo;
 import lombok.Data;
 

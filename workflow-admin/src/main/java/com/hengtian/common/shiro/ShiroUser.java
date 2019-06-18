@@ -1,5 +1,7 @@
 package com.hengtian.common.shiro;
 
+import org.springframework.stereotype.Component;
+
 import java.io.Serializable;
 import java.util.Set;
 
@@ -7,14 +9,17 @@ import java.util.Set;
  * @description：自定义Authentication对象，
  * 使得Subject除了携带用户的登录名外还可以携带更多信息
  */
+@Component
 public class ShiroUser implements Serializable {
     private static final long serialVersionUID = -1373760761780840081L;
     
     private String id;
-    private final String loginName;
+    private String loginName;
     private String name;
     private Set<String> urlSet;
     private Set<String> roles;
+
+    public ShiroUser(){}
 
     public ShiroUser(String loginName) {
         this.loginName = loginName;

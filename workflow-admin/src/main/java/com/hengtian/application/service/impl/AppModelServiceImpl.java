@@ -1,12 +1,9 @@
 package com.hengtian.application.service.impl;
 
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import com.hengtian.application.dao.AppDao;
 import com.hengtian.application.dao.AppModelDao;
-import com.hengtian.application.model.App;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
-import com.hengtian.application.service.AppService;
 import org.springframework.stereotype.Service;
 
 /**

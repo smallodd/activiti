@@ -1,12 +1,13 @@
 package com.hengtian.common.utils;
 
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
-import java.util.Map;
 import org.springframework.cglib.beans.BeanCopier;
 import org.springframework.cglib.beans.BeanGenerator;
 import org.springframework.cglib.beans.BeanMap;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * 基于CGlib

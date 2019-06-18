@@ -1,17 +1,29 @@
 package com.hengtian.common.utils;
 
-import org.apache.commons.lang3.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 /**
  * Created by ma on 2017/11/23.
  */
+@Slf4j
 public class FileUtil extends org.apache.commons.io.FileUtils {
-    private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
     public static final int RET_SUCCESS = 1;
     public static final int RET_FAIL = -1;
     public static final int RET_NOT_EXISTS = 0;
@@ -73,7 +85,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
             file = new File(filepathname);
             returnValue = file.exists();
         } catch (Exception var4) {
-            logger.error(var4.getMessage(), var4);
+            log.error(var4.getMessage(), var4);
         }
 
         return returnValue;
@@ -94,7 +106,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 returnValue = 1;
             }
         } catch (Exception var7) {
-            logger.error(var7.getMessage(), var7);
+            log.error(var7.getMessage(), var7);
             returnValue = -1;
         } finally {
             file = null;
@@ -134,7 +146,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 returnValue = -1;
             }
         } catch (Exception var8) {
-            logger.error(var8.getMessage(), var8);
+            log.error(var8.getMessage(), var8);
             return returnValue;
         } finally {
             file = null;
@@ -163,7 +175,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
         if(oldFileAbsolutePath != null && newFileAbsolutePath != null) {
             return moveFileByFile(new File(oldFileAbsolutePath), new File(newFileAbsolutePath));
         } else {
-            logger.error("moveFile(String oldFileAbsolutePath, String newFileAbsolutePath) method parameter is null");
+            log.error("moveFile(String oldFileAbsolutePath, String newFileAbsolutePath) method parameter is null");
             return -1;
         }
     }
@@ -194,7 +206,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
 
             returnValue = 1;
         } catch (Exception var4) {
-            logger.error(var4.getMessage(), var4);
+            log.error(var4.getMessage(), var4);
         }
 
         return returnValue;
@@ -250,7 +262,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 returnValue = true;
             }
         } catch (Exception var8) {
-            logger.error(var8.getMessage(), var8);
+            log.error(var8.getMessage(), var8);
         }
 
         return returnValue;
@@ -306,7 +318,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 }
             }
         } catch (Exception var8) {
-            logger.error(var8.getMessage(), var8);
+            log.error(var8.getMessage(), var8);
         }
 
         return returnValue;
@@ -378,7 +390,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 }
             }
         } catch (Exception var8) {
-            logger.error(var8.getMessage(), var8);
+            log.error(var8.getMessage(), var8);
         }
 
         return returnValue;
@@ -392,7 +404,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
         try {
             file = new File(directoryPath);
             if(!file.exists()) {
-                logger.error("directoryPath not exists:" + directoryPath);
+                log.error("directoryPath not exists:" + directoryPath);
                 return null;
             }
 
@@ -415,7 +427,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 }
             }
         } catch (Exception var8) {
-            logger.error(var8.getMessage(), var8);
+            log.error(var8.getMessage(), var8);
         }
 
         return returnValue;
@@ -447,13 +459,13 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                         }
                     }
                 } else {
-                    logger.error("Directory does not exist:" + directoryPath);
+                    log.error("Directory does not exist:" + directoryPath);
                 }
             } else {
-                logger.error("parameter 'directoryPath' is null");
+                log.error("parameter 'directoryPath' is null");
             }
         } catch (Exception var8) {
-            logger.error(var8.getMessage(), var8);
+            log.error(var8.getMessage(), var8);
         }
 
         return resultList;
@@ -487,7 +499,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
 
             var4 = null;
         } catch (Exception var15) {
-            logger.error(var15.getMessage(), var15);
+            log.error(var15.getMessage(), var15);
             return returnValue;
         } finally {
             try {
@@ -498,7 +510,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 bufferedReader = null;
                 line = null;
             } catch (IOException var14) {
-                logger.error(var14.getMessage(), var14);
+                log.error(var14.getMessage(), var14);
             }
 
         }
@@ -525,7 +537,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
 
             var4 = null;
         } catch (Exception var15) {
-            logger.error(var15.getMessage(), var15);
+            log.error(var15.getMessage(), var15);
             return buff.toString();
         } finally {
             try {
@@ -536,7 +548,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 bufferedReader = null;
                 line = null;
             } catch (IOException var14) {
-                logger.error(var14.getMessage(), var14);
+                log.error(var14.getMessage(), var14);
             }
 
         }
@@ -565,7 +577,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 buff.append(line);
             }
         } catch (Exception var27) {
-            logger.error(var27.getMessage(), var27);
+            log.error(var27.getMessage(), var27);
         } finally {
             try {
                 if(bufferedReader != null) {
@@ -575,14 +587,14 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 bufferedReader = null;
                 line = null;
             } catch (IOException var26) {
-                logger.error(var26.getMessage(), var26);
+                log.error(var26.getMessage(), var26);
             }
 
             if(isr != null) {
                 try {
                     isr.close();
                 } catch (IOException var25) {
-                    logger.error(var25.getMessage(), var25);
+                    log.error(var25.getMessage(), var25);
                 }
             }
 
@@ -590,7 +602,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 try {
                     fis.close();
                 } catch (IOException var24) {
-                    logger.error(var24.getMessage(), var24);
+                    log.error(var24.getMessage(), var24);
                 }
             }
 
@@ -601,7 +613,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
 
     public static Properties readProperties(String path) {
         if(org.apache.commons.lang3.StringUtils.isEmpty(path)) {
-            logger.error("文件路径为空");
+            log.error("文件路径为空");
             return null;
         } else {
             Properties properties = new Properties();
@@ -613,14 +625,14 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 properties.load(inputStream);
                 return properties;
             } catch (Exception var14) {
-                logger.error("文件路径{}", path, var14);
+                log.error("文件路径{}", path, var14);
                 var4 = null;
             } finally {
                 if(inputStream != null) {
                     try {
                         inputStream.close();
                     } catch (IOException var13) {
-                        logger.error("文件路径{}", path, var13);
+                        log.error("文件路径{}", path, var13);
                         return null;
                     }
                 }
@@ -651,7 +663,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
 
             var5 = false;
         } catch (Exception var17) {
-            logger.error(var17.getMessage(), var17);
+            log.error(var17.getMessage(), var17);
             return returnValue;
         } finally {
             try {
@@ -661,7 +673,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
 
                 bufferedWriter = null;
             } catch (IOException var16) {
-                logger.error(var16.getMessage(), var16);
+                log.error(var16.getMessage(), var16);
             }
 
         }
@@ -677,7 +689,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
             file = new File(filepathname);
             returnValue = writeFile(file, content, append);
         } catch (Exception var6) {
-            logger.error(var6.getMessage(), var6);
+            log.error(var6.getMessage(), var6);
         }
 
         return returnValue;
@@ -694,7 +706,7 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
                 content.delete(0, content.length());
             }
         } catch (Exception var6) {
-            logger.error(var6.getMessage(), var6);
+            log.error(var6.getMessage(), var6);
         }
 
         return returnValue;
@@ -730,20 +742,10 @@ public class FileUtil extends org.apache.commons.io.FileUtils {
 
             returnValue = writeFile(file, contentBuffer.toString(), append);
         } catch (Exception var11) {
-            logger.error(var11.getMessage(), var11);
+            log.error(var11.getMessage(), var11);
         }
 
         return returnValue;
     }
 
-    public static void main(String[] args) {
-        List<String> list = getFilePathNameList("D:\\billingfile", 1, "storage_hour_billing_", "xml");
-        Iterator var2 = list.iterator();
-
-        while(var2.hasNext()) {
-            String string = (String)var2.next();
-            System.out.println(string);
-        }
-
-    }
 }

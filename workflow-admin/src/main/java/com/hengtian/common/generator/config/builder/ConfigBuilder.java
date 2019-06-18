@@ -15,17 +15,6 @@
  */
 package com.hengtian.common.generator.config.builder;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import com.baomidou.mybatisplus.toolkit.StringUtils;
 import com.hengtian.common.generator.config.ConstVal;
 import com.hengtian.common.generator.config.DataSourceConfig;
@@ -38,6 +27,18 @@ import com.hengtian.common.generator.config.po.TableInfo;
 import com.hengtian.common.generator.config.rules.DbType;
 import com.hengtian.common.generator.config.rules.NamingStrategy;
 import com.hengtian.common.generator.config.rules.QuerySQL;
+
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 配置汇总 传递给文件生成工具

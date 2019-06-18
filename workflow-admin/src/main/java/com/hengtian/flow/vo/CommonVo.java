@@ -1,13 +1,14 @@
 package com.hengtian.flow.vo;
 
-import java.io.Serializable;
-import javax.persistence.Transient;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import javax.persistence.Transient;
+import java.io.Serializable;
 
 /**
  * 工作流业务公共父类

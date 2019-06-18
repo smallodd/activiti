@@ -1,17 +1,13 @@
 package com.hengtian.flow.listener;
 
 import com.hengtian.common.utils.SpringBeanUtil;
-import com.hengtian.flow.controller.WorkflowBaseController;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.engine.impl.pvm.PvmActivity;
-import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

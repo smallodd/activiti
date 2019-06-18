@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 事务 -->
+    <bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- 事务通知 -->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!-- REQUIRED：指定当前方法必需在事务环境中运行，如果当前有事务环境就加入当前正在执行的事务环境， 如果当前没有事务，就新建一个事务。这是默认值。
+                SUPPORTS：指定当前方法加入当前事务环境，如果当前没有事务，就以非事务方式执行。 -->
+            <tx:method name="select*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="delete*" propagation="REQUIRED" rollback-for="java.lang.Exception" />
+            <tx:method name="update*" propagation="REQUIRED" rollback-for="java.lang.Exception" />
+            <tx:method name="insert*" propagation="REQUIRED" rollback-for="java.lang.Exception" />
+            <tx:method name="start*" propagation="REQUIRED" rollback-for="java.lang.Exception" />
+            <tx:method name="*" propagation="REQUIRED" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:aspectj-autoproxy proxy-target-class="true" expose-proxy="true"/>
+    <aop:config proxy-target-class="true">
+        <aop:pointcut id="serviceMethods" expression="execution(* com.hengtian.*.service..*.*(..))" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethods" order="2" />
+    </aop:config>
+
+</beans>

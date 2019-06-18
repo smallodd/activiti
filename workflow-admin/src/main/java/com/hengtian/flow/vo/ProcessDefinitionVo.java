@@ -1,9 +1,9 @@
 package com.hengtian.flow.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.io.Serializable;
 import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * 工作流流程定义VO

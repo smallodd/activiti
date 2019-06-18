@@ -32,8 +32,14 @@ import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.model.SysUser;
 import com.hengtian.system.service.SysDepartmentService;
 import com.hengtian.system.service.SysUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.engine.*;
+import org.activiti.engine.ActivitiObjectNotFoundException;
+import org.activiti.engine.ActivitiTaskAlreadyClaimedException;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.ProcessEngineConfiguration;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
@@ -47,24 +53,33 @@ import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipInputStream;
 
+@Slf4j
 @Controller
 @RequestMapping("/activiti")
 public class ActivitiController extends BaseController{
-	Logger logger = Logger.getLogger(ActivitiController.class);
 
 	@Autowired
 	private ActivitiService activitiService;
@@ -474,7 +489,7 @@ public class ActivitiController extends BaseController{
 				return renderError("任务不存在！");
 			}
 		} catch (Exception e) {
-			logger.info("获取任务审批人失败！",e);
+			log.info("获取任务审批人失败！",e);
 			return renderError("获取任务审批人失败！");
 		}
 
@@ -521,7 +536,7 @@ public class ActivitiController extends BaseController{
 				return renderError("任务不存在！");
 			}
 		} catch (Exception e) {
-			logger.info("获取任务审批人失败！",e);
+			log.info("获取任务审批人失败！",e);
 			return renderError("获取任务审批人失败！");
 		}
 
@@ -554,7 +569,7 @@ public class ActivitiController extends BaseController{
 			activitiService.jumpTask(taskId, taskDefinitionKey);
 			return renderSuccess("任务跳转成功！");
 		} catch (Exception e) {
-    		logger.info("任务跳转失败！",e);
+    		log.info("任务跳转失败！",e);
 			return renderError("任务跳转失败！");
 		}
     }

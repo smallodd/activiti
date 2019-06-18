@@ -1,9 +1,10 @@
 package com.hengtian.system.vo;
 
-import java.io.Serializable;
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hengtian.system.model.SysRole;
+
+import java.io.Serializable;
+import java.util.List;
 
 public class SysUserVo implements Serializable{
 	

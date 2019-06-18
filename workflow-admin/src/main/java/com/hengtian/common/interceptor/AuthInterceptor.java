@@ -7,33 +7,35 @@ import com.common.interceptor.comment.SensitiveWords;
 import com.common.interceptor.comment.SensitivewordManage;
 import com.common.util.ConfigUtil;
 import com.rbac.dubbo.RbacDomainContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
 /**
- * 
- * 拦截器
- * 
- * @author zhouxy
- *
+ * 功能描述:拦截器
+ * @Author: hour
+ * @Date: 2019/6/12 16:09
  */
+@Slf4j
+@Component
 public class AuthInterceptor implements HandlerInterceptor {
-	private static final Logger log = LoggerFactory.getLogger(AuthInterceptor.class);
-	/*  */
+
 	private static final String contentType = "application/json;charset=utf-8";
-	/* 敏感词返回信息 */
+	/**
+	 * 敏感词返回信息
+	 */
 	private static String existsSensitiveWord = null;
 
-	/* swagger相关请求都不拦截 */
+	/**
+	 * swagger相关请求都不拦截
+	 */
 	private String[] swaggerUrls;
 
 	/* 敏感词管理对象 */
@@ -43,21 +45,16 @@ public class AuthInterceptor implements HandlerInterceptor {
 		sensitivewordManage = new SensitivewordManage();
 	}
 
-	public void setSwaggerUrls(String[] swaggerUrls) {
-		this.swaggerUrls = swaggerUrls;
-	}
-
 	/**
-	 *
 	 * 在业务处理器处理请求之前被调用，在该方法中对用户请求request进行处理
-	 *
 	 */
+	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 
 		RbacDomainContext.getContext().setDomain("chtwm");
-		String contxtPath = request.getContextPath();
-		String requestUrl = request.getRequestURI().replace(contxtPath, "");
+		String contextPath = request.getContextPath();
+		String requestUrl = request.getRequestURI().replace(contextPath, "");
 
 		if (log.isDebugEnabled()) {
 			log.debug("preHandle:{}", requestUrl);
@@ -94,26 +91,22 @@ public class AuthInterceptor implements HandlerInterceptor {
 	}
 
 	/**
-	 *
 	 * 在DispatcherServlet完全处理完请求后被调用，可以在该方法中进行一些资源清理的操作。
-	 *
 	 */
+	@Override
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
 			throws Exception {
 	}
 
 	/**
-	 *
 	 * 在业务处理器处理完请求后，但是DispatcherServlet向客户端返回请求前被调用，在该方法中对用户请求request进行处理。
-	 *
 	 */
+	@Override
 	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			ModelAndView modelAndView) throws Exception {
-
 	}
 
 	/**
-	 *
 	 * 防盗链处理
 	 *
 	 * @param request
@@ -149,7 +142,8 @@ public class AuthInterceptor implements HandlerInterceptor {
 			SensitiveWords annotation = method.getAnnotation(SensitiveWords.class);
 
 			if (annotation != null) {
-				if (annotation.check()) {// 需要检查敏感词
+				if (annotation.check()) {
+					// 需要检查敏感词
 					if (log.isDebugEnabled()) {
 						log.debug("需要检查敏感词是否存在，方法名称={}", method);
 					}
@@ -171,14 +165,5 @@ public class AuthInterceptor implements HandlerInterceptor {
 			}
 		}
 		return false;
-	}
-
-	public  final String getEmpcode(HttpSession session){
-		String code="";
-		/*String code = (String) session.getAttribute(CodeConts.EMP_CODE);
-		if(code == null){
-//			throw new NeedLoginException();
-		}*/
-		return code;
 	}
 }

@@ -1,27 +1,27 @@
 package com.hengtian.common.operlog;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Date;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.log4j.Logger;
+import com.hengtian.common.shiro.ShiroUser;
+import com.hengtian.common.utils.ConstantUtils;
+import com.hengtian.common.utils.IPAddressUtil;
+import com.hengtian.system.model.SysOperLog;
+import com.hengtian.system.service.SysOperLogService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.aspectj.lang.JoinPoint;
 import org.springframework.aop.ThrowsAdvice;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hengtian.common.shiro.ShiroUser;
-import com.hengtian.common.utils.ConstantUtils;
-import com.hengtian.common.utils.IPAddressUtil;
-import com.hengtian.system.model.SysOperLog;
-import com.hengtian.system.service.SysOperLogService;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Date;
 
 /**
  * aop：异常处理
  */
+@Slf4j
 public class ExceptionHandler implements ThrowsAdvice {
-    private static final Logger LOG = Logger.getLogger(ExceptionHandler.class);
 
     @Autowired
     private HttpServletRequest request;
@@ -30,7 +30,7 @@ public class ExceptionHandler implements ThrowsAdvice {
     private SysOperLogService logService;
 
     public void afterThrowing(JoinPoint joinPoint, Exception e) {
-        LOG.error("出现Exception:url为" + request.getRequestURI() + ";错误类型为"+e.getStackTrace()[0]+"");
+        log.error("出现Exception:url为" + request.getRequestURI() + ";错误类型为"+e.getStackTrace()[0]+"");
         SysOperLog operLog = new SysOperLog();
         StringBuffer operEvent = new StringBuffer();
         String descr4Exception = "";   // 具体错误信息
@@ -86,7 +86,7 @@ public class ExceptionHandler implements ThrowsAdvice {
 			}
         }catch (ClassNotFoundException e1) {
             e1.printStackTrace();
-            LOG.error("实例化失败：ClassNotFoundException");
+            log.error("实例化失败：ClassNotFoundException");
         }catch (IOException e2) {
             e2.printStackTrace();
             operLog.setOperClientIp("未知IP：IOException");
@@ -103,7 +103,7 @@ public class ExceptionHandler implements ThrowsAdvice {
             logService.insert(operLog);
         }catch (Exception ex){
             ex.printStackTrace();
-            LOG.error("log保存数据库失败");
+            log.error("log保存数据库失败");
         }
     }
 

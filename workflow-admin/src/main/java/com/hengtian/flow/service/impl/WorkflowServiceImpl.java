@@ -1,5 +1,6 @@
 package com.hengtian.flow.service.impl;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -7,11 +8,28 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.common.common.CodeConts;
 import com.google.common.base.Joiner;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
-import com.hengtian.common.enums.*;
-import com.hengtian.common.param.*;
+import com.hengtian.common.enums.AssignTypeEnum;
+import com.hengtian.common.enums.CommonEnum;
+import com.hengtian.common.enums.ExprEnum;
+import com.hengtian.common.enums.ProcessStatusEnum;
+import com.hengtian.common.enums.ResultEnum;
+import com.hengtian.common.enums.TaskActionEnum;
+import com.hengtian.common.enums.TaskListEnum;
+import com.hengtian.common.enums.TaskStatusEnum;
+import com.hengtian.common.enums.TaskTypeEnum;
+import com.hengtian.common.enums.TaskVariableEnum;
+import com.hengtian.common.param.ProcessParam;
+import com.hengtian.common.param.TaskActionParam;
+import com.hengtian.common.param.TaskAgentQueryParam;
+import com.hengtian.common.param.TaskParam;
+import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.TaskNodeResult;
@@ -24,19 +42,44 @@ import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.common.workflow.cmd.TaskJumpCmd;
 import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.dao.WorkflowDao;
-import com.hengtian.flow.model.*;
-import com.hengtian.flow.service.*;
-import com.hengtian.flow.vo.*;
+import com.hengtian.flow.model.AssigneeTemp;
+import com.hengtian.flow.model.ProcessInstanceResult;
+import com.hengtian.flow.model.RemindTask;
+import com.hengtian.flow.model.RuProcinst;
+import com.hengtian.flow.model.TAskTask;
+import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.model.TWorkDetail;
+import com.hengtian.flow.model.TaskAgent;
+import com.hengtian.flow.model.TaskResult;
+import com.hengtian.flow.service.AssigneeTempService;
+import com.hengtian.flow.service.RemindTaskService;
+import com.hengtian.flow.service.RuProcinstService;
+import com.hengtian.flow.service.TAskTaskService;
+import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.service.TWorkDetailService;
+import com.hengtian.flow.service.TaskAgentService;
+import com.hengtian.flow.service.WorkflowService;
+import com.hengtian.flow.vo.AskCommentDetailVo;
+import com.hengtian.flow.vo.AssigneeVo;
+import com.hengtian.flow.vo.ProcessDefinitionVo;
+import com.hengtian.flow.vo.TaskNodeVo;
+import com.hengtian.flow.vo.TaskVo;
 import com.rbac.entity.RbacRole;
-
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
-
 import com.user.entity.emp.Emp;
 import com.user.entity.emp.EmpVO;
 import com.user.service.emp.EmpService;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.FlowNode;
-import org.activiti.engine.*;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.IdentityService;
+import org.activiti.engine.ManagementService;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableInstance;
@@ -54,25 +97,34 @@ import org.activiti.engine.repository.NativeProcessDefinitionQuery;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.*;
+import org.activiti.engine.task.Comment;
+import org.activiti.engine.task.NativeTaskQuery;
+import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskInfo;
+import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements WorkflowService {
-
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private RepositoryService repositoryService;
@@ -113,15 +165,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     TWorkDetailService workDetailService;
 
-
-
-    @Autowired
+    @Reference(version = "1.0.0")
     private PrivilegeService privilegeService;
 
     @Autowired
     private WorkflowDao workflowDao;
 
-    @Autowired
+    @Reference(version = "1.0.0")
     private EmpService empService;
 
     @Autowired
@@ -345,7 +395,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             //应用系统端设置审批人
             String assignee = tUserTask.getCandidateIds();
             if(StringUtils.isBlank(assignee)){
-                logger.info("审批人信息为空");
+                log.info("审批人信息为空");
                 throw new WorkFlowException("审批人信息为空");
             }
             String[] assigneeArray = assignee.split(",");
@@ -1869,7 +1919,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             if(StringUtils.isBlank(t.getAssigneeDelegate())){
                 setAssigneeDelegate(t, getTaskAssignee(hisTask, (Integer)pageInfo.getCondition().get("appKey")), assignees);
             }
-            logger.info("任务ID【"+t.getTaskId()+"】的对应的上步审批人为【"+t.getAssigneeBefore()+"】");
+            log.info("任务ID【"+t.getTaskId()+"】的对应的上步审批人为【"+t.getAssigneeBefore()+"】");
             if(StringUtils.isNotBlank(t.getAssigneeBefore())) {
                 String[] assigneeBefore = t.getAssigneeBefore().split(",");
                 Set<String> assigneeNameSet = Sets.newHashSet();
@@ -1877,10 +1927,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     if(StringUtils.isNotBlank(assign)){
                         Emp rbacUser = empService.selectByCode(assign);
                         if(rbacUser != null){
-                            logger.info("【"+assign+"】：【"+rbacUser.getName()+"】");
+                            log.info("【"+assign+"】：【"+rbacUser.getName()+"】");
                             assigneeNameSet.add(rbacUser.getName());
                         }else{
-                            logger.info("工号【"+assign+"】找不到对应的用户信息");
+                            log.info("工号【"+assign+"】找不到对应的用户信息");
                             assigneeNameSet.add(assign);
                         }
                     }
@@ -2369,7 +2419,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Integer appKey = getAppKey(task.getProcessInstanceId());
         List<String> nextTaskDefKeys = findNextTaskDefKeys(task, false);
         if(CollectionUtils.isEmpty(nextTaskDefKeys)){
-            logger.error("没有下一审批节点");
+            log.error("没有下一审批节点");
             return null;
         }
 
@@ -2385,7 +2435,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         for(TUserTask ut : userTasks){
             if(!AssignTypeEnum.ROLE.code.equals(ut.getAssignType())){
-                logger.info("审批人类型不是角色，方法不提供支持");
+                log.info("审批人类型不是角色，方法不提供支持");
                 return result;
             }
             TaskNodeVo taskNode = new TaskNodeVo();
@@ -2457,7 +2507,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Integer appKey = getAppKey(task.getProcessInstanceId());
         List<String> nextTaskDefKeys = findNextTaskDefKeys(task, false);
         if(CollectionUtils.isEmpty(nextTaskDefKeys)){
-            logger.error("没有下一审批节点");
+            log.error("没有下一审批节点");
             return null;
         }
         EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
@@ -2469,7 +2519,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         String[] assigneeNameArray;
         for(TUserTask ut : userTasks){
             if(!AssignTypeEnum.ROLE.code.equals(ut.getAssignType())){
-                logger.info("审批人类型不是角色，方法不提供支持");
+                log.info("审批人类型不是角色，方法不提供支持");
                 return result;
             }
             JSONObject json = new JSONObject();
@@ -2620,7 +2670,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Override
     public String getAssigneeSecret(String assignee, String assigneeAgent){
         String md5Hex = DigestUtils.md5Hex(assignee + "(" + assigneeAgent + ")");
-        logger.info("MD5加密字符串为：{}", md5Hex);
+        log.info("MD5加密字符串为：{}", md5Hex);
         return md5Hex;
     }
 

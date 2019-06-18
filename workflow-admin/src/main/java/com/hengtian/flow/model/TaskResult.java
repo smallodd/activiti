@@ -1,12 +1,9 @@
 package com.hengtian.flow.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.hengtian.flow.vo.AssigneeVo;
-import com.hengtian.flow.vo.TaskNodeVo;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * 任务信息-返回值

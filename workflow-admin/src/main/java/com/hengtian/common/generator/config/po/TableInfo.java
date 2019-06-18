@@ -15,9 +15,9 @@
  */
 package com.hengtian.common.generator.config.po;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.toolkit.StringUtils;
+
+import java.util.List;
 
 
 /**

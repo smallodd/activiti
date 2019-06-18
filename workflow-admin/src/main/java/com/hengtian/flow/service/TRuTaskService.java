@@ -1,7 +1,6 @@
 package com.hengtian.flow.service;
 
 import com.baomidou.mybatisplus.service.IService;
-import com.hengtian.flow.model.TMailLog;
 import com.hengtian.flow.model.TRuTask;
 
 /**

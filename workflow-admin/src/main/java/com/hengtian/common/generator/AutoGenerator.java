@@ -1,5 +1,18 @@
 package com.hengtian.common.generator;
 
+import com.baomidou.mybatisplus.toolkit.StringUtils;
+import com.hengtian.common.generator.config.ConstVal;
+import com.hengtian.common.generator.config.StrategyConfig;
+import com.hengtian.common.generator.config.TemplateConfig;
+import com.hengtian.common.generator.config.builder.ConfigBuilder;
+import com.hengtian.common.generator.config.po.TableInfo;
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.app.VelocityEngine;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,25 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.ibatis.logging.Log;
-import org.apache.ibatis.logging.LogFactory;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.app.VelocityEngine;
-import com.baomidou.mybatisplus.toolkit.StringUtils;
-import com.hengtian.common.generator.config.ConstVal;
-import com.hengtian.common.generator.config.StrategyConfig;
-import com.hengtian.common.generator.config.TemplateConfig;
-import com.hengtian.common.generator.config.builder.ConfigBuilder;
-import com.hengtian.common.generator.config.po.TableInfo;
 
 /**
  * 生成文件
  */
 public class AutoGenerator extends AbstractGenerator {
 
-	private static final Log logger = LogFactory.getLog(AutoGenerator.class);
+	private static final Log log = LogFactory.getLog(AutoGenerator.class);
 
 	/**
 	 * velocity引擎
@@ -40,7 +41,7 @@ public class AutoGenerator extends AbstractGenerator {
 	 * 生成代码
 	 */
 	public void execute() {
-		logger.debug("==========================准备生成文件...==========================");
+		log.debug("==========================准备生成文件...==========================");
 		// 初始化配置
 		initConfig();
 		// 创建输出文件路径
@@ -61,14 +62,14 @@ public class AutoGenerator extends AbstractGenerator {
 					} else if (osName.contains("Windows")) {
 						Runtime.getRuntime().exec("cmd /c start " + config.getGlobalConfig().getOutputDir());
 					} else {
-						logger.debug("文件输出目录:" + config.getGlobalConfig().getOutputDir());
+						log.debug("文件输出目录:" + config.getGlobalConfig().getOutputDir());
 					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		logger.debug("==========================文件生成完成！！！==========================");
+		log.debug("==========================文件生成完成！！！==========================");
 	}
 
 	/**
@@ -153,7 +154,7 @@ public class AutoGenerator extends AbstractGenerator {
 			if (!dir.exists()) {
 				boolean result = dir.mkdirs();
 				if (result) {
-					logger.debug("创建目录： [" + entry.getValue() + "]");
+					log.debug("创建目录： [" + entry.getValue() + "]");
 				}
 			}
 		}
@@ -213,7 +214,7 @@ public class AutoGenerator extends AbstractGenerator {
 			
 			
 		} catch (IOException e) {
-			logger.error("无法创建文件，请检查配置信息！", e);
+			log.error("无法创建文件，请检查配置信息！", e);
 		}
 	}
 
@@ -234,7 +235,7 @@ public class AutoGenerator extends AbstractGenerator {
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, ConstVal.UTF8));
 		template.merge(context, writer);
 		writer.close();
-		logger.debug("模板:" + templatePath + ";  文件:" + outputFile);
+		log.debug("模板:" + templatePath + ";  文件:" + outputFile);
 	}
 
 	/**
@@ -247,7 +248,7 @@ public class AutoGenerator extends AbstractGenerator {
 			p.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, "");
 			p.setProperty(Velocity.ENCODING_DEFAULT, ConstVal.UTF8);
 			p.setProperty(Velocity.INPUT_ENCODING, ConstVal.UTF8);
-			p.setProperty(Velocity.OUTPUT_ENCODING, ConstVal.UTF8);
+			//p.setProperty(Velocity.OUTPUT_ENCODING, ConstVal.UTF8);
 			p.setProperty("file.resource.loader.unicode", "true");
 			engine = new VelocityEngine(p);
 		}

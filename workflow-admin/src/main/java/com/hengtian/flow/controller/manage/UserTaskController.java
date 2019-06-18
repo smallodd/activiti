@@ -13,17 +13,21 @@ import com.hengtian.common.enums.TaskTypeEnum;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TButtonService;
 import com.hengtian.flow.service.TUserTaskService;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.UserTask;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.Map;
@@ -33,12 +37,12 @@ import java.util.Map;
  * @author houjinrong@chtwm.com
  * date 2018/5/7 13:23
  */
+@Slf4j
 @Controller
 @RequestMapping("/assignee")
 public class UserTaskController extends BaseController{
 
-	Logger logger = Logger.getLogger(getClass());
-    
+
     @Autowired 
     private TUserTaskService tUserTaskService;
     @Autowired
@@ -190,7 +194,7 @@ public class UserTaskController extends BaseController{
 		try {
 			return tUserTaskService.config(taskJson);
 		} catch (Exception e) {
-			logger.error("任务节点配置失败", e);
+			log.error("任务节点配置失败", e);
 			return renderError("任务节点配置");
 		}
 	}

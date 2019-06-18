@@ -1,9 +1,5 @@
 package com.hengtian.system.service.impl;
 
-import java.util.Date;
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
@@ -16,13 +12,18 @@ import com.hengtian.system.model.SysUser;
 import com.hengtian.system.model.SysUserRole;
 import com.hengtian.system.service.SysUserService;
 import com.hengtian.system.vo.SysUserVo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
  * 用户表 服务实现类
  * </p>
  *
- * @author junyang.liu
+ * @author houjinrong@chtwm.com
  */
 @Service
 public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> implements SysUserService {

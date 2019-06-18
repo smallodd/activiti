@@ -15,16 +15,14 @@ import com.hengtian.common.result.Result;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.WorkflowService;
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,13 +31,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * 工作流程相关-操作
  * @author houjinrong@chtwm.com
  * date 2018/5/9 17:42
  */
+@Slf4j
 @Controller
 @RequestMapping("/workflow/action")
 public class WorkflowActionController extends BaseController {
@@ -55,11 +58,9 @@ public class WorkflowActionController extends BaseController {
     @Autowired
     private RepositoryService repositoryService;
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
-
     /**
      * 启动流程热任务
-     * @param processKey 流程定义KEY
+     * @param processDefinitionId 流程定义ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/7/23 13:23
@@ -97,7 +98,7 @@ public class WorkflowActionController extends BaseController {
         try {
             return workflowService.startProcessInstance(processParam);
         } catch (Exception e) {
-            logger.error("启动流程失败", e);
+            log.error("启动流程失败", e);
 
             Result result = new Result();
             result.setMsg(e.getMessage());
@@ -145,7 +146,7 @@ public class WorkflowActionController extends BaseController {
 
             }
         } catch (Exception e) {
-            logger.info("", e);
+            log.info("", e);
             return renderError(ResultEnum.FAIL.msg);
         }
         return resultSuccess(ResultEnum.SUCCESS.msg);
@@ -191,7 +192,7 @@ public class WorkflowActionController extends BaseController {
 
             }
         } catch (Exception e) {
-            logger.info("", e);
+            log.info("", e);
             return renderError(ResultEnum.FAIL.msg);
         }
         return resultSuccess(ResultEnum.SUCCESS.msg);

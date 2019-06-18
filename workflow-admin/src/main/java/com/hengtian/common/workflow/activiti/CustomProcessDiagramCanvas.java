@@ -13,12 +13,11 @@
 
 package com.hengtian.common.workflow.activiti;
 
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.AssociationDirection;
 import org.activiti.bpmn.model.GraphicInfo;
 import org.activiti.image.exception.ActivitiImageException;
 import org.activiti.image.util.ReflectUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -26,7 +25,13 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
-import java.awt.geom.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,9 +51,9 @@ import java.util.List;
  * @see com.hengtian.common.workflow.activiti.CustomProcessDiagramGenerator
  * @author Joram Barrez
  */
+@Slf4j
 public class CustomProcessDiagramCanvas {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(CustomProcessDiagramCanvas.class);
     public enum SHAPE_TYPE {Rectangle, Rhombus, Ellipse}
 
     // Predefined sized
@@ -224,7 +229,7 @@ public class CustomProcessDiagramCanvas {
             SIGNAL_THROW_IMAGE = ImageIO.read(ReflectUtil.getResource("org/activiti/icons/signal-throw.png", customClassLoader));
             SIGNAL_CATCH_IMAGE = ImageIO.read(ReflectUtil.getResource("org/activiti/icons/signal.png", customClassLoader));
         } catch (IOException e) {
-            LOGGER.warn("Could not load image for process diagram creation: {}", e.getMessage());
+            log.warn("Could not load image for process diagram creation: {}", e.getMessage());
         }
     }
 
