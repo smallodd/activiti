@@ -238,7 +238,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
                                    @ApiParam(value = "自定义参数流转", name = "jsonVariable", required = false, example = "{'a':'b'}") @RequestParam(value = "jsonVariable", required = false) String jsonVariable,
                                    @ApiParam(value = "审批人信息", name = "assignee", required = true) @RequestParam("assignee") String assignee) {
         log.info("批量审批任务开始：入参pass:{}，jsonVariable:{},assignee:{}",pass,jsonVariable,assignee);
-        Map map = JSONObject.parseObject(jsonVariable);
         Result result = new Result();
         result.setMsg("审批成功");
         result.setSuccess(true);
@@ -275,8 +274,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ResponseBody
     @ApiOperation(httpMethod = "POST", value = "获取任务节点信息")
     public Object taskNodeDetail(@ApiParam(value = "任务id", name = "taskId", required = true) @RequestParam("taskId") String taskId) {
-        log.info("=================任务节点信息获取开始，方法【taskNodeDetail】=====================");
-        log.info("=================入参taskId:{}=====================",taskId);
+        log.info("=================任务节点信息获取开始，方法【taskNodeDetail】,入参taskId:{}=====================", taskId);
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (task == null) {
             return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
@@ -388,6 +386,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object transferTask(@ApiParam(name = "taskId", required = true, value = "任务ID") @RequestParam String taskId,
                                @ApiParam(name = "userId", required = true, value = "任务原所属用户ID") @RequestParam String userId,
                                @ApiParam(name = "transferUserId", required = true, value = "任务要转办用户ID") @RequestParam String transferUserId) {
+        log.info("任务转办，入参：taskId-{}，userId-{}，transferUserId-{}",taskId, userId, transferUserId);
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.TRANSFER.value);
         taskActionParam.setUserId(userId);
@@ -410,6 +409,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "任务撤办接口")
     public Object revokeProcessInstance(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
                                         @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId) {
+        log.info("任务撤办，入参：processInstanceId-{}，userId-{}",processInstanceId, userId);
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.REVOKE.value);
         taskActionParam.setUserId(userId);
@@ -432,6 +432,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object processSuspend(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
                                  @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId,
                                  @ApiParam(name = "needLog", required = true, value = "是否需要日志记录") @RequestParam boolean needLog) {
+        log.info("挂起流程，入参：processInstanceId-{}，userId-{}，needLog-{}",processInstanceId, userId, needLog);
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.SUSPEND.value);
         taskActionParam.setUserId(userId);
@@ -453,6 +454,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     public Object processActivate(@ApiParam(name = "processInstanceId", required = true, value = "流程实例ID") @RequestParam String processInstanceId,
                                   @ApiParam(name = "userId", required = true, value = "用户ID") @RequestParam String userId,
                                   @ApiParam(name = "needLog", required = true, value = "是否需要日志记录") @RequestParam boolean needLog) {
+        log.info("激活流程，入参：processInstanceId-{}，userId-{}，needLog-{}",processInstanceId, userId, needLog);
         TaskActionParam taskActionParam = new TaskActionParam();
         taskActionParam.setActionType(TaskActionEnum.ACTIVATE.value);
         taskActionParam.setUserId(userId);
@@ -557,52 +559,6 @@ public class WorkflowOperateController extends WorkflowBaseController {
         return renderSuccess();
     }
 
-    private Result validateTask(TaskActionParam taskActionParam){
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(taskActionParam.getProcessInstanceId()).list();
-        if(CollectionUtils.isNotEmpty(taskList)){
-            if(StringUtils.isNotBlank(taskActionParam.getTaskId())){
-                if(TaskActionEnum.REVOKE.value.equals(taskActionParam.getActionType())){
-                    //撤回时taskId为已办理完的任务ID
-                }else{
-                    boolean b = false;
-                    for(Task t : taskList){
-                        if(t.getId().equals(taskActionParam.getTaskId())){
-                            b = true;
-                            break;
-                        }
-                    }
-                    if(!b){
-                        return new Result(false,Constant.ASK_TASK_EXIT,"任务ID【"+taskActionParam.getTaskId()+"】没有对应的任务");
-                    }
-
-                    EntityWrapper<TRuTask> wrapper = new EntityWrapper();
-                    wrapper.where("task_id={0}", taskActionParam.getTaskId());
-                    List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
-                    List<String> assigneeList = Lists.newArrayList();
-                    for(TRuTask rt : tRuTasks){
-                        if(StringUtils.isNotBlank(rt.getAssigneeReal())){
-                            assigneeList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
-                        }else if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
-                            Integer appKey = runtimeService.getVariable(taskActionParam.getProcessInstanceId(), "appKey", Integer.class);
-                            List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(rt.getAssignee()));
-                            for(RbacUser u : users){
-                                assigneeList.add(u.getCode());
-                            }
-                        }
-                    }
-                    if(!assigneeList.contains(taskActionParam.getUserId())){
-                        return new Result(false,Constant.AGENT_HAVE_EXIST,"用户【"+taskActionParam.getUserId()+"】没有权限进行该操作");
-                    }
-                }
-            }
-        }else{
-            return new Result(false,Constant.ASK_TASK_EXIT,"流程实例ID无效或没有可撤回的任务");
-        }
-
-        return new Result(true,Constant.SUCCESS,"用户【"+taskActionParam.getUserId()+"】"+TaskActionEnum.getDesc(taskActionParam.getActionType())+"成功");
-    }
-
-
     /**
      * 意见征询
      *
@@ -674,5 +630,50 @@ public class WorkflowOperateController extends WorkflowBaseController {
             log.error("", e);
             return new Result(false, Constant.FAIL,"操作失败");
         }
+    }
+
+    private Result validateTask(TaskActionParam taskActionParam){
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(taskActionParam.getProcessInstanceId()).list();
+        if(CollectionUtils.isNotEmpty(taskList)){
+            if(StringUtils.isNotBlank(taskActionParam.getTaskId())){
+                if(TaskActionEnum.REVOKE.value.equals(taskActionParam.getActionType())){
+                    //撤回时taskId为已办理完的任务ID
+                }else{
+                    boolean b = false;
+                    for(Task t : taskList){
+                        if(t.getId().equals(taskActionParam.getTaskId())){
+                            b = true;
+                            break;
+                        }
+                    }
+                    if(!b){
+                        return new Result(false,Constant.ASK_TASK_EXIT,"任务ID【"+taskActionParam.getTaskId()+"】没有对应的任务");
+                    }
+
+                    EntityWrapper<TRuTask> wrapper = new EntityWrapper();
+                    wrapper.where("task_id={0}", taskActionParam.getTaskId());
+                    List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+                    List<String> assigneeList = Lists.newArrayList();
+                    for(TRuTask rt : tRuTasks){
+                        if(StringUtils.isNotBlank(rt.getAssigneeReal())){
+                            assigneeList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
+                        }else if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
+                            Integer appKey = runtimeService.getVariable(taskActionParam.getProcessInstanceId(), "appKey", Integer.class);
+                            List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(rt.getAssignee()));
+                            for(RbacUser u : users){
+                                assigneeList.add(u.getCode());
+                            }
+                        }
+                    }
+                    if(!assigneeList.contains(taskActionParam.getUserId())){
+                        return new Result(false,Constant.AGENT_HAVE_EXIST,"用户【"+taskActionParam.getUserId()+"】没有权限进行该操作");
+                    }
+                }
+            }
+        }else{
+            return new Result(false,Constant.ASK_TASK_EXIT,"流程实例ID无效或没有可撤回的任务");
+        }
+
+        return new Result(true,Constant.SUCCESS,"用户【"+taskActionParam.getUserId()+"】"+TaskActionEnum.getDesc(taskActionParam.getActionType())+"成功");
     }
 }
