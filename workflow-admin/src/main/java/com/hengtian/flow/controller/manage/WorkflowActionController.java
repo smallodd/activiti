@@ -58,10 +58,9 @@ public class WorkflowActionController extends BaseController {
     @Autowired
     private RepositoryService repositoryService;
 
-
     /**
      * 启动流程热任务
-     * @param processKey 流程定义KEY
+     * @param processDefinitionId 流程定义ID
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/7/23 13:23
