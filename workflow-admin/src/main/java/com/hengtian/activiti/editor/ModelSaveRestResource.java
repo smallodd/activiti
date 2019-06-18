@@ -42,8 +42,7 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
 
     @RequestMapping(value = {"/service/model/{modelId}/save"})
     @ResponseStatus(HttpStatus.OK)
-    public void saveModel(@PathVariable String modelId,
-                          String name, String description, String json_xml, String svg_xml) {
+    public void saveModel(@PathVariable String modelId, String name, String description, String json_xml, String svg_xml) {
         try {
             Model model = this.repositoryService.getModel(modelId);
             System.out.println("ModelSaveRestResource.saveModel----------");
