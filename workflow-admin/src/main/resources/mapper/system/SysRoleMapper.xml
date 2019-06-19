@@ -12,7 +12,7 @@
             r.id = #{id}
     </select>
 
-    <select id="selectResourceListByRoleIdList" resultType="SysResource"
+    <select id="selectResourceListByRoleIdList" resultType="com.hengtian.system.model.SysResource"
             parameterType="String">
         SELECT
             DISTINCT s.id AS id,
@@ -50,7 +50,7 @@
             r.id = #{id}
     </select>
 
-    <select id="selectRoleList" resultType="SysRole">
+    <select id="selectRoleList" resultType="com.hengtian.system.model.SysRole">
         select
 	        r.id as id,
 	        r.role_code as roleCode,
