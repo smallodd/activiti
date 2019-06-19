@@ -15,7 +15,7 @@
 
         <result column="department_name" property="departmentName" jdbcType="VARCHAR"/>
 
-        <collection property="roleList" ofType="SysRole">
+        <collection property="roleList" ofType="com.hengtian.system.model.SysRole">
             <id column="roleId" property="id"/>
             <result column="roleName" property="roleName"/>
         </collection>

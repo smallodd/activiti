@@ -33,7 +33,7 @@ public class TaskParam {
     /**
      * 通过状态  1 通过 2 是拒绝 3通过参数流转
      */
-    @ApiModelProperty(value = "审批时传参", example="1是通过，2是拒绝，3是通过条件参数流转")
+    @ApiModelProperty(value = "审批时传参", example="1")
     @NotNull(message = "请选择审批结果")
     private Integer pass;
     /**
@@ -58,6 +58,6 @@ public class TaskParam {
     /**
      * jumpType: 1-影响分支；2-不影响分支
      */
-    @ApiModelProperty(value = "下一节点审批人信息", example="下一节点审批人信息")
+    @ApiModelProperty(value = "下一节点审批人信息", example="1")
     private Integer jumpType;
 }

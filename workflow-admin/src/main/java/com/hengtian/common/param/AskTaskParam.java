@@ -18,7 +18,7 @@ public class AskTaskParam {
     private String askTaskKey;
 
     //意见征询是否结束
-    @ApiModelProperty(value = "意见征询是否结束", example = "0,1")
+    @ApiModelProperty(value = "意见征询是否结束", example = "0")
     private Integer askEnd;
 
     //意见征询人id
