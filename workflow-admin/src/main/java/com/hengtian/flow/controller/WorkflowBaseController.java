@@ -68,7 +68,7 @@ public class WorkflowBaseController extends BaseRestController {
     TTaskButtonService tTaskButtonService;
     @Autowired
     private TUserTaskService tUserTaskService;
-    @Reference(version = "1.0.0")
+    @Reference
     private PrivilegeService privilegeService;
     @Autowired
     private RuProcinstService ruProcinstService;
@@ -77,7 +77,7 @@ public class WorkflowBaseController extends BaseRestController {
     @Autowired
     FormService formService;
 
-    @Reference(version = "1.0.0")
+    @Reference
     EmpService empService;
 
     /**

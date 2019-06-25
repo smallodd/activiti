@@ -116,14 +116,14 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private RuProcinstService ruProcinstService;
     @Autowired
     private TRuTaskService tRuTaskService;
-    @Reference(version = "1.0.0")
+    @Reference
     private PrivilegeService privilegeService;
     @Autowired
     private TUserTaskService tUserTaskService;
 
     @Autowired
     private AssigneeTempService assigneeTempService;
-    @Reference(version = "1.0.0")
+    @Reference
     EmpService empService;
 
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list) {

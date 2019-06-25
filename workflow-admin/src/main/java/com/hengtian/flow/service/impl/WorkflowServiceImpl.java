@@ -165,13 +165,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     TWorkDetailService workDetailService;
 
-    @Reference(version = "1.0.0")
+    @Reference
     private PrivilegeService privilegeService;
 
     @Autowired
     private WorkflowDao workflowDao;
 
-    @Reference(version = "1.0.0")
+    @Reference
     private EmpService empService;
 
     @Autowired
