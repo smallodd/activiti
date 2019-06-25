@@ -53,7 +53,7 @@ public class WorkflowDataController extends WorkflowBaseController {
     private ActivitiService activitiService;
     @Autowired
     private WorkflowService workflowService;
-    @Reference(version = "1.0.0")
+    @Reference
     private PrivilegeService privilegeService;
     @Autowired
     private TRuTaskService tRuTaskService;

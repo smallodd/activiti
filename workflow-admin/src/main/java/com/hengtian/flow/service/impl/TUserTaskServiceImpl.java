@@ -38,7 +38,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
     private TUserTaskDao tUserTaskDao;
     @Autowired
     private TTaskButtonService tTaskButtonService;
-    @Reference(version = "1.0.0")
+    @Reference
     private PrivilegeService privilegeService;
 
     /**

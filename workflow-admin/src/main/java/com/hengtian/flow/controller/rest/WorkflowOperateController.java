@@ -84,7 +84,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
     RuntimeService runtimeService;
     @Autowired
     TWorkDetailService tWorkDetailService;
-    @Reference(version = "1.0.0")
+    @Reference
     PrivilegeService privilegeService;
     /**
      * 任务创建接口

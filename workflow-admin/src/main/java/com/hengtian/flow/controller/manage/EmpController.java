@@ -31,11 +31,11 @@ import java.util.Map;
 public class EmpController {
 
 
-    @Reference(version = "1.0.0")
+    @Reference
     private OrgService orgService;
-    @Reference(version = "1.0.0")
+    @Reference
     private PrivilegeService privilegeService;
-    @Reference(version = "1.0.0")
+    @Reference
     private EmpService empService;
 
     /**
