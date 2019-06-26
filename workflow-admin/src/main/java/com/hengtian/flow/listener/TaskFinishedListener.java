@@ -10,15 +10,13 @@ import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Service("taskFinishedLicenser")
 @Transactional(propagation = Propagation.NOT_SUPPORTED,rollbackFor = Exception.class)
-public class TaskFinishedLicenser implements ExecutionListener {
+public class TaskFinishedListener implements ExecutionListener {
 
     private static final long serialVersionUID = 2105979050046650949L;
 
