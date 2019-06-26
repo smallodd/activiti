@@ -32,7 +32,8 @@ public class MybatisConfiguration {
      */
     @Bean
     public MybatisSqlSessionFactoryBean sqlSessionFactory(@Qualifier("dataSource") DataSource dataSource,
-                                                          @Qualifier("globalConfig") GlobalConfiguration globalConfig){
+                                                          @Qualifier("globalConfig") GlobalConfiguration globalConfig,
+                                                          @Qualifier("paginationInterceptor") PaginationInterceptor paginationInterceptor){
         MybatisSqlSessionFactoryBean bean = new MybatisSqlSessionFactoryBean();
         bean.setDataSource(dataSource);
         bean.setTypeAliasesPackage("com.hengtian.*.model");
@@ -44,8 +45,6 @@ public class MybatisConfiguration {
             log.info("Mybatis配置出错", e);
         }
 
-        PaginationInterceptor paginationInterceptor = new PaginationInterceptor();
-        paginationInterceptor.setDialectType("mysql");
         Interceptor[] plugins = {paginationInterceptor};
         bean.setPlugins(plugins);
         bean.setGlobalConfig(globalConfig);
@@ -77,6 +76,8 @@ public class MybatisConfiguration {
      */
     @Bean
     public PaginationInterceptor paginationInterceptor() {
-        return new PaginationInterceptor();
+        PaginationInterceptor paginationInterceptor = new PaginationInterceptor();
+        paginationInterceptor.setDialectType("mysql");
+        return paginationInterceptor;
     }
 }
