@@ -71,4 +71,12 @@ public class MybatisConfiguration {
         mapperScannerConfigurer.setBasePackage("com.hengtian.*.dao");
         return mapperScannerConfigurer;
     }
+
+    /**
+     * 分页插件
+     */
+    @Bean
+    public PaginationInterceptor paginationInterceptor() {
+        return new PaginationInterceptor();
+    }
 }
