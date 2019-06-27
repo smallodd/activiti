@@ -31,10 +31,9 @@ import java.util.Map;
 
 
 /**
- * <p>
- * 用户任务表  前端控制器
- * </p>
- * @author junyang.liu
+ * 功能描述: 审批人相关
+ * @Author: houjinrong@chtwm.com
+ * @Date: 2019/6/26 16:19
  */
 @Controller
 @RequestMapping("/tUserTask")
