@@ -9,15 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource;
-import org.springframework.transaction.interceptor.RollbackRuleAttribute;
-import org.springframework.transaction.interceptor.RuleBasedTransactionAttribute;
-import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 功能描述:事务配置
@@ -41,43 +35,30 @@ public class TransactionConfiguration {
      */
     @Bean
     public TransactionInterceptor txAdvice() {
-        // 事务管理规则，承载需要进行事务管理的方法名（模糊匹配）及设置的事务管理属性
+        DefaultTransactionAttribute txAttr_REQUIRED = new DefaultTransactionAttribute();
+        txAttr_REQUIRED.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+
+        DefaultTransactionAttribute txAttr_REQUIRED_READONLY = new DefaultTransactionAttribute();
+        txAttr_REQUIRED_READONLY.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        txAttr_REQUIRED_READONLY.setReadOnly(true);
+
         NameMatchTransactionAttributeSource source = new NameMatchTransactionAttributeSource();
-		
-		// 设置第一个事务管理的模式（适用于“增删改”）
-		RuleBasedTransactionAttribute transactionAttribute1 = new RuleBasedTransactionAttribute();
-		// 当抛出设置的对应异常后，进行事务回滚（此处设置为“Exception”级别）
-		transactionAttribute1.setRollbackRules(Collections.singletonList(new RollbackRuleAttribute(Exception.class)));
-		// 设置隔离级别（存在事务则加入其中，不存在则新建事务）
-		transactionAttribute1.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-		// 设置传播行为（读已提交的数据）
-		//transactionAttribute1.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
-
-		// 设置第二个事务管理的模式（适用于“查”）
-		RuleBasedTransactionAttribute transactionAttribute2 = new RuleBasedTransactionAttribute();
-		// 当抛出设置的对应异常后，进行事务回滚（此处设置为“Exception”级别）
-		transactionAttribute2.setRollbackRules(Collections.singletonList(new RollbackRuleAttribute(Exception.class)));
-		// 设置隔离级别（存在事务则挂起该事务，执行当前逻辑，结束后再恢复上下文事务）
-		transactionAttribute2.setPropagationBehavior(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
-		// 设置传播行为（读已提交的数据）
-		transactionAttribute2.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
-		// 设置事务是否“只读”（非必需，只是声明该事务中不会进行修改数据库的操作，可减轻由事务造成的数据库压力，属于性能优化的推荐配置）
-		transactionAttribute2.setReadOnly(true);
-		
-		// 建立一个map，用来储存要需要进行事务管理的方法名（模糊匹配）
-		Map<String, TransactionAttribute> txMap = new HashMap<>(16);
-        txMap.put("insert*", transactionAttribute1);
-        txMap.put("update*", transactionAttribute1);
-        txMap.put("delete*", transactionAttribute1);
-        txMap.put("start*", transactionAttribute1);
-        txMap.put("query*", transactionAttribute2);
-        txMap.put("select*", transactionAttribute2);
-
-		// 注入设置好的map
-		source.setNameMap(txMap);
-		// 实例化事务拦截器
-        TransactionInterceptor txAdvice = new TransactionInterceptor(transactionManager, source);
-        return txAdvice;
+        source.addTransactionalMethod("add*", txAttr_REQUIRED);
+        source.addTransactionalMethod("save*", txAttr_REQUIRED);
+        source.addTransactionalMethod("insert*", txAttr_REQUIRED);
+        source.addTransactionalMethod("delete*", txAttr_REQUIRED);
+        source.addTransactionalMethod("update*", txAttr_REQUIRED);
+        source.addTransactionalMethod("exec*", txAttr_REQUIRED);
+        source.addTransactionalMethod("set*", txAttr_REQUIRED);
+        source.addTransactionalMethod("start*", txAttr_REQUIRED);
+        source.addTransactionalMethod("get*", txAttr_REQUIRED_READONLY);
+        source.addTransactionalMethod("query*", txAttr_REQUIRED_READONLY);
+        source.addTransactionalMethod("find*", txAttr_REQUIRED_READONLY);
+        source.addTransactionalMethod("list*", txAttr_REQUIRED_READONLY);
+        source.addTransactionalMethod("count*", txAttr_REQUIRED_READONLY);
+        source.addTransactionalMethod("is*", txAttr_REQUIRED_READONLY);
+        source.addTransactionalMethod("select*", txAttr_REQUIRED_READONLY);
+        return new TransactionInterceptor(transactionManager, source);
     }
 
 	/**
