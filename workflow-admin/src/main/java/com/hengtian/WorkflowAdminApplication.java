@@ -33,8 +33,6 @@ import org.springframework.context.annotation.Import;
         RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class,
         MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 @MapperScan("com.hengtian.**.dao")
-//@ImportResource({"classpath:transaction.xml"})
-//@EnableTransactionManagement
 @Import({ DomainMapProperties.class, RedisProperties.class, RedisClusterUtil.class, CommonUtil.class})
 @ComponentScan(basePackages = {"com.hengtian","org.activiti"})
 @ServletComponentScan
