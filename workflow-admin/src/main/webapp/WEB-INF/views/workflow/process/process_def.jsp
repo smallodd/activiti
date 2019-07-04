@@ -139,7 +139,7 @@
                         </shiro:hasPermission>
                     }
                     <shiro:hasPermission name="/assignee/config/page">
-                        str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-configUser" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="configAssigneeFun(\'{0}\');" >设定人员</a>', row.id);
+                        str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-configUser" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="configAssigneeFun(\'{0}\',\'{1}\');" >设定人员</a>', row.id, row.key);
                     </shiro:hasPermission>
                     <shiro:hasPermission name="/task/start">
                         str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-start" data-options="plain:true,iconCls:\'fi-play icon-green\'" onclick="startProcessInstance(\'{0}\');" >模拟开启</a>', row.id);
@@ -180,7 +180,7 @@
     /**
      * 设定人员-选择
      */
-    function configAssigneeFun(processDefinitionId) {
+    function configAssigneeFun(processDefinitionId, processDefinitionKey) {
         if (processDefinitionId == undefined) {
             var rows = processDefDataGrid.datagrid('getSelections');
             processDefinitionId = rows[0].id;
@@ -189,7 +189,7 @@
         }
         $("#processDefinitionId").val(processDefinitionId);
 
-        $.post("${ctx}/assignee/config/type?processDefinitionId=" + processDefinitionId, function(result){
+        $.post("${ctx}/assignee/config/type?processDefinitionKey=" + processDefinitionKey, function(result){
             debugger;
             if(result && parseInt(result) > 0){
                 configAssigneeFun_(3);
