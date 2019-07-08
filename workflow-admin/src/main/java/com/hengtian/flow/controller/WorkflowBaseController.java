@@ -282,56 +282,6 @@ public class WorkflowBaseController extends BaseRestController {
             }
 
             json.add(jsonObject);
-            /*if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType()) || AssignTypeEnum.EXPR.code.equals(t.getAssigneeType())){
-                jsonObject.put("state", "closed");
-                JSONArray jsonArray = new JSONArray();
-                if(StringUtils.isNotBlank(t.getAssigneeReal())){
-                    String[] array = t.getAssigneeReal().split(",");
-                    for(String a : array){
-                        if(assigneeList.contains(a)){
-                            continue;
-                        }
-                        JSONObject child = new JSONObject();
-                        child.put("id", t.getAssignee()+":"+a);
-                        Emp user = empService.selectByCode(a);
-                        child.put("text", user == null?a:user.getName());
-                        if(!jsonObject.containsKey("children")){
-                            jsonArray.add(child);
-                            jsonObject.put("children", jsonArray);
-                        }else{
-                            jsonObject.accumulate("children", child);
-                        }
-                    }
-                }else{
-                    if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType())){
-                        List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
-                        if(CollectionUtils.isNotEmpty(users)){
-                            for(RbacUser u : users){
-                                if(assigneeList.contains(u.getCode())){
-                                    continue;
-                                }
-                                JSONObject child = new JSONObject();
-                                child.put("id", t.getAssignee()+":"+u.getCode());
-                                child.put("text", u.getName());
-                                if(!jsonObject.containsKey("children")){
-                                    jsonArray.add(child);
-                                    jsonObject.put("children", jsonArray);
-                                }else{
-                                    jsonObject.accumulate("children", child);
-                                }
-                            }
-                        }
-                    }
-                }
-                if(jsonObject.containsKey("children")){
-                    json.add(jsonObject);
-                }
-            } else {
-                if(assigneeList.contains(t.getAssignee())){
-                    continue;
-                }
-                json.add(jsonObject);
-            }*/
         }
 
         return json;

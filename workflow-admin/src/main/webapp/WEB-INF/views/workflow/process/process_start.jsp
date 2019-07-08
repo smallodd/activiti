@@ -12,12 +12,12 @@
 			<input type="hidden" id="jsonVariables" name="jsonVariables"/>
 			<input type="hidden" id="processDefinitionId" name="processDefinitionId" value="${processDefinitionId}"/>
 			<input type="hidden" id="processParam" name="processParam"/>
-			<div class="var_" style="margin: 5px;display: none" id="varTemplate"><input style="height:28px;" placeholder="属性名称"/><span style="margin: 20px">:</span><input style="height:28px;" placeholder="属性值"/></div>
+			<div class="var_" style="margin: 5px;display: none" id="varTemplate"><input style="height:28px;width: 150px;" placeholder="属性名称"/><span style="margin: 20px">:</span><input style="height:28px;;width: 150px;" placeholder="属性值"/></div>
 			<c:forEach var="expressionName" items="${expressionNameSet }">
-				<div class="var_" style="margin: 5px;"><input style="height:28px" value="${expressionName}" readonly/><span style="margin: 20px">:</span><input style="height:28px" placeholder="属性值" required=""/></div>
+				<div class="var_" style="margin: 5px;"><input style="height:28px;width: 150px;" value="${expressionName}" readonly/><span style="margin: 20px">:</span><input style="height:28px;width: 150px;" placeholder="属性值" required=""/></div>
 			</c:forEach>
 			<c:if test="${expressionNameSet == null || expressionNameSet.size() == 0}">
-				<div class="var_" style="margin: 5px;"><input style="height:28px" placeholder="属性名称"/><span style="margin: 20px">:</span><input style="height:28px" placeholder="属性值"/></div>
+				<div class="var_" style="margin: 5px;"><input style="height:28px;width: 150px;" placeholder="属性名称"/><span style="margin: 20px">:</span><input style="height:28px;width: 150px;" placeholder="属性值"/></div>
 			</c:if>
 			<div style="margin: 5px;" id="addTemplate"><a href="javascript:addVariable();" class="easyui-linkbutton" iconCls="icon-add" style="width:94%;height:30px">添加属性</a></div>
 		</form>
