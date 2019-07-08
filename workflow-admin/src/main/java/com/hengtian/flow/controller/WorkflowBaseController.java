@@ -235,7 +235,9 @@ public class WorkflowBaseController extends BaseRestController {
             jsonObject.put("id", t.getAssignee());
             jsonObject.put("text", t.getAssigneeName());
 
-            if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType()) || AssignTypeEnum.EXPR.code.equals(t.getAssigneeType())){
+
+
+            if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType()) || AssignTypeEnum.EXPR.code.equals(t.getAssigneeType()) || StringUtils.isNotBlank(t.getAssigneeReal())){
                 jsonObject.put("state", "closed");
                 JSONArray jsonArray = new JSONArray();
                 if(StringUtils.isNotBlank(t.getAssigneeReal())){
