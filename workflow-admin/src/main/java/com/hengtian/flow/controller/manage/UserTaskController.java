@@ -63,7 +63,10 @@ public class UserTaskController extends BaseController{
 	 */
 	@GetMapping("/config/page/{processDefinitionId}")
 	public String configPage(Model model, @PathVariable("processDefinitionId") String processDefinitionId, int type) {
-		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).latestVersion().singleResult();
+		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
+		if(pd != null){
+			pd = repositoryService.createProcessDefinitionQuery().processDefinitionKey(pd.getKey()).latestVersion().singleResult();
+		}
 		EntityWrapper<TUserTask> wrapper = new EntityWrapper();
 		wrapper.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
 
@@ -201,13 +204,13 @@ public class UserTaskController extends BaseController{
 
 	/**
 	 * 任务节点配置（包括审批人，权限按钮）
-	 * @param processDefinitionId
+	 * @param processDefinitionKey
 	 * @return
 	 */
 	@PostMapping("/config/type")
 	@ResponseBody
-	public Object configType(String processDefinitionId) {
-		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).latestVersion().singleResult();
+	public Object configType(String processDefinitionKey) {
+		ProcessDefinition pd = repositoryService.createProcessDefinitionQuery().processDefinitionKey(processDefinitionKey).latestVersion().singleResult();
 		EntityWrapper<TUserTask> wrapper = new EntityWrapper();
 		wrapper.where("proc_def_key = {0}", pd.getKey()).andNew("version_={0}",pd.getVersion());
 		int i = tUserTaskService.selectCount(wrapper);
