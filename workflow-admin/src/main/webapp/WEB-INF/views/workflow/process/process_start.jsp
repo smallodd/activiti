@@ -9,6 +9,7 @@
 <body>
 	<div class="easyui-layout" data-options="fit:true,border:false" style="overflow: auto;padding: 8px;">
 		<form id="processStartForm" method="post">
+			<input type="hidden" id="jsonVariables" name="jsonVariables"/>
 			<input type="hidden" id="processDefinitionId" name="processDefinitionId" value="${processDefinitionId}"/>
 			<input type="hidden" id="processParam" name="processParam"/>
 			<div class="var_" style="margin: 5px;display: none" id="varTemplate"><input style="height:28px;" placeholder="属性名称"/><span style="margin: 20px">:</span><input style="height:28px;" placeholder="属性值"/></div>
@@ -74,7 +75,7 @@
                     varObj[v0] = v1;
                 }
             })
-            $("#jsonVariable").val(JSON.stringify(varObj));
+            $("#jsonVariables").val(JSON.stringify(varObj));
         }
 	</script>
 </body>
