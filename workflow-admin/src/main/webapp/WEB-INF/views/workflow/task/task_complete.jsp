@@ -25,7 +25,7 @@
                 <input type="hidden" name="assignee" id="assignee"/>
                 <input type="hidden" name="jsonVariable" id="jsonVariable"/>
                 <input type="hidden" name="assigneeNext" id="assigneeNext"/>
-                <input type="hidden" name="needSetNext" id="needSetNext"/>
+                <input type="hidden" name="needSetNext" id="needSetNext" value="${needSetNext}"/>
                 <div id="tt" class="easyui-tabs" style="width:100%;height:99%">
                     <div title="审批结果/意见" style="padding:10px;display:none;">
                         <div class="easyui-panel" title="审批意见" style="width: 100%;padding:1px;">
