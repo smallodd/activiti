@@ -5,12 +5,14 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.hengtian.application.model.App;
 import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppModelService;
 import com.hengtian.application.service.AppService;
 import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
+import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.result.Tree;
 import com.hengtian.common.utils.PageInfo;
@@ -68,7 +70,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 模型管理操作
@@ -340,7 +345,6 @@ public class ActivitiModelController extends BaseController {
 
             repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
 
-
             log.info("重置key成功");
             return renderSuccess("重置key成功！");
         } catch (Exception e) {
@@ -364,25 +368,14 @@ public class ActivitiModelController extends BaseController {
             byte[] bpmnBytes = null;
 
             BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
-            Collection<FlowElement> flowElements = model.getMainProcess().getFlowElements();
 
-            boolean startEvent = false;
-            boolean endEvent = false;
-            for (FlowElement flowElement : flowElements) {
-                if (startEvent && endEvent) {
-                    break;
-                }
-                if (flowElement instanceof StartEvent) {
-                    startEvent = true;
-                }
-                if (flowElement instanceof EndEvent) {
-                    endEvent = true;
-                }
+            //模型校验
+            Object validResult = validModel(model);
+            JSONObject jsonObject = JSONObject.fromObject(validResult);
+            if(Constant.FAIL.equals(jsonObject.get("code"))){
+                return validResult;
+            }
 
-            }
-            if (!startEvent || !endEvent) {
-                return renderError("开始节点和结束节点必须同时拥有才能部署！");
-            }
             bpmnBytes = new BpmnXMLConverter().convertToXML(model);
 
             String processName = modelData.getName() + ".bpmn20.xml";
@@ -640,5 +633,53 @@ public class ActivitiModelController extends BaseController {
             return renderError("导入模型失败");
         }
         return resultSuccess("导入模型成功");
+    }
+
+    private Object validModel(BpmnModel model){
+        Collection<FlowElement> flowElements = model.getMainProcess().getFlowElements();
+
+        if(CollectionUtils.isEmpty(flowElements)){
+            return renderError("流程图为空，无法进行部署");
+        }
+
+        Map<String, List<FlowElement>> keyMap = new HashMap<>(flowElements.size());
+        boolean startEvent = false;
+        boolean endEvent = false;
+        for (FlowElement flowElement : flowElements) {
+                /*if (startEvent && endEvent) {
+                    break;
+                }*/
+            if(keyMap.containsKey(flowElement.getId())){
+                keyMap.get(flowElement.getId()).add(flowElement);
+            }else{
+                keyMap.put(flowElement.getId(), Lists.newArrayList(flowElement));
+            }
+
+            if (flowElement instanceof StartEvent) {
+                startEvent = true;
+            }
+            if (flowElement instanceof EndEvent) {
+                endEvent = true;
+            }
+        }
+
+        Set<Map.Entry<String, List<FlowElement>>> entries = keyMap.entrySet();
+        for(Map.Entry e : entries){
+            List<FlowElement> value = (List<FlowElement>) e.getValue();
+            if((value).size() > 1){
+                StringBuffer sb = new StringBuffer();
+                sb.append("节点key重复："+e.getKey());
+                for(FlowElement f : value){
+                    sb.append("<br/>【"+f.getName()+"】");
+                }
+                return renderError(sb.toString());
+            }
+        }
+
+        if (!startEvent || !endEvent) {
+            return renderError("开始节点和结束节点必须同时拥有才能部署！");
+        }
+
+        return renderSuccess();
     }
 }
