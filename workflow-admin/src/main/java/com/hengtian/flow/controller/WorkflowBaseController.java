@@ -235,11 +235,10 @@ public class WorkflowBaseController extends BaseRestController {
             jsonObject.put("id", t.getAssignee());
             jsonObject.put("text", t.getAssigneeName());
 
-            if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType()) || AssignTypeEnum.EXPR.code.equals(t.getAssigneeType())){
-                jsonObject.put("state", "closed");
-                JSONArray jsonArray = new JSONArray();
-                if(StringUtils.isNotBlank(t.getAssigneeReal())){
-                    String[] array = t.getAssigneeReal().split(",");
+            JSONArray jsonArray = new JSONArray();
+            if(StringUtils.isNotBlank(t.getAssigneeReal())){
+                String[] array = t.getAssigneeReal().split(",");
+                if(array.length > 1){
                     for(String a : array){
                         if(assigneeList.contains(a)){
                             continue;
@@ -256,35 +255,33 @@ public class WorkflowBaseController extends BaseRestController {
                         }
                     }
                 }else{
-                    if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType())){
-                        List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
-                        if(CollectionUtils.isNotEmpty(users)){
-                            for(RbacUser u : users){
-                                if(assigneeList.contains(u.getCode())){
-                                    continue;
-                                }
-                                JSONObject child = new JSONObject();
-                                child.put("id", t.getAssignee()+":"+u.getCode());
-                                child.put("text", u.getName());
-                                if(!jsonObject.containsKey("children")){
-                                    jsonArray.add(child);
-                                    jsonObject.put("children", jsonArray);
-                                }else{
-                                    jsonObject.accumulate("children", child);
-                                }
+                    if(assigneeList.contains(t.getAssignee())){
+                        continue;
+                    }
+                }
+            }else{
+                if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType())){
+                    List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
+                    if(CollectionUtils.isNotEmpty(users)){
+                        for(RbacUser u : users){
+                            if(assigneeList.contains(u.getCode())){
+                                continue;
+                            }
+                            JSONObject child = new JSONObject();
+                            child.put("id", t.getAssignee()+":"+u.getCode());
+                            child.put("text", u.getName());
+                            if(!jsonObject.containsKey("children")){
+                                jsonArray.add(child);
+                                jsonObject.put("children", jsonArray);
+                            }else{
+                                jsonObject.accumulate("children", child);
                             }
                         }
                     }
                 }
-                if(jsonObject.containsKey("children")){
-                    json.add(jsonObject);
-                }
-            } else {
-                if(assigneeList.contains(t.getAssignee())){
-                    continue;
-                }
-                json.add(jsonObject);
             }
+
+            json.add(jsonObject);
         }
 
         return json;
