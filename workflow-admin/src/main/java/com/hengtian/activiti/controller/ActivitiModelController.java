@@ -635,6 +635,13 @@ public class ActivitiModelController extends BaseController {
         return resultSuccess("导入模型成功");
     }
 
+    /**
+     * 功能描述: 校验流程完整性和ID是否重复
+     * @param model
+     * @return: java.lang.Object
+     * @Author: hour
+     * @Date: 2019/7/9 9:42
+     */
     private Object validModel(BpmnModel model){
         Collection<FlowElement> flowElements = model.getMainProcess().getFlowElements();
 
