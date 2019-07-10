@@ -2370,7 +2370,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         HistoricTaskInstance historicTaskInstance=list.get(0);
-        TaskEntity task= (TaskEntity) taskService.newTask(historicTaskInstance.getId());
+        TaskEntity task = (TaskEntity) taskService.newTask(historicTaskInstance.getId());
         task.setTaskDefinitionKey(historicTaskInstance.getTaskDefinitionKey());
         task.setProcessInstanceId(historicTaskInstance.getProcessInstanceId());
 
