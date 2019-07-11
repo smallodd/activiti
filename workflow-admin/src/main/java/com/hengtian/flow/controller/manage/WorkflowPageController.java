@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller.manage;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.utils.DateUtils;
@@ -8,9 +9,12 @@ import com.hengtian.flow.controller.WorkflowBaseController;
 import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
-import com.hengtian.flow.service.*;
+import com.hengtian.flow.service.ActivitiService;
+import com.hengtian.flow.service.RuProcinstService;
+import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.CommentVo;
-
 import com.user.entity.emp.Emp;
 import com.user.service.emp.EmpService;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +61,7 @@ public class WorkflowPageController extends WorkflowBaseController{
     private RuProcinstService ruProcinstService;
     @Autowired
     private TaskService taskService;
-    @Autowired
+    @Reference
     private EmpService empService;
     @Autowired
     private TUserTaskService tUserTaskService;

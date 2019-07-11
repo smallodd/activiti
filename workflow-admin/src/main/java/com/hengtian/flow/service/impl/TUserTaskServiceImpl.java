@@ -1,5 +1,6 @@
 package com.hengtian.flow.service.impl;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
@@ -37,7 +38,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
     private TUserTaskDao tUserTaskDao;
     @Autowired
     private TTaskButtonService tTaskButtonService;
-    @Autowired
+    @Reference
     private PrivilegeService privilegeService;
 
     /**

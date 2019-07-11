@@ -1,19 +1,22 @@
 package com.hengtian.common.utils;
 
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Created by ma on 2017/11/3.
  */
+
+@Slf4j
 public class ConfigUtil {
     /* 日志对象 */
-    private final static Logger logger = LoggerFactory.getLogger(ConfigUtil.class);
     /* 防盗链网址1 */
     private static final String WEB_URL_1 = "web.url1";
     /* 防盗链网址2 */
@@ -41,20 +44,20 @@ public class ConfigUtil {
         }
         isInit = true;
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("初始化config.properties开始");
+        if (log.isDebugEnabled()) {
+            log.debug("初始化config.properties开始");
         }
 
         // 获取文件路径
-        String path = getClassPath() + "config.properties";
+        String path = getClassPath() + "application.properties";
         // String
         // path="D:/workspace-gxdp/gxdp-parent/gxdp-web/src/main/resources/config.properties";
 
         // 读文件
         Properties properties = readProperties(path);
         if (properties == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("获取文件信息失败");
+            if (log.isDebugEnabled()) {
+                log.debug("获取文件信息失败");
             }
             return;
         }
@@ -62,8 +65,8 @@ public class ConfigUtil {
         // 获取所有值
         getValues(properties);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("初始化config.properties结束");
+        if (log.isDebugEnabled()) {
+            log.debug("初始化config.properties结束");
         }
 
     }
@@ -92,8 +95,8 @@ public class ConfigUtil {
                     }
                 }
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("key={};value={}", key, value);
+            if (log.isDebugEnabled()) {
+                log.debug("key={};value={}", key, value);
             }
         }
     }
@@ -128,7 +131,7 @@ public class ConfigUtil {
      */
     public static Properties readProperties(String path) {
         if (StringUtils.isEmpty(path)) {
-            logger.error("文件路径为空");
+            log.error("文件路径为空");
             return null;
         }
 
@@ -141,14 +144,14 @@ public class ConfigUtil {
             inputStream = new FileInputStream(path);
             properties.load(inputStream);
         } catch (Exception e) {
-            logger.error("文件路径{}", path, e);
+            log.error("文件路径{}", path, e);
             return null;
         } finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();
                 } catch (IOException e) {
-                    logger.error("文件路径{}", path, e);
+                    log.error("文件路径{}", path, e);
                     return null;
                 }
             }

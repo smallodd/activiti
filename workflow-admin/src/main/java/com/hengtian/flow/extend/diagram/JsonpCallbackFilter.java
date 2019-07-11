@@ -1,9 +1,7 @@
 package com.hengtian.flow.extend.diagram;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -11,15 +9,19 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
+@Order(1)
+@WebFilter(filterName = "JSONPFilter", urlPatterns = "/*")
 public class JsonpCallbackFilter implements Filter {
 
-  private static Logger log = LoggerFactory.getLogger(JsonpCallbackFilter.class);
 
   public void init(FilterConfig fConfig) throws ServletException {}
 

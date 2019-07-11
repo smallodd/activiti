@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ include file="/resource/common/global.jsp" %>
+<%@ include file="/common/global.jsp" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -139,7 +139,7 @@
                         </shiro:hasPermission>
                     }
                     <shiro:hasPermission name="/assignee/config/page">
-                        str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-configUser" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="configAssigneeFun(\'{0}\');" >设定人员</a>', row.id);
+                        str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-configUser" data-options="plain:true,iconCls:\'fi-torsos-male-female icon-green\'" onclick="configAssigneeFun(\'{0}\',\'{1}\');" >设定人员</a>', row.id, row.key);
                     </shiro:hasPermission>
                     <shiro:hasPermission name="/task/start">
                         str += $.formatString('<a href="javascript:void(0)" class="processdef-easyui-linkbutton-start" data-options="plain:true,iconCls:\'fi-play icon-green\'" onclick="startProcessInstance(\'{0}\');" >模拟开启</a>', row.id);
@@ -180,7 +180,7 @@
     /**
      * 设定人员-选择
      */
-    function configAssigneeFun(processDefinitionId) {
+    function configAssigneeFun(processDefinitionId, processDefinitionKey) {
         if (processDefinitionId == undefined) {
             var rows = processDefDataGrid.datagrid('getSelections');
             processDefinitionId = rows[0].id;
@@ -189,8 +189,9 @@
         }
         $("#processDefinitionId").val(processDefinitionId);
 
-        $.post("${ctx}/assignee/config/type?processDefinitionId=" + processDefinitionId, function(result){
-            if(JSON.stringify(result) > 0){
+        $.post("${ctx}/assignee/config/type?processDefinitionKey=" + processDefinitionKey, function(result){
+            debugger;
+            if(result && parseInt(result) > 0){
                 configAssigneeFun_(3);
             }else{
                 $("#configSelect").dialog({

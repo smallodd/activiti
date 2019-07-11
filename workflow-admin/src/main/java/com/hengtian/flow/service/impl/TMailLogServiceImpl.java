@@ -1,10 +1,10 @@
 package com.hengtian.flow.service.impl;
 
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.hengtian.flow.dao.TMailLogDao;
 import com.hengtian.flow.model.TMailLog;
 import com.hengtian.flow.service.TMailLogService;
 import org.springframework.stereotype.Service;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 
 /**
  * <p>

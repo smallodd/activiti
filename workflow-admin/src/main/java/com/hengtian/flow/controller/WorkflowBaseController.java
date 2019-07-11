@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -14,11 +15,13 @@ import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
-import com.hengtian.flow.service.*;
+import com.hengtian.flow.service.RuProcinstService;
+import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TTaskButtonService;
+import com.hengtian.flow.service.TUserTaskService;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
-
 import com.user.entity.emp.Emp;
 import com.user.service.emp.EmpService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +43,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 基类
@@ -61,7 +68,7 @@ public class WorkflowBaseController extends BaseRestController {
     TTaskButtonService tTaskButtonService;
     @Autowired
     private TUserTaskService tUserTaskService;
-    @Autowired
+    @Reference
     private PrivilegeService privilegeService;
     @Autowired
     private RuProcinstService ruProcinstService;
@@ -70,7 +77,7 @@ public class WorkflowBaseController extends BaseRestController {
     @Autowired
     FormService formService;
 
-    @Autowired
+    @Reference
     EmpService empService;
 
     /**
@@ -228,11 +235,10 @@ public class WorkflowBaseController extends BaseRestController {
             jsonObject.put("id", t.getAssignee());
             jsonObject.put("text", t.getAssigneeName());
 
-            if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType()) || AssignTypeEnum.EXPR.code.equals(t.getAssigneeType())){
-                jsonObject.put("state", "closed");
-                JSONArray jsonArray = new JSONArray();
-                if(StringUtils.isNotBlank(t.getAssigneeReal())){
-                    String[] array = t.getAssigneeReal().split(",");
+            JSONArray jsonArray = new JSONArray();
+            if(StringUtils.isNotBlank(t.getAssigneeReal())){
+                String[] array = t.getAssigneeReal().split(",");
+                if(array.length > 1){
                     for(String a : array){
                         if(assigneeList.contains(a)){
                             continue;
@@ -249,35 +255,33 @@ public class WorkflowBaseController extends BaseRestController {
                         }
                     }
                 }else{
-                    if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType())){
-                        List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
-                        if(CollectionUtils.isNotEmpty(users)){
-                            for(RbacUser u : users){
-                                if(assigneeList.contains(u.getCode())){
-                                    continue;
-                                }
-                                JSONObject child = new JSONObject();
-                                child.put("id", t.getAssignee()+":"+u.getCode());
-                                child.put("text", u.getName());
-                                if(!jsonObject.containsKey("children")){
-                                    jsonArray.add(child);
-                                    jsonObject.put("children", jsonArray);
-                                }else{
-                                    jsonObject.accumulate("children", child);
-                                }
+                    if(assigneeList.contains(t.getAssignee())){
+                        continue;
+                    }
+                }
+            }else{
+                if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType())){
+                    List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
+                    if(CollectionUtils.isNotEmpty(users)){
+                        for(RbacUser u : users){
+                            if(assigneeList.contains(u.getCode())){
+                                continue;
+                            }
+                            JSONObject child = new JSONObject();
+                            child.put("id", t.getAssignee()+":"+u.getCode());
+                            child.put("text", u.getName());
+                            if(!jsonObject.containsKey("children")){
+                                jsonArray.add(child);
+                                jsonObject.put("children", jsonArray);
+                            }else{
+                                jsonObject.accumulate("children", child);
                             }
                         }
                     }
                 }
-                if(jsonObject.containsKey("children")){
-                    json.add(jsonObject);
-                }
-            } else {
-                if(assigneeList.contains(t.getAssignee())){
-                    continue;
-                }
-                json.add(jsonObject);
             }
+
+            json.add(jsonObject);
         }
 
         return json;

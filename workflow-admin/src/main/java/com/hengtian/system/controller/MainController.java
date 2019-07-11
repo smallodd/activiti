@@ -4,7 +4,6 @@ import com.hengtian.common.base.BaseController;
 import com.hengtian.common.operlog.SysLog;
 import com.hengtian.common.utils.CaptchaUtil;
 import com.hengtian.common.utils.DigestUtils;
-
 import com.hengtian.common.utils.StringUtils;
 import com.richgo.redis.RedisClusterUtil;
 import org.apache.shiro.SecurityUtils;

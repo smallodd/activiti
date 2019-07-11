@@ -1,16 +1,16 @@
-package ${package.Entity};
-
-#if(${superEntityClassPackage})
-import ${superEntityClassPackage};
-#end
-#if(!${dbColumnUnderline})
+package ${package.Entity}import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableId;
-import com.baomidou.mybatisplus.annotations.TableField;
-#end
-#if(${tabeAnnotation})
 import com.baomidou.mybatisplus.annotations.TableName;
+
+;
+#if(${superEntityClassPackage})
+    ${superEntityClassPackage}
+        ;
 #end
-import java.io.Serializable;
+    #if(!${dbColumnUnderline})
+    #end
+    #if(${tabeAnnotation})
+    #end
 /**
  * <p>
  * ${table.comment}

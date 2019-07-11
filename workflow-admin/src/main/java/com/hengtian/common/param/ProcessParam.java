@@ -35,7 +35,7 @@ public class ProcessParam {
     /**
      * 系统定义的key
      */
-    @ApiModelProperty(value = "系统定义的key", required = true, example="系统定义的key")
+    @ApiModelProperty(value = "系统定义的key", required = true, example="1")
     @NotNull(message = "系统定义key不能为空")
     private Integer appKey;
     /**

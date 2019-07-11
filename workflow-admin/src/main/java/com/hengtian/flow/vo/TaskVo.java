@@ -1,12 +1,11 @@
 package com.hengtian.flow.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.user.entity.emp.EmpVO;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.user.entity.emp.Emp;
-import com.user.entity.emp.EmpVO;
 
 /**
  * 工作流用户任务VO

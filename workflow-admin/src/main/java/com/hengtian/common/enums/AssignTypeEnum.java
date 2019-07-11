@@ -83,9 +83,4 @@ public enum AssignTypeEnum {
         }
         return map;
     }
-
-    public static void main(String[] args) {
-        String str = "4545_Y,535335_N";
-        System.out.println(str.replaceAll("_Y", ""));
-    }
 }

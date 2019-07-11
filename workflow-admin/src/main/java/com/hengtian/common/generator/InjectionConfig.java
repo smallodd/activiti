@@ -1,8 +1,8 @@
 package com.hengtian.common.generator;
 
-import java.util.Map;
-
 import com.hengtian.common.generator.config.builder.ConfigBuilder;
+
+import java.util.Map;
 
 /**
  * <p>

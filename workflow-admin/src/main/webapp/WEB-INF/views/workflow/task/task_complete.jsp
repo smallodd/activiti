@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ include file="/resource/common/global.jsp" %>
+<%@ include file="/common/global.jsp" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -25,7 +25,7 @@
                 <input type="hidden" name="assignee" id="assignee"/>
                 <input type="hidden" name="jsonVariable" id="jsonVariable"/>
                 <input type="hidden" name="assigneeNext" id="assigneeNext"/>
-                <input type="hidden" name="needSetNext" id="needSetNext"/>
+                <input type="hidden" name="needSetNext" id="needSetNext" value="${needSetNext}"/>
                 <div id="tt" class="easyui-tabs" style="width:100%;height:99%">
                     <div title="审批结果/意见" style="padding:10px;display:none;">
                         <div class="easyui-panel" title="审批意见" style="width: 100%;padding:1px;">

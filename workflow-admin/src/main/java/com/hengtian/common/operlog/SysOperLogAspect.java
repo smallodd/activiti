@@ -1,9 +1,11 @@
 package com.hengtian.common.operlog;
 
-import java.lang.reflect.Method;
-import java.util.Date;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.log4j.Logger;
+import com.hengtian.common.shiro.ShiroUser;
+import com.hengtian.common.utils.ConstantUtils;
+import com.hengtian.common.utils.IPAddressUtil;
+import com.hengtian.system.model.SysOperLog;
+import com.hengtian.system.service.SysOperLogService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -12,16 +14,16 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hengtian.common.shiro.ShiroUser;
-import com.hengtian.common.utils.ConstantUtils;
-import com.hengtian.common.utils.IPAddressUtil;
-import com.hengtian.system.model.SysOperLog;
-import com.hengtian.system.service.SysOperLogService;
+import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Method;
+import java.util.Date;
 
 
 /**
  * 日志切面
  */
+
+@Slf4j
 @Aspect
 @Component
 public class SysOperLogAspect {
@@ -30,7 +32,6 @@ public class SysOperLogAspect {
 	@Autowired
 	private SysOperLogService logService;
 
-	private static final Logger logger = Logger.getLogger(SysOperLogAspect.class);
 	//Controller层切点
 	//@annotation用于匹配当前执行方法持有指定注解的方法；
 	@Pointcut("@annotation(com.hengtian.common.operlog.SysLog)")
@@ -50,7 +51,7 @@ public class SysOperLogAspect {
 		try {
 			ShiroUser loginUser = (ShiroUser) SecurityUtils.getSubject().getPrincipal();
 			if(loginUser==null&&!request.getRequestURI().contains("/rest")){
-				logger.error("系统没有认证信息!");
+				log.error("系统没有认证信息!");
 				return;
 			}
 			String targetName = joinPoint.getTarget().getClass().getName(); // 请求类名称
@@ -105,7 +106,7 @@ public class SysOperLogAspect {
             operLog.setLogDescription("[操作成功]");
 			logService.insert(operLog);
 		} catch (Exception e) {
-			logger.error("后置通知异常:异常信息:"+e.getMessage());
+			log.error("后置通知异常:异常信息:"+e.getMessage());
 			e.printStackTrace();
 		}
 	}

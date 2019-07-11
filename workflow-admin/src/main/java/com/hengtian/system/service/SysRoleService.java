@@ -1,19 +1,18 @@
 package com.hengtian.system.service;
 
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import com.baomidou.mybatisplus.service.IService;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.system.model.SysRole;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
- * <p>
  * 角色表 服务类
- * </p>
  *
- * @author junyang.liu
+ * @author houjinrong@chtwm.com
  * @since 2017-08-09
  */
 public interface SysRoleService extends IService<SysRole> {

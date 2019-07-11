@@ -9,13 +9,10 @@ import com.hengtian.application.model.AppModel;
 import com.hengtian.application.service.AppService;
 import com.hengtian.application.vo.AppVo;
 import org.activiti.engine.RepositoryService;
-import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.Model;
-import org.activiti.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

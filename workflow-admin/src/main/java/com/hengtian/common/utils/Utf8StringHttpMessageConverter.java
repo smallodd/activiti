@@ -1,4 +1,11 @@
 package com.hengtian.common.utils;
+
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpOutputMessage;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.AbstractHttpMessageConverter;
+import org.springframework.util.FileCopyUtils;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -6,13 +13,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.http.HttpInputMessage;
-import org.springframework.http.HttpOutputMessage;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.AbstractHttpMessageConverter;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.http.converter.AbstractHttpMessageConverter;
 
 /**
  * Created by ma on 2017/11/16.
@@ -86,8 +86,8 @@ public class Utf8StringHttpMessageConverter extends
     }
 
     private Charset getContentTypeCharset(MediaType contentType) {
-        if (contentType != null && contentType.getCharSet() != null) {
-            return contentType.getCharSet();
+        if (contentType != null && contentType.getCharset() != null) {
+            return contentType.getCharset();
         } else {
             return this.defaultCharset;
         }

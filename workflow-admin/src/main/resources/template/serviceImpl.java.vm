@@ -1,11 +1,15 @@
-package ${package.ServiceImpl};
-
-import ${package.Entity}.${entity};
-import ${package.Mapper}.${table.mapperName};
-import ${package.Service}.${table.serviceName};
-import ${superServiceImplClassPackage};
+package ${package.ServiceImpl}import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
+
+;
+${package.Entity}
+        .${entity};
+    ${package.Mapper}
+        .${table.mapperName};
+    ${package.Service}
+        .${table.serviceName};
+    ${superServiceImplClassPackage}
+        ;
 /**
  * <p>
  * ${table.comment}  服务实现类

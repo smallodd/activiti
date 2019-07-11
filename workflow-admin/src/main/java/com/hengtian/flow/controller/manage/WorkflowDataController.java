@@ -1,5 +1,6 @@
 package com.hengtian.flow.controller.manage;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.hengtian.common.enums.AssignTypeEnum;
@@ -25,7 +26,13 @@ import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,7 +53,7 @@ public class WorkflowDataController extends WorkflowBaseController {
     private ActivitiService activitiService;
     @Autowired
     private WorkflowService workflowService;
-    @Autowired
+    @Reference
     private PrivilegeService privilegeService;
     @Autowired
     private TRuTaskService tRuTaskService;

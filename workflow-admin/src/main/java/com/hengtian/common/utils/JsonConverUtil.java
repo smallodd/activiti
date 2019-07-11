@@ -1,20 +1,26 @@
 package com.hengtian.common.utils;
 
 import com.alibaba.druid.sql.visitor.functions.Char;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.JSONUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ma on 2017/11/23.
  */
+
+@Slf4j
 public class JsonConverUtil {
-    private static final Logger log = LoggerFactory.getLogger(JsonConverUtil.class);
 
     public JsonConverUtil() {
     }

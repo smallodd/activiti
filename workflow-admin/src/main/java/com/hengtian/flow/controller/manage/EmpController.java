@@ -1,17 +1,15 @@
 package com.hengtian.flow.controller.manage;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Maps;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
 import com.rbac.entity.RbacRole;
-
 import com.rbac.service.PrivilegeService;
-
 import com.user.entity.org.Org;
 import com.user.service.emp.EmpService;
 import com.user.service.org.OrgService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,17 +25,17 @@ import java.util.Map;
  * @author houjinrong@chtwm.com
  * date 2018/5/7 14:07
  */
+@Slf4j
 @Controller
 @RequestMapping("/emp")
 public class EmpController {
 
-    Logger logger = Logger.getLogger(getClass());
 
-    @Autowired
+    @Reference
     private OrgService orgService;
-    @Autowired
+    @Reference
     private PrivilegeService privilegeService;
-    @Autowired
+    @Reference
     private EmpService empService;
 
     /**
@@ -53,14 +51,14 @@ public class EmpController {
      */
     @PostMapping("/user")
     @ResponseBody
-    public Object queryUser(String code, String name, Integer page, Integer rows){
-        code = StringUtils.isBlank(code)?null:code.trim();
-        name = StringUtils.isBlank(name)?null:name.trim();
-        Map<String,Object> map = empService.selectByDeptCodeOrCodeOrName(code,name,null,null,page,rows);
+    public Object queryUser(String code, String name, Integer page, Integer rows) {
+        code = StringUtils.isBlank(code) ? null : code.trim();
+        name = StringUtils.isBlank(name) ? null : name.trim();
+        Map<String, Object> map = empService.selectByDeptCodeOrCodeOrName(code, name, null, null, page, rows);
         PageInfo pageInfo = new PageInfo();
-        Map<String,Object> condition = Maps.newHashMap();
-        condition.put("code",code);
-        condition.put("name",name);
+        Map<String, Object> condition = Maps.newHashMap();
+        condition.put("code", code);
+        condition.put("name", name);
 
         pageInfo.setTotal(Integer.valueOf(map.get("total").toString()));
         pageInfo.setCondition(condition);
@@ -74,6 +72,7 @@ public class EmpController {
 
     /**
      * 获取部门列表-分页
+     *
      * @param code 部门编号
      * @param name 部门名称
      * @param page 起始页
@@ -84,14 +83,14 @@ public class EmpController {
      */
     @PostMapping("/department")
     @ResponseBody
-    public Object queryDepartment(String code, String name, Integer page, Integer rows){
-        code = StringUtils.isBlank(code)?null:code.trim();
-        name = StringUtils.isBlank(name)?null:name.trim();
+    public Object queryDepartment(String code, String name, Integer page, Integer rows) {
+        code = StringUtils.isBlank(code) ? null : code.trim();
+        name = StringUtils.isBlank(name) ? null : name.trim();
         com.github.pagehelper.PageInfo<Org> deptPageInfo = orgService.getOrgPageInfo(page, rows, code, name);
         PageInfo pageInfo = new PageInfo();
-        Map<String,Object> condition = Maps.newHashMap();
-        condition.put("code",code);
-        condition.put("name",name);
+        Map<String, Object> condition = Maps.newHashMap();
+        condition.put("code", code);
+        condition.put("name", name);
         transferPageInfo(deptPageInfo, pageInfo, condition);
         return pageInfo;
     }
@@ -106,14 +105,14 @@ public class EmpController {
      */
     @PostMapping("/role/{system}")
     @ResponseBody
-    public Object queryRole(@PathVariable("system")Integer system){
+    public Object queryRole(@PathVariable("system") Integer system) {
         List<RbacRole> allRoleBySystem = privilegeService.getAllRoleBySystem(system);
         return allRoleBySystem;
     }
 
-    private <T> void transferPageInfo(com.github.pagehelper.PageInfo<T> githubPageInfo, PageInfo pageInfo, Map<String,Object> condition){
-        if(githubPageInfo != null){
-            pageInfo.setTotal((int)githubPageInfo.getTotal());
+    private <T> void transferPageInfo(com.github.pagehelper.PageInfo<T> githubPageInfo, PageInfo pageInfo, Map<String, Object> condition) {
+        if (githubPageInfo != null) {
+            pageInfo.setTotal((int) githubPageInfo.getTotal());
             pageInfo.setRows(githubPageInfo.getList());
             pageInfo.setNowpage(githubPageInfo.getPageNum());
             pageInfo.setPagesize(githubPageInfo.getPageSize());

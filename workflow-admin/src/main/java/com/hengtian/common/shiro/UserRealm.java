@@ -1,8 +1,9 @@
 package com.hengtian.common.shiro;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.hengtian.system.model.SysUser;
+import com.hengtian.system.service.SysRoleService;
+import com.hengtian.system.service.SysUserService;
+import com.hengtian.system.vo.SysUserVo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.authc.AuthenticationException;
@@ -16,11 +17,11 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import com.hengtian.system.model.SysUser;
-import com.hengtian.system.service.SysRoleService;
-import com.hengtian.system.service.SysUserService;
-import com.hengtian.system.vo.SysUserVo;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -32,8 +33,9 @@ import com.hengtian.system.vo.SysUserVo;
  * 		shiro 自动去比较查询出密码和用户输入密码是否一致----
  * 		进行登陆控制 )
  */
+@Component
 public class UserRealm extends AuthorizingRealm{
-	protected Log logger = LogFactory.getLog(UserRealm.class);
+	protected Log log = LogFactory.getLog(UserRealm.class);
 
     @Autowired private SysUserService userService;
     @Autowired private SysRoleService roleService;

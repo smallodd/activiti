@@ -1,15 +1,16 @@
 package com.hengtian.system.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.hengtian.common.result.Tree;
 import com.hengtian.system.dao.SysDepartmentDao;
 import com.hengtian.system.model.SysDepartment;
 import com.hengtian.system.service.SysDepartmentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -17,7 +18,7 @@ import com.hengtian.system.service.SysDepartmentService;
  * 部门表 服务实现类
  * </p>
  *
- * @author junyang.liu
+ * @author houjinrong@chtwm.com
  * @since 2017-08-09
  */
 @Service
