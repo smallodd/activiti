@@ -2370,16 +2370,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         HistoricTaskInstance historicTaskInstance=list.get(0);
-        TaskEntity task= (TaskEntity) taskService.newTask(historicTaskInstance.getId());
+        TaskEntity task = (TaskEntity) taskService.newTask(historicTaskInstance.getId());
         task.setTaskDefinitionKey(historicTaskInstance.getTaskDefinitionKey());
         task.setProcessInstanceId(historicTaskInstance.getProcessInstanceId());
 
 
         task.setFormKey(historicTaskInstance.getFormKey());
         task.setName(historicTaskInstance.getName());
-        EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
+        /*EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.eq("task_id", taskId);
-        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);*/
 
         //权限校验
         /*if(validateTaskAssignee(task, userId,tRuTasks) == null){

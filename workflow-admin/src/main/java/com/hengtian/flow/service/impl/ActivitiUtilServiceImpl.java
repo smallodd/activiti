@@ -1170,7 +1170,10 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     //角色，不需要签收
                     if(CollectionUtils.isEmpty(roleIds)){
                         for(String assignee : assigneeSet){
-                            roleIds.addAll(getAllRoleByUserId(task.getProcessInstanceId(), assignee));
+                            List<Long> allRoleIds = getAllRoleByUserId(task.getProcessInstanceId(), assignee);
+                            if(CollectionUtils.isNotEmpty(allRoleIds)){
+                                roleIds.addAll(allRoleIds);
+                            }
                         }
                     }
 
