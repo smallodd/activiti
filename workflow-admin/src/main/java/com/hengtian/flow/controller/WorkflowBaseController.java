@@ -308,6 +308,7 @@ public class WorkflowBaseController extends BaseRestController {
      * date 2018/5/21 18:04
      */
     public void setAssigneeAndRole(PageInfo pageInfo, TaskQueryParam taskQueryParam){
+        log.info("查询审批人角色和代理人角色setAssigneeAndRole");
         Integer appKey = taskQueryParam.getAppKey();
         String assignee = taskQueryParam.getAssignee();
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, assignee);
