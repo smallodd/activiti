@@ -1903,6 +1903,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public void openTaskList(PageInfo pageInfo) {
+        log.info("查询未办任务列表openTaskList");
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
         List<TaskAgentQueryParam> taskAgentList = (List<TaskAgentQueryParam>) pageInfo.getCondition().get("taskAgentList");
@@ -1963,6 +1964,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public void closeTaskList(PageInfo pageInfo) {
+        log.info("查询已办任务列表closeTaskList");
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryCloseTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
@@ -2370,16 +2372,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         HistoricTaskInstance historicTaskInstance=list.get(0);
-        TaskEntity task= (TaskEntity) taskService.newTask(historicTaskInstance.getId());
+        TaskEntity task = (TaskEntity) taskService.newTask(historicTaskInstance.getId());
         task.setTaskDefinitionKey(historicTaskInstance.getTaskDefinitionKey());
         task.setProcessInstanceId(historicTaskInstance.getProcessInstanceId());
 
 
         task.setFormKey(historicTaskInstance.getFormKey());
         task.setName(historicTaskInstance.getName());
-        EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
+        /*EntityWrapper<TRuTask> wrapper = new EntityWrapper<>();
         wrapper.eq("task_id", taskId);
-        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);
+        List<TRuTask> tRuTasks = tRuTaskService.selectList(wrapper);*/
 
         //权限校验
         /*if(validateTaskAssignee(task, userId,tRuTasks) == null){
