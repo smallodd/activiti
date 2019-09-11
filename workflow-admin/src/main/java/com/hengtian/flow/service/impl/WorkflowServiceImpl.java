@@ -1903,6 +1903,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public void openTaskList(PageInfo pageInfo) {
+        log.info("查询未办任务列表openTaskList");
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryOpenTask(page, pageInfo.getCondition());
         List<TaskAgentQueryParam> taskAgentList = (List<TaskAgentQueryParam>) pageInfo.getCondition().get("taskAgentList");
@@ -1963,6 +1964,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
      */
     @Override
     public void closeTaskList(PageInfo pageInfo) {
+        log.info("查询已办任务列表closeTaskList");
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryCloseTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
