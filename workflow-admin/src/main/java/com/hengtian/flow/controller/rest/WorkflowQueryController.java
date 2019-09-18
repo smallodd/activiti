@@ -50,6 +50,7 @@ import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
@@ -792,6 +793,34 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }*/
 
         return renderSuccess(workflowService.getNextAssigneeWhenRoleApprove(task));
+    }
+
+    /**
+     * 运行中的任务获取下步节点审批人
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 9:40
+     */
+    @ResponseBody
+    @SysLog("任务详情")
+    @ApiOperation(httpMethod = "POST", value = "下步节点审批人")
+    @RequestMapping(value = "/rest/task/assignee/next/{processInstanceId}", method = RequestMethod.POST)
+    public Object getNextAssigneeBy(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @PathVariable("processInstanceId") String processInstanceId){
+        log.info("通过流程实例查询当前节点的下部节点审批人信息，入参{}", processInstanceId);
+        ProcessInstanceQuery processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId);
+        if(null == processInstance){
+            log.info("未找到运行的流程实例{}", processInstanceId);
+            return renderError("未找到运行的流程实例");
+        }
+
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        if(CollectionUtils.isEmpty(taskList)){
+            log.info("流程实例{}当前无未审批任务", processInstanceId);
+            return renderError("流程实例当前无未审批任务");
+        }
+
+        return renderSuccess(workflowService.getNextAssigneeWhenRoleApprove(taskList.get(0)));
     }
 
     /**
