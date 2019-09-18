@@ -458,13 +458,13 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         //执行实例
         ExecutionEntity execution = (ExecutionEntity) runtimeService.createProcessInstanceQuery().processInstanceId(procInstId).singleResult();
         //当前实例的执行到哪个节点
-        String activitiId = execution.getActivityId();
+        String activityId = execution.getActivityId();
         //获得当前任务的所有节点
-        List<ActivityImpl> activitiList = pde.getActivities();
+        List<ActivityImpl> activityList = pde.getActivities();
         String id = null;
-        for (ActivityImpl activityImpl : activitiList) {
+        for (ActivityImpl activityImpl : activityList) {
             id = activityImpl.getId();
-            if (activitiId.equals(id)) {
+            if (activityId.equals(id)) {
                 log.debug("当前任务：" + activityImpl.getProperty("name"));
                 taskDefinitionList = nextTaskDefinition(activityImpl, activityImpl.getId());
             }
