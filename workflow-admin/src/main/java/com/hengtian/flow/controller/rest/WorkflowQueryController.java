@@ -829,10 +829,6 @@ public class WorkflowQueryController extends WorkflowBaseController {
             if(CollectionUtils.isNotEmpty(nextNodes)){
                 for(TaskNodeVo tn : nextNodes){
                     List<AssigneeVo> assignee = tn.getAssignee();
-                    AssigneeVo vo1 = new AssigneeVo();
-                    vo1.setUserCode("123");
-                    vo1.setUserName("567");
-                    assignee.add(vo1);
                     assignee.stream().filter(a->!map.containsKey(a.getUserCode())).forEach(a->{nextAssignees.add(a);map.put(a.getUserCode(),1);});
                 }
             }
