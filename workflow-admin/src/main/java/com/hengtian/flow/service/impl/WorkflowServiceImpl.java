@@ -2780,4 +2780,63 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         return set;
     }
+
+    /**
+     * 获取流程实例当前任务节点下步节点信息
+     * @author houjinrong@chtwm.com
+     * date 2018/6/6 19:14
+     */
+    @Override
+    public List<TaskNodeVo> getNextNodeByTask(ProcessInstance processInstance, TaskInfo task){
+        List<TaskNodeVo> result = Lists.newArrayList();
+        Integer version = getVersion(task.getProcessDefinitionId());
+        Integer appKey = getAppKey(task.getProcessInstanceId());
+        List<String> nextTaskDefKeys = findNextTaskDefKeys(task, false);
+        if(CollectionUtils.isEmpty(nextTaskDefKeys)){
+            log.error("没有下一审批节点");
+            return null;
+        }
+
+        EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
+        wrapper.eq("proc_def_key",  processInstance.getProcessDefinitionKey());
+        wrapper.eq("version_", version);
+        wrapper.in("task_def_key", nextTaskDefKeys);
+
+        List<TUserTask> userTasks = tUserTaskService.selectList(wrapper);
+        String[] assigneeArray;
+
+        for(TUserTask ut : userTasks){
+            TaskNodeVo taskNode = new TaskNodeVo();
+            taskNode.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
+            taskNode.setTaskDefinitionKey(ut.getTaskDefKey());
+            taskNode.setTaskDefinitionName(ut.getTaskName());
+
+            //角色审批
+            assigneeArray = ut.getCandidateIds().split(",");
+            List<AssigneeVo> assigneeList = Lists.newArrayList();
+            if(AssignTypeEnum.ROLE.code.equals(ut.getAssignType())){
+                for(int k=0;k<assigneeArray.length;k++){
+                    List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(assigneeArray[k]));
+                    for(RbacUser user : users){
+                        AssigneeVo assignee = new AssigneeVo();
+                        assignee.setUserCode(user.getCode());
+                        assignee.setUserName(user.getName());
+                        assigneeList.add(assignee);
+                    }
+                }
+            }else{
+                for(int k=0;k<assigneeArray.length;k++){
+                    Emp emp = empService.selectByCode(assigneeArray[k]);
+                    AssigneeVo assignee = new AssigneeVo();
+                    assignee.setUserCode(emp.getCode());
+                    assignee.setUserName(emp.getName());
+                    assigneeList.add(assignee);
+                }
+            }
+            taskNode.setAssignee(assigneeList);
+            result.add(taskNode);
+        }
+
+        return result;
+    }
 }
