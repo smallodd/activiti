@@ -13,6 +13,7 @@ import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TaskResult;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskInfo;
@@ -391,4 +392,14 @@ public interface WorkflowService extends IService<TaskResult> {
      * date 2018/9/6 11:49
      */
     Set<String> getExpressionName(String expressionStr);
+
+    /**
+     * 功能描述: 根据当前任务节点获取下步节点信息
+     * @param processInstance
+     * @param task
+     * @return: java.util.List<com.hengtian.flow.vo.TaskNodeVo>
+     * @Author: hour
+     * @Date: 2019/9/18 14:43
+     */
+    List<TaskNodeVo> getNextNodeByTask(ProcessInstance processInstance, TaskInfo task);
 }

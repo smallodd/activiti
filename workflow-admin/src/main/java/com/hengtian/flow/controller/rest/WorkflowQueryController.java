@@ -43,6 +43,7 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
@@ -50,6 +51,7 @@ import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
@@ -70,6 +72,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -792,6 +795,46 @@ public class WorkflowQueryController extends WorkflowBaseController {
         }*/
 
         return renderSuccess(workflowService.getNextAssigneeWhenRoleApprove(task));
+    }
+
+    /**
+     * 运行中的任务获取下步节点审批人
+     * @param processInstanceId 流程实例ID
+     * @return
+     * @author houjinrong@chtwm.com
+     * date 2018/6/1 9:40
+     */
+    @ResponseBody
+    @SysLog("下步节点审批人")
+    @ApiOperation(httpMethod = "POST", value = "下步节点审批人")
+    @RequestMapping(value = "/rest/task/assignee/next/{processInstanceId}", method = RequestMethod.POST)
+    public Object getNextAssigneeBy(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @PathVariable("processInstanceId") String processInstanceId){
+        log.info("通过流程实例查询当前节点的下部节点审批人信息，入参{}", processInstanceId);
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        if(null == processInstance){
+            log.info("未找到运行的流程实例{}", processInstanceId);
+            return renderError("未找到运行的流程实例");
+        }
+
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        if(CollectionUtils.isEmpty(taskList)){
+            log.info("流程实例{}当前无未审批任务", processInstanceId);
+            return renderError("流程实例当前无未审批任务");
+        }
+
+        List<AssigneeVo> nextAssignees = Lists.newArrayList();
+        Map<String,Integer> map = new HashMap();
+        for(Task t : taskList){
+            List<TaskNodeVo> nextNodes = workflowService.getNextNodeByTask(processInstance, t);
+            if(CollectionUtils.isNotEmpty(nextNodes)){
+                for(TaskNodeVo tn : nextNodes){
+                    List<AssigneeVo> assignee = tn.getAssignee();
+                    assignee.stream().filter(a->!map.containsKey(a.getUserCode())).forEach(a->{nextAssignees.add(a);map.put(a.getUserCode(),1);});
+                }
+            }
+        }
+
+        return nextAssignees;
     }
 
     /**
