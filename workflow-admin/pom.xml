@@ -10,7 +10,7 @@
     <parent>
         <groupId>com.hengtian</groupId>
         <artifactId>workflow</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
+        <version>3.1.2-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -24,7 +24,7 @@
         <springboot.version>2.1.2.RELEASE</springboot.version>
         <slf4j.version>1.7.6</slf4j.version>
         <activiti.version>5.22.0</activiti.version>
-        <skywalking.version>6.0.0-GA</skywalking.version>
+        <skywalking.version>6.4.0</skywalking.version>
         <apollo.version>1.3.0</apollo.version>
     </properties>
     <dependencies>
