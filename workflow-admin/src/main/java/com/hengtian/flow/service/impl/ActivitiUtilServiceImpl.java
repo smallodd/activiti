@@ -1349,6 +1349,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
             try {
                 JSONArray jsonArray = JSONArray.parseArray(assigneeNext);
                 assigneeTemps = validateSetNextAssignee(task, processDefinitionKey, jsonArray, processInstanceId, currentAssignee, taskDefKeyBefore, version);
+
                 if(CollectionUtils.isNotEmpty(assigneeTemps)){
                     assigneeTempService.insertBatch(assigneeTemps);
                 }
@@ -1360,6 +1361,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
         if(CollectionUtils.isNotEmpty(assigneeTemps)){
             for(AssigneeTemp aTemp : assigneeTemps){
+                //TODO 循环assigneeTemps  推送审批人信息
                 if(assigneeMap.containsKey(aTemp.getTaskDefKey())){
                     Map<String, AssigneeTemp> assigneeTempMap = assigneeMap.get(aTemp.getTaskDefKey());
                     if(assigneeTempMap.containsKey(aTemp.getRoleCode())){

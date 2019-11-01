@@ -558,8 +558,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         if(CollectionUtils.isNotEmpty(ruTaskList)){
             log.info("审批插入t_ru_task数据：{}", JSONObject.toJSONString(ruTaskList));
+            //TODO 循环ruTaskList  推送审批任务
             return tRuTaskService.insertBatch(ruTaskList);
         }
+
+
         log.info("设置审批人结束");
         return true;
     }
@@ -1479,6 +1482,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tRuTask.setAssigneeReal(tRuTask.getAssigneeReal().replace(oldUser, targetUserId));
 
         tRuTaskService.updateById(tRuTask);
+        //TODO 转办任务 消息推送给 targetUserId
         return new Result(true,Constant.SUCCESS, "转办任务成功");
     }
 
