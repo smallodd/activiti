@@ -19,7 +19,6 @@
         <batik.version>1.7</batik.version>
         <jackson.version>2.9.5</jackson.version>
         <vaadin.version>6.8.8</vaadin.version>
-        <dubbo-starter.version>0.2.0</dubbo-starter.version>
         <redis-api.version>2.2.1-SNAPSHOT</redis-api.version>
         <springboot.version>2.1.2.RELEASE</springboot.version>
         <slf4j.version>1.7.6</slf4j.version>
@@ -48,18 +47,11 @@
         <dependency>
             <groupId>com.alibaba.boot</groupId>
             <artifactId>dubbo-spring-boot-starter</artifactId>
-            <version>${dubbo-starter.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.0.1</version>
         </dependency>
 
         <!--Activiti集成-->
@@ -341,7 +333,6 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.37</version>
         </dependency>
 
         <dependency>

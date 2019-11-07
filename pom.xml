@@ -22,6 +22,7 @@
     </distributionManagement>
     <modules>
         <module>workflow-admin</module>
+        <module>workflow-service</module>
     </modules>
 
     <properties>
@@ -33,6 +34,10 @@
         <fastjson.version>1.2.60</fastjson.version>
         <druid.version>1.0.27</druid.version>
         <jsoup.version>1.12.1</jsoup.version>
+        <mysql.version>5.1.37</mysql.version>
+        <dubbo-starter.version>0.2.0</dubbo-starter.version>
+        <pagehelper-starter.version>1.2.10</pagehelper-starter.version>
+        <spring-cloud-context.version>2.1.1.RELEASE</spring-cloud-context.version>
     </properties>
 
     <dependencyManagement>
@@ -59,6 +64,41 @@
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>${jsoup.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.boot</groupId>
+                <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>${dubbo-starter.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-context</artifactId>
+                <version>${spring-cloud-context.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>2.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.version}</version>
+            </dependency>
+            <!-- Mybatis分页插件包 -->
+            <dependency>
+                <groupId>com.github.pagehelper</groupId>
+                <artifactId>pagehelper-spring-boot-starter</artifactId>
+                <version>${pagehelper-starter.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
