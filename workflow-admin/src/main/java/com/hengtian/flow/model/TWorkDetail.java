@@ -179,6 +179,5 @@ public class TWorkDetail implements Serializable {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-    
 
 }
