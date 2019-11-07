@@ -46,6 +46,7 @@ public class TWorkDetailServiceImpl extends ServiceImpl<TWorkDetailDao, TWorkDet
         }
         List<TWorkDetail> list=tWorkDetailDao.selectList(wrapper);
         for(TWorkDetail tWorkDetail: list){
+            tWorkDetail.setOperatorCode(tWorkDetail.getOperator());
             Emp emp=empService.selectByCode(tWorkDetail.getOperator());
             if(emp!=null){
                 tWorkDetail.setOperator(emp.getName());
