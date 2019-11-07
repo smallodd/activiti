@@ -35,13 +35,13 @@ public class TWorkDetail implements Serializable {
     private String taskId;
 
     /**
-     * 操作人
+     * 操作人编号
      */
     @TableField(exist = false)
     private String operatorCode;
 
     /**
-     * 操作人
+     * 操作人姓名
      */
     @TableField(value = "operator")
     private String operator;
