@@ -1,4 +1,4 @@
-package com.chtwm.workflow.service.entity;
+package com.chtwm.workflow.entity;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -9,6 +9,8 @@ import java.util.Date;
  * 任务通知的实体类
  */
 public class TaskNoicePO implements Serializable {
+
+    private static final long serialVersionUID = 8545100665157685064L;
 
     //主键
     private String id;
@@ -37,19 +39,19 @@ public class TaskNoicePO implements Serializable {
     //处理人姓名
     private String empName;
 
-    //任务类型
+    //任务类型 0审批 1转办 2问询 3回复
     private Integer type;
 
-    //任务状态
+    //任务状态 0未处理 1已处理
     private Integer state;
 
-    //处理结果
+    //处理结果 1通过  2拒绝
     private Integer action;
 
     //处理意见
     private String message;
 
-    //纷享逍客通知状态
+    //纷享逍客通知状态 0未通知 1已通知 2通知失败
     private Integer xkNoticeState;
 
     //创建时间
@@ -70,7 +72,7 @@ public class TaskNoicePO implements Serializable {
     //更新人姓名
     private String updateName;
 
-    //是否删除
+    //是否删除 0正常 1已删除
     private Integer isDelete;
 
 
