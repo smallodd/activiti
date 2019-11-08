@@ -11,14 +11,14 @@ import java.util.Date;
  * 任务通知的实体类
  */
 @Data
-public class TaskNoicePO implements Serializable {
+public class TaskNoticePO implements Serializable {
 
     private static final long serialVersionUID = 8545100665157685064L;
 
     /**
      * 主键
      */
-    private String id;
+    private Long id;
 
     /**
      * 流程id
