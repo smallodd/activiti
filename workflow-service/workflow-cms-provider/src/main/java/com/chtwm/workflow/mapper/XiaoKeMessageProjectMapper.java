@@ -2,7 +2,9 @@ package com.chtwm.workflow.mapper;
 
 
 import com.chtwm.workflow.entity.TaskNoticePO;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,6 +12,7 @@ import java.util.List;
  * @author fanyuexing
  * @date 2019/11/8 9:25
  */
+@Mapper
 public interface XiaoKeMessageProjectMapper {
 
     /**

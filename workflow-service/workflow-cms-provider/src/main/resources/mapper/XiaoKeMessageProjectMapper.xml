@@ -29,10 +29,10 @@
     <!--查询所有未通知和通知失败的信息-->
     <select id="getAllUnSendMessage" resultMap="TaskNoticeMap">
         SELECT id ,proc_inst_id,proc_inst_name,app_key,business_key,task_id,task_name,emp_no,
-            emp_name,'TYPE',state,'ACTION',message,fxiaoke_notice_state,create_time,create_id,
+            emp_name,TYPE,state,ACTION,message,fxiaoke_notice_state,create_time,create_id,
             create_name,update_time,update_id,update_name
         FROM t_task_notice
-        WHERE is_delete = 0 AND state = 0 AND fxiaoke_notice_state = 0 OR fxiaoke_notice_state = 2
+        WHERE is_delete = 0 AND state = 0 AND (fxiaoke_notice_state = 0 OR fxiaoke_notice_state = 2)
     </select>
 
     <!--根据主键更新纷享销客的信息通知状态-->
