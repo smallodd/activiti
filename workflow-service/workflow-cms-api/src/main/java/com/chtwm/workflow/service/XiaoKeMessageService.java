@@ -11,10 +11,14 @@ import java.util.List;
  */
 public interface XiaoKeMessageService {
 
-    //查询所有未发送以及发送失败的信息
+    /**
+     * 查询所有未发送以及发送失败的信息
+     */
     List<TaskNoicePO> getNeedSendTaskNotice();
 
-    //根据主键修改纷享逍客通知状态（消息通知成功还是通知失败)
+    /**
+     * 根据主键修改纷享逍客通知状态（消息通知成功还是通知失败)
+     */
     Integer updateNoticeState(String id,Integer state);
 
 }
