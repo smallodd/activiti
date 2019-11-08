@@ -18,8 +18,6 @@ import java.util.List;
  * @author fanyuexing
  * @date 2019/11/8 12:46
  */
-
-
 public class XiaoKeMessageProjectTest extends BaseTest{
 
     @Resource
@@ -29,13 +27,13 @@ public class XiaoKeMessageProjectTest extends BaseTest{
     public void a(){
         List<TaskNoticePO> list = xiaoKeMessageservice.getNeedSendTaskNotice();
         for (TaskNoticePO taskNoticePO : list) {
-            System.out.println(taskNoticePO.toString());
+            System.out.println("++"+taskNoticePO.toString());
         }
     }
 
     @Test
     public void b(){
-        Integer updateResult = xiaoKeMessageservice.updateNoticeState("1",3);
+        Integer updateResult = xiaoKeMessageservice.updateNoticeState("1",5);
         System.out.println("==============================="+updateResult);
     }
 }

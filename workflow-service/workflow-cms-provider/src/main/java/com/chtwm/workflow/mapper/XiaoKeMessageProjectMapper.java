@@ -23,6 +23,6 @@ public interface XiaoKeMessageProjectMapper {
     /**
      * 更新纷享逍客的消息发送的结果
      */
-    Integer updateThisMessageNoticeState(@Param("id") String id,@Param("noticeState") Integer noticeState);
+    Integer updateThisMessageNoticeState(@Param("id") Long id,@Param("noticeState") Integer noticeState);
 
 }

@@ -12,7 +12,6 @@ import java.util.Date;
  */
 @Data
 public class TaskNoticePO implements Serializable {
-
     private static final long serialVersionUID = 8545100665157685064L;
 
     /**
