@@ -14,6 +14,14 @@ public enum TaskTypeEnum {
     public int code;
     public String value;
 
+    public int getCode() {
+        return code;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
     TaskTypeEnum(int code, String value) {
         this.code = code;
         this.value = value;

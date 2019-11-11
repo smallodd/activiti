@@ -8,11 +8,19 @@ package com.chtwm.workflow.enums;
 public enum TaskUserTypeEnum {
     DEPARTMENT(1,"部门"),
     ROLE(2,"角色"),
-    STAFF(3,"员工"),
+    EMP(3,"员工"),
     GROUP(4,"组");
 
     public int code;
     public String value;
+
+    public int getCode() {
+        return code;
+    }
+
+    public String getValue() {
+        return value;
+    }
 
     TaskUserTypeEnum(int code, String value) {
         this.code = code;
