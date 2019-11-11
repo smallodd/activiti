@@ -12,7 +12,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author fanyuexing
@@ -24,7 +26,7 @@ public class XiaoKeMessageProjectTest extends BaseTest{
     private XiaoKeMessageserviceImpl xiaoKeMessageservice;
 
     @Test
-    public void a(){
+    public void testGetNeedSendTaskNotice(){
         List<TaskNoticePO> list = xiaoKeMessageservice.getNeedSendTaskNotice();
         for (TaskNoticePO taskNoticePO : list) {
             System.out.println("++"+taskNoticePO.toString());
@@ -32,8 +34,19 @@ public class XiaoKeMessageProjectTest extends BaseTest{
     }
 
     @Test
-    public void b(){
-        Integer updateResult = xiaoKeMessageservice.updateNoticeState("1",5);
+    public void testUpdateNoticeState(){
+        Integer updateResult = xiaoKeMessageservice.updateNoticeState(1l,5);
         System.out.println("==============================="+updateResult);
     }
+
+    @Test
+    public void testUpdateNoticeStateByListKeys(){
+        List<String> ids = new ArrayList<>();
+        ids.add("1");
+        ids.add("2");
+        Integer result = xiaoKeMessageservice.updateNoticeStateByListKeys(ids,0);
+        System.out.println("++++++++++++++++++++++++++++"+result);
+    }
+
+
 }
