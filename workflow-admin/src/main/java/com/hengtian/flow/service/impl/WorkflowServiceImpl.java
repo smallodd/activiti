@@ -42,8 +42,27 @@ import com.hengtian.common.workflow.cmd.JumpCmd;
 import com.hengtian.common.workflow.cmd.TaskJumpCmd;
 import com.hengtian.common.workflow.exception.WorkFlowException;
 import com.hengtian.flow.dao.WorkflowDao;
-import com.hengtian.flow.model.*;
-import com.hengtian.flow.service.*;
+import com.hengtian.flow.model.AssigneeTemp;
+import com.hengtian.flow.model.ProcessInstanceResult;
+import com.hengtian.flow.model.RemindTask;
+import com.hengtian.flow.model.RuProcinst;
+import com.hengtian.flow.model.TAskTask;
+import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.model.TTaskNotice;
+import com.hengtian.flow.model.TUserTask;
+import com.hengtian.flow.model.TWorkDetail;
+import com.hengtian.flow.model.TaskAgent;
+import com.hengtian.flow.model.TaskResult;
+import com.hengtian.flow.service.AssigneeTempService;
+import com.hengtian.flow.service.RemindTaskService;
+import com.hengtian.flow.service.RuProcinstService;
+import com.hengtian.flow.service.TAskTaskService;
+import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TTaskNoticeService;
+import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.service.TWorkDetailService;
+import com.hengtian.flow.service.TaskAgentService;
+import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.AskCommentDetailVo;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
@@ -87,8 +106,6 @@ import org.activiti.engine.task.TaskInfo;
 import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -542,6 +559,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 }
             }
         }
+
+        //TODO 创建审批任务，给task设置审批人tUserTask
+//        final ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+//        processInstance.getBusinessKey();
 
         if(CollectionUtils.isNotEmpty(ruTaskList)){
             log.info("审批插入t_ru_task数据：{}", JSONObject.toJSONString(ruTaskList));
@@ -1679,6 +1700,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
         log.info("意见征询成功");
+        // TODO 问询
         return new Result(true,Constant.SUCCESS, "意见征询成功");
     }
 
@@ -1742,6 +1764,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
         log.info("意见征询确认成功");
+        // TODO 意见征询确认
         return new Result(true, Constant.SUCCESS,"意见征询确认成功");
     }
 
