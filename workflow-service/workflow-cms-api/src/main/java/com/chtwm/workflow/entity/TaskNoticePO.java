@@ -12,6 +12,7 @@ import java.util.Date;
  */
 @Data
 public class TaskNoticePO implements Serializable {
+
     private static final long serialVersionUID = 8545100665157685064L;
 
     /**
@@ -118,5 +119,10 @@ public class TaskNoticePO implements Serializable {
      * 是否删除 0正常 1已删除
      */
     private Integer isDelete;
+
+    /**
+     * 审核人类型  1是部门（预留） 2 角色 3是员工 4是组（预留）
+     */
+    private Integer userType;
 
 }
