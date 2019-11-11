@@ -24,6 +24,6 @@ public interface XiaoKeMessageService {
     /**
      * 根据主键集合修改纷享逍客通知状态（消息通知成功还是通知失败)
      */
-    Integer updateNoticeStateByListKeys(List<String> ids,Integer state);
+    Integer updateNoticeStateByListKeys(List<Long> ids,Integer state);
 
 }

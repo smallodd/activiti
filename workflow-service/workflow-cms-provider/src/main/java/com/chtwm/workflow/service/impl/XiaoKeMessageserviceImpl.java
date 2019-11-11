@@ -39,7 +39,7 @@ public class XiaoKeMessageserviceImpl implements XiaoKeMessageService {
      * 根据主键集合修改纷享逍客通知状态（消息通知成功还是通知失败)
      */
     @Override
-    public Integer updateNoticeStateByListKeys(List<String> ids, Integer state) {
+    public Integer updateNoticeStateByListKeys(List<Long> ids, Integer state) {
         return xiaoKeMessageProjectMapper.updateNoticeStateByListKeys(ids,state);
     }
 }
