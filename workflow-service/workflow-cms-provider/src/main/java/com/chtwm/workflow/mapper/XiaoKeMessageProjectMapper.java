@@ -25,4 +25,8 @@ public interface XiaoKeMessageProjectMapper {
      */
     Integer updateThisMessageNoticeState(@Param("id") Long id,@Param("noticeState") Integer noticeState);
 
+    /**
+     * 根据主键集合更新纷享逍客的消息发送的结果
+     */
+    Integer updateNoticeStateByListKeys(@Param("ids") List<String> ida,@Param("noticeState") Integer noticeState);
 }
