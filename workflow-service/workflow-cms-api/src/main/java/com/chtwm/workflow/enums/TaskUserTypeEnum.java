@@ -14,7 +14,7 @@ public enum TaskUserTypeEnum {
     public Integer code;
     public String value;
 
-    public int getCode() {
+    public Integer getCode() {
         return code;
     }
 
