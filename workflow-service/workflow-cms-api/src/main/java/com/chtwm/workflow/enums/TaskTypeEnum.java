@@ -11,7 +11,7 @@ public enum TaskTypeEnum {
     ASK(2,"问询"),
     REPLY(3,"回复");
 
-    public int code;
+    public Integer code;
     public String value;
 
     public int getCode() {

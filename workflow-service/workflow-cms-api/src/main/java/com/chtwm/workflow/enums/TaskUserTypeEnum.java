@@ -11,7 +11,7 @@ public enum TaskUserTypeEnum {
     EMP(3,"员工"),
     GROUP(4,"组");
 
-    public int code;
+    public Integer code;
     public String value;
 
     public int getCode() {

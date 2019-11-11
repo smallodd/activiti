@@ -11,7 +11,7 @@ public enum TaskXKNoticeEnum {
     SUCCESS(1,"通知成功"),
     FAILURE(2,"通知失败");
 
-    public int code;
+    public Integer code;
     public String value;
 
     public int getCode() {
