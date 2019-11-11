@@ -41,9 +41,9 @@ public class XiaoKeMessageProjectTest extends BaseTest{
 
     @Test
     public void testUpdateNoticeStateByListKeys(){
-        List<String> ids = new ArrayList<>();
-        ids.add("1");
-        ids.add("2");
+        List<Long> ids = new ArrayList<>();
+        ids.add(1l);
+        ids.add(2l);
         Integer result = xiaoKeMessageservice.updateNoticeStateByListKeys(ids,0);
         System.out.println("++++++++++++++++++++++++++++"+result);
     }
