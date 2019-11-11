@@ -19,7 +19,7 @@ import java.util.Date;
 @TableName("t_task_notice")
 public class TTaskNotice implements Serializable {
 
-    @TableId(type = IdType.UUID)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     @TableField(value = "proc_inst_id")
@@ -81,5 +81,7 @@ public class TTaskNotice implements Serializable {
 
     @TableField(value = "is_delete")
     private Integer isDelete;
+    @TableField(value = "user_type")
+    private Integer userType;
 
 }
