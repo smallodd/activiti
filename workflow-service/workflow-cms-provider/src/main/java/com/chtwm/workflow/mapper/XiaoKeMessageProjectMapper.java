@@ -1,6 +1,7 @@
 package com.chtwm.workflow.mapper;
 
 
+import com.chtwm.workflow.entity.TaskModelVO;
 import com.chtwm.workflow.entity.TaskNoticePO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -18,7 +19,7 @@ public interface XiaoKeMessageProjectMapper {
     /**
      * 查询所有未发送以及已发送的信息
      */
-    List<TaskNoticePO> getAllUnSendMessage();
+    List<TaskModelVO> getAllUnSendMessage();
 
     /**
      * 更新纷享逍客的消息发送的结果

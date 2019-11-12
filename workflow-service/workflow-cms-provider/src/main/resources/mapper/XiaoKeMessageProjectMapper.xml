@@ -2,14 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.chtwm.workflow.mapper.XiaoKeMessageProjectMapper" >
 
-    <resultMap id="TaskNoticeMap" type="com.chtwm.workflow.entity.TaskNoticePO">
+    <resultMap id="TaskNoticeMap" type="com.chtwm.workflow.entity.TaskModelVO">
         <id column="id" property="id" />
         <result column="proc_inst_id" property="procInstId" />
         <result column="proc_inst_name" property="procInstName" />
         <result column="app_key" property="appKey" />
         <result column="business_key" property="businessKey" />
         <result column="task_id" property="taskId" />
-        <result column="task_name" property="taskName" />
+        <result column="taskName" property="taskName" />
         <result column="emp_no" property="empNo" />
         <result column="emp_name" property="empName" />
         <result column="type" property="type" />
@@ -25,15 +25,22 @@
         <result column="update_name" property="updateName" />
         <result column="is_delete" property="isDelete" />
         <result column="user_type" property="userType" />
+
+        <result column="examineTitle" property="examineTitle" />
+        <result column="appName" property="appName" />
     </resultMap>
 
     <!--查询所有未通知和通知失败的信息-->
     <select id="getAllUnSendMessage" resultMap="TaskNoticeMap">
-        SELECT id ,proc_inst_id,proc_inst_name,app_key,business_key,task_id,task_name,emp_no,
-            emp_name,TYPE,state,ACTION,message,fxiaoke_notice_state,create_time,create_id,
-            create_name,update_time,update_id,update_name,user_type
-        FROM t_task_notice
-        WHERE is_delete = 0 AND state = 0 AND (fxiaoke_notice_state = 0 OR fxiaoke_notice_state = 2)
+        SELECT a.id ,a.proc_inst_id,a.proc_inst_name,a.app_key,a.task_id,a.emp_no,
+            a.emp_name,a.TYPE,a.state,a.ACTION,a.message,a.fxiaoke_notice_state,a.create_time,a.create_id,
+            a.create_name,a.update_time,a.update_id,a.update_name,a.user_type
+            ,b.name appName ,c.NAME_ examineTitle ,d.NAME_ taskName ,c.BUSINESS_KEY_ business_key
+        FROM t_task_notice a LEFT JOIN t_app b ON b.key = a.app_key
+        LEFT JOIN act_hi_procinst c ON a.proc_inst_id = c.PROC_INST_ID_
+        LEFT JOIN  act_ru_task d ON a.task_id = d.ID_
+
+        WHERE a.is_delete = 0 AND a.state = 0 AND (a.fxiaoke_notice_state = 0 OR a.fxiaoke_notice_state = 2)
     </select>
 
     <!--根据主键更新纷享销客的信息通知状态-->
