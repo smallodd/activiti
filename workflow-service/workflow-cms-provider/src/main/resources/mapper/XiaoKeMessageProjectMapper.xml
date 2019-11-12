@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chtwm.workflow.mapper.XiaoKeMessageProjectMapper" >
+
+    <resultMap id="TaskNoticeMap" type="com.chtwm.workflow.entity.TaskNoticePO">
+        <id column="id" property="id" />
+        <result column="proc_inst_id" property="procInstId" />
+        <result column="proc_inst_name" property="procInstName" />
+        <result column="app_key" property="appKey" />
+        <result column="business_key" property="businessKey" />
+        <result column="task_id" property="taskId" />
+        <result column="task_name" property="taskName" />
+        <result column="emp_no" property="empNo" />
+        <result column="emp_name" property="empName" />
+        <result column="type" property="type" />
+        <result column="state" property="state" />
+        <result column="action" property="action" />
+        <result column="message" property="message" />
+        <result column="fxiaoke_notice_state" property="xkNoticeState" />
+        <result column="create_time" property="createTime" />
+        <result column="create_id" property="createId" />
+        <result column="create_name" property="createName" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_name" property="updateName" />
+        <result column="is_delete" property="isDelete" />
+        <result column="user_type" property="userType" />
+    </resultMap>
+
+    <!--查询所有未通知和通知失败的信息-->
+    <select id="getAllUnSendMessage" resultMap="TaskNoticeMap">
+        SELECT id ,proc_inst_id,proc_inst_name,app_key,business_key,task_id,task_name,emp_no,
+            emp_name,TYPE,state,ACTION,message,fxiaoke_notice_state,create_time,create_id,
+            create_name,update_time,update_id,update_name,user_type
+        FROM t_task_notice
+        WHERE is_delete = 0 AND state = 0 AND (fxiaoke_notice_state = 0 OR fxiaoke_notice_state = 2)
+    </select>
+
+    <!--根据主键更新纷享销客的信息通知状态-->
+    <update id="updateThisMessageNoticeState">
+        UPDATE t_task_notice SET fxiaoke_notice_state = #{noticeState} where id = #{id}
+    </update>
+
+    <!--根据消息主键集合更新纷享销客的信息通知状态-->
+    <update id="updateNoticeStateByListKeys">
+        UPDATE t_task_notice SET
+        fxiaoke_notice_state = #{noticeState}
+          WHERE id in
+            <foreach collection="ids" open="(" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+    </update>
+
+</mapper>

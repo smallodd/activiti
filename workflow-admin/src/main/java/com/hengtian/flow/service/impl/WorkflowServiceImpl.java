@@ -48,6 +48,7 @@ import com.hengtian.flow.model.RemindTask;
 import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.model.TTaskNotice;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.model.TWorkDetail;
 import com.hengtian.flow.model.TaskAgent;
@@ -57,6 +58,7 @@ import com.hengtian.flow.service.RemindTaskService;
 import com.hengtian.flow.service.RuProcinstService;
 import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TRuTaskService;
+import com.hengtian.flow.service.TTaskNoticeService;
 import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.TWorkDetailService;
 import com.hengtian.flow.service.TaskAgentService;
@@ -180,6 +182,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     private TaskAgentService taskAgentService;
 
+    @Autowired
+    private TTaskNoticeService tTaskNoticeService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -556,10 +560,40 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }
         }
 
+        //TODO 创建审批任务，给task设置审批人tUserTask
+//        final ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+//        processInstance.getBusinessKey();
+
         if(CollectionUtils.isNotEmpty(ruTaskList)){
             log.info("审批插入t_ru_task数据：{}", JSONObject.toJSONString(ruTaskList));
+            //TODO 循环ruTaskList  推送审批任务
+            if (!ExprEnum.CREATOR.expr.equals(tUserTask.getCandidateIds())) {
+                List<TTaskNotice> tTaskNoticeList = new ArrayList<>();
+                for(TRuTask tRuTask:ruTaskList){
+                    TTaskNotice tTaskNotice=new TTaskNotice();
+                    tTaskNotice.setAppKey(tRuTask.getAppKey());
+                    tTaskNotice.setTaskId(tRuTask.getTaskId());
+                    tTaskNotice.setProcInstId(tRuTask.getProcInstId());
+                    tTaskNotice.setCreateId(tRuTask.getAssignee());
+                    tTaskNotice.setCreateTime(new Date());
+                    tTaskNotice.setUpdateId(tRuTask.getAssignee());
+                    tTaskNotice.setUpdateTime(new Date());
+                    tTaskNotice.setState(0);
+                    tTaskNotice.setEmpNo(tRuTask.getAssignee());
+                    tTaskNotice.setEmpName(tRuTask.getAssigneeName());
+                    tTaskNotice.setUpdateName(tRuTask.getAssigneeName());
+                    tTaskNotice.setCreateName(tRuTask.getAssigneeName());
+                    tTaskNotice.setUserType(tRuTask.getAssigneeType());
+                    tTaskNotice.setType(0);
+                    tTaskNoticeList.add(tTaskNotice);
+                }
+                if (tTaskNoticeList.size()>0) tTaskNoticeService.insertBatch(tTaskNoticeList);
+
+            }
             return tRuTaskService.insertBatch(ruTaskList);
         }
+
+
         log.info("设置审批人结束");
         return true;
     }
@@ -658,7 +692,19 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 return result;
             }
         }
+        EntityWrapper wrapper1 = new EntityWrapper();
+        TTaskNotice tTaskNotice=new TTaskNotice();
+        if(tUserTask.getAssignType().equals(3)){
 
+            tTaskNotice.setAction(taskParam.getPass()==3?1:taskParam.getPass());
+
+            wrapper1.where("task_id={0}",task.getId()).andNew("emp_no={0}",taskParam.getAssignee());
+
+        }else{
+            tTaskNotice.setAction(taskParam.getPass()==3?1:taskParam.getPass());
+            wrapper1.where("task_id={0}",task.getId()).andNew("emp_no={0}",tUserTask.getCandidateIds());
+        }
+        tTaskNoticeService.update(tTaskNotice,wrapper1);
         identityService.setAuthenticatedUserId(taskParam.getAssignee());
         taskService.addComment(taskParam.getTaskId(), task.getProcessInstanceId(),taskParam.getPass()+"", taskParam.getComment());
         taskService.setVariables(task.getId(), map);
@@ -1479,6 +1525,31 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tRuTask.setAssigneeReal(tRuTask.getAssigneeReal().replace(oldUser, targetUserId));
 
         tRuTaskService.updateById(tRuTask);
+        TTaskNotice tTaskNotice1=new TTaskNotice();
+//        tTaskNotice.setEmpNo(oldUser);
+//        tTaskNotice.setTaskId(taskId);
+        tTaskNotice1.setState(1);
+        EntityWrapper entityWrapper1 = new EntityWrapper();
+        entityWrapper1.where("task_id={0}", taskId).andNew("emp_no={0}",oldUser);
+        tTaskNoticeService.update(tTaskNotice1,entityWrapper1);
+
+        TTaskNotice tTaskNotice=new TTaskNotice();
+        tTaskNotice.setAppKey(tRuTask.getAppKey());
+        tTaskNotice.setTaskId(tRuTask.getTaskId());
+        tTaskNotice.setProcInstId(tRuTask.getProcInstId());
+        tTaskNotice.setCreateId(tRuTask.getAssignee());
+        tTaskNotice.setCreateTime(new Date());
+        tTaskNotice.setUpdateId(tRuTask.getAssignee());
+        tTaskNotice.setUpdateTime(new Date());
+        tTaskNotice.setState(0);
+        tTaskNotice.setEmpNo(targetUserId);
+        tTaskNotice.setUserType(tRuTask.getAssigneeType());
+        tTaskNotice.setType(1);
+        tTaskNotice.setEmpName(tRuTask.getAssigneeName());
+        tTaskNotice.setUpdateName(tRuTask.getAssigneeName());
+        tTaskNotice.setCreateName(tRuTask.getAssigneeName());
+        tTaskNoticeService.insert(tTaskNotice);
+        //TODO 转办任务 消息推送给 targetUserId
         return new Result(true,Constant.SUCCESS, "转办任务成功");
     }
 
@@ -1629,6 +1700,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
         log.info("意见征询成功");
+        // TODO 问询
         return new Result(true,Constant.SUCCESS, "意见征询成功");
     }
 
@@ -1692,6 +1764,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
         log.info("意见征询确认成功");
+        // TODO 意见征询确认
         return new Result(true, Constant.SUCCESS,"意见征询确认成功");
     }
 

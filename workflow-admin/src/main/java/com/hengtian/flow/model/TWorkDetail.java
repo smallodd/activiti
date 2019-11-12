@@ -35,7 +35,13 @@ public class TWorkDetail implements Serializable {
     private String taskId;
 
     /**
-     * 操作人
+     * 操作人编号
+     */
+    @TableField(exist = false)
+    private String operatorCode;
+
+    /**
+     * 操作人姓名
      */
     @TableField(value = "operator")
     private String operator;
@@ -67,6 +73,32 @@ public class TWorkDetail implements Serializable {
      */
     @TableField(value = "aprrove_info")
     private String aprroveInfo;
+
+
+    @Override
+    public String toString() {
+        return "TWorkDetail{" +
+                "id=" + id +
+                ", processInstanceId='" + processInstanceId + '\'' +
+                ", taskId='" + taskId + '\'' +
+                ", operatorCode='" + operatorCode + '\'' +
+                ", operator='" + operator + '\'' +
+                ", detail='" + detail + '\'' +
+                ", createTime=" + createTime +
+                ", businessKey='" + businessKey + '\'' +
+                ", operateAction='" + operateAction + '\'' +
+                ", operTaskKey='" + operTaskKey + '\'' +
+                ", aprroveInfo='" + aprroveInfo + '\'' +
+                '}';
+    }
+
+    public String getOperatorCode() {
+        return operatorCode;
+    }
+
+    public void setOperatorCode(String operatorCode) {
+        this.operatorCode = operatorCode;
+    }
 
     public String getOperateAction() {
         return operateAction;
@@ -148,15 +180,4 @@ public class TWorkDetail implements Serializable {
         this.createTime = createTime;
     }
 
-    @Override
-    public String toString() {
-        return "TWorkDetail{" +
-                "id=" + id +
-                ", processInstanceId='" + processInstanceId + '\'' +
-                ", taskId='" + taskId + '\'' +
-                ", operator='" + operator + '\'' +
-                ", detail='" + detail + '\'' +
-                ", createTime=" + createTime +
-                '}';
-    }
 }
