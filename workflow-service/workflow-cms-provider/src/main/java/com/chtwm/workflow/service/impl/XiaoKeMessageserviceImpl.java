@@ -2,6 +2,7 @@ package com.chtwm.workflow.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
 
+import com.chtwm.workflow.entity.TaskModelVO;
 import com.chtwm.workflow.entity.TaskNoticePO;
 import com.chtwm.workflow.mapper.XiaoKeMessageProjectMapper;
 import com.chtwm.workflow.service.XiaoKeMessageService;
@@ -23,7 +24,7 @@ public class XiaoKeMessageserviceImpl implements XiaoKeMessageService {
      * 查询所有未发送以及发送失败的信息
      */
     @Override
-    public List<TaskNoticePO> getNeedSendTaskNotice() {
+    public List<TaskModelVO> getNeedSendTaskNotice() {
         return xiaoKeMessageProjectMapper.getAllUnSendMessage();
     }
 

@@ -1,6 +1,7 @@
 package com.chtwm.workflow.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.chtwm.workflow.entity.TaskModelVO;
 import com.chtwm.workflow.entity.TaskNoticePO;
 import com.chtwm.workflow.service.impl.XiaoKeMessageserviceImpl;
 import javafx.application.Application;
@@ -27,9 +28,9 @@ public class XiaoKeMessageProjectTest extends BaseTest{
 
     @Test
     public void testGetNeedSendTaskNotice(){
-        List<TaskNoticePO> list = xiaoKeMessageservice.getNeedSendTaskNotice();
-        for (TaskNoticePO taskNoticePO : list) {
-            System.out.println("++"+taskNoticePO.toString());
+        List<TaskModelVO> list = xiaoKeMessageservice.getNeedSendTaskNotice();
+        for (TaskModelVO taskModelVO : list) {
+            System.out.println("++"+taskModelVO.toString());
         }
     }
 
@@ -44,6 +45,7 @@ public class XiaoKeMessageProjectTest extends BaseTest{
         List<Long> ids = new ArrayList<>();
         ids.add(1l);
         ids.add(2l);
+        System.out.println(ids.toString());
         Integer result = xiaoKeMessageservice.updateNoticeStateByListKeys(ids,0);
         System.out.println("++++++++++++++++++++++++++++"+result);
     }
