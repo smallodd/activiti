@@ -451,28 +451,14 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             }else {
                 log.info("通过工作流平台设置审批人");
                 String assignees = tUserTask.getCandidateIds();
-                String assigneeNames = tUserTask.getCandidateName();
                 String[] assigneeArray = assignees.split(",");
-                Set set = new HashSet(Arrays.asList(assigneeArray));
-                assigneeArray = (String[]) set.toArray(new String[0]);
-                String[] assigneeNameArray=null;
-
-                if(StringUtils.isNotBlank(assigneeNames)) {
-                    assigneeNameArray = assigneeNames.split(",");
-                    set = new HashSet(Arrays.asList(assigneeNameArray));
-                    assigneeNameArray = (String[]) set.toArray(new String[0]);
-                }
 
                 for (int i=0;i<assigneeArray.length;i++) {
                     assignee = assigneeArray[i];
                     TRuTask tRuTask = new TRuTask();
                     tRuTask.setTaskId(task.getId());
                     tRuTask.setAssignee(assignee);
-                    if(assigneeNameArray==null) {
-                        tRuTask.setAssigneeName("");
-                    }else{
-                        tRuTask.setAssigneeName(assigneeNameArray[i]);
-                    }
+                    tRuTask.setAssigneeName(getUserName(assigneeArray[i]));
                     EntityWrapper entityWrapper = new EntityWrapper();
                     entityWrapper.where("task_id={0}", task.getId()).andNew("assignee={0}", assignee);
                     TRuTask tRu = tRuTaskService.selectOne(entityWrapper);
