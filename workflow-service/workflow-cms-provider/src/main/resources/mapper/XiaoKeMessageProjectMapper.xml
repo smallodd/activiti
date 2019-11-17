@@ -40,7 +40,8 @@
         LEFT JOIN act_hi_procinst c ON a.proc_inst_id = c.PROC_INST_ID_
         LEFT JOIN  act_ru_task d ON a.task_id = d.ID_
 
-        WHERE a.is_delete = 0 AND a.state = 0 AND (a.fxiaoke_notice_state = 0 OR a.fxiaoke_notice_state = 2)
+        WHERE a.is_delete = 0 AND a.state = 0
+        AND (a.fxiaoke_notice_state = 0 OR a.fxiaoke_notice_state = 2 OR a.fxiaoke_notice_state = 3 OR a.fxiaoke_notice_state = 4)
     </select>
 
     <!--根据主键更新纷享销客的信息通知状态-->
