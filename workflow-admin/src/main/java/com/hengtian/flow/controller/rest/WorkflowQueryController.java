@@ -43,7 +43,6 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
@@ -51,7 +50,6 @@ import org.activiti.engine.impl.persistence.entity.CommentEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.spring.ProcessEngineFactoryBean;
@@ -79,6 +77,7 @@ import java.util.Set;
 
 /**
  * 所有列表查询都放这里
+ *
  * @author mayunliang@chtwm.com
  * date 2018/4/17 9:38
  */
@@ -135,8 +134,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     /**
      * 通过业务主键查询流程实例
      *
-     * @param appKey 系统应用KEY
-     * @param businessKey 业务主键
+     * @param appKey          系统应用KEY
+     * @param businessKey     业务主键
      * @param suspensionState 流程状态：1-激活；2-挂起
      * @return
      * @author houjinrong@chtwm.com
@@ -203,23 +202,23 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/task/open", method = RequestMethod.POST)
     public Object openTaskList(@ApiParam(value = "查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         log.info("查询待办任务列表开始，入参{}", taskQueryParam);
-        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
+        if (StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
 
         //检验代理人信息
-        if(StringUtils.isNotBlank(taskQueryParam.getAssigneeAgent())){
-            if(StringUtils.isNotBlank(taskQueryParam.getAssigneeAgentSecret())){
-                if(!workflowService.getAssigneeSecret(taskQueryParam.getAssignee(), taskQueryParam.getAssigneeAgent()).equals(taskQueryParam.getAssigneeAgentSecret())){
+        if (StringUtils.isNotBlank(taskQueryParam.getAssigneeAgent())) {
+            if (StringUtils.isNotBlank(taskQueryParam.getAssigneeAgentSecret())) {
+                if (!workflowService.getAssigneeSecret(taskQueryParam.getAssignee(), taskQueryParam.getAssigneeAgent()).equals(taskQueryParam.getAssigneeAgentSecret())) {
                     return renderError("代理人信息不合法，没有权限查询待办任务列表。");
                 }
-            }else{
+            } else {
                 return renderError("代理人信息不合法，没有权限查询待办任务列表。");
             }
         }
 
-        if(StringUtils.isNotBlank(taskQueryParam.getTaskState())){
-            if(!(TaskStatusEnum.UNFINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState()) && !(TaskStatusEnum.UNFINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())){
+        if (StringUtils.isNotBlank(taskQueryParam.getTaskState())) {
+            if (!(TaskStatusEnum.UNFINISHED_AGREE.status + "").equals(taskQueryParam.getTaskState()) && !(TaskStatusEnum.UNFINISHED_REFUSE.status + "").equals(taskQueryParam.getTaskState())) {
                 log.info("审批人状态不正确，重置为空");
                 taskQueryParam.setTaskState("");
             }
@@ -247,19 +246,19 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/task/close", method = RequestMethod.POST)
     public Object closeTaskList(@ApiParam(value = "查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         log.info("已办任务列表，入参{}", taskQueryParam);
-        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
+        if (StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
-        if(StringUtils.isNotBlank(taskQueryParam.getTaskState())){
-            if((TaskStatusEnum.FINISHED_AGREE.status+"").equals(taskQueryParam.getTaskState())){
+        if (StringUtils.isNotBlank(taskQueryParam.getTaskState())) {
+            if ((TaskStatusEnum.FINISHED_AGREE.status + "").equals(taskQueryParam.getTaskState())) {
                 taskQueryParam.setTaskState(TaskStatusEnum.FINISHED_AGREE.desc);
-            }else if((TaskStatusEnum.FINISHED_REFUSE.status+"").equals(taskQueryParam.getTaskState())){
+            } else if ((TaskStatusEnum.FINISHED_REFUSE.status + "").equals(taskQueryParam.getTaskState())) {
                 taskQueryParam.setTaskState(TaskStatusEnum.FINISHED_REFUSE.desc);
-            }else{
+            } else {
                 log.info("审批人状态不正确，重置为空");
                 taskQueryParam.setTaskState("");
             }
-        }else {
+        } else {
             log.info("审批人状态不正确，重置为空");
             taskQueryParam.setTaskState("");
         }
@@ -281,11 +280,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
      */
     @ResponseBody
     @SysLog("待处理任务列表")
-    @ApiOperation(httpMethod = "POST", value = "待处理任务列表",hidden = true)
+    @ApiOperation(httpMethod = "POST", value = "待处理任务列表", hidden = true)
     @RequestMapping(value = "/rest/task/active", method = RequestMethod.POST)
     public Object activeTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         log.info("待处理任务列表，入参{}", taskQueryParam);
-        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
+        if (StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
 
@@ -313,7 +312,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/task/claim", method = RequestMethod.POST)
     public Object claimTaskList(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
         log.info("待签收任务列表，入参{}", taskQueryParam);
-        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
+        if (StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         PageInfo pageInfo = new PageInfo(taskQueryParam.getPage(), taskQueryParam.getRows());
@@ -339,7 +338,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object enquireTaskList(@ApiParam(value = "查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         log.info("意见征询任务列表，入参{}", JSONObject.toJSONString(taskEnquireParam));
         if (StringUtils.isBlank(taskEnquireParam.getCreateId())) {
-            return new Result(false, Constant.PARAM_ERROR,"createId不能为空");
+            return new Result(false, Constant.PARAM_ERROR, "createId不能为空");
         }
         return renderSuccess(tAskTaskService.enquireTaskList(taskEnquireParam));
     }
@@ -358,7 +357,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object enquiredTaskList(@ApiParam(value = "查询条件", name = "taskEnquireParam", required = true) @ModelAttribute AskTaskParam taskEnquireParam) {
         log.info("被意见征询任务列表，入参{}", JSONObject.toJSONString(taskEnquireParam));
         if (StringUtils.isBlank(taskEnquireParam.getAskUserId())) {
-            return new Result(false,Constant.PARAM_ERROR, "askUserId不能为空");
+            return new Result(false, Constant.PARAM_ERROR, "askUserId不能为空");
         }
         return renderSuccess(tAskTaskService.enquiredTaskList(taskEnquireParam));
     }
@@ -384,7 +383,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
      * 操作流程详细信息
      *
      * @param processInstanceId 流程实例ID
-     * @param businessKey 业务主键
+     * @param businessKey       业务主键
      * @return
      */
     @ResponseBody
@@ -393,13 +392,14 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/process/operate/detail", method = RequestMethod.POST)
     public Object operateDetailInfo(@ApiParam(value = "流程实例ID", name = "processInstanceId") @RequestParam(required = false) String processInstanceId,
                                     @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
-        return renderSuccess(tWorkDetailService.operateDetailInfo(processInstanceId, null,businessKey));
+        return renderSuccess(tWorkDetailService.operateDetailInfo(processInstanceId, null, businessKey));
     }
 
     /**
      * 流程实例详情
+     *
      * @param processInstanceId 流程实例ID
-     * @param businessKey 业务主键
+     * @param businessKey       业务主键
      * @return
      * @author houjinrong@chtwm.com
      * date 2018/6/25 17:48
@@ -412,21 +412,21 @@ public class WorkflowQueryController extends WorkflowBaseController {
                                 @ApiParam(value = "流程实例ID", name = "processInstanceId") @RequestParam(required = false) String processInstanceId,
                                 @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam String businessKey) {
         log.info("入参appKey：{} processInstanceId：{} businessKey：{}", appKey, processInstanceId, businessKey);
-        if(appKey == null){
+        if (appKey == null) {
             return renderError("参数错误：appKey为空");
         }
         HistoricProcessInstance historicProcessInstance = null;
-        if(StringUtils.isNotBlank(processInstanceId)){
+        if (StringUtils.isNotBlank(processInstanceId)) {
             historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-            if(historicProcessInstance == null){
-                return renderError("流程实例ID【"+processInstanceId+"】无对应的流程实例");
+            if (historicProcessInstance == null) {
+                return renderError("流程实例ID【" + processInstanceId + "】无对应的流程实例");
             }
-        }else if(StringUtils.isNotBlank(businessKey)){
+        } else if (StringUtils.isNotBlank(businessKey)) {
             historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceBusinessKey(businessKey).variableValueEquals("appKey", appKey).singleResult();
-            if(historicProcessInstance == null){
-                return renderError("业务主键【"+businessKey+"】无对应的流程实例");
+            if (historicProcessInstance == null) {
+                return renderError("业务主键【" + businessKey + "】无对应的流程实例");
             }
-        }else{
+        } else {
             return renderError("参数异常");
         }
 
@@ -436,9 +436,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
         processInstanceId = historicProcessInstance.getId();
         //获取当前节点
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        if(CollectionUtils.isNotEmpty(taskList)){
+        if (CollectionUtils.isNotEmpty(taskList)) {
             List<TaskNodeVo> taskNodeVoList = Lists.newArrayList();
-            for(Task task : taskList){
+            for (Task task : taskList) {
                 TaskNodeVo taskNodeVo = new TaskNodeVo();
                 taskNodeVo.setTaskId(task.getId());
                 taskNodeVo.setTaskDefinitionKey(task.getTaskDefinitionKey());
@@ -453,7 +453,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 流程定义列表
-     * @param appKey 应用系统KEY
+     *
+     * @param appKey    应用系统KEY
      * @param nameOrKey 流程定义KEY/流程定义名称
      * @return
      * @author houjinrong@chtwm.com
@@ -464,13 +465,13 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "流程定义列表")
     @RequestMapping(value = "/rest/process/def/list", method = RequestMethod.POST)
     public Object queryProcessDefinitionList(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
-                               @ApiParam(value = "流程定义KEY", name = "nameOrKey") @RequestParam(required = false) String nameOrKey,
-                               @ApiParam(value = "页码", name = "page") @RequestParam Integer page,
-                               @ApiParam(value = "每页条数", name = "rows") @RequestParam Integer rows){
+                                             @ApiParam(value = "流程定义KEY", name = "nameOrKey") @RequestParam(required = false) String nameOrKey,
+                                             @ApiParam(value = "页码", name = "page") @RequestParam Integer page,
+                                             @ApiParam(value = "每页条数", name = "rows") @RequestParam Integer rows) {
         log.info("appKey{}；nameOrKey{}；page{}；rows{}", appKey, nameOrKey, page, rows);
         //参数统一处理
-        page = page == null?1:page;
-        rows = rows == null?10:rows;
+        page = page == null ? 1 : page;
+        rows = rows == null ? 10 : rows;
 
         PageInfo pageInfo = workflowService.queryProcessDefinitionList(appKey, nameOrKey, page, rows);
 
@@ -480,7 +481,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     /**
      * 流程定义详情
      *
-     * @param appKey 应用系统key
+     * @param appKey               应用系统key
      * @param processDefinitionKey 流程定义主键
      * @return
      */
@@ -491,11 +492,11 @@ public class WorkflowQueryController extends WorkflowBaseController {
     public Object processDefDetail(@ApiParam(value = "应用系统KEY", name = "appKey") @RequestParam Integer appKey,
                                    @ApiParam(value = "流程定义key", name = "processDefinitionKey") @RequestParam String processDefinitionKey) {
         log.info("appKey{} processDefinitionKey{}", appKey, processDefinitionKey);
-        if(appKey == null){
+        if (appKey == null) {
             return renderError("参数错误：appKey为空");
         }
         ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(processDefinitionKey).latestVersion().singleResult();
-        if(processDefinition == null){
+        if (processDefinition == null) {
             return renderError("没找到对应的流程定义");
         }
 
@@ -528,8 +529,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
         try {
             //获取历史流程实例
             HistoricProcessInstance processInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-            if(processInstance == null){
-                log.info("流程实例ID【"+processInstanceId+"】对应的流程实例不存在");
+            if (processInstance == null) {
+                log.info("流程实例ID【" + processInstanceId + "】对应的流程实例不存在");
                 return;
             }
             //获取流程图
@@ -554,7 +555,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
             }
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
             List<String> taskDefinitionKeyList = Lists.newArrayList();
-            for(Task task : taskList){
+            for (Task task : taskList) {
                 taskDefinitionKeyList.add(task.getTaskDefinitionKey());
             }
             //生成流图片  5.18.0
@@ -602,9 +603,9 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         List<Comment> commentList = taskService.getProcessInstanceComments(processInstanceId);
-        List<CommentEntity> list=new ArrayList<CommentEntity>();
-        for(Comment comment:commentList){
-            list.add((CommentEntity)comment);
+        List<CommentEntity> list = new ArrayList<CommentEntity>();
+        for (Comment comment : commentList) {
+            list.add((CommentEntity) comment);
         }
         return renderSuccess(list);
     }
@@ -627,13 +628,14 @@ public class WorkflowQueryController extends WorkflowBaseController {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
 
-        List<Comment> commentList = taskService.getTaskComments(taskId,"1");
-        commentList.addAll(taskService.getTaskComments(taskId,"2"));
+        List<Comment> commentList = taskService.getTaskComments(taskId, "1");
+        commentList.addAll(taskService.getTaskComments(taskId, "2"));
         return renderSuccess(commentList);
     }
 
     /**
      * 获取父级任务节点
+     *
      * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
@@ -647,23 +649,23 @@ public class WorkflowQueryController extends WorkflowBaseController {
                                  @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId,
                                  @ApiParam(value = "是否递归获取父级节点", name = "isAll", required = true) @RequestParam(defaultValue = "1") Integer isAll) {
         log.info("----------------查询获取父级任务节点开始,入参 taskId：{}----------------", taskId);
-        return workflowService.getBeforeNodes(taskId, userId, isAll != 0,false);
+        return workflowService.getBeforeNodes(taskId, userId, isAll != 0, false);
     }
+
     /**
      * 获取可意见征询任务节点
-     * @param taskId 任务ID
-     * @return
      *
-     * date 2018/5/29 14:38
+     * @param taskId 任务ID
+     * @return date 2018/5/29 14:38
      */
     @ResponseBody
     @SysLog("获取可意见征询任务节点")
     @ApiOperation(httpMethod = "POST", value = "获取可意见征询任务节点")
     @RequestMapping(value = "/rest/askNodes", method = RequestMethod.POST)
     public Object getAskNodes(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
-                                 @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId) {
+                              @ApiParam(value = "操作人ID", name = "userId", required = true) @RequestParam String userId) {
         log.info("----------------获取可意见征询任务节点,入参 taskId：{}----------------", taskId);
-        return workflowService.getBeforeNodes(taskId, userId, true,true);
+        return workflowService.getBeforeNodes(taskId, userId, true, true);
     }
 
     /**
@@ -679,34 +681,35 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "待处理任务总数")
     @RequestMapping(value = "/rest/task/active/count", method = RequestMethod.POST)
     public Object activeTaskCount(@ApiParam(value = "任务查询条件", name = "taskQueryParam", required = true) @ModelAttribute TaskQueryParam taskQueryParam) {
-        log.info("待处理任务总数查询开始，方法【activeTaskCount】，入参：{}",JSONObject.toJSONString(taskQueryParam));
-        if(StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null){
+        log.info("待处理任务总数查询开始，方法【activeTaskCount】，入参：{}", JSONObject.toJSONString(taskQueryParam));
+        if (StringUtils.isBlank(taskQueryParam.getAssignee()) || taskQueryParam.getAppKey() == null) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
 
-        Map<String,Object> paraMap = Maps.newHashMap();
+        Map<String, Object> paraMap = Maps.newHashMap();
         BeanMap beanMap = new BeanMap(taskQueryParam);
         paraMap.putAll(beanMap);
 
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(taskQueryParam.getAppKey(), taskQueryParam.getAssignee());
         String roleId = null;
 
-        for(RbacRole role : roles){
-            roleId = roleId == null?role.getId()+"":roleId+","+role.getId();
+        for (RbacRole role : roles) {
+            roleId = roleId == null ? role.getId() + "" : roleId + "," + role.getId();
         }
 
-        if(StringUtils.isNotBlank(roleId)){
+        if (StringUtils.isNotBlank(roleId)) {
             paraMap.put("roleId", roleId);
         }
         Long count = workflowService.activeTaskCount(paraMap);
-        log.info("查询待办任务总数结束，出参：{}",count);
+        log.info("查询待办任务总数结束，出参：{}", count);
         return renderSuccess(count);
     }
 
     /**
      * 查询用户某个任务是否审批过
-     * @param businessKey  业务主键
-     * @param appKey   appKey
+     *
+     * @param businessKey 业务主键
+     * @param appKey      appKey
      * @return
      */
     @SysLog("查询用户是否已经审批过某个任务")
@@ -714,33 +717,33 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/task/checkUserApproved", method = RequestMethod.POST)
     @ResponseBody
     public Object checkUserApproved(
-                                    @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam("businessKey")String businessKey,
-                                    @ApiParam(value = "系统键值", name = "appKey",  required = true) @RequestParam("appKey")Integer appKey){
+            @ApiParam(value = "业务主键", name = "businessKey", required = true) @RequestParam("businessKey") String businessKey,
+            @ApiParam(value = "系统键值", name = "appKey", required = true) @RequestParam("appKey") Integer appKey) {
         log.info("查询用户是否已经审批过某个任务,入参：businessKey-{},appKey-{}", businessKey, appKey);
-        Result result=new Result();
-        if(StringUtils.isBlank(businessKey)||appKey==null){
+        Result result = new Result();
+        if (StringUtils.isBlank(businessKey) || appKey == null) {
 
             result.setSuccess(false);
             result.setCode(Constant.PARAM_ERROR);
             result.setMsg("参数错误！");
             return result;
         }
-        List<HistoricTaskInstance> list=   historyService.createHistoricTaskInstanceQuery().processInstanceBusinessKey(businessKey).processVariableValueEquals("appKey", appKey).orderByHistoricTaskInstanceEndTime().asc().list();
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceBusinessKey(businessKey).processVariableValueEquals("appKey", appKey).orderByHistoricTaskInstanceEndTime().asc().list();
 
-        if(list!=null&&list.size()>0){
-            HistoricTaskInstance historicTaskInstance=list.get(0);
-            if(historicTaskInstance.getEndTime()!=null){
+        if (list != null && list.size() > 0) {
+            HistoricTaskInstance historicTaskInstance = list.get(0);
+            if (historicTaskInstance.getEndTime() != null) {
                 result.setMsg("任务已经审批结束");
                 result.setSuccess(true);
                 result.setCode(Constant.SUCCESS);
                 return result;
-            }else{
+            } else {
                 result.setMsg("任务未审批结束");
                 result.setSuccess(false);
                 result.setCode(Constant.SUCCESS);
                 return result;
             }
-        }else{
+        } else {
             result.setMsg("任务信息不存在");
             result.setSuccess(false);
             result.setCode(Constant.TASK_NOT_EXIT);
@@ -750,6 +753,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 任务详情
+     *
      * @param userId 用户ID
      * @param taskId 任务ID
      * @return
@@ -761,8 +765,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "任务详情")
     @RequestMapping(value = "/rest/task/detail", method = RequestMethod.POST)
     public Object taskDetail(@ApiParam(value = "用户ID", name = "userId", required = true) @RequestParam String userId,
-                             @ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId){
-        if(StringUtils.isBlank(userId) || StringUtils.isBlank(taskId)){
+                             @ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId) {
+        if (StringUtils.isBlank(userId) || StringUtils.isBlank(taskId)) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         return workflowService.taskDetail(userId, taskId);
@@ -770,6 +774,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 运行中的任务获取下步节点审批人
+     *
      * @param userId 用户ID
      * @param taskId 任务ID
      * @return
@@ -781,12 +786,12 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "下步节点审批人")
     @RequestMapping(value = "/rest/task/assignee/next", method = RequestMethod.POST)
     public Object getNextAssignee(@ApiParam(value = "用户ID", name = "userId", required = true) @RequestParam String userId,
-                                  @ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId){
-        if(StringUtils.isBlank(userId) || StringUtils.isBlank(taskId)){
+                                  @ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId) {
+        if (StringUtils.isBlank(userId) || StringUtils.isBlank(taskId)) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(task == null){
+        if (task == null) {
             return renderError("taskId无效或任务已完成");
         }
 
@@ -799,6 +804,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 运行中的任务获取下步节点审批人
+     *
      * @param processInstanceId 流程实例ID
      * @return
      * @author houjinrong@chtwm.com
@@ -808,28 +814,31 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("下步节点审批人")
     @ApiOperation(httpMethod = "POST", value = "下步节点审批人")
     @RequestMapping(value = "/rest/task/assignee/next/{processInstanceId}", method = RequestMethod.POST)
-    public Object getNextAssigneeBy(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @PathVariable("processInstanceId") String processInstanceId){
+    public Object getNextAssigneeBy(@ApiParam(value = "流程实例ID", name = "processInstanceId", required = true) @PathVariable("processInstanceId") String processInstanceId) {
         log.info("通过流程实例查询当前节点的下部节点审批人信息，入参{}", processInstanceId);
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        if(null == processInstance){
+        if (null == processInstance) {
             log.info("未找到运行的流程实例{}", processInstanceId);
             return renderError("未找到运行的流程实例");
         }
 
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        if(CollectionUtils.isEmpty(taskList)){
+        if (CollectionUtils.isEmpty(taskList)) {
             log.info("流程实例{}当前无未审批任务", processInstanceId);
             return renderError("流程实例当前无未审批任务");
         }
 
         List<AssigneeVo> nextAssignees = Lists.newArrayList();
-        Map<String,Integer> map = new HashMap();
-        for(Task t : taskList){
+        Map<String, Integer> map = new HashMap();
+        for (Task t : taskList) {
             List<TaskNodeVo> nextNodes = workflowService.getNextNodeByTask(processInstance, t);
-            if(CollectionUtils.isNotEmpty(nextNodes)){
-                for(TaskNodeVo tn : nextNodes){
+            if (CollectionUtils.isNotEmpty(nextNodes)) {
+                for (TaskNodeVo tn : nextNodes) {
                     List<AssigneeVo> assignee = tn.getAssignee();
-                    assignee.stream().filter(a->!map.containsKey(a.getUserCode())).forEach(a->{nextAssignees.add(a);map.put(a.getUserCode(),1);});
+                    assignee.stream().filter(a -> !map.containsKey(a.getUserCode())).forEach(a -> {
+                        nextAssignees.add(a);
+                        map.put(a.getUserCode(), 1);
+                    });
                 }
             }
         }
@@ -839,6 +848,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
 
     /**
      * 通过任务ID获取任务节点审批人
+     *
      * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
@@ -848,12 +858,12 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("任务详情")
     @ApiOperation(httpMethod = "POST", value = "节点审批人")
     @RequestMapping(value = "/rest/task/assignee", method = RequestMethod.POST)
-    public Object getTaskAssignee(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId){
-        if(StringUtils.isBlank(taskId)){
+    public Object getTaskAssignee(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId) {
+        if (StringUtils.isBlank(taskId)) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
-        if(task == null){
+        if (task == null) {
             return renderError("taskId无效或任务已完成");
         }
 
@@ -864,8 +874,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("获取流程实例中自定义参数")
     @ApiOperation(httpMethod = "POST", value = "获取流程实例中自定义参数")
     @RequestMapping(value = "/rest/getVariables", method = RequestMethod.POST)
-    public Object getVariables(String processId){
-        Map map=workflowService.getVariables(processId);
+    public Object getVariables(String processId) {
+        Map map = workflowService.getVariables(processId);
 
         return renderSuccess(map);
     }
@@ -874,14 +884,15 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("获取某个用户某个任务的审批意见")
     @ApiOperation(httpMethod = "POST", value = "获取某个用户某个任务的审批意见")
     @RequestMapping(value = "/rest/comment", method = RequestMethod.POST)
-    public Object getComments(String taskId,String userId){
-       CommentEntity comment= (CommentEntity) workflowService.getComments(taskId,userId);
+    public Object getComments(String taskId, String userId) {
+        CommentEntity comment = (CommentEntity) workflowService.getComments(taskId, userId);
 
-       return renderSuccess(comment);
+        return renderSuccess(comment);
     }
 
     /**
      * 仅仅营销活动调用此接口
+     *
      * @param processInstanceId
      * @return
      */
@@ -889,43 +900,44 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @SysLog("获取最后审批人")
     @ApiOperation(httpMethod = "POST", value = "获取最后审批人")
     @RequestMapping(value = "/rest/getLastApprover", method = RequestMethod.POST)
-    public Object getLastApprover(String processInstanceId){
-        List <HistoricTaskInstance> list=historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().desc().list();
-        if(CollectionUtils.isEmpty(list)){
+    public Object getLastApprover(String processInstanceId) {
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().desc().list();
+        if (CollectionUtils.isEmpty(list)) {
             log.info("历史纪录为空");
             return renderError("历史纪录为空");
         }
-        List<Task> taskList=taskService.createTaskQuery().processInstanceId(processInstanceId).list();
-        JSONObject jsonObject=new JSONObject();
-        jsonObject.put("createTime",list.get(list.size()-1).getStartTime());
-        if(taskList==null||taskList.size()==0){
-            jsonObject.put("lastApprover",list.get(0).getAssignee().replace("_Y",""));
-            jsonObject.put("complete",1);
-            jsonObject.put("taskId",list.get(0).getId());
-        }else{
-            ProcessInstance processInstance=runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-            String assignee="";
-            String taskId="";
-            for(Task task:taskList){
-                EntityWrapper entityWrapper=new EntityWrapper();
-                entityWrapper.where("proc_def_key={0}",processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}",task.getTaskDefinitionKey()).andNew("version_={0}",processInstance.getProcessDefinitionVersion());
-                TUserTask tUserTask=tUserTaskService.selectOne(entityWrapper);
-                assignee+=tUserTask.getCandidateIds()+",";
-                taskId+=task.getId()+",";
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).list();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("createTime", list.get(list.size() - 1).getStartTime());
+        if (taskList == null || taskList.size() == 0) {
+            jsonObject.put("lastApprover", list.get(0).getAssignee().replace("_Y", ""));
+            jsonObject.put("complete", 1);
+            jsonObject.put("taskId", list.get(0).getId());
+        } else {
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+            String assignee = "";
+            String taskId = "";
+            for (Task task : taskList) {
+                EntityWrapper entityWrapper = new EntityWrapper();
+                entityWrapper.where("proc_def_key={0}", processInstance.getProcessDefinitionKey()).andNew("task_def_key={0}", task.getTaskDefinitionKey()).andNew("version_={0}", processInstance.getProcessDefinitionVersion());
+                TUserTask tUserTask = tUserTaskService.selectOne(entityWrapper);
+                assignee += tUserTask.getCandidateIds() + ",";
+                taskId += task.getId() + ",";
 
             }
-            jsonObject.put("lastApprover",assignee.replace("_Y",""));
-            jsonObject.put("complete",0);
-            jsonObject.put("taskId",taskId);
+            jsonObject.put("lastApprover", assignee.replace("_Y", ""));
+            jsonObject.put("complete", 0);
+            jsonObject.put("taskId", taskId);
 
         }
-        Map map=workflowService.getVariables(processInstanceId);
+        Map map = workflowService.getVariables(processInstanceId);
         map.putAll(jsonObject);
         return renderSuccess(map);
     }
 
     /**
      * 任务节点详情
+     *
      * @param taskId 任务ID
      * @return
      * @author houjinrong@chtwm.com
@@ -936,10 +948,10 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @ApiOperation(httpMethod = "POST", value = "任务节点详情")
     @RequestMapping(value = "/rest/task/node", method = RequestMethod.POST)
     public Object getTaskNodeInfo(@ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId,
-                                  @ApiParam(value = "系统应用KEY", name = "appKey") @RequestParam(required = false) Integer appKey){
+                                  @ApiParam(value = "系统应用KEY", name = "appKey") @RequestParam(required = false) Integer appKey) {
         HistoricTaskInstance hisTask = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
-        if(hisTask == null){
-            return renderError("【"+taskId+"】任务不存在");
+        if (hisTask == null) {
+            return renderError("【" + taskId + "】任务不存在");
         }
 
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(hisTask.getProcessInstanceId()).singleResult();
@@ -954,25 +966,25 @@ public class WorkflowQueryController extends WorkflowBaseController {
         List<AssigneeVo> taskAssignee = workflowService.getTaskAssignee(hisTask, appKey);
         taskNodeVo.setAssignee(taskAssignee);
 
-        if(CollectionUtils.isNotEmpty(taskAssignee)){
+        if (CollectionUtils.isNotEmpty(taskAssignee)) {
             Set<String> assigneeSet = Sets.newHashSet();
-            for(AssigneeVo assigneeVo : taskAssignee){
+            for (AssigneeVo assigneeVo : taskAssignee) {
                 assigneeSet.add(assigneeVo.getUserCode());
             }
             taskNodeVo.setAssigneeStr(StringUtils.join(assigneeSet, ","));
         }
-        taskNodeVo.setIsFirst(workflowService.isFirstNode(hisTask)?1:0);
+        taskNodeVo.setIsFirst(workflowService.isFirstNode(hisTask) ? 1 : 0);
         //获取当前任务
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(hisTask.getProcessInstanceId()).list();
-        if(CollectionUtils.isNotEmpty(taskList)){
+        if (CollectionUtils.isNotEmpty(taskList)) {
             List<TaskResultInfo> taskResultInfoList = Lists.newArrayList();
-            for(Task t : taskList){
+            for (Task t : taskList) {
                 TaskResultInfo taskResultInfo = new TaskResultInfo();
                 taskResultInfo.setTaskId(t.getId());
                 taskResultInfo.setTaskName(t.getName());
                 List<AssigneeVo> taskAssignees = workflowService.getTaskAssignee(t, appKey);
                 Set<String> assigneeSet = Sets.newHashSet();
-                for(AssigneeVo assigneeVo : taskAssignees){
+                for (AssigneeVo assigneeVo : taskAssignees) {
                     assigneeSet.add(assigneeVo.getUserCode());
                 }
                 taskResultInfo.setAssignee(assigneeSet);
