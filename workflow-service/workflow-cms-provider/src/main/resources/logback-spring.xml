@@ -11,7 +11,7 @@
     <!--用来设置上下文名称，每个logger都关联到logger上下文，默认上下文名称为default。但可以使用<contextName>设置成其他名字，用于区分不同应用程序的记录。一旦设置，不能修改-->
     <contextName>logback</contextName>
     <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径，运维规定使用/data/WEBLOG/项目名字，项目名称不能重复-->
-    <springProperty scope="context" name="log.path" source="log.path" defaultValue="/data/WEBLOG"/>
+    <springProperty scope="context" name="log.path" source="log.path" defaultValue="/data/WEBLOG/${app.name}"/>
     <property name="log.file" value="${log.path}/${app.name}" />
     <!--格式化输出：%d:表示日期    %thread:表示线程名     %-5level:级别从左显示5个字符宽度  %msg:日志消息    %n:是换行符-->
     <property name="normal-pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %X{tid} [%thread] %-5level %logger{50}:%L - %msg%n"/>
