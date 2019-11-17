@@ -198,7 +198,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
         try {
             Task task = taskService.createTaskQuery().taskId(taskParam.getTaskId()).singleResult();
             if (task == null) {
-                return renderError("任务不存在！", Constant.TASK_NOT_EXIT);
+                return renderError("该任务已审批！", Constant.TASK_NOT_EXIT);
             }
 
             //查询是否当前审批人是否在当前结点有意见征询信息
