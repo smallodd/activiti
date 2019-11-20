@@ -585,7 +585,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                         tTaskNotice.setUserType(AssignTypeEnum.PERSON.code);
                         tTaskNotice.setEmpNo(tRuTask.getAssigneeReal());
                     }else{
-                        tTaskNotice.setUserType(AssignTypeEnum.PERSON.code);
+                        tTaskNotice.setUserType(AssignTypeEnum.ROLE.code);
                     }
 
                     tTaskNotice.setType(0);
