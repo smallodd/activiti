@@ -494,7 +494,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             if(CollectionUtils.isNotEmpty(beforeTaskDefKeys)){
                                 for(String taskDefKey : beforeTaskDefKeys){
                                     log.info("查询信息历史节点开始，{}，{}",task.getProcessInstanceId(),taskDefKey);
-                                    List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list();
+                                    List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).unfinished().list();
                                     if(historicTaskInstances.size()==0){
                                         continue;
                                     }
