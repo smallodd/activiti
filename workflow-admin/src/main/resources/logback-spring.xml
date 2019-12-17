@@ -47,11 +47,11 @@
     </appender>
 
     <!--屏蔽所有org.springframework.*输出的Debug（及以下）信息-->
-    <logger name="org.springframework" level="DEBUG" />
-    <logger name="message.service" level="DEBUG" />
-    <logger name="org.mybatis" level="DEBUG" />
-    <logger name="org.activiti.engine.impl.persistence.entity" level="DEBUG" />
-    <root level="DEBUG">
+    <logger name="org.springframework" level="info" />
+    <logger name="message.service" level="info" />
+    <logger name="org.mybatis" level="info" />
+    <logger name="org.activiti.engine.impl.persistence.entity" level="info" />
+    <root level="info">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
     </root>
