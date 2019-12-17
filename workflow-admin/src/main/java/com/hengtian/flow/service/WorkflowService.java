@@ -402,4 +402,6 @@ public interface WorkflowService extends IService<TaskResult> {
      * @Date: 2019/9/18 14:43
      */
     List<TaskNodeVo> getNextNodeByTask(ProcessInstance processInstance, TaskInfo task);
+
+    List<String> findBeforeTaskDefKeys(TaskInfo task, boolean isAll);
 }

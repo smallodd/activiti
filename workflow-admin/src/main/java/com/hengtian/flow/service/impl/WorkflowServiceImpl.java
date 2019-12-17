@@ -494,7 +494,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             if(CollectionUtils.isNotEmpty(beforeTaskDefKeys)){
                                 for(String taskDefKey : beforeTaskDefKeys){
                                     log.info("查询信息历史节点开始，{}，{}",task.getProcessInstanceId(),taskDefKey);
-                                    HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list().get(0);
+                                    List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list();
+                                    if(historicTaskInstances.size()==0||StringUtils.isBlank(historicTaskInstances.get(0).getAssignee())){
+                                        continue;
+                                    }
+                                    HistoricTaskInstance historicTaskInstance = historicTaskInstances.get(0);
+                                    log.info("获取信息为：{}",historicTaskInstance.getAssignee());
                                     String str = historicTaskInstance.getAssignee().replaceAll("_Y","").replaceAll("_N","");
                                     for(String a : str.split(",")){
                                         List<Emp> emps = empService.selectDirectSupervisorByCode(a);

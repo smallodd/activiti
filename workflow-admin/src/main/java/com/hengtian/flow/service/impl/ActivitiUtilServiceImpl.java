@@ -648,7 +648,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     }
 
 
-    protected List<String> findBeforeTaskDefKeys(TaskInfo task, boolean isAll) {
+    public List<String> findBeforeTaskDefKeys(TaskInfo task, boolean isAll) {
         List<String> beforeTaskDefKeys = null;
         try {
             Map<String, FlowNode> beforeTask = findBeforeTask(task, isAll);
