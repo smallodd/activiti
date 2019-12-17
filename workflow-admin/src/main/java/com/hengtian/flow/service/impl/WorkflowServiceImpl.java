@@ -499,6 +499,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                                         continue;
                                     }
                                     HistoricTaskInstance historicTaskInstance = historicTaskInstances.get(0);
+                                    log.info("获取信息为：{}",historicTaskInstance.getAssignee());
                                     String str = historicTaskInstance.getAssignee().replaceAll("_Y","").replaceAll("_N","");
                                     for(String a : str.split(",")){
                                         List<Emp> emps = empService.selectDirectSupervisorByCode(a);
