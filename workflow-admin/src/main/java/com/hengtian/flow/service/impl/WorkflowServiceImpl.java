@@ -493,7 +493,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(task, false);
                             if(CollectionUtils.isNotEmpty(beforeTaskDefKeys)){
                                 for(String taskDefKey : beforeTaskDefKeys){
-                                    HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list().get(0);
+                                    log.info("查询信息历史节点开始，{}，{}",task.getProcessInstanceId(),taskDefKey);
+                                    List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list();
+                                    if(historicTaskInstances.size()==0||StringUtils.isBlank(historicTaskInstances.get(0).getAssignee())){
+                                        continue;
+                                    }
+                                    HistoricTaskInstance historicTaskInstance = historicTaskInstances.get(0);
+                                    log.info("获取信息为：{}",historicTaskInstance.getAssignee());
                                     String str = historicTaskInstance.getAssignee().replaceAll("_Y","").replaceAll("_N","");
                                     for(String a : str.split(",")){
                                         List<Emp> emps = empService.selectDirectSupervisorByCode(a);
@@ -566,7 +572,35 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             if (!ExprEnum.CREATOR.expr.equals(tUserTask.getCandidateIds())) {
                 List<TTaskNotice> tTaskNoticeList = new ArrayList<>();
                 for(TRuTask tRuTask:ruTaskList){
+
                     TTaskNotice tTaskNotice=new TTaskNotice();
+                    if(tRuTask.getAssignee().startsWith("H")){
+                        tTaskNotice.setUserType(AssignTypeEnum.PERSON.code);
+                    }else if(tRuTask.getAssignee().equals(ExprEnum.LEADER.expr)||tRuTask.getAssignee().equals(ExprEnum.LEADER_CREATOR.expr)){
+                        String assigneeReal = tRuTask.getAssigneeReal();
+                        String[] split = assigneeReal.split(",");
+                        for(String emp:split) {
+                            tTaskNotice=new TTaskNotice();
+                            tTaskNotice.setUserType(AssignTypeEnum.PERSON.code);
+                            tTaskNotice.setEmpNo(emp);
+                            tTaskNotice.setAppKey(tRuTask.getAppKey());
+                            tTaskNotice.setTaskId(tRuTask.getTaskId());
+                            tTaskNotice.setProcInstId(tRuTask.getProcInstId());
+                            tTaskNotice.setCreateId(emp);
+                            tTaskNotice.setCreateTime(new Date());
+                            tTaskNotice.setUpdateId(emp);
+                            tTaskNotice.setUpdateTime(new Date());
+                            tTaskNotice.setState(0);
+                            tTaskNotice.setEmpName(tRuTask.getAssigneeName());
+                            tTaskNotice.setUpdateName(tRuTask.getAssigneeName());
+                            tTaskNotice.setCreateName(tRuTask.getAssigneeName());
+                            tTaskNotice.setType(0);
+                            tTaskNoticeList.add(tTaskNotice);
+                        }
+                        continue;
+                    }else{
+                        tTaskNotice.setUserType(AssignTypeEnum.ROLE.code);
+                    }
                     tTaskNotice.setAppKey(tRuTask.getAppKey());
                     tTaskNotice.setTaskId(tRuTask.getTaskId());
                     tTaskNotice.setProcInstId(tRuTask.getProcInstId());
@@ -579,17 +613,10 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tTaskNotice.setEmpName(tRuTask.getAssigneeName());
                     tTaskNotice.setUpdateName(tRuTask.getAssigneeName());
                     tTaskNotice.setCreateName(tRuTask.getAssigneeName());
-                    if(tRuTask.getAssignee().startsWith("H")){
-                        tTaskNotice.setUserType(AssignTypeEnum.PERSON.code);
-                    }else if(tRuTask.getAssignee().equals(ExprEnum.LEADER.expr)||tRuTask.getAssignee().equals(ExprEnum.LEADER_CREATOR.expr)){
-                        tTaskNotice.setUserType(AssignTypeEnum.PERSON.code);
-                        tTaskNotice.setEmpNo(tRuTask.getAssigneeReal());
-                    }else{
-                        tTaskNotice.setUserType(AssignTypeEnum.ROLE.code);
-                    }
-
                     tTaskNotice.setType(0);
+
                     tTaskNoticeList.add(tTaskNotice);
+
                 }
                 if (tTaskNoticeList.size()>0) tTaskNoticeService.insertBatch(tTaskNoticeList);
 
@@ -601,6 +628,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         log.info("设置审批人结束");
         return true;
     }
+
 
     /**
      * 审批任务
@@ -808,6 +836,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setOperateAction("审批同意");
                 tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务，审批意见是【" + taskParam.getComment() + "】");
                 workDetailService.insert(tWorkDetail);
+                try {
+                    EntityWrapper wrapper_ = new EntityWrapper();
+                    wrapper_.where("task_id={0}", task.getId());
+                    TTaskNotice tTaskNotice1 = new TTaskNotice();
+                    tTaskNotice1.setAction(1);
+                    tTaskNotice1.setMessage(taskParam.getComment());
+                    tTaskNoticeService.update(tTaskNotice1, wrapper_);
+                }catch (Exception e){
+                    log.warn("更新消息推送表失败",e);
+                }
+
             }else{
                 if(approveCountTotal - approveCountNow + approveCountAgree < approveCountNeed){
                     //------------任务完成-未通过------------
@@ -833,6 +872,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】拒绝了该任务，审批意见是【" + taskParam.getComment() + "】");
                     tWorkDetail.setOperateAction("审批拒绝");
                     workDetailService.insert(tWorkDetail);
+                    try {
+                        EntityWrapper wrapper_ = new EntityWrapper();
+                        wrapper_.where("task_id={0}", task.getId());
+                        TTaskNotice tTaskNotice1 = new TTaskNotice();
+                        tTaskNotice1.setAction(2);
+                        tTaskNotice1.setMessage(taskParam.getComment());
+                        tTaskNoticeService.update(tTaskNotice1, wrapper_);
+                    }catch (Exception e){
+                        log.warn("更新消息推送表失败",e);
+                    }
                     return new Result(true,Constant.SUCCESS, "任务已拒绝！");
                 }else{
                     //------------任务继续------------
@@ -850,6 +899,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     List<Task> l=new ArrayList();
                     l.add(task);
                     res.setObj(setButtons(TaskNodeResult.toTaskNodeResultList(l)));
+                    try {
+                        EntityWrapper wrapper_ = new EntityWrapper();
+                        wrapper_.where("task_id={0}", task.getId()).andNew("emp_no={0}",taskParam.getAssignee());
+                        TTaskNotice tTaskNotice1 = new TTaskNotice();
+                        tTaskNotice1.setAction(1);
+                        tTaskNotice1.setMessage(taskParam.getComment());
+                        tTaskNoticeService.update(tTaskNotice1, wrapper_);
+                    }catch (Exception e){
+                        log.warn("更新消息推送表失败",e);
+                    }
                     return res;
                 }
             }
@@ -874,6 +933,16 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】通过了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
                 tWorkDetail.setOperateAction("审批通过");
                 workDetailService.insert(tWorkDetail);
+                try {
+                    EntityWrapper wrapper_ = new EntityWrapper();
+                    wrapper_.where("task_id={0}", task.getId());
+                    TTaskNotice tTaskNotice1 = new TTaskNotice();
+                    tTaskNotice1.setAction(1);
+                    tTaskNotice1.setMessage(taskParam.getComment());
+                    tTaskNoticeService.update(tTaskNotice1, wrapper_);
+                }catch (Exception e){
+                    log.warn("更新消息推送表失败",e);
+                }
             } else if (taskParam.getPass() == TaskStatusEnum.COMPLETE_REFUSE.status) {
                 //拒绝任务
                 String assignee_ = null;
@@ -896,6 +965,17 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】拒绝了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
                 tWorkDetail.setOperateAction("审批拒绝");
                 workDetailService.insert(tWorkDetail);
+
+                try {
+                    EntityWrapper wrapper_ = new EntityWrapper();
+                    wrapper_.where("task_id={0}", task.getId());
+                    TTaskNotice tTaskNotice1 = new TTaskNotice();
+                    tTaskNotice1.setAction(2);
+                    tTaskNotice1.setMessage(taskParam.getComment());
+                    tTaskNoticeService.update(tTaskNotice1, wrapper_);
+                }catch (Exception e){
+                    log.warn("更新消息推送表失败",e);
+                }
 
                 return result;
             }

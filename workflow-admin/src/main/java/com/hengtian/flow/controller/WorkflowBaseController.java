@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.hengtian.common.base.BaseRestController;
 import com.hengtian.common.enums.AssignTypeEnum;
+import com.hengtian.common.enums.ExprEnum;
 import com.hengtian.common.param.TaskAgentQueryParam;
 import com.hengtian.common.param.TaskQueryParam;
 import com.hengtian.common.result.TaskNodeResult;
@@ -15,10 +16,7 @@ import com.hengtian.flow.model.RuProcinst;
 import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
-import com.hengtian.flow.service.RuProcinstService;
-import com.hengtian.flow.service.TRuTaskService;
-import com.hengtian.flow.service.TTaskButtonService;
-import com.hengtian.flow.service.TUserTaskService;
+import com.hengtian.flow.service.*;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
@@ -27,12 +25,11 @@ import com.user.service.emp.EmpService;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.activiti.engine.FormService;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import org.activiti.engine.*;
 import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.history.HistoricActivityInstance;
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
@@ -79,6 +76,11 @@ public class WorkflowBaseController extends BaseRestController {
 
     @Reference
     EmpService empService;
+
+    @Autowired
+    WorkflowService workflowService;
+    @Autowired
+    HistoryService historyService;
 
     /**
      * 获取需要高亮的线 (适配5.18以上版本；由于mysql5.6.4之后版本时间支持到毫秒，固旧方法比较开始时间的方法不在适合当前系统)
@@ -236,7 +238,7 @@ public class WorkflowBaseController extends BaseRestController {
             jsonObject.put("text", t.getAssigneeName());
 
             JSONArray jsonArray = new JSONArray();
-            if(StringUtils.isNotBlank(t.getAssigneeReal())){
+            if(StringUtils.isNotBlank(t.getAssigneeReal()) &&AssignTypeEnum.PERSON.code.equals(t.getAssigneeType())){
                 String[] array = t.getAssigneeReal().split(",");
                 if(array.length > 1){
                     for(String a : array){
@@ -264,6 +266,59 @@ public class WorkflowBaseController extends BaseRestController {
                     List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
                     if(CollectionUtils.isNotEmpty(users)){
                         for(RbacUser u : users){
+                            if(assigneeList.contains(u.getCode())){
+                                continue;
+                            }
+                            JSONObject child = new JSONObject();
+                            child.put("id", t.getAssignee()+":"+u.getCode());
+                            child.put("text", u.getName());
+                            if(!jsonObject.containsKey("children")){
+                                jsonArray.add(child);
+                                jsonObject.put("children", jsonArray);
+                            }else{
+                                jsonObject.accumulate("children", child);
+                            }
+                        }
+                    }
+                }else if(AssignTypeEnum.EXPR.code.equals(t.getAssigneeType())){
+                    List<Emp> empLeader = Lists.newArrayList();
+                    if(ExprEnum.LEADER.expr.equals(t.getAssignee())){
+                        List<String> beforeTaskDefKeys = workflowService.findBeforeTaskDefKeys(task, false);
+                        if(CollectionUtils.isNotEmpty(beforeTaskDefKeys)){
+                            for(String taskDefKey : beforeTaskDefKeys){
+                                log.info("查询信息历史节点开始，{}，{}",task.getProcessInstanceId(),taskDefKey);
+                                List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list();
+                                if(historicTaskInstances.size()==0||StringUtils.isBlank(historicTaskInstances.get(0).getAssignee())){
+                                    continue;
+                                }
+                                HistoricTaskInstance historicTaskInstance = historicTaskInstances.get(0);
+                                log.info("获取信息为：{}",historicTaskInstance.getAssignee());
+                                String str = historicTaskInstance.getAssignee().replaceAll("_Y","").replaceAll("_N","");
+                                for(String a : str.split(",")){
+                                    List<Emp> emps = empService.selectDirectSupervisorByCode(a);
+                                    if(CollectionUtils.isNotEmpty(emps)){
+                                        empLeader.addAll(emps);
+                                    }
+                                }
+                            }
+                        }
+                    }else if(ExprEnum.CREATOR.expr.equals(t.getAssignee())){
+                        //流程创建人领导
+                        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+                        List<Emp> emps = empService.selectDirectSupervisorByCode(historicProcessInstance.getStartUserId());
+                        if(CollectionUtils.isNotEmpty(emps)){
+                            empLeader.addAll(emps);
+                        }
+                    }else if (ExprEnum.LEADER_CREATOR.expr.equals(t.getAssignee())){
+                        //流程创建人领导
+                        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
+                        List<Emp> emps = empService.selectDirectSupervisorByCode(historicProcessInstance.getStartUserId());
+                        if(CollectionUtils.isNotEmpty(emps)){
+                            empLeader.addAll(emps);
+                        }
+                    }
+                    if(CollectionUtils.isNotEmpty(empLeader)){
+                        for(Emp u : empLeader){
                             if(assigneeList.contains(u.getCode())){
                                 continue;
                             }
