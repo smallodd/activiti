@@ -656,6 +656,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 beforeTaskDefKeys = Lists.newArrayList();
                 beforeTaskDefKeys.addAll(beforeTask.keySet());
             }
+            log.info("查询已经审批过的节点key{}",JSONObject.toJSONString(beforeTaskDefKeys));
         } catch (Exception e) {
             log.error("获取前置节点失败", e);
             return beforeTaskDefKeys;
