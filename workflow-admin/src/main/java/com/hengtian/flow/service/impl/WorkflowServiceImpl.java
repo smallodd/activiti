@@ -493,6 +493,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                             List<String> beforeTaskDefKeys = findBeforeTaskDefKeys(task, false);
                             if(CollectionUtils.isNotEmpty(beforeTaskDefKeys)){
                                 for(String taskDefKey : beforeTaskDefKeys){
+                                    log.info("查询信息历史节点开始，{}，{}",task.getProcessInstanceId(),taskDefKey);
                                     HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefKey).list().get(0);
                                     String str = historicTaskInstance.getAssignee().replaceAll("_Y","").replaceAll("_N","");
                                     for(String a : str.split(",")){
