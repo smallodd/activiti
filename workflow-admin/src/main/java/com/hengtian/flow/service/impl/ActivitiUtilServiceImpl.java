@@ -116,7 +116,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private RuProcinstService ruProcinstService;
     @Autowired
     private TRuTaskService tRuTaskService;
-    @Reference
+    @Reference(loadbalance = "rbac")
     private PrivilegeService privilegeService;
     @Autowired
     private TUserTaskService tUserTaskService;

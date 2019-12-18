@@ -33,7 +33,7 @@ public class EmpController {
 
     @Reference
     private OrgService orgService;
-    @Reference
+    @Reference(loadbalance = "rbac")
     private PrivilegeService privilegeService;
     @Reference
     private EmpService empService;
