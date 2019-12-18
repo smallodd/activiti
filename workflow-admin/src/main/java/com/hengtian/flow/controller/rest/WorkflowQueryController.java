@@ -104,7 +104,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     private TaskService taskService;
     @Autowired
     private TWorkDetailService tWorkDetailService;
-    @Reference
+    @Reference(loadbalance = "rbac")
     private PrivilegeService privilegeService;
     @Autowired
     private RuntimeService runtimeService;
