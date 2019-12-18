@@ -17,6 +17,7 @@ import com.hengtian.flow.model.TButton;
 import com.hengtian.flow.model.TRuTask;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.*;
+import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
@@ -177,6 +178,7 @@ public class WorkflowBaseController extends BaseRestController {
                         }
                     }
                 }else{
+                    RbacDomainContext.getContext().setDomain("chtwm");
                     List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(t.getAssignee()));
                     if(CollectionUtils.isNotEmpty(users)){
                         for(RbacUser u : users){
@@ -263,6 +265,7 @@ public class WorkflowBaseController extends BaseRestController {
                 }
             }else{
                 if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType())){
+                    RbacDomainContext.getContext().setDomain("chtwm");
                     List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
                     if(CollectionUtils.isNotEmpty(users)){
                         for(RbacUser u : users){
@@ -366,6 +369,7 @@ public class WorkflowBaseController extends BaseRestController {
         log.info("查询审批人角色和代理人角色setAssigneeAndRole");
         Integer appKey = taskQueryParam.getAppKey();
         String assignee = taskQueryParam.getAssignee();
+        RbacDomainContext.getContext().setDomain("chtwm");
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, assignee);
         pageInfo.getCondition().put("assignee", assignee);
         String roleIds = null;
@@ -392,7 +396,7 @@ public class WorkflowBaseController extends BaseRestController {
                 }
 
                 taskAgent.setProcessDefinitionKey(jsonObject.getString("processDefinitionKey"));
-
+                RbacDomainContext.getContext().setDomain("chtwm");
                 roles = privilegeService.getAllRoleByUserId(appKey, taskAgent.getAssigneeAgent());
                 if(CollectionUtils.isNotEmpty(roles)){
                     roleIds = null;
@@ -418,6 +422,7 @@ public class WorkflowBaseController extends BaseRestController {
      * date 2018/5/21 18:04
      */
     public void setAssigneeAndRole(PageInfo pageInfo, String assignee, int appKey){
+        RbacDomainContext.getContext().setDomain("chtwm");
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, assignee);
         pageInfo.getCondition().put("assignee", assignee);
         String roleIds = null;
@@ -447,6 +452,7 @@ public class WorkflowBaseController extends BaseRestController {
                 }
             }else{
                 if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
+                    RbacDomainContext.getContext().setDomain("chtwm");
                     List<RbacUser> users = privilegeService.getUsersByRoleId(rt.getAppKey(), null, Long.parseLong(rt.getAssignee()));
                     for(RbacUser u : users){
                         if(u.getCode().equals(assignee)){

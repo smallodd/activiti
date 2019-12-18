@@ -15,6 +15,7 @@ import com.hengtian.flow.model.TTaskButton;
 import com.hengtian.flow.model.TUserTask;
 import com.hengtian.flow.service.TTaskButtonService;
 import com.hengtian.flow.service.TUserTaskService;
+import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.service.PrivilegeService;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
                         if(StringUtils.isNotBlank(roleIds)){
                             String[] roleIdArray = roleIds.split(",");
                             for(String roleId : roleIdArray){
+                                RbacDomainContext.getContext().setDomain("chtwm");
                                 assigneeCount = assigneeCount + privilegeService.getUsersByRoleId(1, null, Long.parseLong(roleId)).size();
                             }
                         }

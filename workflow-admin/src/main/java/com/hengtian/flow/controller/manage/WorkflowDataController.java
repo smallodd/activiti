@@ -15,6 +15,7 @@ import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
+import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
 import io.swagger.annotations.ApiOperation;
@@ -155,6 +156,7 @@ public class WorkflowDataController extends WorkflowBaseController {
         List<String> assigneeList = StringUtils.isBlank(assignee) ? Lists.newArrayList() : Arrays.asList(assignee.split(","));
         for (TRuTask tRuTask : tRuTasks) {
             if (AssignTypeEnum.ROLE.code.equals(tRuTask.getAssigneeType())) {
+                RbacDomainContext.getContext().setDomain("chtwm");
                 tempUserList = privilegeService.getUsersByRoleId(system, null, Long.parseLong(tRuTask.getAssignee()));
                 List<String> assigneeReal = StringUtils.isBlank(tRuTask.getAssigneeReal()) ? null : Arrays.asList(tRuTask.getAssigneeReal().split(","));
                 for (RbacUser user : tempUserList) {

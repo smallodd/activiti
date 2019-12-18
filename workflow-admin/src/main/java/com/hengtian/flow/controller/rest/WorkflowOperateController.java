@@ -28,6 +28,7 @@ import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.service.TWorkDetailService;
 import com.hengtian.flow.service.WorkflowService;
+import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
 import io.swagger.annotations.ApiOperation;
@@ -659,6 +660,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                             assigneeList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
                         }else if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
                             Integer appKey = runtimeService.getVariable(taskActionParam.getProcessInstanceId(), "appKey", Integer.class);
+                            RbacDomainContext.getContext().setDomain("chtwm");
                             List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(rt.getAssignee()));
                             for(RbacUser u : users){
                                 assigneeList.add(u.getCode());

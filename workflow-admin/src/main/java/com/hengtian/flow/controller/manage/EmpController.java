@@ -4,6 +4,7 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.google.common.collect.Maps;
 import com.hengtian.common.utils.PageInfo;
 import com.hengtian.common.utils.StringUtils;
+import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.entity.RbacRole;
 import com.rbac.service.PrivilegeService;
 import com.user.entity.org.Org;
@@ -106,6 +107,7 @@ public class EmpController {
     @PostMapping("/role/{system}")
     @ResponseBody
     public Object queryRole(@PathVariable("system") Integer system) {
+        RbacDomainContext.getContext().setDomain("chtwm");
         List<RbacRole> allRoleBySystem = privilegeService.getAllRoleBySystem(system);
         return allRoleBySystem;
     }
