@@ -30,6 +30,7 @@ import com.hengtian.flow.service.TWorkDetailService;
 import com.hengtian.flow.service.WorkflowService;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
+import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.entity.RbacRole;
 import com.rbac.service.PrivilegeService;
 import io.swagger.annotations.ApiOperation;
@@ -689,7 +690,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         Map<String, Object> paraMap = Maps.newHashMap();
         BeanMap beanMap = new BeanMap(taskQueryParam);
         paraMap.putAll(beanMap);
-
+        RbacDomainContext.getContext().setDomain("chtwm");
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(taskQueryParam.getAppKey(), taskQueryParam.getAssignee());
         String roleId = null;
 

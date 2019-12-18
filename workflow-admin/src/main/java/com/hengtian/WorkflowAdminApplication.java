@@ -41,7 +41,6 @@ public class WorkflowAdminApplication extends SpringBootServletInitializer {
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        RbacDomainContext.getContext().setDomain("chtwm");
         return application.sources(WorkflowAdminApplication.class);
     }
 

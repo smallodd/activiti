@@ -68,6 +68,7 @@ import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
 import com.hengtian.flow.vo.TaskNodeVo;
 import com.hengtian.flow.vo.TaskVo;
+import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.entity.RbacPrivilege;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
@@ -2195,7 +2196,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
         String assignee = taskQueryParam.getAssignee();
         String roleId = null;
-
+        RbacDomainContext.getContext().setDomain("chtwm");
         List<RbacRole> roleList = privilegeService.getAllRoleByUserId(taskQueryParam.getAppKey(), assignee);
 
         if(CollectionUtils.isNotEmpty(roleList)) {
@@ -2605,6 +2606,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             assigneeArray = ut.getCandidateIds().split(",");
             List<AssigneeVo> assigneeList = Lists.newArrayList();
             for(int k=0;k<assigneeArray.length;k++){
+                RbacDomainContext.getContext().setDomain("chtwm");
                 List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(assigneeArray[k]));
                 for(RbacUser user : users){
                     AssigneeVo assignee = new AssigneeVo();
@@ -2694,6 +2696,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 roleObject.put("roleName", assigneeNameArray[k]);
 
                 JSONArray userArray = new JSONArray();
+                RbacDomainContext.getContext().setDomain("chtwm");
                 List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(assigneeArray[k]));
                 for(RbacUser user : users){
                     JSONObject userObject = new JSONObject();
@@ -2728,6 +2731,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Emp emp = empService.selectByCode(userId);
         if(emp == null){
             if(StringUtils.isNumeric(userId)) {
+                RbacDomainContext.getContext().setDomain("chtwm");
                 RbacPrivilege privilegeById = privilegeService.getPrivilegeById(Long.parseLong(userId));
                 if(privilegeById!=null){
                     return privilegeById.getPrivilegeName();
@@ -2802,6 +2806,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     assigneeVoMap.put(userCode, assigneeVo);
                 }
             }else if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
+                RbacDomainContext.getContext().setDomain("chtwm");
                 List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(rt.getAssignee()));
                 for(RbacUser u : users){
                     if(assigneeVoMap.containsKey(u.getCode())){
@@ -2979,6 +2984,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
             List<AssigneeVo> assigneeList = Lists.newArrayList();
             if(AssignTypeEnum.ROLE.code.equals(ut.getAssignType())){
                 for(int k=0;k<assigneeArray.length;k++){
+                    RbacDomainContext.getContext().setDomain("chtwm");
                     List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(assigneeArray[k]));
                     for(RbacUser user : users){
                         AssigneeVo assignee = new AssigneeVo();
