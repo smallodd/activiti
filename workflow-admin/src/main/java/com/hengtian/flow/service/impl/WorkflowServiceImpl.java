@@ -2584,10 +2584,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
-
+        log.info("获取");
         EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
         wrapper.eq("proc_def_key",  processInstance.getProcessDefinitionKey());
         wrapper.eq("version_", version);
+        wrapper.eq("assign_type", AssignTypeEnum.ROLE.code);
         wrapper.in("task_def_key", nextTaskDefKeys);
 
         List<TUserTask> userTasks = tUserTaskService.selectList(wrapper);
