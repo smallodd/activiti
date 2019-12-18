@@ -169,7 +169,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     TWorkDetailService workDetailService;
 
-    @Reference
+    @Reference(loadbalance = "rbac")
     private PrivilegeService privilegeService;
 
     @Autowired

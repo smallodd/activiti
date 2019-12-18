@@ -65,7 +65,7 @@ public class WorkflowBaseController extends BaseRestController {
     TTaskButtonService tTaskButtonService;
     @Autowired
     private TUserTaskService tUserTaskService;
-    @Reference
+    @Reference(loadbalance = "rbac")
     private PrivilegeService privilegeService;
     @Autowired
     private RuProcinstService ruProcinstService;

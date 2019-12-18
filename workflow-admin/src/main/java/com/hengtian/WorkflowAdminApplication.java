@@ -1,6 +1,7 @@
 package com.hengtian;
 
 import com.rbac.conf.DomainMapProperties;
+import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.util.CommonUtil;
 import com.richgo.config.RedisProperties;
 import com.richgo.redis.RedisClusterUtil;
@@ -40,6 +41,7 @@ public class WorkflowAdminApplication extends SpringBootServletInitializer {
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        RbacDomainContext.getContext().setDomain("chtwm");
         return application.sources(WorkflowAdminApplication.class);
     }
 

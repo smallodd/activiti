@@ -38,7 +38,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
     private TUserTaskDao tUserTaskDao;
     @Autowired
     private TTaskButtonService tTaskButtonService;
-    @Reference
+    @Reference(loadbalance = "rbac")
     private PrivilegeService privilegeService;
 
     /**
