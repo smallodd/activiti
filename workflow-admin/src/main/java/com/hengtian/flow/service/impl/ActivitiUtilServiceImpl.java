@@ -35,6 +35,7 @@ import com.hengtian.flow.service.TUserTaskService;
 import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.TaskNodeVo;
 import com.hengtian.flow.vo.TaskVo;
+import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
@@ -1084,6 +1085,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 set.add(t.getAssigneeReal());
             }else{
                 if(t.getAssigneeType().intValue()==AssignTypeEnum.ROLE.code) {
+                    RbacDomainContext.getContext().setDomain("chtwm");
                     List<RbacUser> rbacUsers = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(t.getAssignee()));
                     for (RbacUser rbacUser : rbacUsers) {
                         set.add(rbacUser.getCode());
@@ -1109,6 +1111,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         if (system == null) {
             return null;
         }
+        RbacDomainContext.getContext().setDomain("chtwm");
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(system, userId);
         if (CollectionUtils.isEmpty(roles)) {
             return null;
@@ -1449,6 +1452,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     userName = assigneeArray.getJSONObject(k).getString("userName");
                     assignee = assignee==null?userCode:assignee+","+userCode;
                     //获取用户所有所属角色
+                    RbacDomainContext.getContext().setDomain("chtwm");
                     List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, userCode);
                     if(CollectionUtils.isEmpty(roles)){
                         log.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
@@ -1534,6 +1538,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     userCode = assigneeArray.getJSONObject(k).getString("userCode");
                     assignee = assignee==null?userCode:assignee+","+userCode;
                     //获取用户所有所属角色
+                    RbacDomainContext.getContext().setDomain("chtwm");
                     List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, userCode);
                     if(CollectionUtils.isEmpty(roles)){
                         log.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
@@ -1572,6 +1577,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * date 2018/6/6 20:16
      */
     private List<AssigneeVo> getAllUserByRoleCode(Integer appKey, Long roleCode){
+        RbacDomainContext.getContext().setDomain("chtwm");
         List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, roleCode);
         if(CollectionUtils.isEmpty(users)){
             return null;
