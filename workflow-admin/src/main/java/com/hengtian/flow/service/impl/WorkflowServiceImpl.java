@@ -2434,7 +2434,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         try {
-            Map<String, FlowNode> beforeTask = findBeforeTask(taskId, true);
+            Map<String, FlowNode> beforeTask = findBeforeTask(taskId, isAll);
             Iterator<Map.Entry<String, FlowNode>> iterator = beforeTask.entrySet().iterator();
             List<TaskVo> taskList = Lists.newArrayList();
             while(iterator.hasNext()){
