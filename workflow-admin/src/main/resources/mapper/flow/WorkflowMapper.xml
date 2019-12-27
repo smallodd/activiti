@@ -127,7 +127,7 @@
         </if>
 
         <!--发起人部门编号-->
-        <if test="creatorDept != null and creatorDept != ''">
+        <if test="creatorDeptName != null and creatorDeptName != ''">
             AND trp.CREATOR_DEPT = #{creatorDept}
         </if>
 
@@ -186,7 +186,7 @@
         </if>
 
         <!--发起人部门名称-->
-        <if test="creatorDept != null and creatorDept != ''">
+        <if test="creatorDeptName != null and creatorDeptName != ''">
             AND trp.CREATOR_DEPT_NAME LIKE CONCAT('%',#{creatorDeptName},'%')
         </if>
 
@@ -244,7 +244,7 @@
         </if>
 
         <!--发起人部门名称-->
-        <if test="creatorDept != null and creatorDept != ''">
+        <if test="creatorDeptName != null and creatorDeptName != ''">
             AND trp.CREATOR_DEPT_NAME LIKE CONCAT('%',#{creatorDeptName},'%')
         </if>
 
