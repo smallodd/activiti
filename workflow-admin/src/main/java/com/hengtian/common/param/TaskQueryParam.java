@@ -33,10 +33,15 @@ public class TaskQueryParam {
     @ApiModelProperty(value = "创建人id", example = "H000000")
     private String creator;
     /**
-     * 创建人id
+     * 创建人部门编号
      */
     @ApiModelProperty(value = "创建人部门编号", example = "01009")
     private String creatorDept;
+    /**
+     * 创建人部门名称
+     */
+    @ApiModelProperty(value = "创建人部门名称", example = "研发一部")
+    private String creatorDeptName;
     /**
      * 任务id
      */
