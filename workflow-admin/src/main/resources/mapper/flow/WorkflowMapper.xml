@@ -127,12 +127,12 @@
         </if>
 
         <!--发起人部门编号-->
-        <if test="creatorDeptName != null and creatorDeptName != ''">
+        <if test="creatorDept != null and creatorDept != ''">
             AND trp.CREATOR_DEPT = #{creatorDept}
         </if>
 
         <!--发起人部门名称-->
-        <if test="creatorDept != null and creatorDept != ''">
+        <if test="creatorDeptName != null and creatorDeptName != ''">
             AND trp.CREATOR_DEPT_NAME LIKE CONCAT('%',#{creatorDeptName},'%')
         </if>
 
