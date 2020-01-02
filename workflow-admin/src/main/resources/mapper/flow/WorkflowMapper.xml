@@ -126,9 +126,14 @@
             AND trp.CREATOR = #{creator}
         </if>
 
-        <!--发起人部门-->
+        <!--发起人部门编号-->
         <if test="creatorDept != null and creatorDept != ''">
             AND trp.CREATOR_DEPT = #{creatorDept}
+        </if>
+
+        <!--发起人部门名称-->
+        <if test="creatorDeptName != null and creatorDeptName != ''">
+            AND trp.CREATOR_DEPT_NAME LIKE CONCAT('%',#{creatorDeptName},'%')
         </if>
 
         <!--当前节点-->
@@ -175,10 +180,16 @@
         <if test="creator != null and creator !=''">
             AND trp.CREATOR = #{creator}
         </if>
-        <!--发起人部门-->
+        <!--发起人部门编号-->
         <if test="creatorDept != null and creatorDept != ''">
             AND trp.CREATOR_DEPT = #{creatorDept}
         </if>
+
+        <!--发起人部门名称-->
+        <if test="creatorDeptName != null and creatorDeptName != ''">
+            AND trp.CREATOR_DEPT_NAME LIKE CONCAT('%',#{creatorDeptName},'%')
+        </if>
+
         <!--当前节点-->
         <if test="taskName != null and taskName != ''">
             AND art.NAME_ LIKE CONCAT('%',#{taskName},'%')
@@ -227,9 +238,14 @@
             AND trp.CREATOR = #{creator}
         </if>
 
-        <!--发起人部门-->
+        <!--发起人部门编号-->
         <if test="creatorDept != null and creatorDept != ''">
             AND trp.CREATOR_DEPT = #{creatorDept}
+        </if>
+
+        <!--发起人部门名称-->
+        <if test="creatorDeptName != null and creatorDeptName != ''">
+            AND trp.CREATOR_DEPT_NAME LIKE CONCAT('%',#{creatorDeptName},'%')
         </if>
 
         <!--当前节点-->
