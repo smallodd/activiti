@@ -1845,7 +1845,13 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         tWorkDetail.setAprroveInfo(answerComment);
 
         tWorkDetail.setOperateAction("确认意见征询");
-        tWorkDetail.setOperTaskKey(list.get(0).getName());
+        HistoricTaskInstance historicTaskInstance = historyService.createHistoricTaskInstanceQuery().taskId(tAskTask.getAskedTaskId()).singleResult();
+        if(historicTaskInstance!=null){
+            tWorkDetail.setOperTaskKey(historicTaskInstance.getName());
+        }else{
+            tWorkDetail.setOperTaskKey(tAskTask.getAskTaskKey());
+        }
+
         tWorkDetail.setBusinessKey(processInstance.getBusinessKey());
         workDetailService.insert(tWorkDetail);
         log.info("意见征询确认成功");
