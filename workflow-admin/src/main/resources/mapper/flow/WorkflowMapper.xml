@@ -185,11 +185,11 @@
         </if>
         <!--创建日期（从）-->
         <if test="createTimeStart != null">
-            AND DATE(art.START_TIME_) &gt;= #{createTimeStart}
+            AND DATE(tat.create_time) &gt;= #{createTimeStart}
         </if>
         <!--创建日期（到）-->
         <if test="createTimeEnd != null">
-            AND DATE(art.START_TIME_) &lt;= #{createTimeEnd}
+            AND DATE(tat.create_time) &lt;= #{createTimeEnd}
         </if>
     </sql>
 
