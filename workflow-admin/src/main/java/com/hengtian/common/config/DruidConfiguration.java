@@ -88,21 +88,37 @@ public class DruidConfiguration {
         druidDataSource.setUsername(userName);
         druidDataSource.setPassword(password);
         druidDataSource.setInitialSize(initialSize);
+        log.info("initialSize：{}",initialSize);
         druidDataSource.setMaxActive(maxActive);
+        log.info("maxActive：{}",maxActive);
         druidDataSource.setMinIdle(minldle);
+        log.info("minldle：{}",minldle);
         druidDataSource.setMaxWait(maxWait);
+        log.info("maxWait：{}",maxWait);
         druidDataSource.setValidationQuery(validationQuery);
+        log.info("validationQuery：{}",validationQuery);
         druidDataSource.setTestOnBorrow(testOnBorrow);
+        log.info("testOnBorrow：{}",testOnBorrow);
         druidDataSource.setTestOnReturn(testOnReturn);
+        log.info("testOnReturn：{}",testOnReturn);
         druidDataSource.setTestWhileIdle(testWhiledle);
+        log.info("testWhiledle：{}",testWhiledle);
         druidDataSource.setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis);
+        log.info("timeBetweenEvictionRunsMillis：{}",timeBetweenEvictionRunsMillis);
         druidDataSource.setMinEvictableIdleTimeMillis(minEvictabledleTimeMillis);
+        log.info("minEvictabledleTimeMillis：{}",minEvictabledleTimeMillis);
         druidDataSource.setRemoveAbandoned(removeAbandoned);
+        log.info("removeAbandoned：{}",removeAbandoned);
         druidDataSource.setRemoveAbandonedTimeout(removeAbandonedTimeout);
+        log.info("removeAbandonedTimeout：{}",removeAbandonedTimeout);
         druidDataSource.setLogAbandoned(logAbandoned);
+        log.info("logAbandoned：{}",logAbandoned);
         druidDataSource.setName(datasourceName);
+        log.info("datasourceName：{}",datasourceName);
         druidDataSource.setDbType(datasourceType);
+        log.info("datasourceType：{}",datasourceType);
         druidDataSource.setMaxOpenPreparedStatements(maxOpenPreparedStatements);
+        log.info("maxOpenPreparedStatements：{}",maxOpenPreparedStatements);
 
         return druidDataSource;
     }
