@@ -873,6 +873,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】拒绝了该任务，审批意见是【" + taskParam.getComment() + "】");
                     tWorkDetail.setOperateAction("审批拒绝");
                     workDetailService.insert(tWorkDetail);
+
+                    // 新需求  HTXQ2020-79
+                    updateAskTask(task);
                     try {
                         EntityWrapper wrapper_ = new EntityWrapper();
                         wrapper_.where("task_id={0}", task.getId());
@@ -966,6 +969,8 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tWorkDetail.setDetail("工号【" + taskParam.getAssignee() + "】拒绝了该任务【审批完成】，审批意见是【" + taskParam.getComment() + "】");
                 tWorkDetail.setOperateAction("审批拒绝");
                 workDetailService.insert(tWorkDetail);
+                // 新的需求 HTXQ2020-79
+                updateAskTask(task);
 
                 try {
                     EntityWrapper wrapper_ = new EntityWrapper();
@@ -1067,6 +1072,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         result.setMsg("任务已办理成功");
         return result;
+    }
+    //如果是审批拒绝任务结束的情况，需要调用此方法，更新问询的任务已
+    private void updateAskTask(Task task){
+        EntityWrapper askwrapper_ = new EntityWrapper();
+        askwrapper_.where("proc_inst_id={0}", task.getProcessInstanceId()).andNew("is_ask_end={0}",0);
+        TAskTask tAskTask=new TAskTask();
+        tAskTask.setIsAskEnd(1);
+        tAskTask.setAnswerComment("审批拒绝");
+        tAskTaskService.update(tAskTask,askwrapper_);
     }
 
     /**

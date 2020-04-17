@@ -13,7 +13,9 @@ import com.hengtian.common.param.TaskParam;
 import com.hengtian.common.result.Constant;
 import com.hengtian.common.result.Result;
 import com.hengtian.common.shiro.ShiroUser;
+import com.hengtian.flow.model.TAskTask;
 import com.hengtian.flow.model.TRuTask;
+import com.hengtian.flow.service.TAskTaskService;
 import com.hengtian.flow.service.TRuTaskService;
 import com.hengtian.flow.service.WorkflowService;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +62,8 @@ public class WorkflowActionController extends BaseController {
     private AppModelService appModelService;
     @Autowired
     private RepositoryService repositoryService;
+    @Autowired
+    private TAskTaskService tAskTaskService;
 
     /**
      * 启动流程热任务
@@ -233,6 +237,14 @@ public class WorkflowActionController extends BaseController {
 
         if(CollectionUtils.isEmpty(tRuTasks)){
             return renderError(ResultEnum.TASK_ASSIGNEE_ILLEGAL.msg, ResultEnum.TASK_ASSIGNEE_ILLEGAL.code) ;
+        }
+        //查询是否当前审批人是否在当前结点有意见征询信息
+        EntityWrapper entityWrapper = new EntityWrapper();
+        entityWrapper.where("current_task_key={0}", task.getTaskDefinitionKey()).andNew("is_ask_end={0}", 0).andNew("ask_user_id={0}", taskParam.getAssignee()).andNew("proc_inst_id={0}",task.getProcessInstanceId());
+        //查询是否有正在意见征询的节点
+        TAskTask tAskTask = tAskTaskService.selectOne(entityWrapper);
+        if (tAskTask != null) {
+            return renderError("您的意见征询信息还未得到响应，不能审批通过", Constant.ASK_TASK_EXIT);
         }
 
         try {
