@@ -126,9 +126,14 @@
             AND trp.CREATOR = #{creator}
         </if>
 
-        <!--发起人部门-->
+        <!--发起人部门编号-->
         <if test="creatorDept != null and creatorDept != ''">
             AND trp.CREATOR_DEPT = #{creatorDept}
+        </if>
+
+        <!--发起人部门名称-->
+        <if test="creatorDeptName != null and creatorDeptName != ''">
+            AND trp.CREATOR_DEPT_NAME LIKE CONCAT('%',#{creatorDeptName},'%')
         </if>
 
         <!--当前节点-->
@@ -175,10 +180,16 @@
         <if test="creator != null and creator !=''">
             AND trp.CREATOR = #{creator}
         </if>
-        <!--发起人部门-->
+        <!--发起人部门编号-->
         <if test="creatorDept != null and creatorDept != ''">
             AND trp.CREATOR_DEPT = #{creatorDept}
         </if>
+
+        <!--发起人部门名称-->
+        <if test="creatorDeptName != null and creatorDeptName != ''">
+            AND trp.CREATOR_DEPT_NAME LIKE CONCAT('%',#{creatorDeptName},'%')
+        </if>
+
         <!--当前节点-->
         <if test="taskName != null and taskName != ''">
             AND art.NAME_ LIKE CONCAT('%',#{taskName},'%')
@@ -227,9 +238,14 @@
             AND trp.CREATOR = #{creator}
         </if>
 
-        <!--发起人部门-->
+        <!--发起人部门编号-->
         <if test="creatorDept != null and creatorDept != ''">
             AND trp.CREATOR_DEPT = #{creatorDept}
+        </if>
+
+        <!--发起人部门名称-->
+        <if test="creatorDeptName != null and creatorDeptName != ''">
+            AND trp.CREATOR_DEPT_NAME LIKE CONCAT('%',#{creatorDeptName},'%')
         </if>
 
         <!--当前节点-->
@@ -299,7 +315,8 @@
                     (CASE WHEN
                     (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
                     <if test="roleId != null">
-                        OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
+                        OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}) AND
+                        (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%') OR trt.ASSIGNEE_REAL IS NULL))
                     </if>)
                     THEN #{assignee}
                     ELSE NULL END
@@ -315,13 +332,16 @@
                 LEFT JOIN (SELECT * FROM t_ask_task tkk WHERE tkk.is_ask_end=0 ) tat ON tat.current_task_id = art.ID_
             WHERE
                 trp.APP_KEY = #{appKey} AND ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%')
-                <if test="roleId != null">OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}))
+                <if test="roleId != null">
+                    OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${roleId}) AND
+                    (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%') OR trt.ASSIGNEE_REAL IS NULL))
                 </if>)
                 <if test="assigneeAgent != null and assigneeAgent != ''">OR
                     <foreach collection="taskAgentList" item="item" index="index" separator="OR">
                         ((trt.ASSIGNEE_REAL LIKE CONCAT('%',#{item.assigneeAgent},'%')
                         <if test="roleId != null">
-                            OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${item.agentRoleId}))
+                            OR (trt.ASSIGNEE_TYPE = 2 AND trt.ASSIGNEE IN (${item.agentRoleId}) AND
+                            (trt.ASSIGNEE_REAL LIKE CONCAT('%',#{assignee},'%') OR trt.ASSIGNEE_REAL IS NULL))
                         </if>
                         )
                         AND trp.proc_def_key IN (${item.processDefinitionKey})

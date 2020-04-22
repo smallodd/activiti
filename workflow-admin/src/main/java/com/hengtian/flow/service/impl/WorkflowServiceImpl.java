@@ -68,6 +68,7 @@ import com.hengtian.flow.vo.AssigneeVo;
 import com.hengtian.flow.vo.ProcessDefinitionVo;
 import com.hengtian.flow.vo.TaskNodeVo;
 import com.hengtian.flow.vo.TaskVo;
+import com.rbac.entity.RbacPrivilege;
 import com.rbac.entity.RbacRole;
 import com.rbac.entity.RbacUser;
 import com.rbac.service.PrivilegeService;
@@ -110,6 +111,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.NumberUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -415,7 +417,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 tRuTask.setProcInstId(task.getProcessInstanceId());
                 tRuTask.setTaskDefKey(task.getTaskDefinitionKey());
                 tRuTask.setTaskDefName(task.getName());
-                tRuTask.setAssigneeType(AssignTypeEnum.PERSON.code);
+                if(userId.startsWith("H")) {
+                    tRuTask.setAssigneeType(AssignTypeEnum.PERSON.code);
+                }else{
+                    tRuTask.setAssigneeType(AssignTypeEnum.ROLE.code);
+                }
                 tRuTask.setOwner(task.getOwner());
                 tRuTask.setTaskType(TaskTypeEnum.ASSIGNEE.value);
 
@@ -443,7 +449,11 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tRuTask.setTaskDefName(task.getName());
                     //tRuTask.setAssigneeType(tUserTask.getAssignType());
                     //指派的任务，assigneeType由角色改为人员
-                    tRuTask.setAssigneeType(AssignTypeEnum.PERSON.code);
+                    if(assigneeTemp.getRoleCode().startsWith("H")) {
+                        tRuTask.setAssigneeType(AssignTypeEnum.PERSON.code);
+                    }else{
+                        tRuTask.setAssigneeType(AssignTypeEnum.ROLE.code);
+                    }
                     tRuTask.setOwner(task.getOwner());
                     tRuTask.setTaskType(tUserTask.getTaskType());
                     ruTaskList.add(tRuTask);
@@ -569,7 +579,15 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                     tTaskNotice.setEmpName(tRuTask.getAssigneeName());
                     tTaskNotice.setUpdateName(tRuTask.getAssigneeName());
                     tTaskNotice.setCreateName(tRuTask.getAssigneeName());
-                    tTaskNotice.setUserType(tRuTask.getAssigneeType());
+                    if(tRuTask.getAssignee().startsWith("H")){
+                        tTaskNotice.setUserType(AssignTypeEnum.PERSON.code);
+                    }else if(tRuTask.getAssignee().equals(ExprEnum.LEADER.expr)||tRuTask.getAssignee().equals(ExprEnum.LEADER_CREATOR.expr)){
+                        tTaskNotice.setUserType(AssignTypeEnum.PERSON.code);
+                        tTaskNotice.setEmpNo(tRuTask.getAssigneeReal());
+                    }else{
+                        tTaskNotice.setUserType(AssignTypeEnum.ROLE.code);
+                    }
+
                     tTaskNotice.setType(0);
                     tTaskNoticeList.add(tTaskNotice);
                 }
@@ -2629,6 +2647,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
         Emp emp = empService.selectByCode(userId);
         if(emp == null){
+            if(StringUtils.isNumeric(userId)) {
+                RbacPrivilege privilegeById = privilegeService.getPrivilegeById(Long.parseLong(userId));
+                if(privilegeById!=null){
+                    return privilegeById.getPrivilegeName();
+                }
+            }
             return userId;
         }
         return emp.getName();
