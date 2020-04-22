@@ -1,6 +1,7 @@
 package com.chtwm.workflow.mapper;
 
 import com.chtwm.workflow.entity.TaskModelVO;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
  * @author fanyuexing
  * @date 2020/4/21 17:39
  */
+@Mapper
 public interface QWeChatMessageProjectMapper {
 
     /**

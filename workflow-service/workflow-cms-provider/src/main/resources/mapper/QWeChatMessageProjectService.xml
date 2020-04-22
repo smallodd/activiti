@@ -36,12 +36,14 @@
         SELECT a.id ,a.proc_inst_id,a.proc_inst_name,a.app_key,a.task_id,a.emp_no,
             a.emp_name,a.TYPE,a.state,a.ACTION,a.message,a.fxiaoke_notice_state,a.create_time,a.create_id,
             a.create_name,a.update_time,a.update_id,a.update_name,a.user_type,a.qweixin_notice_state,
-            ,b.name appName ,c.NAME_ examineTitle ,d.NAME_ taskName ,c.BUSINESS_KEY_ business_key
+            b.name appName ,c.NAME_ examineTitle ,d.NAME_ taskName ,c.BUSINESS_KEY_ business_key
         FROM t_task_notice a LEFT JOIN t_app b ON b.key = a.app_key
         LEFT JOIN act_hi_procinst c ON a.proc_inst_id = c.PROC_INST_ID_
         LEFT JOIN  act_ru_task d ON a.task_id = d.ID_
 
+        <!-- 查询未删除、未处理、没有记录处理结果、没有记录处理意见，并且未发送或发送失败的数据 -->
         WHERE a.is_delete = 0 AND a.state = 0
+        and a.action is null and a.message is null
         AND (a.qweixin_notice_state = 0 OR a.qweixin_notice_state = 2 OR a.qweixin_notice_state = 3 OR a.qweixin_notice_state = 4)
     </select>
 

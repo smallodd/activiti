@@ -2,10 +2,8 @@ package com.chtwm.workflow.mapper;
 
 
 import com.chtwm.workflow.entity.TaskModelVO;
-import com.chtwm.workflow.entity.TaskNoticePO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
