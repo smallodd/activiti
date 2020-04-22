@@ -22,11 +22,15 @@ public enum TaskVariableEnum {
 
 
 
-
+    //已经审批过的总数量
     APPROVE_COUNT("approveCount"),
+    //设置的任务节点审批人总数量
     APPROVE_COUNT_TOTAL("approveCountTotal"),
+    //任务节点需要审批人数量
     APPROVE_COUNT_NEED("approveCountNeed"),
+    //任务节点已审批通过的数量
     APPROVE_COUNT_NOW("approveCountNow"),
+    //任务节点已审批拒绝的数量
     APPROVE_COUNT_REFUSE("approveCountRefuse");
 
     public String value;
