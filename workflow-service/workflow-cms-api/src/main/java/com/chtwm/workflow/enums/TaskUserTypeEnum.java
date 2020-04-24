@@ -1,5 +1,7 @@
 package com.chtwm.workflow.enums;
 
+
+
 /**
  * @author fanyuexing
  * @date 2019/11/11 15:53
@@ -26,4 +28,23 @@ public enum TaskUserTypeEnum {
         this.code = code;
         this.value = value;
     }
+
+    /**
+     * 传入code 返回code对应的枚举
+     * @param code
+     * @return
+     */
+    public static TaskUserTypeEnum of(Integer code){
+        if (code == null){
+            return null;
+        }
+        for (TaskUserTypeEnum taskUserTypeEnum : TaskUserTypeEnum.values()) {
+            if (taskUserTypeEnum.getCode().equals(code)){
+                return taskUserTypeEnum;
+            }
+        }
+        return null;
+    }
+
+
 }
