@@ -85,6 +85,11 @@ public class TaskModelVO implements Serializable {
     private Integer xkNoticeState;
 
     /**
+     * 企业微信通知状态 0未通知 1已通知 2通知失败
+     */
+    private Integer qwxNoticeState;
+
+    /**
      * 创建时间
      */
     private Date createTime;

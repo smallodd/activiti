@@ -26,4 +26,22 @@ public enum TaskTypeEnum {
         this.code = code;
         this.value = value;
     }
+
+    /**
+     * 传入code 返回code对应的value
+     * @param code
+     * @return
+     */
+    public static TaskTypeEnum of (Integer code){
+        if (code == null){
+            return null;
+        }
+        for (TaskTypeEnum taskTypeEnum : TaskTypeEnum.values()) {
+            if (taskTypeEnum.getCode().equals(code)){
+                return taskTypeEnum;
+            }
+        }
+        return null;
+    }
+
 }

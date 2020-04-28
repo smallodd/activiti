@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chtwm.workflow.mapper.QWeChatMessageProjectMapper">
+
+    <resultMap id="TaskNoticeMap" type="com.chtwm.workflow.entity.TaskModelVO">
+        <id column="id" property="id" />
+        <result column="proc_inst_id" property="procInstId" />
+        <result column="proc_inst_name" property="procInstName" />
+        <result column="app_key" property="appKey" />
+        <result column="business_key" property="businessKey" />
+        <result column="task_id" property="taskId" />
+        <result column="taskName" property="taskName" />
+        <result column="emp_no" property="empNo" />
+        <result column="emp_name" property="empName" />
+        <result column="type" property="type" />
+        <result column="state" property="state" />
+        <result column="action" property="action" />
+        <result column="message" property="message" />
+        <result column="fxiaoke_notice_state" property="xkNoticeState" />
+        <result column="qweixin_notice_state" property="qwxNoticeState" />
+        <result column="create_time" property="createTime" />
+        <result column="create_id" property="createId" />
+        <result column="create_name" property="createName" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_id" property="updateId" />
+        <result column="update_name" property="updateName" />
+        <result column="is_delete" property="isDelete" />
+        <result column="user_type" property="userType" />
+
+        <result column="examineTitle" property="examineTitle" />
+        <result column="appName" property="appName" />
+    </resultMap>
+
+    <!--查询所有未通知和通知失败的信息（企业微信）-->
+    <select id="getAllUnSendMessage" resultMap="TaskNoticeMap">
+        SELECT a.id ,a.proc_inst_id,a.proc_inst_name,a.app_key,a.task_id,a.emp_no,
+            a.emp_name,a.TYPE,a.state,a.ACTION,a.message,a.fxiaoke_notice_state,a.create_time,a.create_id,
+            a.create_name,a.update_time,a.update_id,a.update_name,a.user_type,a.qweixin_notice_state,
+            b.name appName ,c.NAME_ examineTitle ,d.NAME_ taskName ,c.BUSINESS_KEY_ business_key
+        FROM t_task_notice a LEFT JOIN t_app b ON b.key = a.app_key
+        LEFT JOIN act_hi_procinst c ON a.proc_inst_id = c.PROC_INST_ID_
+        LEFT JOIN  act_ru_task d ON a.task_id = d.ID_
+
+        <!-- 查询未删除、未处理、没有记录处理结果、没有记录处理意见，并且未发送或发送失败的数据 -->
+        WHERE a.is_delete = 0 AND a.state = 0
+        and a.action is null and a.message is null
+        AND (a.qweixin_notice_state = 0 OR a.qweixin_notice_state = 2 OR a.qweixin_notice_state = 3 OR a.qweixin_notice_state = 4)
+    </select>
+
+    <!--根据主键更新企业微信的信息通知状态-->
+    <update id="updateThisMessageNoticeState">
+        UPDATE t_task_notice SET qweixin_notice_state = #{noticeState} where id = #{id}
+    </update>
+
+    <!--根据消息主键集合更新企业微信的信息通知状态-->
+    <update id="updateNoticeStateByListKeys">
+        UPDATE t_task_notice SET
+        qweixin_notice_state = #{noticeState}
+        WHERE id in
+        <foreach collection="ids" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+
+</mapper>

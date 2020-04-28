@@ -34,4 +34,22 @@ public enum KeyEnum {
     public void setKey(java.lang.Integer key) {
         this.key = key;
     }
+
+    /**
+     * 传入key 返回key对应的value
+     * @param key
+     * @return
+     */
+    public static KeyEnum of(Integer key){
+        if (key == null){
+            return null;
+        }
+        for (KeyEnum keyEnum : KeyEnum.values()) {
+            if (keyEnum.getKey().equals(key)){
+                return keyEnum;
+            }
+        }
+        return null;
+    }
+
 }
