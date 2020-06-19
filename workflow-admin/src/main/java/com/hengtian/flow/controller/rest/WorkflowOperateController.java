@@ -506,7 +506,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
             TaskAdapter taskAdapter = new TaskAdapter();
             try {
                 List<HistoricTaskInstance> historicTaskInstances=historyService.createHistoricTaskInstanceQuery().taskId(taskActionParam.getTaskId()).orderByTaskCreateTime().desc().list();
-                Result result = taskAdapter.taskAction(taskActionParam);
+                Result result = taskAdapter.taskAction(taskActionParam,workflowService);
                 //存储操作记录
                 if(result.isSuccess()){
                     ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(taskActionParam.getProcessInstanceId()).singleResult();
