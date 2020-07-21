@@ -423,10 +423,12 @@ public class WorkflowQueryController extends WorkflowBaseController {
                 return renderError("流程实例ID【" + processInstanceId + "】无对应的流程实例");
             }
         } else if (StringUtils.isNotBlank(businessKey)) {
-            historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceBusinessKey(businessKey).variableValueEquals("appKey", appKey).singleResult();
-            if (historicProcessInstance == null) {
+
+            List<HistoricProcessInstance> list = historyService.createHistoricProcessInstanceQuery().processInstanceBusinessKey(businessKey).variableValueEquals("appKey", appKey).orderByProcessInstanceStartTime().desc().list();
+            if (list == null||list.size()==0) {
                 return renderError("业务主键【" + businessKey + "】无对应的流程实例");
             }
+            historicProcessInstance= list.get(0);
         } else {
             return renderError("参数异常");
         }
