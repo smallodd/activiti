@@ -16,10 +16,7 @@ import com.richgo.redis.RedisClusterUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -256,7 +253,7 @@ public class SysUserController extends BaseController{
      * 重置密码邮箱验证
      * @return
      */
-    @RequestMapping("/password/mailValidate")
+    @RequestMapping(value = "/password/mailValidate",method = RequestMethod.POST)
     @ResponseBody
     public Object validateMail(HttpServletRequest request,String loginName, String code){
         if(StringUtils.isBlank(loginName) || StringUtils.isBlank(code)){
