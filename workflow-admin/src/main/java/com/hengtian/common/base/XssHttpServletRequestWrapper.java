@@ -14,7 +14,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
 	public XssHttpServletRequestWrapper(HttpServletRequest servletRequest) {
 		super(servletRequest);
 	}
-
+    @Override
 	public String[] getParameterValues(String parameter) {
 		String[] values = super.getParameterValues(parameter);
 		if (values == null) {
@@ -27,7 +27,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
 		}
 		return encodedValues;
 	}
-
+    @Override
 	public String getParameter(String parameter) {
 		String value = super.getParameter(parameter);
 		if (value == null) {
@@ -35,7 +35,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
 		}
 		return cleanXSS(value);
 	}
-
+    @Override
 	public String getHeader(String name) {
 		String value = super.getHeader(name);
 		if (value == null) {
@@ -45,21 +45,21 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
 	}
 
 	private String cleanXSS(String value) {
-//		value = value.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-//		value = value.replaceAll("\\(", "&#40;").replaceAll("\\)", "&#41;");
-//		value = value.replaceAll("'", "&#39;");
-////		value = value.replaceAll("\"", "&quot;");
-//		value = value.replaceAll("eval\\((.*)\\)", "");
-//		value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']", "\"\"");
+		//value = value.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+		value = value.replaceAll("\\(", "&#40;").replaceAll("\\)", "&#41;");
+		//value = value.replaceAll("'", "&#39;");
+		//value = value.replaceAll("\"", "&quot;");
+		value = value.replaceAll("eval\\((.*)\\)", "");
+		value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']", "\"\"");
 		value = value.replaceAll("script", "");
 
-		// value = value.replaceAll("<", "").replaceAll(">", "");
-		// value = value.replaceAll("\\(", "").replaceAll("\\)", "");
-		// value = value.replaceAll("script", "");
-		// value = value.replaceAll("document.cookie", "");
-		// value = value.replaceAll("eval\\((.*)\\)", "");
-		// value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']",
-		// "\"\"");
+		 //value = value.replaceAll("<", "").replaceAll(">", "");
+		 value = value.replaceAll("\\(", "").replaceAll("\\)", "");
+		 value = value.replaceAll("script", "");
+		 value = value.replaceAll("document.cookie", "");
+		 value = value.replaceAll("eval\\((.*)\\)", "");
+		 value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']",
+		 "\"\"");
 		return value;
 	}
 }

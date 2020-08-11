@@ -1,5 +1,6 @@
 package com.hengtian.activiti.editor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.ActivitiException;
 import org.apache.commons.io.IOUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,11 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.InputStream;
 
 @RestController("myStencilsetRestResource")
+@Slf4j
 public class StencilsetRestResource {
     @RequestMapping(value = {"/service/editor/stencilset"}, method = {org.springframework.web.bind.annotation.RequestMethod.GET}, produces = {"application/json;charset=utf-8"})
     @ResponseBody
     public String getStencilset() {
-        System.out.println("StencilsetRestResource.getStencilset-----------");
+        log.info("StencilsetRestResource.getStencilset-----------");
         InputStream stencilsetStream = getClass().getClassLoader().getResourceAsStream("stencilset.json");
         try {
             return IOUtils.toString(stencilsetStream, "utf-8");
