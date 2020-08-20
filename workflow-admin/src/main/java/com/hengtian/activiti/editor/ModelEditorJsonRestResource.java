@@ -27,7 +27,7 @@ public class ModelEditorJsonRestResource implements ModelDataJsonConstants {
     public ObjectNode getEditorJson(@PathVariable String modelId) {
         ObjectNode modelNode = null;
 
-        System.out.println("ModelEditorJsonRestResource.getEditorJson---------");
+        log.info("ModelEditorJsonRestResource.getEditorJson---------");
         Model model = this.repositoryService.getModel(modelId);
 
         if (model != null) {

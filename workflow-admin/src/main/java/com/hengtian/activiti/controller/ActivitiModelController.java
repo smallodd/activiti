@@ -250,7 +250,7 @@ public class ActivitiModelController extends BaseController {
                 response.sendRedirect(request.getContextPath() + "/editor/create");
             }
         } catch (Exception e) {
-            System.out.println("编辑模型失败：");
+           log.error("编辑模型失败：");
         }
     }
 

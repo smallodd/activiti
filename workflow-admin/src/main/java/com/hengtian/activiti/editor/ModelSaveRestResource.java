@@ -45,7 +45,7 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
     public void saveModel(@PathVariable String modelId, String name, String description, String json_xml, String svg_xml) {
         try {
             Model model = this.repositoryService.getModel(modelId);
-            System.out.println("ModelSaveRestResource.saveModel----------");
+            log.info("ModelSaveRestResource.saveModel----------");
             ObjectNode modelJson = (ObjectNode) this.objectMapper.readTree(model.getMetaInfo());
 
             modelJson.put(MODEL_NAME, name);
