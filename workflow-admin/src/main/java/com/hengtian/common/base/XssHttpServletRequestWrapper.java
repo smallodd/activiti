@@ -46,20 +46,19 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
 	private String cleanXSS(String value) {
 		//value = value.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-		value = value.replaceAll("\\(", "&#40;").replaceAll("\\)", "&#41;");
+
 		//value = value.replaceAll("'", "&#39;");
 		//value = value.replaceAll("\"", "&quot;");
-		value = value.replaceAll("eval\\((.*)\\)", "");
-		value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']", "\"\"");
-		value = value.replaceAll("script", "");
+//		value = value.replaceAll("eval\\((.*)\\)", "");
+//		value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']", "\"\"");
 
 		 //value = value.replaceAll("<", "").replaceAll(">", "");
-		 value = value.replaceAll("\\(", "").replaceAll("\\)", "");
+//		 value = value.replaceAll("\\(", "").replaceAll("\\)", "");
 		 value = value.replaceAll("script", "");
 		 value = value.replaceAll("document.cookie", "");
-		 value = value.replaceAll("eval\\((.*)\\)", "");
-		 value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']",
-		 "\"\"");
+//		 value = value.replaceAll("eval\\((.*)\\)", "");
+//		 value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']",
+//		 "\"\"");
 		return value;
 	}
 }
