@@ -576,6 +576,7 @@ public class ActivitiModelController extends BaseController {
         if(modelFile == null || modelFile.getSize() <= 0){
             return renderError("请选择文件");
         }
+
         CommonsMultipartFile cf= (CommonsMultipartFile)modelFile;
         DiskFileItem fi = (DiskFileItem)cf.getFileItem();
 
@@ -616,7 +617,7 @@ public class ActivitiModelController extends BaseController {
                 Model model = repositoryService.createModelQuery().modelKey(modelKey).singleResult();
                 if(model != null){
                     log.info("模型KEY为【"+modelKey+"】的模型已存在");
-                    continue;
+                    return renderError("模型KEY为【"+modelKey+"】的模型已存在");
                 }
 
                 Object obj = create(jsonObject.getString("name"), modelKey, "通过备份还原模型");

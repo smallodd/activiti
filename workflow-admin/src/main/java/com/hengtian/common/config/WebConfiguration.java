@@ -3,6 +3,8 @@ package com.hengtian.common.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hengtian.common.interceptor.AuthInterceptor;
 import com.hengtian.common.operlog.ExceptionHandler;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -29,6 +31,7 @@ import java.util.Properties;
  * @Date: 2019/6/12 15:19
  */
 @Configuration
+@EnableAutoConfiguration(exclude = {MultipartAutoConfiguration.class})
 public class WebConfiguration implements WebMvcConfigurer {
 
     /**
