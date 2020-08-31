@@ -1,0 +1,9 @@
+sonar_analyze:
+  stage: test
+  script:
+    - mvn --batch-mode compile sonar:sonar -Dsonar.host.url=http://172.16.196.166:9000 -Dsonar.login=6508568ae76a287872ba22283ba03ae60d38e4fe -Dsonar.surefire.reportsPath=target/surefire-reports -Dsonar.java.binaries=target/classes
+  only:
+    - develop
+    - master
+  tags:
+    - sonar
