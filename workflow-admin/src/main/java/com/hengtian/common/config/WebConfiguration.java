@@ -54,6 +54,7 @@ public class WebConfiguration implements WebMvcConfigurer {
         viewResolver.setPrefix("/WEB-INF/views/");
         viewResolver.setSuffix(".jsp");
         viewResolver.setOrder(10);
+        viewResolver.setRedirectHttp10Compatible(false);
         return viewResolver;
     }
 
