@@ -51,14 +51,14 @@ public class WebConfiguration implements WebMvcConfigurer {
         viewResolver.setPrefix("/WEB-INF/views/");
         viewResolver.setSuffix(".jsp");
         viewResolver.setOrder(10);
-        viewResolver.setRedirectHttp10Compatible(false);
+//        viewResolver.setRedirectHttp10Compatible(false);
         return viewResolver;
     }
 
     /**
      * 文件上传的配置
      */
-    @Bean
+    @Bean(name = "multipartResolver")
     public MultipartResolver multipartResolver(){
         CommonsMultipartResolver resolver = new CommonsMultipartResolver();
         resolver.setDefaultEncoding("UTF-8");

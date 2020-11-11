@@ -616,7 +616,8 @@ public class ActivitiModelController extends BaseController {
                 Model model = repositoryService.createModelQuery().modelKey(modelKey).singleResult();
                 if(model != null){
                     log.info("模型KEY为【"+modelKey+"】的模型已存在");
-                    continue;
+                    return renderError("模型KEY为【"+modelKey+"】的模型已存在");
+
                 }
 
                 Object obj = create(jsonObject.getString("name"), modelKey, "通过备份还原模型");

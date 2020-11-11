@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoCo
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.MultipartAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
@@ -32,7 +33,7 @@ import org.springframework.context.annotation.Import;
 @SpringBootApplication(exclude = { DataSourceAutoConfiguration.class,
         SecurityAutoConfiguration.class,
         RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class,
-        MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
+        MongoAutoConfiguration.class, MongoDataAutoConfiguration.class, MultipartAutoConfiguration.class})
 @MapperScan("com.hengtian.**.dao")
 @Import({ DomainMapProperties.class, RedisProperties.class, RedisClusterUtil.class, CommonUtil.class})
 @ComponentScan(basePackages = {"com.hengtian","org.activiti"})
