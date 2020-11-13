@@ -40,6 +40,7 @@ import org.activiti.engine.task.TaskInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +83,8 @@ public class WorkflowBaseController extends BaseRestController {
     WorkflowService workflowService;
     @Autowired
     HistoryService historyService;
+    @Value("${rbac.key}")
+    String rbacKey;
 
     /**
      * 获取需要高亮的线 (适配5.18以上版本；由于mysql5.6.4之后版本时间支持到毫秒，固旧方法比较开始时间的方法不在适合当前系统)
@@ -178,7 +181,7 @@ public class WorkflowBaseController extends BaseRestController {
                         }
                     }
                 }else{
-                    RbacDomainContext.getContext().setDomain("chtwm");
+                    RbacDomainContext.getContext().setDomain(rbacKey);
                     List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(t.getAssignee()));
                     if(CollectionUtils.isNotEmpty(users)){
                         for(RbacUser u : users){
@@ -265,7 +268,7 @@ public class WorkflowBaseController extends BaseRestController {
                 }
             }else{
                 if(AssignTypeEnum.ROLE.code.equals(t.getAssigneeType())){
-                    RbacDomainContext.getContext().setDomain("chtwm");
+                    RbacDomainContext.getContext().setDomain(rbacKey);
                     List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, "", Long.parseLong(t.getAssignee()));
                     if(CollectionUtils.isNotEmpty(users)){
                         for(RbacUser u : users){
@@ -369,7 +372,7 @@ public class WorkflowBaseController extends BaseRestController {
         log.info("查询审批人角色和代理人角色setAssigneeAndRole");
         Integer appKey = taskQueryParam.getAppKey();
         String assignee = taskQueryParam.getAssignee();
-        RbacDomainContext.getContext().setDomain("chtwm");
+        RbacDomainContext.getContext().setDomain(rbacKey);
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, assignee);
         pageInfo.getCondition().put("assignee", assignee);
         String roleIds = null;
@@ -396,7 +399,7 @@ public class WorkflowBaseController extends BaseRestController {
                 }
 
                 taskAgent.setProcessDefinitionKey(jsonObject.getString("processDefinitionKey"));
-                RbacDomainContext.getContext().setDomain("chtwm");
+                RbacDomainContext.getContext().setDomain(rbacKey);
                 roles = privilegeService.getAllRoleByUserId(appKey, taskAgent.getAssigneeAgent());
                 if(CollectionUtils.isNotEmpty(roles)){
                     roleIds = null;
@@ -422,7 +425,7 @@ public class WorkflowBaseController extends BaseRestController {
      * date 2018/5/21 18:04
      */
     public void setAssigneeAndRole(PageInfo pageInfo, String assignee, int appKey){
-        RbacDomainContext.getContext().setDomain("chtwm");
+        RbacDomainContext.getContext().setDomain(rbacKey);
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, assignee);
         pageInfo.getCondition().put("assignee", assignee);
         String roleIds = null;
@@ -452,7 +455,7 @@ public class WorkflowBaseController extends BaseRestController {
                 }
             }else{
                 if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
-                    RbacDomainContext.getContext().setDomain("chtwm");
+                    RbacDomainContext.getContext().setDomain(rbacKey);
                     List<RbacUser> users = privilegeService.getUsersByRoleId(rt.getAppKey(), null, Long.parseLong(rt.getAssignee()));
                     for(RbacUser u : users){
                         if(u.getCode().equals(assignee)){

@@ -80,6 +80,7 @@ import org.activiti.engine.task.TaskInfo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,6 +127,8 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
     private AssigneeTempService assigneeTempService;
     @Reference
     EmpService empService;
+    @Value("${rbac.key}")
+    String rbacKey;
 
     public List<TaskNodeResult> setButtons(List<TaskNodeResult> list) {
         if (list != null && list.size() > 0) {
@@ -1085,7 +1088,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                 set.add(t.getAssigneeReal());
             }else{
                 if(t.getAssigneeType().intValue()==AssignTypeEnum.ROLE.code) {
-                    RbacDomainContext.getContext().setDomain("chtwm");
+                    RbacDomainContext.getContext().setDomain(rbacKey);
                     List<RbacUser> rbacUsers = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(t.getAssignee()));
                     for (RbacUser rbacUser : rbacUsers) {
                         set.add(rbacUser.getCode());
@@ -1111,7 +1114,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         if (system == null) {
             return null;
         }
-        RbacDomainContext.getContext().setDomain("chtwm");
+        RbacDomainContext.getContext().setDomain(rbacKey);
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(system, userId);
         if (CollectionUtils.isEmpty(roles)) {
             return null;
@@ -1452,7 +1455,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     userName = assigneeArray.getJSONObject(k).getString("userName");
                     assignee = assignee==null?userCode:assignee+","+userCode;
                     //获取用户所有所属角色
-                    RbacDomainContext.getContext().setDomain("chtwm");
+                    RbacDomainContext.getContext().setDomain(rbacKey);
                     List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, userCode);
                     if(CollectionUtils.isEmpty(roles)){
                         log.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
@@ -1538,7 +1541,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
                     userCode = assigneeArray.getJSONObject(k).getString("userCode");
                     assignee = assignee==null?userCode:assignee+","+userCode;
                     //获取用户所有所属角色
-                    RbacDomainContext.getContext().setDomain("chtwm");
+                    RbacDomainContext.getContext().setDomain(rbacKey);
                     List<RbacRole> roles = privilegeService.getAllRoleByUserId(appKey, userCode);
                     if(CollectionUtils.isEmpty(roles)){
                         log.info("用户【"+userCode+"】没有角色权限，无法匹配审批人资格");
@@ -1577,7 +1580,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
      * date 2018/6/6 20:16
      */
     private List<AssigneeVo> getAllUserByRoleCode(Integer appKey, Long roleCode){
-        RbacDomainContext.getContext().setDomain("chtwm");
+        RbacDomainContext.getContext().setDomain(rbacKey);
         List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, roleCode);
         if(CollectionUtils.isEmpty(users)){
             return null;
