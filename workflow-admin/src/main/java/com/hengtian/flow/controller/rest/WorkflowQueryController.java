@@ -58,6 +58,7 @@ import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -111,7 +112,8 @@ public class WorkflowQueryController extends WorkflowBaseController {
     private RuntimeService runtimeService;
     @Autowired
     TUserTaskService tUserTaskService;
-
+    @Value("${rbac.key}")
+    String rbacKey;
     /**
      * 获取我发起的流程
      *
@@ -692,7 +694,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
         Map<String, Object> paraMap = Maps.newHashMap();
         BeanMap beanMap = new BeanMap(taskQueryParam);
         paraMap.putAll(beanMap);
-        RbacDomainContext.getContext().setDomain("chtwm");
+        RbacDomainContext.getContext().setDomain(rbacKey);
         List<RbacRole> roles = privilegeService.getAllRoleByUserId(taskQueryParam.getAppKey(), taskQueryParam.getAssignee());
         String roleId = null;
 

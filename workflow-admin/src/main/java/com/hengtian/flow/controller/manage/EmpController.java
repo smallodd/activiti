@@ -11,6 +11,7 @@ import com.user.entity.org.Org;
 import com.user.service.emp.EmpService;
 import com.user.service.org.OrgService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +39,8 @@ public class EmpController {
     private PrivilegeService privilegeService;
     @Reference
     private EmpService empService;
+    @Value("${rbac.key}")
+    String rbacKey;
 
     /**
      * 获取用户列表-分页
@@ -107,7 +110,7 @@ public class EmpController {
     @PostMapping("/role/{system}")
     @ResponseBody
     public Object queryRole(@PathVariable("system") Integer system) {
-        RbacDomainContext.getContext().setDomain("chtwm");
+        RbacDomainContext.getContext().setDomain(rbacKey);
         List<RbacRole> allRoleBySystem = privilegeService.getAllRoleBySystem(system);
         return allRoleBySystem;
     }

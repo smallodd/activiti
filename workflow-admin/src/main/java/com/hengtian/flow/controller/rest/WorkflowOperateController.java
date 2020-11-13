@@ -43,6 +43,7 @@ import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -87,6 +88,8 @@ public class WorkflowOperateController extends WorkflowBaseController {
     TWorkDetailService tWorkDetailService;
     @Reference(loadbalance = "rbac")
     PrivilegeService privilegeService;
+    @Value("${rbac.key}")
+    String rbacKey;
     /**
      * 任务创建接口
      *
@@ -660,7 +663,7 @@ public class WorkflowOperateController extends WorkflowBaseController {
                             assigneeList.addAll(Arrays.asList(rt.getAssigneeReal().split(",")));
                         }else if(AssignTypeEnum.ROLE.code.equals(rt.getAssigneeType())){
                             Integer appKey = runtimeService.getVariable(taskActionParam.getProcessInstanceId(), "appKey", Integer.class);
-                            RbacDomainContext.getContext().setDomain("chtwm");
+                            RbacDomainContext.getContext().setDomain(rbacKey);
                             List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(rt.getAssignee()));
                             for(RbacUser u : users){
                                 assigneeList.add(u.getCode());

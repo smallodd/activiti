@@ -19,6 +19,7 @@ import com.rbac.dubbo.RbacDomainContext;
 import com.rbac.service.PrivilegeService;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,8 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
     private TTaskButtonService tTaskButtonService;
     @Reference(loadbalance = "rbac")
     private PrivilegeService privilegeService;
-
+    @Value("${rbac.key}")
+    String rbacKey;
     /**
      * 任务节点配置（包括审批人，权限按钮）
      * @author houjinrong@chtwm.com
@@ -99,7 +101,7 @@ public class TUserTaskServiceImpl extends ServiceImpl<TUserTaskDao, TUserTask> i
                         if(StringUtils.isNotBlank(roleIds)){
                             String[] roleIdArray = roleIds.split(",");
                             for(String roleId : roleIdArray){
-                                RbacDomainContext.getContext().setDomain("chtwm");
+                                RbacDomainContext.getContext().setDomain(rbacKey);
                                 assigneeCount = assigneeCount + privilegeService.getUsersByRoleId(1, null, Long.parseLong(roleId)).size();
                             }
                         }
