@@ -521,7 +521,9 @@ public class ActivitiModelController extends BaseController {
             wrapper.where("proc_def_key={0}", processDefinition.getKey());
             tUserTaskService.delete(wrapper);
             repositoryService.deleteDeployment(model.getDeploymentId(), true);
-
+            EntityWrapper<AppModel> appModelEntityWrapper=new EntityWrapper<>();
+            appModelEntityWrapper.where("model_key",model.getKey());
+            appModelService.delete(appModelEntityWrapper);
         }
         repositoryService.deleteModel(id);
 
