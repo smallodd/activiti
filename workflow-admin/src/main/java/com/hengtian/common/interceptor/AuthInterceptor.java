@@ -8,6 +8,7 @@ import com.common.interceptor.comment.SensitivewordManage;
 import com.common.util.ConfigUtil;
 import com.rbac.dubbo.RbacDomainContext;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -26,7 +27,8 @@ import java.lang.reflect.Method;
 @Slf4j
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
-
+	@Value("${rbac.key}")
+	String rbacKey;
 	private static final String contentType = "application/json;charset=utf-8";
 	/**
 	 * 敏感词返回信息
@@ -52,7 +54,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 
-		RbacDomainContext.getContext().setDomain("chtwm");
+		RbacDomainContext.getContext().setDomain(rbacKey);
 		String contextPath = request.getContextPath();
 		String requestUrl = request.getRequestURI().replace(contextPath, "");
 

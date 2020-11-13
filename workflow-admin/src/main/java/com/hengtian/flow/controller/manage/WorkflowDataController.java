@@ -27,6 +27,7 @@ import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -60,6 +61,8 @@ public class WorkflowDataController extends WorkflowBaseController {
     private TRuTaskService tRuTaskService;
     @Autowired
     private TaskService taskService;
+    @Value("${rbac.key}")
+    String rbacKey;
 
     /**
      * 流程定义列表-分页
@@ -156,7 +159,7 @@ public class WorkflowDataController extends WorkflowBaseController {
         List<String> assigneeList = StringUtils.isBlank(assignee) ? Lists.newArrayList() : Arrays.asList(assignee.split(","));
         for (TRuTask tRuTask : tRuTasks) {
             if (AssignTypeEnum.ROLE.code.equals(tRuTask.getAssigneeType())) {
-                RbacDomainContext.getContext().setDomain("chtwm");
+                RbacDomainContext.getContext().setDomain(rbacKey);
                 tempUserList = privilegeService.getUsersByRoleId(system, null, Long.parseLong(tRuTask.getAssignee()));
                 List<String> assigneeReal = StringUtils.isBlank(tRuTask.getAssigneeReal()) ? null : Arrays.asList(tRuTask.getAssigneeReal().split(","));
                 for (RbacUser user : tempUserList) {
