@@ -156,10 +156,13 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
         }
         taskNodeResult.setButtonKeys(tButtons);
 
+        //查询流程定义信息
+        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(historicProcessInstance.getProcessDefinitionId());
         //判断是否需要设置下一个节点审批人
         EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
         wrapper.eq("task_def_key", taskNodeResult.getTaskDefinedKey());
-        wrapper.eq("version_", getVersionByProcessInstanceId(taskNodeResult.getProcessInstanceId()));
+        wrapper.eq("version_", processDefinition==null?null:processDefinition.getVersion());
+        wrapper.eq("proc_def_key",processDefinition.getKey());
         TUserTask tUserTask = tUserTaskService.selectOne(wrapper);
 
         taskNodeResult.setNeedSetNext(tUserTask.getNeedSetNext());
