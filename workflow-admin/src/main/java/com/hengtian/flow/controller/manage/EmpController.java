@@ -33,11 +33,11 @@ import java.util.Map;
 public class EmpController {
 
 
-    @Reference
+    @Reference(registry = "chtwm")
     private OrgService orgService;
     @Reference(loadbalance = "rbac")
     private PrivilegeService privilegeService;
-    @Reference
+    @Reference(registry = "chtwm")
     private EmpService empService;
     @Value("${rbac.key}")
     String rbacKey;
