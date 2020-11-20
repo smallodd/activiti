@@ -21,7 +21,7 @@ import java.util.List;
 public class TWorkDetailServiceImpl extends ServiceImpl<TWorkDetailDao, TWorkDetail> implements TWorkDetailService {
     @Autowired
     private TWorkDetailDao tWorkDetailDao;
-    @Reference
+    @Reference(registry = "chtwm")
     EmpService empService;
 
     /**

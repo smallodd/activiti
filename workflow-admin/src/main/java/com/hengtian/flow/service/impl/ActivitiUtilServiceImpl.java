@@ -125,7 +125,7 @@ public class ActivitiUtilServiceImpl extends ServiceImpl<WorkflowDao, TaskResult
 
     @Autowired
     private AssigneeTempService assigneeTempService;
-    @Reference
+    @Reference(registry = "chtwm")
     EmpService empService;
     @Value("${rbac.key}")
     String rbacKey;

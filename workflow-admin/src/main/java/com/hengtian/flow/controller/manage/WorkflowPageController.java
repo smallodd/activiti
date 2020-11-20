@@ -61,7 +61,7 @@ public class WorkflowPageController extends WorkflowBaseController{
     private RuProcinstService ruProcinstService;
     @Autowired
     private TaskService taskService;
-    @Reference
+    @Reference(registry = "chtwm")
     private EmpService empService;
     @Autowired
     private TUserTaskService tUserTaskService;

@@ -177,7 +177,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
     @Autowired
     private WorkflowDao workflowDao;
 
-    @Reference
+    @Reference(registry = "chtwm")
     private EmpService empService;
 
     @Autowired
