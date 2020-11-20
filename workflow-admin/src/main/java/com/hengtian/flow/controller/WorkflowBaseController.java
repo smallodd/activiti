@@ -76,7 +76,7 @@ public class WorkflowBaseController extends BaseRestController {
     @Autowired
     FormService formService;
 
-    @Reference
+    @Reference(registry = "chtwm")
     EmpService empService;
 
     @Autowired
