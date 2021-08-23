@@ -792,6 +792,7 @@ public class WorkflowQueryController extends WorkflowBaseController {
     @RequestMapping(value = "/rest/task/assignee/next", method = RequestMethod.POST)
     public Object getNextAssignee(@ApiParam(value = "用户ID", name = "userId", required = true) @RequestParam String userId,
                                   @ApiParam(value = "任务ID", name = "taskId", required = true) @RequestParam String taskId) {
+        log.info("查询下步审批人开始：{},{}",userId,taskId);
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(taskId)) {
             return renderError(ResultEnum.PARAM_ERROR.msg, ResultEnum.PARAM_ERROR.code);
         }

@@ -2607,7 +2607,7 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         }
 
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
-        log.info("获取");
+
         EntityWrapper<TUserTask> wrapper = new EntityWrapper<>();
         wrapper.eq("proc_def_key",  processInstance.getProcessDefinitionKey());
         wrapper.eq("version_", version);
@@ -2629,9 +2629,12 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
 
             assigneeArray = ut.getCandidateIds().split(",");
             List<AssigneeVo> assigneeList = Lists.newArrayList();
+
             for(int k=0;k<assigneeArray.length;k++){
+                log.info("查询下一步审批人开始：{},{},{}",rbacKey,Long.parseLong(assigneeArray[k]),appKey);
                 RbacDomainContext.getContext().setDomain(rbacKey);
                 List<RbacUser> users = privilegeService.getUsersByRoleId(appKey, null, Long.parseLong(assigneeArray[k]));
+                log.info("查询结果：{}",users.toString());
                 for(RbacUser user : users){
                     AssigneeVo assignee = new AssigneeVo();
                     assignee.setUserCode(user.getCode());
