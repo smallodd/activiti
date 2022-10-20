@@ -2155,7 +2155,9 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
                 String[] getAssigneeNexts = t.getAssigneeNext().split(",");
                 for (String assign:getAssigneeNexts){
                     Emp rbacUser = empService.selectByCode(assign);
-                    assigneeNameSet.add(rbacUser.getName());
+                    if (rbacUser != null) {
+                        assigneeNameSet.add(rbacUser.getName());
+                    }
                 }
                 t.setAssigneeNextName(StringUtils.join(assigneeNameSet, ","));
             }
