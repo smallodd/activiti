@@ -2149,13 +2149,18 @@ public class WorkflowServiceImpl extends ActivitiUtilServiceImpl implements Work
         Page<TaskResult> page = new Page<TaskResult>(pageInfo.getNowpage(), pageInfo.getSize());
         List<TaskResult> list = workflowDao.queryCloseTask(page, pageInfo.getCondition());
         for(TaskResult t : list){
+            log.info("查询已办任务列表closeTaskList 循环：{}", JSONObject.toJSONString(t));
             Set<String> assigneeNameSet = Sets.newHashSet();
             t.setAssigneeNext(getNextAssignee(t.getTaskId()));
+            log.info("查询已办任务列表closeTaskList 循环 AssigneeNext：{}", t.getAssigneeNext());
             if(StringUtils.isNotBlank(t.getAssigneeNext())) {
                 String[] getAssigneeNexts = t.getAssigneeNext().split(",");
                 for (String assign:getAssigneeNexts){
                     Emp rbacUser = empService.selectByCode(assign);
-                    assigneeNameSet.add(rbacUser.getName());
+                    log.info("查询已办任务列表closeTaskList 循环 assign：{}, 接口获取emp用户：{}", assign, rbacUser);
+                    if (rbacUser != null) {
+                        assigneeNameSet.add(rbacUser.getName());
+                    }
                 }
                 t.setAssigneeNextName(StringUtils.join(assigneeNameSet, ","));
             }
